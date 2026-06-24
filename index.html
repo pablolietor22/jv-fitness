@@ -1,0 +1,892 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>JV Fitness — App</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0B1614; --ink-1:#0e1d18; --ink-2:#11231d; --ink-3:#173129;
+    --line:#244a40; --line-soft:#1b3830;
+    --bone:#EEF2EC; --soft:#cfdbd4; --mute:#9bb0a7; --mute-2:#6d8077;
+    --ember:#FF6A3D; --ember-soft:rgba(255,106,61,.13);
+    --jade:#3DDC97; --jade-soft:rgba(61,220,151,.10); --blue:#74c7ff;
+    --display:'Space Grotesk',sans-serif; --body:'IBM Plex Sans',sans-serif; --mono:'IBM Plex Mono',monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    background:
+      radial-gradient(1100px 520px at 50% -8%, #14342c 0%, rgba(20,52,44,0) 62%),
+      var(--ink);
+    color:var(--bone);font-family:var(--body);line-height:1.5;-webkit-font-smoothing:antialiased;
+    padding:18px 16px 40px;max-width:560px;margin:0 auto;min-height:100vh;
+  }
+  .mono{font-family:var(--mono)}
+  h1{font-family:var(--display);font-size:1.15rem;font-weight:700;letter-spacing:-.01em}
+  h2{font-family:var(--display);font-size:1.02rem;font-weight:700;letter-spacing:-.01em;
+    margin:0 0 12px;display:flex;align-items:center;gap:10px;color:var(--bone)}
+  h2::before{content:"";width:22px;height:2px;background:var(--ember);flex:none;border-radius:2px;box-shadow:0 0 10px var(--ember)}
+
+  /* header */
+  .brandbar{display:flex;align-items:center;justify-content:space-between;
+    padding-bottom:14px;border-bottom:1px solid var(--line-soft)}
+  .logo{font-family:var(--display);font-weight:700;font-size:1.12rem;display:flex;align-items:center;gap:9px;letter-spacing:-.01em}
+  .logo .dot{width:11px;height:11px;border-radius:50%;background:var(--ember);box-shadow:0 0 14px var(--ember)}
+  .logo b{color:var(--jade)}
+  .brandbar .tag{font-family:var(--mono);font-size:.62rem;color:var(--mute);letter-spacing:.1em}
+  .statuschip{display:inline-flex;align-items:center;gap:9px;margin:14px 0 4px;
+    font-family:var(--mono);font-size:.66rem;letter-spacing:.04em;color:var(--mute);
+    border:1px solid var(--line-soft);border-radius:100px;padding:7px 14px;background:rgba(17,35,29,.7)}
+  .statuschip .pulse{width:7px;height:7px;border-radius:50%;background:var(--jade);position:relative;box-shadow:0 0 8px var(--jade)}
+  .statuschip .pulse::after{content:"";position:absolute;inset:-5px;border-radius:50%;border:1px solid var(--jade);opacity:.5;animation:ring 2.4s ease-out infinite}
+  @keyframes ring{0%{transform:scale(.5);opacity:.6}100%{transform:scale(1.8);opacity:0}}
+
+  /* cards */
+  .card{background:linear-gradient(180deg,var(--ink-2),var(--ink-1));
+    border:1px solid var(--line);border-radius:16px;padding:18px;margin:14px 0;
+    box-shadow:0 10px 30px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.03)}
+  label{display:block;font-family:var(--mono);font-size:.66rem;text-transform:uppercase;
+    letter-spacing:.1em;color:var(--mute);margin:.7rem 0 .3rem}
+  input,select{width:100%;background:var(--ink-3);border:1px solid var(--line);color:var(--bone);
+    border-radius:10px;padding:11px;font-size:1rem;font-family:var(--body);transition:border .15s,box-shadow .15s}
+  input:focus,select:focus{outline:0;border-color:var(--jade);box-shadow:0 0 0 3px var(--jade-soft)}
+  .row{display:flex;gap:10px}.row>div{flex:1}
+  button{background:var(--ember);color:#1a0c07;border:0;border-radius:11px;padding:13px 16px;
+    font-family:var(--display);font-weight:700;font-size:1rem;width:100%;margin-top:15px;cursor:pointer;
+    box-shadow:0 6px 20px rgba(255,106,61,.28);transition:transform .1s,box-shadow .15s}
+  button:hover{box-shadow:0 8px 26px rgba(255,106,61,.42)}
+  button:active{transform:translateY(1px)}
+  button.sec{background:transparent;color:var(--soft);border:1px solid var(--line);box-shadow:none;font-weight:600}
+
+  /* plan */
+  .eyebrow-lbl{font-family:var(--mono);font-size:.64rem;letter-spacing:.16em;text-transform:uppercase;color:var(--mute);margin:14px 0 2px}
+  .big{font-family:var(--display);font-size:2.5rem;font-weight:700;color:var(--ember);line-height:1;
+    text-shadow:0 0 26px rgba(255,106,61,.35)}
+  .big small{font-family:var(--body);font-size:1rem;color:var(--mute);font-weight:400}
+  .macros{display:flex;gap:9px;margin-top:14px}
+  .macro{flex:1;background:var(--ink-3);border:1px solid var(--line);border-radius:12px;padding:11px 8px;text-align:center}
+  .macro .n{font-family:var(--mono);font-size:1.32rem;font-weight:500}
+  .macro small{display:block;font-family:var(--mono);color:var(--mute);font-size:.6rem;letter-spacing:.1em;margin-top:3px}
+  .p{color:var(--jade)} .g{color:var(--ember)} .c{color:var(--blue)}
+  .kv{display:flex;justify-content:space-between;font-family:var(--mono);font-size:.86rem;padding:5px 0;border-bottom:1px solid var(--line-soft)}
+  .kv span:first-child{color:var(--mute)} .kv span:last-child{color:var(--bone)}
+  .aviso{background:var(--ember-soft);border:1px solid rgba(255,106,61,.4);color:#ffd9cd;border-radius:10px;padding:11px;font-size:.84rem;margin-top:12px}
+  .hint{color:var(--mute);font-size:.8rem;margin-top:8px}
+  table{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:.82rem;margin-top:10px}
+  td,th{border-bottom:1px solid var(--line-soft);padding:7px 4px;text-align:left}
+  th{color:var(--mute);font-weight:500;font-size:.62rem;letter-spacing:.1em;text-transform:uppercase}
+  .foot{color:var(--mute-2);font-size:.7rem;margin-top:22px;text-align:center;line-height:1.5}
+  .coachline{color:var(--jade);font-weight:600;font-family:var(--display)}
+  /* pestañas */
+  .tabs{display:flex;gap:6px;margin:14px 0 4px;position:sticky;top:0;z-index:5;
+    background:var(--ink);padding:8px 0;border-bottom:1px solid var(--line-soft)}
+  .tab{flex:1;width:auto;margin:0;background:transparent;color:var(--mute);
+    border:1px solid var(--line-soft);border-radius:10px;padding:9px 2px;
+    font-family:var(--mono);font-size:.58rem;letter-spacing:.02em;text-transform:uppercase;
+    font-weight:500;cursor:pointer;box-shadow:none;transition:.15s}
+  .tab.activa{color:var(--ink);background:var(--jade);border-color:var(--jade);font-weight:700;box-shadow:0 4px 14px rgba(61,220,151,.25)}
+  /* toast de confirmación */
+  .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);
+    background:var(--jade);color:var(--ink);font-family:var(--display);font-weight:700;font-size:.9rem;
+    padding:11px 18px;border-radius:100px;box-shadow:0 8px 24px rgba(0,0,0,.45);
+    opacity:0;pointer-events:none;transition:opacity .25s,transform .25s;z-index:50}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  /* wizard */
+  .wizbar{height:6px;background:var(--ink-3);border-radius:100px;overflow:hidden;margin-bottom:16px}
+  .wizfill{height:100%;width:0;background:var(--jade);border-radius:100px;transition:width .25s;box-shadow:0 0 10px var(--jade)}
+  .wstep .hint{margin-top:6px}
+  textarea{width:100%;background:var(--ink-3);border:1px solid var(--line);color:var(--bone);
+    border-radius:10px;padding:11px;font-size:1rem;font-family:var(--body);resize:vertical}
+  textarea:focus{outline:0;border-color:var(--jade);box-shadow:0 0 0 3px var(--jade-soft)}
+  /* modal centrado con fondo difuminado (Otro + biblioteca) */
+  .modal{position:fixed;inset:0;z-index:100;display:flex;align-items:center;justify-content:center;padding:18px;
+    background:rgba(4,11,9,.55);backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px);animation:modalIn .18s ease-out}
+  @keyframes modalIn{from{opacity:0}to{opacity:1}}
+  .modal-card{background:linear-gradient(180deg,var(--ink-2),var(--ink-1));border:1px solid var(--line);
+    border-radius:18px;padding:20px;max-width:460px;width:100%;max-height:86vh;overflow-y:auto;
+    box-shadow:0 24px 70px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,255,255,.04)}
+  .bib-item{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:11px 12px;
+    border:1px solid var(--line-soft);border-radius:11px;margin-top:8px;cursor:pointer;transition:.12s}
+  .bib-item:hover,.bib-item:active{border-color:var(--jade);background:var(--ink-3)}
+  .bib-item .mus{font-family:var(--mono);font-size:.62rem;color:var(--mute);letter-spacing:.06em}
+  .hidden{display:none}
+  /* gate de contraseña (puerta simple compartida) */
+  #gate{position:fixed;inset:0;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;
+    background:radial-gradient(900px 500px at 50% -10%, #14342c 0%, rgba(20,52,44,0) 60%), var(--ink);padding:24px;text-align:center}
+  #gate .glogo{font-family:var(--display);font-weight:700;font-size:1.4rem;display:flex;align-items:center;gap:10px}
+  #gate .glogo .dot{width:12px;height:12px;border-radius:50%;background:var(--ember);box-shadow:0 0 14px var(--ember)}
+  #gate .glogo b{color:var(--jade)}
+  #gate p{color:var(--mute);font-size:.86rem;max-width:300px}
+  #gate input{max-width:280px;text-align:center}
+  #gate button{max-width:280px}
+  #gate .gerr{color:var(--ember);font-size:.82rem;min-height:1.1em}
+</style>
+</head>
+<body>
+
+<div id="gate">
+  <div class="glogo"><span class="dot"></span>JV <b>Fitness</b></div>
+  <p>Esta app es privada. Escribe la contraseña para entrar.</p>
+  <input id="gate_pw" type="password" placeholder="Contraseña" autocomplete="off">
+  <button type="button" onclick="gateTry()">Entrar</button>
+  <div id="gate_err" class="gerr"></div>
+</div>
+<script>
+(function(){
+  var KEY="jvf_gate_ok_v1", PW="lietor";
+  function abrir(){ try{ localStorage.setItem(KEY,"1"); }catch(e){} var g=document.getElementById("gate"); if(g) g.style.display="none"; }
+  var unlocked=false; try{ unlocked=localStorage.getItem(KEY)==="1"; }catch(e){}
+  if(unlocked){ abrir(); }
+  window.gateTry=function(){
+    var v=(document.getElementById("gate_pw").value||"").trim().toLowerCase();
+    if(v===PW){ abrir(); } else { document.getElementById("gate_err").textContent="Contraseña incorrecta."; }
+  };
+  document.addEventListener("DOMContentLoaded",function(){
+    var i=document.getElementById("gate_pw");
+    if(i){ i.addEventListener("keydown",function(e){ if(e.key==="Enter"){ window.gateTry(); } }); }
+    if(unlocked){ abrir(); }
+  });
+})();
+</script>
+
+<header class="brandbar">
+  <div class="logo"><span class="dot"></span>JV <b>Fitness</b></div>
+  <span class="tag">MVP v0.7 · motor v0.6</span>
+</header>
+<div class="statuschip"><span class="pulse"></span> cálculo science-based · ajustable · calibración real</div>
+
+<!-- PESTAÑAS (aparecen tras generar el plan) -->
+<nav id="tabs" class="tabs hidden">
+  <button class="tab activa" id="tab-plan"     onclick="abrir('plan')">Plan</button>
+  <button class="tab"        id="tab-ajustes"  onclick="abrir('ajustes')">Ajustar</button>
+  <button class="tab"        id="tab-registro" onclick="abrir('registro')">Peso</button>
+  <button class="tab"        id="tab-entrenos" onclick="abrir('entrenos')">Entrenos</button>
+  <button class="tab"        id="tab-calib"    onclick="abrir('calib')">Progreso</button>
+</nav>
+
+<!-- WIZARD / ONBOARDING (entrevista de bienvenida — voz de Jarvis) -->
+<div id="onboarding" class="card">
+  <div class="wizbar"><div id="wiz_fill" class="wizfill"></div></div>
+
+  <!-- 0 · Intro -->
+  <div class="wstep" data-paso="0">
+    <h2>Soy Jarvis 👋</h2>
+    <p class="hint">Soy tu entrenador. Voy a hacerte unas preguntas para conocerte. <b style="color:var(--soft)">Cuanto más me cuentes, mejor te conozco</b> — y más personalizo tu entrenamiento, tu comida y los consejos que te doy. Tranquilo, no es un examen; se hace una sola vez.</p>
+  </div>
+
+  <!-- 1 · Objetivo -->
+  <div class="wstep hidden" data-paso="1">
+    <h2>¿Qué buscas?</h2>
+    <label>Tu objetivo</label>
+    <select id="f_obj">
+      <option value="perder_grasa" selected>Perder grasa</option>
+      <option value="ganar_musculo">Ganar músculo</option>
+      <option value="recomp">Recomp / mantener</option>
+    </select>
+    <label>¿A qué ritmo?</label>
+    <select id="f_int">
+      <option value="10">Suave — lento y sostenible</option>
+      <option value="15" selected>Medio — equilibrado</option>
+      <option value="22">Agresivo — máximo, cuesta más</option>
+    </select>
+    <p class="hint">El ritmo marca cuánto recortas (o subes) calorías. Suave = más fácil de mantener; agresivo = más rápido pero más duro.</p>
+  </div>
+
+  <!-- 2 · Quién eres -->
+  <div class="wstep hidden" data-paso="2">
+    <h2>¿Quién eres?</h2>
+    <label>Nombre</label><input id="f_nombre" placeholder="Tu nombre">
+    <div class="row">
+      <div><label>Sexo</label><select id="f_sexo"><option value="hombre">Hombre</option><option value="mujer">Mujer</option></select></div>
+      <div><label>Edad</label><input id="f_edad" type="number" placeholder="años"></div>
+    </div>
+  </div>
+
+  <!-- 3 · Tu cuerpo -->
+  <div class="wstep hidden" data-paso="3">
+    <h2>Tu cuerpo</h2>
+    <div class="row">
+      <div><label>Peso (kg)</label><input id="f_peso" type="number" step="0.1" placeholder="kg"></div>
+      <div><label>Altura (cm)</label><input id="f_altura" type="number" placeholder="cm"></div>
+    </div>
+    <label>% de grasa corporal (opcional)</label><input id="f_grasa" type="number" step="0.1" placeholder="ej. 15">
+    <p class="hint">Si no lo sabes, <b style="color:var(--soft)">déjalo vacío</b> — uso una fórmula que no lo necesita. (Pronto pondré siluetas para estimarlo de un vistazo.)</p>
+  </div>
+
+  <!-- 4 · Tu día -->
+  <div class="wstep hidden" data-paso="4">
+    <h2>Tu día a día</h2>
+    <label>Actividad en el gimnasio</label>
+    <select id="f_act" onchange="wizOtro(this,'w_act_otro')">
+      <option value="sedentario">Sedentario</option>
+      <option value="ligero">Ligero (1-2 gym)</option>
+      <option value="activo" selected>Activo (3-5 + deporte)</option>
+      <option value="muy_activo">Muy activo</option>
+      <option value="Otro">Otro</option>
+    </select>
+    <input id="w_act_otro" class="hidden" placeholder="Tu actividad: explícaselo a Jarvis…">
+    <label>Media de pasos al día (opcional)</label><input id="f_pasos" type="number" placeholder="ej. 12000">
+    <p class="hint">Los pasos capturan tu <b style="color:var(--soft)">NEAT</b> (el gasto de moverte fuera del gym). Si andas mucho, te subo las calorías aunque no pises pesas.</p>
+  </div>
+
+  <!-- 5 · Tu entrenamiento -->
+  <div class="wstep hidden" data-paso="5">
+    <h2>Tu entrenamiento</h2>
+    <div class="row">
+      <div><label>Nivel</label><select id="w_nivel" onchange="wizOtro(this,'w_nivel_otro')"><option value="">—</option><option>Principiante</option><option>Intermedio</option><option>Avanzado</option><option>No lo sé</option><option>Otro</option></select></div>
+      <div><label>Años entrenando</label><input id="w_anios" placeholder="ej. 3, o 'más o menos 4'"></div>
+    </div>
+    <input id="w_nivel_otro" class="hidden" placeholder="Tu nivel: explícaselo a Jarvis…">
+    <div class="row">
+      <div><label>Días/semana (media)</label><select id="w_dias" onchange="wizOtro(this,'w_dias_otro')"><option value="">—</option><option>1</option><option>1-2</option><option>2-3</option><option>3-4</option><option>4-5</option><option>6</option><option>7</option><option>Otro</option></select></div>
+      <div><label>Material</label><select id="w_material" onchange="wizOtro(this,'w_material_otro')"><option value="">—</option><option>Gimnasio completo</option><option>Casa con mancuernas</option><option>Solo peso corporal</option><option>Mixto</option><option>Otros</option></select></div>
+    </div>
+    <input id="w_dias_otro" class="hidden" placeholder="Días/semana: explícaselo a Jarvis…">
+    <input id="w_material_otro" class="hidden" placeholder="Tu material: explícaselo a Jarvis…">
+    <label>Músculos a priorizar (opcional)</label><input id="w_prioridad" placeholder="ej. espalda, hombros">
+    <label>Lesiones o limitaciones (opcional)</label><input id="w_lesiones" placeholder="ej. hombro derecho">
+  </div>
+
+  <!-- 6 · Recuperación -->
+  <div class="wstep hidden" data-paso="6">
+    <h2>Tu recuperación</h2>
+    <p class="hint" style="margin-top:0">Dormir y el estrés deciden cuánto entreno aguantas (Tema 27). No los ignoro.</p>
+    <div class="row">
+      <div><label>Horas de sueño (media)</label><input id="w_sueno" placeholder="ej. 7,5; o 'duermo fatal'; o no lo sé"></div>
+      <div><label>Nivel de estrés</label><select id="w_estres" onchange="wizOtro(this,'w_estres_otro')"><option value="">—</option><option>Bajo</option><option>Medio</option><option>Alto</option><option>Otro</option><option>No lo sé</option></select></div>
+    </div>
+    <input id="w_estres_otro" class="hidden" placeholder="Tu estrés: explícaselo a Jarvis…">
+    <label>Tu trabajo</label><select id="w_trabajo" onchange="wizOtro(this,'w_trabajo_otro')"><option value="">—</option><option>Sentado</option><option>De pie</option><option>Físico</option><option>Otro</option><option>Prefiero no decir</option></select>
+    <input id="w_trabajo_otro" class="hidden" placeholder="Tu trabajo: explícaselo a Jarvis…">
+  </div>
+
+  <!-- 7 · Comida -->
+  <div class="wstep hidden" data-paso="7">
+    <h2>Tu comida</h2>
+    <label>Comidas al día</label><input id="w_comidas" placeholder="ej. 3, o '2-3 según el día'">
+    <p class="hint" style="margin-top:2px">Escríbelo como quieras: cuanto más detalle (p. ej. "2 entre semana, 3 finde"), mejor te ajusto.</p>
+    <label>Restricciones (alergias, vegetariano…)</label><input id="w_restric" placeholder="ej. sin lactosa">
+    <label>Suplementos que tomas</label><input id="w_suples" placeholder="ej. creatina, proteína">
+  </div>
+
+  <!-- 8 · Sobre ti (texto libre) -->
+  <div class="wstep hidden" data-paso="8">
+    <h2>Cuéntame sobre ti</h2>
+    <p class="hint" style="margin-top:0"><b style="color:var(--soft)">Cuanto más escribas, mejor te conozco</b> y más adapto el plan a TI: por qué entrenas, qué te motiva, tus manías, qué ejercicios odias o amas, lo que quieras. Esto me hace ser TU Jarvis, no uno genérico.</p>
+    <textarea id="w_sobremi" rows="5" placeholder="Escribe libremente…"></textarea>
+  </div>
+
+  <div id="f_err" class="aviso hidden"></div>
+  <div class="row" style="margin-top:6px">
+    <button class="sec" id="wiz_atras" type="button" onclick="wizBack()" style="flex:1;width:auto">Atrás</button>
+    <button id="wiz_sig" type="button" onclick="wizNext()" style="flex:2;width:auto">Empezar</button>
+  </div>
+</div>
+
+<!-- PLAN -->
+<div id="plan" class="card hidden">
+  <h2>Tu plan de hoy</h2>
+  <div id="plan_perfil" class="hint" style="margin-top:0"></div>
+  <div class="kv"><span>BMR · reposo</span><span id="o_bmr"></span></div>
+  <div class="kv"><span>TDEE · gasto total</span><span id="o_tdee"></span></div>
+  <div class="eyebrow-lbl">Calorías objetivo / día</div>
+  <div class="big"><span id="o_cal"></span> <small>kcal</small></div>
+  <div class="macros">
+    <div class="macro"><div class="n p" id="o_p"></div><small>Proteínas</small></div>
+    <div class="macro"><div class="n g" id="o_g"></div><small>Grasas</small></div>
+    <div class="macro"><div class="n c" id="o_c"></div><small>Carbohidratos</small></div>
+  </div>
+  <div class="kv" style="margin-top:12px"><span>Fibra · objetivo salud</span><span id="o_fibra"></span></div>
+  <div id="o_ovnote" class="hint"></div>
+  <div id="o_aviso" class="aviso hidden"></div>
+  <div id="o_notas" class="hint"></div>
+  <button class="sec" onclick="editarPerfil()">Editar perfil</button>
+</div>
+
+<!-- AJUSTES -->
+<div id="ajustes" class="card hidden">
+  <h2>Ajustar a tu gusto</h2>
+  <p class="hint" style="margin-top:0">La ciencia es el punto de partida, no una jaula. Cambia lo que quieras; la app vigilará si con TU ajuste <b style="color:var(--soft)">progresas o te estancas</b> — y aprende de ello.</p>
+  <div class="row">
+    <div><label>Proteínas (g/kg)</label><input id="aj_prot" type="number" step="0.1"></div>
+    <div><label>Grasas (g/kg)</label><input id="aj_grasa" type="number" step="0.1"></div>
+    <div><label>Carbohidratos (g/kg)</label><input id="aj_carb" type="number" step="0.1"></div>
+  </div>
+  <label>Ajuste de calorías (± kcal)</label><input id="aj_cal" type="number" step="50" value="0">
+  <p class="hint" style="margin-top:8px">Si <b style="color:var(--soft)">fijas los carbos</b>, las calorías = suma de tus macros. Si no, los carbos son "el resto" (altos) y mandas con el ajuste de calorías.</p>
+  <button onclick="aplicarAjustes()">Aplicar mis ajustes</button>
+  <button class="sec" onclick="resetAjustes()">Volver a lo recomendado</button>
+</div>
+
+<!-- REGISTRO -->
+<div id="registro" class="card hidden">
+  <h2>Peso de hoy</h2>
+  <div class="row">
+    <div><label>Fecha</label><input id="r_fecha" type="date"></div>
+    <div><label>Peso ayunas (kg)</label><input id="r_peso" type="number" step="0.1" placeholder="ej. 79.8"></div>
+  </div>
+  <button onclick="registrarPeso()">Guardar peso</button>
+  <p class="hint">El peso diario sube/baja por agua y glucógeno. <b style="color:var(--soft)">Manda la media semanal</b>, no el dato de un día.</p>
+  <div id="r_tabla"></div>
+</div>
+
+<!-- CALIBRACIÓN -->
+<div id="calib" class="card hidden">
+  <h2>Calibración · tu metabolismo real</h2>
+  <div id="calib_body"></div>
+</div>
+
+<!-- ENTRENOS (Fase 3.3 — logging estilo Hevy) -->
+<div id="entrenos" class="card hidden">
+  <h2>Registrar entreno</h2>
+  <label>Fecha</label><input id="ent_fecha" type="date">
+  <div id="ent_form"></div>
+  <button class="sec" type="button" onclick="entAddEjercicio()">+ Añadir ejercicio</button>
+  <button type="button" onclick="guardarEntreno()">Guardar entreno</button>
+  <p class="hint">Apunta cada serie (reps × peso). La app te marca si <b style="color:var(--soft)">progresas</b> respecto a la última vez que hiciste cada ejercicio — sobrecarga progresiva, lo que de verdad construye músculo.</p>
+  <div id="ent_hist" style="margin-top:14px"></div>
+</div>
+<datalist id="ent-ejercicios">
+  <option>Press banca</option><option>Press inclinado mancuerna</option><option>Sentadilla</option>
+  <option>Prensa</option><option>Peso muerto</option><option>Peso muerto rumano</option>
+  <option>Press militar</option><option>Dominadas</option><option>Jalón al pecho</option>
+  <option>Remo con barra</option><option>Remo mancuerna</option><option>Curl bíceps</option>
+  <option>Extensión tríceps</option><option>Elevaciones laterales</option><option>Hip thrust</option>
+  <option>Femoral tumbado</option><option>Extensión cuádriceps</option><option>Gemelo de pie</option>
+  <option>Fondos en paralelas</option><option>Face pull</option>
+</datalist>
+
+<p class="foot">Estimación con base científica (master file JV Fitness). NO es consejo médico.<br>
+Tus datos se guardan solo en este dispositivo.</p>
+<p class="foot" style="margin-top:6px"><a href="#" onclick="resetTodo();return false;" style="color:var(--mute-2);text-decoration:underline">Empezar de cero</a></p>
+
+<!-- MODAL: "Otro" (texto libre para Jarvis) -->
+<div id="otroModal" class="modal hidden">
+  <div class="modal-card">
+    <h2>Cuéntaselo a Jarvis</h2>
+    <p class="hint" style="margin-top:0"><b style="color:var(--soft)">Cuanto más escribas, mejor me adapto a ti.</b></p>
+    <textarea id="otro_ta" rows="4" placeholder="Escribe aquí…"></textarea>
+    <div class="row" style="margin-top:12px">
+      <button class="sec" type="button" onclick="otroCancelar()" style="flex:1;width:auto">Cancelar</button>
+      <button type="button" onclick="otroGuardar()" style="flex:2;width:auto">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: biblioteca de ejercicios -->
+<div id="bibModal" class="modal hidden">
+  <div class="modal-card">
+    <h2>Biblioteca de ejercicios</h2>
+    <input id="bib_buscar" placeholder="Buscar ejercicio…" oninput="bibRender()">
+    <div class="row" style="margin-top:8px">
+      <div><select id="bib_eq" onchange="bibRender()"></select></div>
+      <div><select id="bib_mus" onchange="bibRender()"></select></div>
+    </div>
+    <div id="bib_lista" style="margin-top:10px;min-height:60px"></div>
+    <p class="hint">¿No está? Escríbelo a mano en el ejercicio — Jarvis acepta cualquiera.</p>
+    <button class="sec" type="button" onclick="bibCerrar()">Cerrar</button>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script>
+// ======= REGLAS (espejo de _motor/motor-reglas.json v0.6) =======
+const R = {
+  kcal_por_kg: 7700,
+  factores: {sedentario:1.30, ligero:1.45, activo:1.60, muy_activo:1.75},
+  prot: {general:1.6, magro_cut_agresivo:2.2, umbral_magro:{hombre:15,mujer:22}, umbral_cut_agresivo_int:22},
+  grasa: {general:0.7, bulk:0.9},
+  fibra_g_1000: 14,
+  calib: {perder_grasa:{estancado:-0.1, rapido:-1.0}, ganar_musculo:{estancado:0.1, rapido:0.5}}
+};
+
+// ======= MOTOR (port fiel de motor_calculo.py v0.5) =======
+function validar(p){
+  const e=[];
+  if(!["hombre","mujer"].includes(p.sexo)) e.push("sexo inválido");
+  if(!(p.edad>=14 && p.edad<=100)) e.push("la edad debe estar entre 14 y 100 años");
+  if(!(p.peso_kg>=30 && p.peso_kg<=300)) e.push("el peso debe estar entre 30 y 300 kg");
+  if(!(p.altura_cm>=120 && p.altura_cm<=230)) e.push("la altura debe estar entre 120 y 230 cm");
+  if(!R.factores[p.actividad]) e.push("actividad inválida");
+  if(!["perder_grasa","ganar_musculo","recomp"].includes(p.objetivo)) e.push("objetivo inválido");
+  if(!(p.intensidad_pct>=0 && p.intensidad_pct<=50)) e.push("intensidad debe estar entre 0 y 50");
+  if(p.grasa_pct!=null && !(p.grasa_pct>=3 && p.grasa_pct<=60)) e.push("% grasa debe estar entre 3 y 60");
+  if(p.pasos!=null && !(p.pasos>=100 && p.pasos<=50000)) e.push("la media de pasos debe estar entre 100 y 50000");
+  return e;
+}
+function bmr(p){
+  if(p.grasa_pct!=null){
+    const magra=p.peso_kg*(1-p.grasa_pct/100);
+    return {v:370+21.6*magra, m:"Katch-McArdle (masa magra)"};
+  }
+  let base=10*p.peso_kg+6.25*p.altura_cm-5*p.edad;
+  return {v: p.sexo==="hombre"?base+5:base-161, m:"Mifflin-St Jeor"};
+}
+function calObjetivo(tdee,obj,int){
+  if(obj==="perder_grasa") return tdee*(1-int/100);
+  if(obj==="ganar_musculo") return tdee*(1+int/100);
+  return tdee;
+}
+function macros(cal,p){
+  const magro = p.grasa_pct!=null && p.grasa_pct < R.prot.umbral_magro[p.sexo];
+  const cutAgresivo = p.objetivo==="perder_grasa" && p.intensidad_pct>=R.prot.umbral_cut_agresivo_int;
+  let pgkg, nota;
+  if(magro && cutAgresivo){ pgkg=R.prot.magro_cut_agresivo; nota=pgkg+" g/kg (cut agresivo en persona magra)"; }
+  else { pgkg=R.prot.general; nota=pgkg+" g/kg (regla general T3)"; }
+  const prot=pgkg*p.peso_kg;
+  const ggkg = p.objetivo==="ganar_musculo"?R.grasa.bulk:R.grasa.general;
+  const gr=ggkg*p.peso_kg;
+  const resto=cal-prot*4-gr*9;
+  const carb=Math.max(0,resto/4);
+  const fibra=Math.round(R.fibra_g_1000*cal/1000);
+  return {prot:Math.round(prot), gr:Math.round(gr), carb:Math.round(carb), fibra, pgkg, ggkg, nota,
+    aviso: resto<0 ? "Calorías demasiado bajas para la proteína+grasa mínimas → déficit demasiado agresivo." : null};
+}
+// Pasos -> factor (Tudor-Locke & Bassett 2004). Capturan el NEAT que el desplegable de gym ignora.
+function factorPasos(pasos){
+  if(!(pasos>0)) return 0;
+  if(pasos<5000) return 1.30;
+  if(pasos<7500) return 1.38;   // el hueco entre sedentario y ligero
+  if(pasos<10000) return 1.45;
+  if(pasos<12500) return 1.60;
+  return 1.75;
+}
+function plan(p){
+  const fAct=R.factores[p.actividad]||1.30, fPas=factorPasos(p.pasos), fEff=Math.max(fAct,fPas);
+  const b=bmr(p); const t=b.v*fEff;
+  const cal=calObjetivo(t,p.objetivo,p.intensidad_pct); const m=macros(cal,p);
+  return {bmr:Math.round(b.v), bmrM:b.m, tdee:Math.round(t), cal:Math.round(cal), m, factorEff:fEff, porPasos: fPas>fAct};
+}
+function calibrar(calComidas,pAntes,pDespues,dias,obj){
+  if(!(dias>=1)||!(pAntes>0)) return null;
+  const d=pDespues-pAntes;
+  const tdeeReal=Math.round(calComidas-(d*R.kcal_por_kg/dias));
+  const ritmo=+(((d/pAntes)*(7/dias)*100).toFixed(2));
+  let dec="MANTENER y observar";
+  const u=R.calib[obj];
+  if(obj==="perder_grasa"&&u){
+    dec = ritmo>u.estancado ? "BAJAR ~150-200 kcal (estancado)" : ritmo<u.rapido ? "SUBIR ~150-200 kcal (bajas muy rápido, riesgo músculo)" : "MANTENER (ritmo correcto), recalcula sobre el TDEE real";
+  } else if(obj==="ganar_musculo"&&u){
+    dec = ritmo<u.estancado ? "SUBIR ~150-200 kcal (no ganas)" : ritmo>u.rapido ? "BAJAR ~150 kcal (subes rápido, grasa de más)" : "MANTENER (volumen limpio)";
+  }
+  return {tdeeReal, ritmo, dec};
+}
+
+// ======= ESTADO / PERSISTENCIA =======
+const LS_P="jvf_perfil", LS_W="jvf_pesos", LS_E="jvf_entrenos";
+// Almacenamiento a prueba de fallos: si localStorage esta bloqueado (modo incognito,
+// navegador interno de WhatsApp/Instagram, etc.) cae a memoria para que la app NO se rompa.
+var _mem={}, _lsOK=false;
+try{ var _t="__jvf__"; localStorage.setItem(_t,"1"); localStorage.removeItem(_t); _lsOK=true; }catch(e){ _lsOK=false; }
+function get(k,d){
+  try{
+    var raw=_lsOK?localStorage.getItem(k):_mem[k];
+    if(raw==null) return d;
+    var v=JSON.parse(raw);
+    return v==null?d:v;
+  }catch(e){ return d; }
+}
+function set(k,v){
+  var s=JSON.stringify(v);
+  _mem[k]=s;
+  try{ if(_lsOK) localStorage.setItem(k,s); }catch(e){}
+}
+const $=id=>document.getElementById(id);
+const show=(id,on)=>$(id).classList.toggle("hidden",!on);
+
+// ======= PESTAÑAS + TOAST (UX v0.3) =======
+let _tab="plan";
+function abrir(t){ _tab=t; aplicarTab(); if(t==="entrenos" && !$("ent_form").innerHTML.trim()) entInit(); window.scrollTo(0,0); }
+function aplicarTab(){
+  ["plan","ajustes","registro","entrenos","calib"].forEach(function(s){
+    show(s, s===_tab);
+    var tb=$("tab-"+s); if(tb) tb.classList.toggle("activa", s===_tab);
+  });
+}
+function toast(msg){
+  var t=$("toast"); if(!t) return;
+  t.textContent=msg; t.classList.add("show");
+  clearTimeout(window._toastId);
+  window._toastId=setTimeout(function(){ t.classList.remove("show"); }, 1800);
+}
+function resetTodo(){ try{ localStorage.removeItem(LS_P); localStorage.removeItem(LS_W); localStorage.removeItem(LS_E); }catch(e){} _mem={}; location.reload(); }
+
+// ======= WIZARD (entrevista de bienvenida) =======
+let _wiz=0; const WIZ_MAX=8;
+function wizShow(n){
+  _wiz=n;
+  var pasos=document.querySelectorAll('#onboarding .wstep');
+  [].forEach.call(pasos,function(el){ el.classList.toggle("hidden", +el.getAttribute("data-paso")!==n); });
+  $("wiz_fill").style.width=Math.round(n/WIZ_MAX*100)+"%";
+  $("wiz_atras").style.visibility = n===0 ? "hidden" : "visible";
+  $("wiz_sig").textContent = n===WIZ_MAX ? "Generar mi plan" : (n===0 ? "Empezar" : "Siguiente");
+  show("f_err",false);
+  window.scrollTo(0,0);
+}
+function wizBack(){ if(_wiz>0) wizShow(_wiz-1); }
+// Chequeo BÁSICO de "teclado aporreado" (no entiende el SIGNIFICADO — eso es el Jarvis IA futuro).
+function pareceGibberish(s){
+  s=(s||"").toLowerCase();
+  if(s.replace(/[^a-záéíóúñ]/g,"").length<5) return false;        // poca letra -> no juzgamos
+  if(/[bcdfghjklmnpqrstvwxyzñ]{5,}/.test(s)) return true;          // 5+ consonantes seguidas
+  var toks=s.split(/[^a-záéíóúñ]+/);
+  for(var i=0;i<toks.length;i++){ if(toks[i].length>=6 && !/[aeiouáéíóú]/.test(toks[i])) return true; } // 6+ letras sin vocal
+  return false;
+}
+function wizGibber(n){
+  var stepEl=document.querySelector('#onboarding .wstep[data-paso="'+n+'"]');
+  if(!stepEl) return null;
+  var campos=stepEl.querySelectorAll('input:not([type]), input[type="text"], textarea');
+  for(var i=0;i<campos.length;i++){
+    if(campos[i].classList.contains("hidden")) continue;
+    if(pareceGibberish(campos[i].value)) return campos[i].value;
+  }
+  return null;
+}
+let _gibStep=-1;
+function wizNext(){
+  var err=wizValida(_wiz);
+  if(err){ $("f_err").textContent=err; show("f_err",true); return; }
+  var g=wizGibber(_wiz);
+  if(g && _gibStep!==_wiz){   // 1ª vez: Jarvis pregunta. 2ª vez (si insistes): pasa igual.
+    _gibStep=_wiz;
+    $("f_err").textContent='🤔 Jarvis: "'+g.slice(0,28)+(g.length>28?'…':'')+'" no lo entiendo. ¿Lo reescribes? (si está bien, pulsa otra vez)';
+    show("f_err",true); return;
+  }
+  show("f_err",false);
+  if(_wiz<WIZ_MAX) wizShow(_wiz+1); else guardarPerfil();
+}
+function wizValida(n){
+  if(n===1 && !$("f_obj").value) return "Elige un objetivo.";
+  if(n===2){ if(!$("f_nombre").value.trim()) return "¿Cómo te llamas?"; if(!(+$("f_edad").value>=14 && +$("f_edad").value<=100)) return "Pon una edad válida (14-100)."; }
+  if(n===3){ if(!(+$("f_peso").value>0)) return "Pon tu peso."; if(!(+$("f_altura").value>0)) return "Pon tu altura."; }
+  return null;
+}
+// "Otros" -> abre un MODAL centrado (fondo difuminado) para escribirle a Jarvis.
+// El input w_X_otro queda como guardado de datos + display de solo-lectura (clic = reabrir).
+var OTRO_MAP={ w_act_otro:"f_act", w_nivel_otro:"w_nivel", w_dias_otro:"w_dias", w_material_otro:"w_material", w_estres_otro:"w_estres", w_trabajo_otro:"w_trabajo" };
+let _otroTarget=null, _otroSel=null;
+function wizOtro(sel, txtId){
+  if(sel.value==="Otro"||sel.value==="Otros"){ otroAbrir(sel, txtId); }
+  else { var t=$(txtId); if(t){ t.value=""; t.classList.add("hidden"); } }
+}
+function otroAbrir(sel, txtId){
+  _otroSel=sel; _otroTarget=txtId;
+  $("otro_ta").value=$(txtId).value||"";
+  show("otroModal", true);
+  setTimeout(function(){ try{ $("otro_ta").focus(); }catch(e){} }, 60);
+}
+function otroEditar(txtId){ otroAbrir($(OTRO_MAP[txtId]), txtId); }
+function otroGuardar(){
+  if(_otroTarget){
+    var v=$("otro_ta").value.trim(), t=$(_otroTarget); t.value=v;
+    if(v){ t.classList.remove("hidden"); } else { t.classList.add("hidden"); if(_otroSel) _otroSel.value=""; }
+  }
+  otroCerrar();
+}
+function otroCancelar(){ if(_otroTarget && !$(_otroTarget).value.trim() && _otroSel) _otroSel.value=""; otroCerrar(); }
+function otroCerrar(){ show("otroModal", false); _otroTarget=null; _otroSel=null; }
+function campoOtro(selId, txtId){ var v=$(selId).value; if(v==="Otro"||v==="Otros"){ var x=$(txtId).value.trim(); return x||v; } return v||null; }
+function restoreOtro(selId, txtId, val, otroLabel){
+  var sel=$(selId), t=$(txtId); val=val||""; var match=false;
+  for(var i=0;i<sel.options.length;i++){ if(sel.options[i].value===val){ match=true; break; } }
+  if(val && !match){ sel.value=otroLabel; t.value=val; t.classList.remove("hidden"); }
+  else { sel.value=val; t.value=""; t.classList.add("hidden"); }
+}
+
+function guardarPerfil(){
+  const grasaRaw=$("f_grasa").value.trim();
+  const prev=get(LS_P);
+  const p={
+    nombre:$("f_nombre").value.trim()||"Tú",
+    sexo:$("f_sexo").value, edad:+$("f_edad").value, peso_kg:+$("f_peso").value,
+    altura_cm:+$("f_altura").value, grasa_pct: grasaRaw===""?null:+grasaRaw,
+    actividad: ($("f_act").value==="Otro" ? "activo" : $("f_act").value), objetivo:$("f_obj").value, intensidad_pct:+$("f_int").value,
+    pasos: +$("f_pasos").value||null,
+    coach:{
+      actividad_nota: ($("f_act").value==="Otro" ? ($("w_act_otro").value.trim()||null) : null),
+      nivel:campoOtro("w_nivel","w_nivel_otro"), anios:$("w_anios").value.trim()||null, dias_sem:campoOtro("w_dias","w_dias_otro"),
+      material:campoOtro("w_material","w_material_otro"), prioridad:$("w_prioridad").value.trim()||null, lesiones:$("w_lesiones").value.trim()||null,
+      sueno_h: $("w_sueno").value.trim()||null, estres:campoOtro("w_estres","w_estres_otro"), trabajo:campoOtro("w_trabajo","w_trabajo_otro"),
+      comidas_dia:$("w_comidas").value.trim()||null, restricciones:$("w_restric").value.trim()||null, suplementos:$("w_suples").value.trim()||null,
+      sobre_mi:$("w_sobremi").value.trim()||null
+    }
+  };
+  if(prev && prev.ov) p.ov=prev.ov;
+  const e=validar(p);
+  if(e.length){ $("f_err").textContent="Revisa: "+e.join("; "); show("f_err",true); return; }
+  // Aviso adolescente (14-17) + déficit: fórmulas de adulto; en pleno desarrollo conviene NO restringir calorías.
+  if(p.objetivo==="perder_grasa" && p.edad>=14 && p.edad<=17){
+    const ok=confirm("⚠️ AVISO\n\nEsta app usa fórmulas de adulto (Mifflin-St Jeor). Entre los 14 y los 17 años conviene EVITAR los déficits calóricos: estás en pleno desarrollo físico y cognitivo, y restringir calorías puede perjudicarlo.\n\nSolo se plantea en casos de sobrepeso severo — y ahí es mejor consultar con un profesional (médico o nutricionista).\n\n¿Aun así quieres continuar?");
+    if(!ok) return;
+  }
+  show("f_err",false); set(LS_P,p); _tab="plan"; render(); window.scrollTo(0,0);
+}
+function editarPerfil(){ const p=get(LS_P); if(p){
+  $("f_nombre").value=p.nombre; $("f_sexo").value=p.sexo; $("f_edad").value=p.edad;
+  $("f_peso").value=p.peso_kg; $("f_altura").value=p.altura_cm; $("f_grasa").value=(p.grasa_pct==null?"":p.grasa_pct);
+  $("f_obj").value=p.objetivo; $("f_int").value=p.intensidad_pct;
+  $("f_pasos").value=p.pasos||"";
+  var c=p.coach||{};
+  if(c.actividad_nota){ $("f_act").value="Otro"; $("w_act_otro").value=c.actividad_nota; $("w_act_otro").classList.remove("hidden"); }
+  else { $("f_act").value=p.actividad; $("w_act_otro").value=""; $("w_act_otro").classList.add("hidden"); }
+  restoreOtro("w_nivel","w_nivel_otro",c.nivel,"Otro");
+  $("w_anios").value=c.anios||"";
+  restoreOtro("w_dias","w_dias_otro",c.dias_sem,"Otro");
+  restoreOtro("w_material","w_material_otro",c.material,"Otros");
+  $("w_prioridad").value=c.prioridad||""; $("w_lesiones").value=c.lesiones||"";
+  $("w_sueno").value=c.sueno_h||"";
+  restoreOtro("w_estres","w_estres_otro",c.estres,"Otro");
+  restoreOtro("w_trabajo","w_trabajo_otro",c.trabajo,"Otro");
+  $("w_comidas").value=c.comidas_dia||""; $("w_restric").value=c.restricciones||""; $("w_suples").value=c.suplementos||"";
+  $("w_sobremi").value=c.sobre_mi||"";
+} _tab="plan"; show("tabs",false); show("onboarding",true); show("plan",false); show("ajustes",false); show("registro",false); show("calib",false); wizShow(0); window.scrollTo(0,0); }
+
+function aplicarAjustes(){
+  const p=get(LS_P); if(!p) return;
+  const prot=+$("aj_prot").value, grasa=+$("aj_grasa").value, carb=+$("aj_carb").value, off=+$("aj_cal").value||0;
+  p.ov={prot_gkg: prot>0?prot:null, grasa_gkg: grasa>0?grasa:null, carb_gkg: carb>0?carb:null, cal_off: off};
+  set(LS_P,p); _tab="plan"; render(); toast("✓ Ajustes aplicados");
+}
+function resetAjustes(){ const p=get(LS_P); if(!p) return; delete p.ov; set(LS_P,p); _tab="plan"; render(); toast("↩ Vuelto a lo recomendado"); }
+
+function registrarPeso(){
+  const f=$("r_fecha").value, w=+$("r_peso").value;
+  if(!f||!(w>0)) return;
+  const ws=get(LS_W,[]).filter(x=>x.f!==f); ws.push({f,w}); ws.sort((a,b)=>a.f<b.f?-1:1);
+  set(LS_W,ws); $("r_peso").value=""; render(); toast("✓ Peso guardado");
+}
+function mediaSemana(ws,offsetDias){
+  if(!ws.length) return null;
+  const fin=new Date(ws[ws.length-1].f); fin.setDate(fin.getDate()-offsetDias);
+  const ini=new Date(fin); ini.setDate(ini.getDate()-6);
+  const sel=ws.filter(x=>{const d=new Date(x.f); return d>=ini&&d<=fin;});
+  if(!sel.length) return null;
+  return sel.reduce((s,x)=>s+x.w,0)/sel.length;
+}
+
+// ======= ENTRENOS (Fase 3.3 — logging estilo Hevy) =======
+let _ent={ejercicios:[]};
+function esc(t){ var d=document.createElement('div'); d.textContent=(t==null?'':t); return d.innerHTML; }
+function escAttr(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;'); }
+function hoyLocal(){ var d=new Date(); return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); }
+function entSync(){
+  var ejs=document.querySelectorAll('#ent_form .ent-ej');
+  _ent.ejercicios=[].map.call(ejs,function(el){
+    return {
+      nombre: el.querySelector('.ent-nombre').value,
+      series: [].map.call(el.querySelectorAll('.ent-serie'),function(s){
+        return {reps:s.querySelector('.ent-reps').value, peso:s.querySelector('.ent-peso').value};
+      })
+    };
+  });
+}
+function entAddEjercicio(){ entSync(); _ent.ejercicios.push({nombre:'',series:[{reps:'',peso:''}]}); renderEntForm(); }
+function entDelEjercicio(i){ entSync(); _ent.ejercicios.splice(i,1); if(!_ent.ejercicios.length)_ent.ejercicios=[{nombre:'',series:[{reps:'',peso:''}]}]; renderEntForm(); }
+function entAddSerie(i){ entSync(); _ent.ejercicios[i].series.push({reps:'',peso:''}); renderEntForm(); }
+function entDelSerie(i,j){ entSync(); _ent.ejercicios[i].series.splice(j,1); if(!_ent.ejercicios[i].series.length)_ent.ejercicios[i].series=[{reps:'',peso:''}]; renderEntForm(); }
+function renderEntForm(){
+  $("ent_form").innerHTML=_ent.ejercicios.map(function(ej,i){
+    var sets=ej.series.map(function(s,j){
+      return '<div class="ent-serie row" style="gap:6px;align-items:center;margin-top:6px">'
+        +'<span class="hint" style="margin:0;min-width:26px">'+(j+1)+'ª</span>'
+        +'<input class="ent-reps" type="number" inputmode="numeric" placeholder="reps" value="'+escAttr(s.reps)+'">'
+        +'<input class="ent-peso" type="number" inputmode="decimal" step="0.5" placeholder="kg" value="'+escAttr(s.peso)+'">'
+        +'<button class="sec" type="button" style="width:auto;margin:0;padding:8px 11px" onclick="entDelSerie('+i+','+j+')">✕</button>'
+        +'</div>';
+    }).join('');
+    return '<div class="ent-ej" style="border:1px solid var(--line-soft);border-radius:12px;padding:12px;margin-top:10px">'
+      +'<div class="row" style="gap:6px;align-items:center">'
+      +'<input class="ent-nombre" list="ent-ejercicios" placeholder="Ejercicio (ej. Press banca)" value="'+escAttr(ej.nombre)+'">'
+      +'<button class="sec" type="button" title="Biblioteca" style="width:auto;margin:0;padding:8px 11px" onclick="abrirBiblio(this)">📚</button>'
+      +'<button class="sec" type="button" style="width:auto;margin:0;padding:8px 11px" onclick="entDelEjercicio('+i+')">🗑</button>'
+      +'</div>'+sets
+      +'<button class="sec" type="button" style="margin-top:8px" onclick="entAddSerie('+i+')">+ Serie</button>'
+      +'</div>';
+  }).join('');
+}
+function entInit(){
+  var f=$("ent_fecha"); if(f && !f.value){ f.value=hoyLocal(); }
+  if(!_ent.ejercicios.length) _ent.ejercicios=[{nombre:'',series:[{reps:'',peso:''}]}];
+  renderEntForm();
+}
+function guardarEntreno(){
+  entSync();
+  var fecha=$("ent_fecha").value;
+  var ejs=_ent.ejercicios.map(function(ej){
+    return { nombre:(ej.nombre||'').trim(),
+      series: ej.series.filter(function(s){ return (+s.reps>0) && (s.peso!=='' && +s.peso>=0); })
+                       .map(function(s){ return {reps:+s.reps, peso:+s.peso}; }) };
+  }).filter(function(ej){ return ej.nombre && ej.series.length; });
+  if(!fecha || !ejs.length){ toast("Añade ejercicio con reps y peso"); return; }
+  var arr=get(LS_E,[]);
+  arr.push({ id:(""+new Date().getTime()+"-"+Math.round(Math.random()*99999)), f:fecha, ejercicios:ejs });
+  set(LS_E,arr);
+  _ent={ejercicios:[]}; entInit(); renderEntHistorial(); toast("✓ Entreno guardado");
+}
+function entBorrar(id){ var arr=get(LS_E,[]).filter(function(w){ return w.id!==id; }); set(LS_E,arr); renderEntHistorial(); toast("Entreno borrado"); }
+function entVol(ej){ return ej.series.reduce(function(a,s){ return a + (s.reps*s.peso); },0); }
+function entTop(ej){ return ej.series.reduce(function(a,s){ return s.peso>a.peso?{peso:s.peso,reps:s.reps}:a; },{peso:0,reps:0}); }
+function renderEntHistorial(){
+  var arr=get(LS_E,[]).slice().sort(function(a,b){ return a.f<b.f?-1:a.f>b.f?1:0; });
+  if(!arr.length){ $("ent_hist").innerHTML="<p class='hint'>Aún no hay entrenos. Registra el de hoy ↑</p>"; return; }
+  var prev={};
+  arr.forEach(function(w){ w.ejercicios.forEach(function(ej){ ej._vol=entVol(ej); ej._delta=(prev[ej.nombre]!=null)?(ej._vol-prev[ej.nombre]):null; prev[ej.nombre]=ej._vol; }); });
+  $("ent_hist").innerHTML="<div class='eyebrow-lbl'>Historial</div>"+arr.slice().reverse().map(function(w){
+    var ejHtml=w.ejercicios.map(function(ej){
+      var top=entTop(ej);
+      var arrow = ej._delta==null ? "<span class='hint' style='margin:0'>1ª vez</span>"
+        : ej._delta>0 ? "<span style='color:var(--jade)'>▲ +"+Math.round(ej._delta)+" vol</span>"
+        : ej._delta<0 ? "<span style='color:var(--ember)'>▼ "+Math.round(ej._delta)+" vol</span>"
+        : "<span class='hint' style='margin:0'>= igual</span>";
+      var sets=ej.series.map(function(s){ return s.reps+"×"+s.peso+"kg"; }).join("  ·  ");
+      return "<div class='kv'><span>"+esc(ej.nombre)+"</span><span>"+arrow+"</span></div>"
+        +"<div class='hint' style='margin:2px 0 8px'>"+sets+"  ·  vol "+Math.round(ej._vol)+"  ·  top "+top.peso+"kg×"+top.reps+"</div>";
+    }).join("");
+    return "<div style='border-top:1px solid var(--line-soft);padding-top:10px;margin-top:10px'>"
+      +"<div class='kv'><span style='color:var(--soft);font-weight:600'>"+esc(w.f)+"</span>"
+      +"<span><button class='sec' type='button' style='width:auto;margin:0;padding:6px 10px;font-size:.7rem' onclick=\"entBorrar('"+w.id+"')\">Borrar</button></span></div>"
+      +ejHtml+"</div>";
+  }).join("");
+}
+function renderEntrenos(){ renderEntHistorial(); }
+
+// ======= BIBLIOTECA DE EJERCICIOS (base curada de free-exercise-db, dominio público) =======
+var EJERCICIOS=[
+  {n:"Press banca",eq:"Barra",m:"Pecho"},{n:"Press inclinado con barra",eq:"Barra",m:"Pecho"},
+  {n:"Press banca mancuernas",eq:"Mancuerna",m:"Pecho"},{n:"Press inclinado mancuernas",eq:"Mancuerna",m:"Pecho"},
+  {n:"Aperturas con mancuernas",eq:"Mancuerna",m:"Pecho"},{n:"Cruces en polea",eq:"Cable",m:"Pecho"},
+  {n:"Press en máquina",eq:"Máquina",m:"Pecho"},{n:"Fondos en paralelas",eq:"Peso corporal",m:"Pecho"},{n:"Flexiones",eq:"Peso corporal",m:"Pecho"},
+  {n:"Dominadas",eq:"Peso corporal",m:"Espalda"},{n:"Jalón al pecho",eq:"Cable",m:"Espalda"},
+  {n:"Remo con barra",eq:"Barra",m:"Espalda"},{n:"Remo con mancuerna",eq:"Mancuerna",m:"Espalda"},
+  {n:"Remo en máquina",eq:"Máquina",m:"Espalda"},{n:"Remo en polea baja",eq:"Cable",m:"Espalda"},
+  {n:"Pullover",eq:"Mancuerna",m:"Espalda"},{n:"Peso muerto",eq:"Barra",m:"Espalda"},{n:"Face pull",eq:"Cable",m:"Espalda"},
+  {n:"Press militar con barra",eq:"Barra",m:"Hombros"},{n:"Press militar mancuernas",eq:"Mancuerna",m:"Hombros"},
+  {n:"Elevaciones laterales",eq:"Mancuerna",m:"Hombros"},{n:"Elevaciones laterales en polea",eq:"Cable",m:"Hombros"},
+  {n:"Elevaciones frontales",eq:"Mancuerna",m:"Hombros"},{n:"Pájaros (deltoides posterior)",eq:"Mancuerna",m:"Hombros"},{n:"Press Arnold",eq:"Mancuerna",m:"Hombros"},
+  {n:"Curl con barra",eq:"Barra",m:"Bíceps"},{n:"Curl con mancuernas",eq:"Mancuerna",m:"Bíceps"},
+  {n:"Curl martillo",eq:"Mancuerna",m:"Bíceps"},{n:"Curl en predicador",eq:"Máquina",m:"Bíceps"},
+  {n:"Curl en polea",eq:"Cable",m:"Bíceps"},{n:"Curl concentrado",eq:"Mancuerna",m:"Bíceps"},
+  {n:"Extensión en polea (cuerda)",eq:"Cable",m:"Tríceps"},{n:"Press francés",eq:"Barra",m:"Tríceps"},
+  {n:"Extensión sobre la cabeza",eq:"Mancuerna",m:"Tríceps"},{n:"Fondos en banco",eq:"Peso corporal",m:"Tríceps"},
+  {n:"Patada de tríceps",eq:"Mancuerna",m:"Tríceps"},{n:"Press cerrado",eq:"Barra",m:"Tríceps"},
+  {n:"Sentadilla con barra",eq:"Barra",m:"Cuádriceps"},{n:"Prensa de piernas",eq:"Máquina",m:"Cuádriceps"},
+  {n:"Extensión de cuádriceps",eq:"Máquina",m:"Cuádriceps"},{n:"Zancadas",eq:"Mancuerna",m:"Cuádriceps"},
+  {n:"Sentadilla búlgara",eq:"Mancuerna",m:"Cuádriceps"},{n:"Hack squat",eq:"Máquina",m:"Cuádriceps"},{n:"Sentadilla goblet",eq:"Mancuerna",m:"Cuádriceps"},
+  {n:"Peso muerto rumano",eq:"Barra",m:"Femoral"},{n:"Curl femoral tumbado",eq:"Máquina",m:"Femoral"},
+  {n:"Curl femoral sentado",eq:"Máquina",m:"Femoral"},{n:"Buenos días",eq:"Barra",m:"Femoral"},
+  {n:"Hip thrust",eq:"Barra",m:"Glúteo"},{n:"Patada de glúteo en polea",eq:"Cable",m:"Glúteo"},
+  {n:"Abducción en máquina",eq:"Máquina",m:"Glúteo"},{n:"Puente de glúteo",eq:"Peso corporal",m:"Glúteo"},
+  {n:"Elevación de gemelo de pie",eq:"Máquina",m:"Gemelo"},{n:"Elevación de gemelo sentado",eq:"Máquina",m:"Gemelo"},
+  {n:"Crunch",eq:"Peso corporal",m:"Abdomen"},{n:"Elevación de piernas",eq:"Peso corporal",m:"Abdomen"},
+  {n:"Plancha",eq:"Peso corporal",m:"Abdomen"},{n:"Rueda abdominal",eq:"Peso corporal",m:"Abdomen"},{n:"Crunch en polea",eq:"Cable",m:"Abdomen"},
+  {n:"Encogimientos con barra",eq:"Barra",m:"Trapecio"},{n:"Encogimientos con mancuernas",eq:"Mancuerna",m:"Trapecio"},{n:"Curl de muñeca",eq:"Mancuerna",m:"Antebrazo"}
+];
+let _bibTarget=null;
+function bibInit(){
+  var eqs=["Barra","Mancuerna","Máquina","Cable","Peso corporal","Kettlebell","Banda"];
+  var mus=["Pecho","Espalda","Hombros","Bíceps","Tríceps","Cuádriceps","Femoral","Glúteo","Gemelo","Abdomen","Trapecio","Antebrazo"];
+  if($("bib_eq")) $("bib_eq").innerHTML='<option value="">Equipo: todos</option>'+eqs.map(function(x){return "<option>"+x+"</option>";}).join("");
+  if($("bib_mus")) $("bib_mus").innerHTML='<option value="">Músculo: todos</option>'+mus.map(function(x){return "<option>"+x+"</option>";}).join("");
+}
+function abrirBiblio(btn){
+  var ej=btn.closest(".ent-ej"); _bibTarget = ej? ej.querySelector(".ent-nombre") : null;
+  $("bib_buscar").value=""; $("bib_eq").value=""; $("bib_mus").value="";
+  show("bibModal", true); bibRender();
+  setTimeout(function(){ try{ $("bib_buscar").focus(); }catch(e){} }, 60);
+}
+function bibRender(){
+  var q=($("bib_buscar").value||"").toLowerCase().trim(), eq=$("bib_eq").value, mu=$("bib_mus").value;
+  var res=EJERCICIOS.filter(function(e){
+    if(eq && e.eq!==eq) return false;
+    if(mu && e.m!==mu) return false;
+    if(q && e.n.toLowerCase().indexOf(q)<0) return false;
+    return true;
+  });
+  if(!res.length){ $("bib_lista").innerHTML="<p class='hint'>Sin resultados. Escríbelo a mano en el ejercicio.</p>"; return; }
+  $("bib_lista").innerHTML=res.map(function(e){
+    var arg=JSON.stringify(e.n).replace(/"/g,"&quot;");
+    return '<div class="bib-item" onclick="bibElegir('+arg+')"><span>'+esc(e.n)+'</span><span class="mus">'+esc(e.m)+" · "+esc(e.eq)+"</span></div>";
+  }).join("");
+}
+function bibElegir(nombre){ if(_bibTarget){ _bibTarget.value=nombre; } bibCerrar(); }
+function bibCerrar(){ show("bibModal", false); _bibTarget=null; }
+
+function render(){
+  const p=get(LS_P);
+  if(!p){ ["plan","ajustes","registro","entrenos","calib"].forEach(i=>show(i,false)); show("tabs",false); show("onboarding",true); wizShow(0); return; }
+  show("onboarding",false); show("tabs",true);
+
+  const rec=plan(p);
+  const ov=p.ov||{};
+  const pgkg = ov.prot_gkg!=null?ov.prot_gkg:rec.m.pgkg;
+  const ggkg = ov.grasa_gkg!=null?ov.grasa_gkg:rec.m.ggkg;
+  const prot=Math.round(pgkg*p.peso_kg), gr=Math.round(ggkg*p.peso_kg);
+  let cal, carb, restoKcal;
+  if(ov.carb_gkg!=null){                 // fijas los carbos -> calorías = suma de macros
+    carb=Math.round(ov.carb_gkg*p.peso_kg);
+    cal=prot*4+gr*9+carb*4; restoKcal=0;
+  } else {                                // si no, los carbos son el resto
+    cal=rec.cal+(ov.cal_off||0);
+    restoKcal=cal-prot*4-gr*9;
+    carb=Math.max(0,Math.round(restoKcal/4));
+  }
+  const fibra=Math.round(R.fibra_g_1000*cal/1000);
+  const ajustado = ov.prot_gkg!=null || ov.grasa_gkg!=null || ov.carb_gkg!=null || (ov.cal_off||0)!==0;
+
+  $("plan_perfil").textContent=`${p.nombre} · ${p.sexo}, ${p.edad} a · ${p.peso_kg} kg · ${p.altura_cm} cm`+(p.grasa_pct!=null?` · ~${p.grasa_pct}% grasa`:"")+(p.pasos?` · ${p.pasos} pasos/día (media)`:"")+` · ${p.objetivo.replace("_"," ")} (${p.intensidad_pct}%)`+(rec.porPasos?" · ⚡ actividad por pasos":"");
+  $("o_bmr").textContent=rec.bmr+" kcal"; $("o_tdee").textContent=rec.tdee+" kcal";
+  $("o_cal").textContent=cal;
+  $("o_p").textContent=prot+"g"; $("o_g").textContent=gr+"g"; $("o_c").textContent=carb+"g";
+  $("o_fibra").textContent=fibra+" g";
+  $("o_notas").innerHTML = "Proteínas "+pgkg+" g/kg · Grasas "+ggkg+" g/kg · Carbohidratos: resto calórico disponible · Fibra ~14 g/1000 kcal.";
+  $("o_ovnote").innerHTML = ajustado
+    ? "✏️ <b style='color:var(--soft)'>Plan ajustado por ti.</b> Recomendado: "+rec.cal+" kcal · P"+rec.m.prot+" G"+rec.m.gr+" C"+rec.m.carb+". La app vigilará si progresas con tu ajuste."
+    : "Science-based · "+rec.m.nota+". Ajústalo en la pestaña «Ajustar».";
+  const aviso = restoKcal<0 ? "⚠️ Calorías demasiado bajas para esa proteína+grasa → déficit inviable. Sube calorías o baja proteína/grasa." : null;
+  if(aviso){ $("o_aviso").textContent=aviso; show("o_aviso",true);} else show("o_aviso",false);
+
+  $("aj_prot").value=pgkg; $("aj_grasa").value=ggkg;
+  $("aj_carb").value=Math.round((carb/p.peso_kg)*10)/10; $("aj_cal").value=ov.cal_off||0;
+
+  const ws=get(LS_W,[]);
+  if(ws.length){
+    let h="<table><tr><th>Fecha</th><th>Peso</th></tr>";
+    ws.slice(-8).reverse().forEach(x=>h+=`<tr><td>${x.f}</td><td>${x.w.toFixed(1)} kg</td></tr>`);
+    $("r_tabla").innerHTML=h+"</table>";
+  } else $("r_tabla").innerHTML="<p class='hint'>Aún no hay pesos. Apunta el de hoy para empezar la tendencia.</p>";
+
+  const m0=mediaSemana(ws,0), m2=mediaSemana(ws,14);
+  if(m0!=null && m2!=null){
+    const c=calibrar(cal, m2, m0, 14, p.objetivo);
+    if(c){
+      $("calib_body").innerHTML=
+        `<div class="kv"><span>Media hace 2 sem → hoy</span><span>${m2.toFixed(1)} → ${m0.toFixed(1)} kg</span></div>`+
+        `<div class="kv"><span>Ritmo real</span><span>${c.ritmo} %/sem</span></div>`+
+        `<div class="kv"><span>TDEE REAL (tus datos)</span><span>${c.tdeeReal} kcal</span></div>`+
+        `<div class="eyebrow-lbl">Decisión del coach</div><p class="coachline">${c.dec}</p>`+
+        `<p class="hint">La fórmula del día 1 decía ${rec.tdee}; tus datos dicen ${c.tdeeReal}. El cuerpo manda.</p>`;
+    }
+  } else {
+    $("calib_body").innerHTML="<p class='hint'>Necesito ~2 semanas de pesos (media de esta semana vs la de hace 2) para calcular tu gasto REAL y ajustar. Sigue apuntando el peso en ayunas.</p>";
+  }
+  renderEntrenos();
+  aplicarTab();
+}
+
+try{ $("r_fecha").value=hoyLocal(); }catch(e){}
+// Al abrir: PERSISTE el perfil (como una app real). Si ya hiciste el onboarding (perfil
+// guardado en ESTE dispositivo) -> directo a la app, sin volver a pedir kilos/altura.
+// Si es la primera vez (sin perfil) -> onboarding. Compartir el archivo NO filtra tus datos:
+// el localStorage es por-dispositivo, así que una copia fresca arranca sin perfil -> onboarding
+// en blanco. Para borrar todo y empezar de cero: botón "Empezar de cero".
+bibInit();
+Object.keys(OTRO_MAP).forEach(function(id){ var el=$(id); if(el){ el.readOnly=true; el.style.cursor="pointer"; el.title="Editar"; el.onclick=function(){ otroEditar(id); }; } });
+render();
+</script>
+</body>
+</html>
