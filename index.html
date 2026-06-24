@@ -221,6 +221,8 @@
   // Modo desarrollador (Pablo): si abres el ARCHIVO en local (file://, p.ej. desde OneDrive en tu PC o tu S24) -> sin contraseña.
   // El enlace web (https, GitHub) SIGUE pidiendo la contraseña a los usuarios.
   try{ if(location.protocol==="file:") unlocked=true; }catch(e){}
+  // Enlace mágico de Pablo: abrir con ...?k=lietor entra sin pedir contraseña (y lo recuerda en ese dispositivo).
+  try{ if(/[?&]k=lietor(&|$)/i.test(location.search)) unlocked=true; }catch(e){}
   if(unlocked){ abrir(); }
   window.gateTry=function(){
     var v=(document.getElementById("gate_pw").value||"").trim().toLowerCase();
