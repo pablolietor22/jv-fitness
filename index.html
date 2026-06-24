@@ -367,7 +367,7 @@
   <option>Fondos en paralelas</option><option>Face pull</option>
 </datalist>
 
-<p class="foot">Estimación con base científica (master file JV Fitness). NO es consejo médico.<br>
+<p class="foot">Estimación con base científica. NO es consejo médico.<br>
 Tus datos se guardan solo en este dispositivo.</p>
 <p class="foot" style="margin-top:6px"><a href="#" onclick="resetTodo();return false;" style="color:var(--mute-2);text-decoration:underline">Empezar de cero</a></p>
 
@@ -581,6 +581,12 @@ function wizNext(){
     $("f_err").textContent='🤔 Jarvis: "'+g.slice(0,28)+(g.length>28?'…':'')+'" no lo entiendo. ¿Lo reescribes? (si está bien, pulsa otra vez)';
     show("f_err",true); return;
   }
+  // Último paso ("sobre ti"): no bloquea, pero Jarvis pregunta una vez si lo dejas vacío.
+  if(_wiz===WIZ_MAX && !$("w_sobremi").value.trim() && _gibStep!==_wiz){
+    _gibStep=_wiz;
+    $("f_err").textContent='🤔 Jarvis: ¿Seguro que no quieres contarme nada sobre ti? Cuanto más me cuentes, mejor te adapto. (si lo dejas así, pulsa otra vez)';
+    show("f_err",true); return;
+  }
   show("f_err",false);
   if(_wiz<WIZ_MAX) wizShow(_wiz+1); else guardarPerfil();
 }
@@ -588,6 +594,20 @@ function wizValida(n){
   if(n===1 && !$("f_obj").value) return "Elige un objetivo.";
   if(n===2){ if(!$("f_nombre").value.trim()) return "¿Cómo te llamas?"; if(!(+$("f_edad").value>=14 && +$("f_edad").value<=100)) return "Pon una edad válida (14-100)."; }
   if(n===3){ if(!(+$("f_peso").value>0)) return "Pon tu peso."; if(!(+$("f_altura").value>0)) return "Pon tu altura."; }
+  if(n===5){
+    if(!campoOtro("w_nivel","w_nivel_otro")) return "Dime tu nivel (vale «No lo sé»).";
+    if(!$("w_anios").value.trim()) return "¿Cuántos años llevas entrenando?";
+    if(!campoOtro("w_dias","w_dias_otro")) return "¿Cuántos días por semana entrenas?";
+    if(!campoOtro("w_material","w_material_otro")) return "¿Con qué material entrenas?";
+  }
+  if(n===6){
+    if(!$("w_sueno").value.trim()) return "¿Cuántas horas duermes? (vale «no lo sé»)";
+    if(!campoOtro("w_estres","w_estres_otro")) return "Dime tu nivel de estrés.";
+    if(!campoOtro("w_trabajo","w_trabajo_otro")) return "¿Cómo es tu trabajo?";
+  }
+  if(n===7){
+    if(!$("w_comidas").value.trim()) return "¿Cuántas comidas haces al día?";
+  }
   return null;
 }
 // "Otros" -> abre un MODAL centrado (fondo difuminado) para escribirle a Jarvis.
@@ -729,7 +749,7 @@ function renderEntForm(){
       +'<div class="row" style="gap:6px;align-items:center">'
       +'<input class="ent-nombre" list="ent-ejercicios" placeholder="Ejercicio (ej. Press banca)" value="'+escAttr(ej.nombre)+'" onchange="entNombreCambia(this,'+i+')">'
       +'<button class="sec" type="button" title="Biblioteca" style="width:auto;margin:0;padding:8px 11px" onclick="abrirBiblio(this)">📚</button>'
-      +'<button class="sec" type="button" title="¿Qué es el RIR?" style="width:auto;margin:0;padding:8px 11px" onclick="rirAbrir()">?</button>'
+      +'<button class="sec" type="button" title="¿Qué es el RIR? Toca para saberlo" style="width:auto;margin:0;padding:8px 11px;font-size:.7rem;font-family:var(--mono);letter-spacing:.03em" onclick="rirAbrir()">RIR ⓘ</button>'
       +'<button class="sec" type="button" style="width:auto;margin:0;padding:8px 11px" onclick="entDelEjercicio('+i+')">🗑</button>'
       +'</div>'+sets
       +'<input class="ent-nota" placeholder="Nota para este ejercicio (se guarda)" value="'+nota+'" oninput="guardarNotaEjercicio(this,'+i+')" style="margin-top:8px;font-size:.85rem">'
