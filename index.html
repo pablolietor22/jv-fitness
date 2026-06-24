@@ -130,6 +130,78 @@
   #gate input{max-width:280px;text-align:center}
   #gate button{max-width:280px}
   #gate .gerr{color:var(--ember);font-size:.82rem;min-height:1.1em}
+
+  /* ============ CAPA DOPAMINA (microinteracciones, recompensa visual) ============ */
+  /* Respeta a quien prefiere menos movimiento */
+  @media (prefers-reduced-motion: reduce){ *{animation-duration:.001ms!important;transition-duration:.001ms!important} }
+
+  /* D2 · botones primarios con "press" satisfactorio y barrido de brillo */
+  button:active{transform:translateY(1px) scale(.985)}
+  @keyframes pop{0%{transform:scale(.9)}55%{transform:scale(1.06)}100%{transform:scale(1)}}
+  .pop{animation:pop .32s cubic-bezier(.2,.8,.3,1.2)}
+
+  /* D1 · flash de confirmación al guardar (borde jade que late) */
+  @keyframes okflash{0%{box-shadow:0 0 0 0 rgba(61,220,151,.55)}100%{box-shadow:0 0 0 14px rgba(61,220,151,0)}}
+  .okflash{animation:okflash .6s ease-out}
+
+  /* D1 · "tick" animado dibujado (check verde que se traza) */
+  .tickwrap{display:flex;justify-content:center;margin:6px 0}
+  .tickwrap svg{width:54px;height:54px}
+  .tickwrap circle{stroke:var(--jade);stroke-width:4;fill:none;stroke-dasharray:151;stroke-dashoffset:151;animation:draw .45s ease-out forwards}
+  .tickwrap path{stroke:var(--jade);stroke-width:5;fill:none;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:40;stroke-dashoffset:40;animation:draw .3s .35s ease-out forwards}
+  @keyframes draw{to{stroke-dashoffset:0}}
+
+  /* D3 · CELEBRACIÓN de récord: overlay con destello + número grande + confeti */
+  .celebrate{position:fixed;inset:0;z-index:120;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    background:radial-gradient(600px 360px at 50% 40%, rgba(61,220,151,.16), rgba(4,11,9,.78));
+    backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);animation:modalIn .2s ease-out;cursor:pointer;text-align:center;padding:24px}
+  .celebrate .trophy{font-size:3.4rem;animation:pop .5s cubic-bezier(.2,.8,.3,1.2)}
+  .celebrate .ctitle{font-family:var(--display);font-weight:700;color:var(--jade);font-size:1.5rem;margin-top:6px;text-shadow:0 0 24px rgba(61,220,151,.5)}
+  .celebrate .cbig{font-family:var(--display);font-weight:700;font-size:3.2rem;line-height:1;margin:10px 0;color:var(--bone);text-shadow:0 0 30px rgba(255,106,61,.4)}
+  .celebrate .csub{color:var(--soft);font-family:var(--mono);font-size:.8rem;letter-spacing:.04em}
+  .celebrate .ctap{color:var(--mute);font-size:.72rem;margin-top:18px}
+  .confetti{position:fixed;top:-14px;width:9px;height:14px;z-index:121;border-radius:2px;pointer-events:none;animation:fall linear forwards}
+  @keyframes fall{0%{transform:translateY(-10px) rotate(0);opacity:1}100%{transform:translateY(104vh) rotate(720deg);opacity:.85}}
+
+  /* D4 · anillos de progreso tipo Apple Fitness para el resumen de sesión */
+  .rings{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin-top:6px}
+  .ring{position:relative;width:96px;height:96px}
+  .ring svg{transform:rotate(-90deg)}
+  .ring .bg{fill:none;stroke:var(--ink-3);stroke-width:9}
+  .ring .fg{fill:none;stroke-width:9;stroke-linecap:round;transition:stroke-dashoffset 1s cubic-bezier(.2,.8,.3,1)}
+  .ring .ctr{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+  .ring .ctr b{font-family:var(--display);font-size:1.15rem;line-height:1}
+  .ring .ctr small{font-family:var(--mono);font-size:.52rem;letter-spacing:.08em;color:var(--mute);text-transform:uppercase;margin-top:2px}
+
+  /* D5 · barra de progreso genérica (vol vs récord) */
+  .pbar{height:9px;background:var(--ink-3);border-radius:100px;overflow:hidden;margin:6px 0}
+  .pbar>i{display:block;height:100%;background:linear-gradient(90deg,var(--jade),var(--ember));border-radius:100px;width:0;transition:width .9s cubic-bezier(.2,.8,.3,1)}
+
+  /* D6 · tarjeta de resumen de sesión (vistosa, "compartible") */
+  .sessioncard{background:linear-gradient(155deg,var(--ink-3),var(--ink-1));border:1px solid var(--line);
+    border-radius:16px;padding:16px;box-shadow:0 12px 30px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.04)}
+  .sessioncard .sc-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
+  .sessioncard .sc-badge{font-family:var(--mono);font-size:.58rem;letter-spacing:.12em;text-transform:uppercase;color:var(--jade);
+    border:1px solid var(--line);border-radius:100px;padding:4px 9px}
+
+  /* D7 · chip de racha (streak) */
+  .streak{display:inline-flex;align-items:center;gap:7px;font-family:var(--mono);font-size:.66rem;letter-spacing:.04em;color:var(--bone);
+    border:1px solid var(--line);border-radius:100px;padding:7px 13px;margin:2px 0;background:rgba(255,106,61,.10)}
+  .streak b{color:var(--ember);font-family:var(--display)}
+
+  /* D8 · estado vacío motivador */
+  .empty{text-align:center;padding:18px 10px}
+  .empty .ico{font-size:1.9rem;opacity:.9}
+  .empty .et{font-family:var(--display);font-weight:700;margin:6px 0 2px;color:var(--soft)}
+  .empty .es{color:var(--mute);font-size:.82rem}
+
+  /* D9 · transición suave al cambiar de pestaña */
+  @keyframes tabin{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+  .card.tabin{animation:tabin .26s ease-out}
+
+  /* D10 · feedback "hapt-like" al tocar series (resalte breve de la fila) */
+  @keyframes rowpulse{0%{background:rgba(61,220,151,.16)}100%{background:transparent}}
+  .rowpulse{animation:rowpulse .5s ease-out;border-radius:8px}
 </style>
 </head>
 <body>
@@ -360,15 +432,8 @@
   <div id="ent_resumen" class="hidden" style="margin-top:14px"></div>
   <div id="ent_hist" style="margin-top:14px"></div>
 </div>
-<datalist id="ent-ejercicios">
-  <option>Press banca</option><option>Press inclinado mancuerna</option><option>Sentadilla</option>
-  <option>Prensa</option><option>Peso muerto</option><option>Peso muerto rumano</option>
-  <option>Press militar</option><option>Dominadas</option><option>Jalón al pecho</option>
-  <option>Remo con barra</option><option>Remo mancuerna</option><option>Curl bíceps</option>
-  <option>Extensión tríceps</option><option>Elevaciones laterales</option><option>Hip thrust</option>
-  <option>Femoral tumbado</option><option>Extensión cuádriceps</option><option>Gemelo de pie</option>
-  <option>Fondos en paralelas</option><option>Face pull</option>
-</datalist>
+<!-- Autocompletado del input de ejercicio: se rellena dinámicamente desde EJERCICIOS en bibInit() -->
+<datalist id="ent-ejercicios"></datalist>
 
 <p class="foot">Estimación con base científica. NO es consejo médico.<br>
 Tus datos se guardan solo en este dispositivo.</p>
@@ -533,6 +598,9 @@ function aplicarTab(){
     show(s, s===_tab);
     var tb=$("tab-"+s); if(tb) tb.classList.toggle("activa", s===_tab);
   });
+  // D9 · transición suave de entrada de la card activa
+  var card=$(_tab);
+  if(card){ card.classList.remove("tabin"); void card.offsetWidth; card.classList.add("tabin"); }
 }
 function toast(msg){
   var t=$("toast"); if(!t) return;
@@ -541,6 +609,68 @@ function toast(msg){
   window._toastId=setTimeout(function(){ t.classList.remove("show"); }, 1800);
 }
 function resetTodo(){ try{ localStorage.removeItem(LS_P); localStorage.removeItem(LS_W); localStorage.removeItem(LS_E); localStorage.removeItem("jvf_notas_ej"); }catch(e){} _mem={}; location.reload(); }
+
+// ======= CAPA DOPAMINA (feedback visual; NO toca datos ni cálculo) =======
+// Animación "pop" puntual en un elemento (botón al pulsar, número que cambia).
+function popEl(el){ if(!el) return; el.classList.remove("pop"); void el.offsetWidth; el.classList.add("pop"); }
+// Flash verde de confirmación (al guardar).
+function okFlash(el){ if(!el) return; el.classList.remove("okflash"); void el.offsetWidth; el.classList.add("okflash"); setTimeout(function(){ el.classList.remove("okflash"); },650); }
+// Confeti ligero: N trozos cayendo, se autolimpian. Sin librerías.
+function confetti(n){
+  n=n||26; var cols=["#3DDC97","#FF6A3D","#74c7ff","#EEF2EC"];
+  for(var i=0;i<n;i++){
+    (function(){
+      var c=document.createElement("div"); c.className="confetti";
+      c.style.left=(Math.random()*100)+"vw";
+      c.style.background=cols[i%cols.length];
+      var dur=(1.6+Math.random()*1.4);
+      c.style.animationDuration=dur+"s";
+      c.style.animationDelay=(Math.random()*.25)+"s";
+      c.style.transform="rotate("+Math.floor(Math.random()*360)+"deg)";
+      document.body.appendChild(c);
+      setTimeout(function(){ if(c.parentNode) c.parentNode.removeChild(c); }, (dur+.4)*1000);
+    })();
+  }
+}
+// Celebración a pantalla completa de un récord (D3). Cierra al tocar o sola a los 3,6 s.
+function celebrar(titulo, big, sub){
+  var ov=document.createElement("div"); ov.className="celebrate";
+  ov.innerHTML="<div class='trophy'>🏆</div>"
+    +"<div class='ctitle'>"+esc(titulo)+"</div>"
+    +"<div class='cbig'>"+esc(big)+"</div>"
+    +"<div class='csub'>"+esc(sub||"")+"</div>"
+    +"<div class='ctap'>toca para cerrar</div>";
+  function cerrar(){ if(ov.parentNode){ ov.style.opacity="0"; setTimeout(function(){ if(ov.parentNode) ov.parentNode.removeChild(ov); },200); } }
+  ov.addEventListener("click", cerrar);
+  document.body.appendChild(ov);
+  confetti(40);
+  setTimeout(cerrar, 3600);
+}
+// SVG de "tick" trazado para el resumen.
+function tickSVG(){
+  return "<div class='tickwrap'><svg viewBox='0 0 56 56'><circle cx='28' cy='28' r='24'></circle><path d='M16 29 l8 8 l16 -18'></path></svg></div>";
+}
+// Anillo de progreso (Apple Fitness). pct 0..1, color, valor central, etiqueta.
+function ringHTML(pct, color, valor, etiqueta){
+  pct=Math.max(0,Math.min(1,pct||0));
+  var r=40, c=2*Math.PI*r, off=c*(1-pct);
+  return "<div class='ring'><svg width='96' height='96' viewBox='0 0 96 96'>"
+    +"<circle class='bg' cx='48' cy='48' r='"+r+"'></circle>"
+    +"<circle class='fg' cx='48' cy='48' r='"+r+"' stroke='"+color+"' stroke-dasharray='"+c.toFixed(1)+"' stroke-dashoffset='"+off.toFixed(1)+"'></circle>"
+    +"</svg><div class='ctr'><b>"+esc(valor)+"</b><small>"+esc(etiqueta)+"</small></div></div>";
+}
+// Racha (streak): nº de días distintos con entreno en los últimos 7 días, y total de entrenos.
+function calcRacha(){
+  var arr=get(LS_E,[]); if(!arr.length) return {dias7:0, total:0};
+  var hoy=new Date(hoyLocal()+"T00:00:00"); var set={};
+  arr.forEach(function(w){ if(w&&w.f) set[w.f]=true; });
+  var dias7=0;
+  for(var k=0;k<7;k++){ var d=new Date(hoy); d.setDate(d.getDate()-k);
+    var key=d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+    if(set[key]) dias7++;
+  }
+  return {dias7:dias7, total:arr.length};
+}
 
 // ======= WIZARD (entrevista de bienvenida) =======
 let _wiz=0; const WIZ_MAX=8;
@@ -705,7 +835,9 @@ function registrarPeso(){
   const f=$("r_fecha").value, w=+$("r_peso").value;
   if(!f||!(w>0)) return;
   const ws=get(LS_W,[]).filter(x=>x.f!==f); ws.push({f,w}); ws.sort((a,b)=>a.f<b.f?-1:1);
-  set(LS_W,ws); $("r_peso").value=""; render(); toast("✓ Peso guardado");
+  set(LS_W,ws); $("r_peso").value=""; render();
+  var btn=document.querySelector('#registro button[onclick="registrarPeso()"]'); okFlash(btn); popEl(btn);
+  toast("✓ Peso guardado");
 }
 function mediaSemana(ws,offsetDias){
   if(!ws.length) return null;
@@ -748,22 +880,49 @@ function renderEntForm(){
         +'</div>';
     }).join('');
     var nota=escAttr(notaEjercicio(ej.nombre));
+    var ultima=ultimaVez(ej.nombre);   // referencia "última vez" estilo Hevy/Strong
+    var ultHtml = ultima ? '<div class="hint" style="margin:4px 0 0">↩ Última vez ('+esc(ultima.f)+'): '+esc(ultima.txt)+'</div>' : '';
     return '<div class="ent-ej" style="border:1px solid var(--line-soft);border-radius:12px;padding:12px;margin-top:10px">'
       +'<div class="row" style="gap:6px;align-items:center">'
       +'<input class="ent-nombre" list="ent-ejercicios" placeholder="Ejercicio (ej. Press banca)" value="'+escAttr(ej.nombre)+'" onchange="entNombreCambia(this,'+i+')">'
       +'<button class="sec" type="button" title="Biblioteca" style="width:auto;margin:0;padding:8px 11px" onclick="abrirBiblio(this)">📚</button>'
       +'<button class="sec" type="button" title="¿Qué es el RIR? Toca para saberlo" style="width:auto;margin:0;padding:8px 11px;font-size:.7rem;font-family:var(--mono);letter-spacing:.03em" onclick="rirAbrir()">RIR ⓘ</button>'
       +'<button class="sec" type="button" style="width:auto;margin:0;padding:8px 11px" onclick="entDelEjercicio('+i+')">🗑</button>'
-      +'</div>'+sets
+      +'</div>'+ultHtml+sets
       +'<input class="ent-nota" placeholder="Nota para este ejercicio (se guarda)" value="'+nota+'" oninput="guardarNotaEjercicio(this,'+i+')" style="margin-top:8px;font-size:.85rem">'
       +'<button class="sec" type="button" style="margin-top:8px" onclick="entAddSerie('+i+')">+ Serie</button>'
       +'</div>';
   }).join('');
 }
+var _entPulseHooked=false;
 function entInit(){
   var f=$("ent_fecha"); if(f && !f.value){ f.value=hoyLocal(); }
   if(!_ent.ejercicios.length) _ent.ejercicios=[{nombre:'',series:[{peso:'',reps:'',rir:''}]}];
   renderEntForm();
+  // D10 · feedback "hapt-like": al teclear en una serie, su fila late un instante (se engancha una vez).
+  if(!_entPulseHooked){
+    var form=$("ent_form");
+    if(form){ form.addEventListener("input", function(e){
+      var fila=e.target && e.target.closest && e.target.closest(".ent-serie");
+      if(fila){ fila.classList.remove("rowpulse"); void fila.offsetWidth; fila.classList.add("rowpulse"); }
+    }); _entPulseHooked=true; }
+  }
+}
+// ----- "Última vez" (referencia estilo Hevy/Strong): qué hiciste la última sesión de ESTE ejercicio.
+// Solo lectura, no rellena nada automáticamente: ayuda a apuntar a la sobrecarga progresiva sin adivinar.
+function ultimaVez(nombre){
+  var n=(nombre||'').trim().toLowerCase(); if(!n) return null;
+  var arr=get(LS_E,[]).slice().sort(function(a,b){ return a.f<b.f?-1:a.f>b.f?1:0; });
+  for(var k=arr.length-1;k>=0;k--){
+    var ejs=arr[k].ejercicios||[];
+    for(var x=0;x<ejs.length;x++){
+      if((ejs[x].nombre||'').trim().toLowerCase()===n && ejs[x].series && ejs[x].series.length){
+        var txt=ejs[x].series.map(function(s){ return s.peso+'kg×'+s.reps+(s.rir!=null?' @RIR'+s.rir:''); }).join('  ·  ');
+        return {f:arr[k].f, txt:txt};
+      }
+    }
+  }
+  return null;
 }
 // ----- Notas por ejercicio (persisten por nombre, entre sesiones) -----
 var LS_NOTAS="jvf_notas_ej";
@@ -791,13 +950,39 @@ function guardarEntreno(){
                        .map(function(s){ var o={reps:+s.reps, peso:+s.peso}; if(s.rir!=='' && s.rir!=null && !isNaN(+s.rir)){ o.rir=+s.rir; } return o; }) };
   }).filter(function(ej){ return ej.nombre && ej.series.length; });
   if(!fecha || !ejs.length){ toast("Añade ejercicio con reps y peso"); return; }
-  var arr=get(LS_E,[]);
+  var arrPrev=get(LS_E,[]);
+  // D3 · detectar récord NUEVO (peso máx. o volumen) comparando con el mejor histórico PREVIO de cada ejercicio.
+  var record=detectarRecord(ejs, arrPrev);
+  var arr=arrPrev.slice();
   arr.push({ id:(""+new Date().getTime()+"-"+Math.round(Math.random()*99999)), f:fecha, ejercicios:ejs });
   set(LS_E,arr);
   var resumen=resumenSesion(ejs);
   _ent={ejercicios:[]}; entInit(); renderEntHistorial();
   mostrarResumenSesion(resumen);
-  toast("✓ Entreno guardado");
+  var btn=document.querySelector('#entrenos button[onclick="guardarEntreno()"]'); okFlash(btn); popEl(btn);
+  if(record){ celebrar(record.tipo==="peso"?"¡NUEVO RÉCORD DE PESO!":"¡NUEVO RÉCORD DE VOLUMEN!", record.valor, esc(record.nombre)); }
+  else { toast("✓ Entreno guardado"); }
+}
+// Devuelve el mejor récord nuevo de la sesión (o null). Solo cuenta si HABÍA histórico previo del ejercicio.
+function detectarRecord(ejsNuevos, arrPrev){
+  var maxPeso={}, maxVol={};
+  (arrPrev||[]).forEach(function(w){ (w.ejercicios||[]).forEach(function(ej){
+    var nm=(ej.nombre||'').trim().toLowerCase();
+    var top=ej.series.reduce(function(a,s){ return s.peso>a?s.peso:a; },0);
+    var vol=ej.series.reduce(function(a,s){ return a+(s.reps*s.peso); },0);
+    if(maxPeso[nm]==null || top>maxPeso[nm]) maxPeso[nm]=top;
+    if(maxVol[nm]==null || vol>maxVol[nm]) maxVol[nm]=vol;
+  }); });
+  var hit=null;
+  ejsNuevos.forEach(function(ej){
+    var nm=(ej.nombre||'').trim().toLowerCase();
+    if(maxPeso[nm]==null) return;   // primera vez que se hace: no es "récord", es estreno
+    var top=ej.series.reduce(function(a,s){ return s.peso>a?s.peso:a; },0);
+    var vol=ej.series.reduce(function(a,s){ return a+(s.reps*s.peso); },0);
+    if(top>maxPeso[nm]){ hit={tipo:"peso", nombre:ej.nombre, valor:top+" kg"}; }
+    else if(!hit && vol>maxVol[nm]){ hit={tipo:"vol", nombre:ej.nombre, valor:Math.round(vol)+" vol"}; }
+  });
+  return hit;
 }
 // E1 — resumen de la sesión recién guardada
 function resumenSesion(ejs){
@@ -826,12 +1011,27 @@ function musculoDe(nombre){
 function mostrarResumenSesion(r){
   if(!r) return;
   var box=$("ent_resumen"); if(!box) return;
-  box.innerHTML="<div class='eyebrow-lbl'>Resumen de la sesión</div>"
-    +"<div class='kv'><span>Kg totales levantados</span><span>"+r.kgTot+" kg</span></div>"
-    +"<div class='kv'><span>Series totales</span><span>"+r.nSeries+"</span></div>"
-    +"<div class='kv'><span>Repeticiones totales</span><span>"+r.nReps+"</span></div>"
-    +"<div class='kv'><span>Músculo más enfocado</span><span>"+esc(r.foco||"—")+"</span></div>";
+  var rac=calcRacha();
+  // Anillos (D4): topes de referencia razonables para una sesión, solo VISUALES (no son objetivos del motor).
+  var rVol = ringHTML(r.kgTot/6000, "var(--ember)", (r.kgTot>=1000?(Math.round(r.kgTot/100)/10)+"k":r.kgTot), "kg total");
+  var rSer = ringHTML(r.nSeries/20, "var(--jade)", r.nSeries, "series");
+  var rRep = ringHTML(r.nReps/150, "var(--blue)", r.nReps, "reps");
+  var streak = rac.dias7>0
+    ? "<div class='streak'>🔥 <span>Racha: <b>"+rac.dias7+"</b> día"+(rac.dias7===1?"":"s")+" esta semana · <b>"+rac.total+"</b> entrenos en total</span></div>"
+    : "";
+  box.innerHTML="<div class='sessioncard'>"
+    +"<div class='sc-top'><div class='eyebrow-lbl' style='margin:0'>Sesión guardada</div><span class='sc-badge'>"+esc(hoyLocal())+"</span></div>"
+    +tickSVG()
+    +"<div class='rings'>"+rVol+rSer+rRep+"</div>"
+    +"<div class='kv' style='margin-top:10px'><span>Músculo más trabajado</span><span style='color:var(--jade);font-weight:600'>"+esc(r.foco||"—")+"</span></div>"
+    +(streak?"<div style='margin-top:10px;text-align:center'>"+streak+"</div>":"")
+    +"</div>";
   show("ent_resumen", true);
+  // animar anillos al render (de 0 a su valor): forzamos un reflow recolocando el offset final.
+  setTimeout(function(){
+    var fgs=box.querySelectorAll(".ring .fg");
+    [].forEach.call(fgs,function(c){ var off=c.getAttribute("stroke-dashoffset"); c.style.strokeDashoffset=c.getAttribute("stroke-dasharray"); void c.offsetWidth; c.style.strokeDashoffset=off; });
+  }, 30);
 }
 function entBorrar(id){ var arr=get(LS_E,[]).filter(function(w){ return w.id!==id; }); set(LS_E,arr); renderEntHistorial(); toast("Entreno borrado"); }
 function entVol(ej){ return ej.series.reduce(function(a,s){ return a + (s.reps*s.peso); },0); }
@@ -843,19 +1043,24 @@ function entMejor1RM(ej){
 }
 function renderEntHistorial(){
   var arr=get(LS_E,[]).slice().sort(function(a,b){ return a.f<b.f?-1:a.f>b.f?1:0; });
-  if(!arr.length){ $("ent_hist").innerHTML="<p class='hint'>Aún no hay entrenos. Registra el de hoy ↑</p>"; return; }
+  if(!arr.length){ $("ent_hist").innerHTML="<div class='empty'><div class='ico'>🏋️</div><div class='et'>Tu primer entreno empieza aquí</div><div class='es'>Registra el de hoy ↑ y verás tu progreso sesión a sesión.</div></div>"; return; }
   // Recorrido cronológico: detecta récord de VOLUMEN y de PESO MÁXIMO (top set) por ejercicio.
-  var prevVol={}, prevTop={};
+  var prevVol={}, prevTop={}, bestVol={};
   arr.forEach(function(w){ w.ejercicios.forEach(function(ej){
     ej._vol=entVol(ej);
     ej._delta=(prevVol[ej.nombre]!=null)?(ej._vol-prevVol[ej.nombre]):null;
     var topPeso=entTop(ej).peso;
     ej._recordVol = (prevVol[ej.nombre]!=null) && (ej._vol>prevVol[ej.nombre]);
     ej._recordPeso = (prevTop[ej.nombre]!=null) && (topPeso>prevTop[ej.nombre]);
+    // D5 · proporción de volumen frente al MEJOR previo (para la barra). >1 = nuevo techo.
+    ej._volPct = (bestVol[ej.nombre]>0) ? (ej._vol/bestVol[ej.nombre]) : 1;
     prevVol[ej.nombre]=ej._vol;
     if(prevTop[ej.nombre]==null || topPeso>prevTop[ej.nombre]) prevTop[ej.nombre]=topPeso;
+    if(bestVol[ej.nombre]==null || ej._vol>bestVol[ej.nombre]) bestVol[ej.nombre]=ej._vol;
   }); });
-  $("ent_hist").innerHTML="<div class='eyebrow-lbl'>Historial</div>"+arr.slice().reverse().map(function(w){
+  var rac=calcRacha();
+  var rachaChip = rac.total>0 ? "<div style='margin:2px 0 8px'><span class='streak'>🔥 <span><b>"+rac.dias7+"</b> día"+(rac.dias7===1?"":"s")+" esta semana · <b>"+rac.total+"</b> entrenos en total</span></span></div>" : "";
+  $("ent_hist").innerHTML="<div class='eyebrow-lbl'>Historial</div>"+rachaChip+arr.slice().reverse().map(function(w){
     var ejHtml=w.ejercicios.map(function(ej){
       var top=entTop(ej);
       var arrow = ej._delta==null ? "<span class='hint' style='margin:0'>1ª vez</span>"
@@ -868,8 +1073,10 @@ function renderEntHistorial(){
       var sets=ej.series.map(function(s){ return s.peso+"kg×"+s.reps+(s.rir!=null?" @RIR"+s.rir:""); }).join("  ·  ");
       var b1=entMejor1RM(ej);
       var rm = b1.peso>0 ? "  ·  1RM≈"+Math.round(b1.e)+"kg" : "";
+      // D5 · barra de volumen vs mejor previo (visual, llena al 100% en récord)
+      var pbar = "<div class='pbar'><i style='width:"+Math.round(Math.min(1,ej._volPct)*100)+"%'></i></div>";
       return "<div class='kv'><span>"+esc(ej.nombre)+"</span><span>"+arrow+"</span></div>"
-        +record
+        +record+pbar
         +"<div class='hint' style='margin:2px 0 8px'>"+sets+"  ·  vol "+Math.round(ej._vol)+"  ·  top "+top.peso+"kg×"+top.reps+rm+"</div>";
     }).join("");
     return "<div style='border-top:1px solid var(--line-soft);padding-top:10px;margin-top:10px'>"
@@ -880,36 +1087,108 @@ function renderEntHistorial(){
 }
 function renderEntrenos(){ renderEntHistorial(); }
 
-// ======= BIBLIOTECA DE EJERCICIOS (base curada de free-exercise-db, dominio público) =======
+// ======= BIBLIOTECA DE EJERCICIOS =======
+// Base curada a mano (free-exercise-db, dominio público / Unlicense, como referencia de cobertura).
+// Nombres en castellano de gimnasio + clasificados con los enums de equipo/músculo de bibInit().
+// 154 ejercicios. Calidad de traducción y clasificación priorizada sobre cantidad bruta.
 var EJERCICIOS=[
+  // ---- PECHO ----
   {n:"Press banca",eq:"Barra",m:"Pecho"},{n:"Press inclinado con barra",eq:"Barra",m:"Pecho"},
+  {n:"Press declinado con barra",eq:"Barra",m:"Pecho"},
   {n:"Press banca mancuernas",eq:"Mancuerna",m:"Pecho"},{n:"Press inclinado mancuernas",eq:"Mancuerna",m:"Pecho"},
-  {n:"Aperturas con mancuernas",eq:"Mancuerna",m:"Pecho"},{n:"Cruces en polea",eq:"Cable",m:"Pecho"},
-  {n:"Press en máquina",eq:"Máquina",m:"Pecho"},{n:"Fondos en paralelas",eq:"Peso corporal",m:"Pecho"},{n:"Flexiones",eq:"Peso corporal",m:"Pecho"},
-  {n:"Dominadas",eq:"Peso corporal",m:"Espalda"},{n:"Jalón al pecho",eq:"Cable",m:"Espalda"},
-  {n:"Remo con barra",eq:"Barra",m:"Espalda"},{n:"Remo con mancuerna",eq:"Mancuerna",m:"Espalda"},
-  {n:"Remo en máquina",eq:"Máquina",m:"Espalda"},{n:"Remo en polea baja",eq:"Cable",m:"Espalda"},
-  {n:"Pullover",eq:"Mancuerna",m:"Espalda"},{n:"Peso muerto",eq:"Barra",m:"Espalda"},{n:"Face pull",eq:"Cable",m:"Espalda"},
+  {n:"Press declinado con mancuernas",eq:"Mancuerna",m:"Pecho"},
+  {n:"Aperturas con mancuernas",eq:"Mancuerna",m:"Pecho"},{n:"Aperturas inclinadas con mancuernas",eq:"Mancuerna",m:"Pecho"},
+  {n:"Cruces en polea",eq:"Cable",m:"Pecho"},{n:"Cruces en polea baja",eq:"Cable",m:"Pecho"},
+  {n:"Aperturas en máquina (peck deck)",eq:"Máquina",m:"Pecho"},
+  {n:"Press en máquina",eq:"Máquina",m:"Pecho"},{n:"Press inclinado en máquina",eq:"Máquina",m:"Pecho"},
+  {n:"Press en multipower",eq:"Máquina",m:"Pecho"},
+  {n:"Fondos en paralelas",eq:"Peso corporal",m:"Pecho"},{n:"Flexiones",eq:"Peso corporal",m:"Pecho"},
+  {n:"Flexiones inclinadas",eq:"Peso corporal",m:"Pecho"},{n:"Flexiones declinadas",eq:"Peso corporal",m:"Pecho"},
+  {n:"Flexiones diamante",eq:"Peso corporal",m:"Pecho"},{n:"Press de pecho con banda",eq:"Banda",m:"Pecho"},
+  {n:"Pullover con mancuerna",eq:"Mancuerna",m:"Pecho"},{n:"Press de suelo con kettlebell",eq:"Kettlebell",m:"Pecho"},
+  // ---- ESPALDA ----
+  {n:"Dominadas",eq:"Peso corporal",m:"Espalda"},{n:"Dominadas supinas",eq:"Peso corporal",m:"Espalda"},
+  {n:"Dominadas agarre neutro",eq:"Peso corporal",m:"Espalda"},
+  {n:"Jalón al pecho",eq:"Cable",m:"Espalda"},{n:"Jalón al pecho agarre ancho",eq:"Cable",m:"Espalda"},
+  {n:"Jalón agarre cerrado",eq:"Cable",m:"Espalda"},{n:"Jalón agarre supino",eq:"Cable",m:"Espalda"},
+  {n:"Jalón con brazos rectos (pullover en polea)",eq:"Cable",m:"Espalda"},
+  {n:"Remo con barra",eq:"Barra",m:"Espalda"},{n:"Remo Pendlay",eq:"Barra",m:"Espalda"},
+  {n:"Remo en barra T",eq:"Barra",m:"Espalda"},{n:"Remo con mancuerna",eq:"Mancuerna",m:"Espalda"},
+  {n:"Remo con dos mancuernas",eq:"Mancuerna",m:"Espalda"},
+  {n:"Remo en máquina",eq:"Máquina",m:"Espalda"},{n:"Remo en máquina Hammer",eq:"Máquina",m:"Espalda"},
+  {n:"Remo en polea baja",eq:"Cable",m:"Espalda"},{n:"Remo en polea a una mano",eq:"Cable",m:"Espalda"},
+  {n:"Pullover",eq:"Mancuerna",m:"Espalda"},{n:"Peso muerto",eq:"Barra",m:"Espalda"},
+  {n:"Peso muerto sumo",eq:"Barra",m:"Espalda"},{n:"Peso muerto con trap bar",eq:"Barra",m:"Espalda"},
+  {n:"Face pull",eq:"Cable",m:"Espalda"},{n:"Remo con kettlebell",eq:"Kettlebell",m:"Espalda"},
+  {n:"Hiperextensiones lumbares",eq:"Peso corporal",m:"Espalda"},{n:"Remo invertido",eq:"Peso corporal",m:"Espalda"},
+  // ---- HOMBROS ----
   {n:"Press militar con barra",eq:"Barra",m:"Hombros"},{n:"Press militar mancuernas",eq:"Mancuerna",m:"Hombros"},
+  {n:"Press militar de pie con barra",eq:"Barra",m:"Hombros"},{n:"Press militar en máquina",eq:"Máquina",m:"Hombros"},
+  {n:"Press militar en multipower",eq:"Máquina",m:"Hombros"},
   {n:"Elevaciones laterales",eq:"Mancuerna",m:"Hombros"},{n:"Elevaciones laterales en polea",eq:"Cable",m:"Hombros"},
-  {n:"Elevaciones frontales",eq:"Mancuerna",m:"Hombros"},{n:"Pájaros (deltoides posterior)",eq:"Mancuerna",m:"Hombros"},{n:"Press Arnold",eq:"Mancuerna",m:"Hombros"},
-  {n:"Curl con barra",eq:"Barra",m:"Bíceps"},{n:"Curl con mancuernas",eq:"Mancuerna",m:"Bíceps"},
-  {n:"Curl martillo",eq:"Mancuerna",m:"Bíceps"},{n:"Curl en predicador",eq:"Máquina",m:"Bíceps"},
-  {n:"Curl en polea",eq:"Cable",m:"Bíceps"},{n:"Curl concentrado",eq:"Mancuerna",m:"Bíceps"},
-  {n:"Extensión en polea (cuerda)",eq:"Cable",m:"Tríceps"},{n:"Press francés",eq:"Barra",m:"Tríceps"},
-  {n:"Extensión sobre la cabeza",eq:"Mancuerna",m:"Tríceps"},{n:"Fondos en banco",eq:"Peso corporal",m:"Tríceps"},
-  {n:"Patada de tríceps",eq:"Mancuerna",m:"Tríceps"},{n:"Press cerrado",eq:"Barra",m:"Tríceps"},
-  {n:"Sentadilla con barra",eq:"Barra",m:"Cuádriceps"},{n:"Prensa de piernas",eq:"Máquina",m:"Cuádriceps"},
+  {n:"Elevaciones laterales en máquina",eq:"Máquina",m:"Hombros"},
+  {n:"Elevaciones frontales",eq:"Mancuerna",m:"Hombros"},{n:"Elevaciones frontales en polea",eq:"Cable",m:"Hombros"},
+  {n:"Elevaciones frontales con barra",eq:"Barra",m:"Hombros"},
+  {n:"Pájaros (deltoides posterior)",eq:"Mancuerna",m:"Hombros"},{n:"Pájaros en polea",eq:"Cable",m:"Hombros"},
+  {n:"Pájaros en máquina (reverse peck deck)",eq:"Máquina",m:"Hombros"},
+  {n:"Press Arnold",eq:"Mancuerna",m:"Hombros"},{n:"Remo al mentón con barra",eq:"Barra",m:"Hombros"},
+  {n:"Remo al mentón en polea",eq:"Cable",m:"Hombros"},{n:"Press de hombro con kettlebell",eq:"Kettlebell",m:"Hombros"},
+  {n:"Elevaciones laterales con banda",eq:"Banda",m:"Hombros"},{n:"Tirones de cara con banda",eq:"Banda",m:"Hombros"},
+  // ---- BÍCEPS ----
+  {n:"Curl con barra",eq:"Barra",m:"Bíceps"},{n:"Curl con barra Z",eq:"Barra",m:"Bíceps"},
+  {n:"Curl con mancuernas",eq:"Mancuerna",m:"Bíceps"},{n:"Curl alterno con mancuernas",eq:"Mancuerna",m:"Bíceps"},
+  {n:"Curl martillo",eq:"Mancuerna",m:"Bíceps"},{n:"Curl inclinado con mancuernas",eq:"Mancuerna",m:"Bíceps"},
+  {n:"Curl en predicador",eq:"Máquina",m:"Bíceps"},{n:"Curl en predicador con barra",eq:"Barra",m:"Bíceps"},
+  {n:"Curl en polea",eq:"Cable",m:"Bíceps"},{n:"Curl en polea a la cara (bayesian)",eq:"Cable",m:"Bíceps"},
+  {n:"Curl concentrado",eq:"Mancuerna",m:"Bíceps"},{n:"Curl spider",eq:"Mancuerna",m:"Bíceps"},
+  {n:"Curl con banda",eq:"Banda",m:"Bíceps"},
+  // ---- TRÍCEPS ----
+  {n:"Extensión en polea (cuerda)",eq:"Cable",m:"Tríceps"},{n:"Extensión en polea con barra",eq:"Cable",m:"Tríceps"},
+  {n:"Extensión en polea agarre invertido",eq:"Cable",m:"Tríceps"},
+  {n:"Press francés",eq:"Barra",m:"Tríceps"},{n:"Press francés con mancuernas",eq:"Mancuerna",m:"Tríceps"},
+  {n:"Extensión sobre la cabeza",eq:"Mancuerna",m:"Tríceps"},{n:"Extensión sobre la cabeza en polea",eq:"Cable",m:"Tríceps"},
+  {n:"Fondos en banco",eq:"Peso corporal",m:"Tríceps"},{n:"Fondos para tríceps en máquina",eq:"Máquina",m:"Tríceps"},
+  {n:"Patada de tríceps",eq:"Mancuerna",m:"Tríceps"},{n:"Patada de tríceps en polea",eq:"Cable",m:"Tríceps"},
+  {n:"Press cerrado",eq:"Barra",m:"Tríceps"},{n:"Extensión de tríceps con banda",eq:"Banda",m:"Tríceps"},
+  // ---- CUÁDRICEPS ----
+  {n:"Sentadilla con barra",eq:"Barra",m:"Cuádriceps"},{n:"Sentadilla frontal",eq:"Barra",m:"Cuádriceps"},
+  {n:"Sentadilla en multipower",eq:"Máquina",m:"Cuádriceps"},
+  {n:"Prensa de piernas",eq:"Máquina",m:"Cuádriceps"},{n:"Prensa horizontal",eq:"Máquina",m:"Cuádriceps"},
   {n:"Extensión de cuádriceps",eq:"Máquina",m:"Cuádriceps"},{n:"Zancadas",eq:"Mancuerna",m:"Cuádriceps"},
-  {n:"Sentadilla búlgara",eq:"Mancuerna",m:"Cuádriceps"},{n:"Hack squat",eq:"Máquina",m:"Cuádriceps"},{n:"Sentadilla goblet",eq:"Mancuerna",m:"Cuádriceps"},
-  {n:"Peso muerto rumano",eq:"Barra",m:"Femoral"},{n:"Curl femoral tumbado",eq:"Máquina",m:"Femoral"},
-  {n:"Curl femoral sentado",eq:"Máquina",m:"Femoral"},{n:"Buenos días",eq:"Barra",m:"Femoral"},
-  {n:"Hip thrust",eq:"Barra",m:"Glúteo"},{n:"Patada de glúteo en polea",eq:"Cable",m:"Glúteo"},
-  {n:"Abducción en máquina",eq:"Máquina",m:"Glúteo"},{n:"Puente de glúteo",eq:"Peso corporal",m:"Glúteo"},
+  {n:"Zancadas con barra",eq:"Barra",m:"Cuádriceps"},{n:"Zancadas caminando",eq:"Mancuerna",m:"Cuádriceps"},
+  {n:"Sentadilla búlgara",eq:"Mancuerna",m:"Cuádriceps"},{n:"Hack squat",eq:"Máquina",m:"Cuádriceps"},
+  {n:"Sentadilla goblet",eq:"Mancuerna",m:"Cuádriceps"},{n:"Subida al cajón con mancuernas",eq:"Mancuerna",m:"Cuádriceps"},
+  {n:"Sentadilla a peso corporal",eq:"Peso corporal",m:"Cuádriceps"},{n:"Sentadilla sissy",eq:"Peso corporal",m:"Cuádriceps"},
+  {n:"Sentadilla con kettlebell",eq:"Kettlebell",m:"Cuádriceps"},
+  // ---- FEMORAL ----
+  {n:"Peso muerto rumano",eq:"Barra",m:"Femoral"},{n:"Peso muerto rumano con mancuernas",eq:"Mancuerna",m:"Femoral"},
+  {n:"Peso muerto piernas rígidas",eq:"Barra",m:"Femoral"},
+  {n:"Curl femoral tumbado",eq:"Máquina",m:"Femoral"},{n:"Curl femoral sentado",eq:"Máquina",m:"Femoral"},
+  {n:"Curl femoral de pie",eq:"Máquina",m:"Femoral"},{n:"Buenos días",eq:"Barra",m:"Femoral"},
+  {n:"Curl nórdico",eq:"Peso corporal",m:"Femoral"},{n:"Peso muerto a una pierna",eq:"Mancuerna",m:"Femoral"},
+  // ---- GLÚTEO ----
+  {n:"Hip thrust",eq:"Barra",m:"Glúteo"},{n:"Hip thrust en máquina",eq:"Máquina",m:"Glúteo"},
+  {n:"Patada de glúteo en polea",eq:"Cable",m:"Glúteo"},{n:"Patada de glúteo en máquina",eq:"Máquina",m:"Glúteo"},
+  {n:"Abducción en máquina",eq:"Máquina",m:"Glúteo"},{n:"Abducción de cadera en polea",eq:"Cable",m:"Glúteo"},
+  {n:"Puente de glúteo",eq:"Peso corporal",m:"Glúteo"},{n:"Puente de glúteo con barra",eq:"Barra",m:"Glúteo"},
+  {n:"Patada de glúteo con banda",eq:"Banda",m:"Glúteo"},{n:"Swing con kettlebell",eq:"Kettlebell",m:"Glúteo"},
+  // ---- GEMELO ----
   {n:"Elevación de gemelo de pie",eq:"Máquina",m:"Gemelo"},{n:"Elevación de gemelo sentado",eq:"Máquina",m:"Gemelo"},
-  {n:"Crunch",eq:"Peso corporal",m:"Abdomen"},{n:"Elevación de piernas",eq:"Peso corporal",m:"Abdomen"},
-  {n:"Plancha",eq:"Peso corporal",m:"Abdomen"},{n:"Rueda abdominal",eq:"Peso corporal",m:"Abdomen"},{n:"Crunch en polea",eq:"Cable",m:"Abdomen"},
-  {n:"Encogimientos con barra",eq:"Barra",m:"Trapecio"},{n:"Encogimientos con mancuernas",eq:"Mancuerna",m:"Trapecio"},{n:"Curl de muñeca",eq:"Mancuerna",m:"Antebrazo"}
+  {n:"Elevación de gemelo en prensa",eq:"Máquina",m:"Gemelo"},{n:"Elevación de gemelo con mancuerna",eq:"Mancuerna",m:"Gemelo"},
+  {n:"Elevación de gemelo con barra",eq:"Barra",m:"Gemelo"},{n:"Elevación de gemelo a una pierna",eq:"Peso corporal",m:"Gemelo"},
+  // ---- ABDOMEN ----
+  {n:"Crunch",eq:"Peso corporal",m:"Abdomen"},{n:"Crunch invertido",eq:"Peso corporal",m:"Abdomen"},
+  {n:"Elevación de piernas",eq:"Peso corporal",m:"Abdomen"},{n:"Elevación de piernas colgado",eq:"Peso corporal",m:"Abdomen"},
+  {n:"Plancha",eq:"Peso corporal",m:"Abdomen"},{n:"Plancha lateral",eq:"Peso corporal",m:"Abdomen"},
+  {n:"Rueda abdominal",eq:"Peso corporal",m:"Abdomen"},{n:"Crunch en polea",eq:"Cable",m:"Abdomen"},
+  {n:"Crunch en máquina",eq:"Máquina",m:"Abdomen"},{n:"Giro ruso",eq:"Peso corporal",m:"Abdomen"},
+  {n:"Encogimientos colgado",eq:"Peso corporal",m:"Abdomen"},{n:"Leñador en polea",eq:"Cable",m:"Abdomen"},
+  // ---- TRAPECIO ----
+  {n:"Encogimientos con barra",eq:"Barra",m:"Trapecio"},{n:"Encogimientos con mancuernas",eq:"Mancuerna",m:"Trapecio"},
+  {n:"Encogimientos en polea",eq:"Cable",m:"Trapecio"},{n:"Encogimientos en máquina",eq:"Máquina",m:"Trapecio"},
+  // ---- ANTEBRAZO ----
+  {n:"Curl de muñeca",eq:"Mancuerna",m:"Antebrazo"},{n:"Curl de muñeca con barra",eq:"Barra",m:"Antebrazo"},
+  {n:"Curl de muñeca invertido",eq:"Barra",m:"Antebrazo"},{n:"Curl inverso con barra",eq:"Barra",m:"Antebrazo"}
 ];
 let _bibTarget=null;
 function bibInit(){
@@ -917,6 +1196,11 @@ function bibInit(){
   var mus=["Pecho","Espalda","Hombros","Bíceps","Tríceps","Cuádriceps","Femoral","Glúteo","Gemelo","Abdomen","Trapecio","Antebrazo"];
   if($("bib_eq")) $("bib_eq").innerHTML='<option value="">Equipo: todos</option>'+eqs.map(function(x){return "<option>"+x+"</option>";}).join("");
   if($("bib_mus")) $("bib_mus").innerHTML='<option value="">Músculo: todos</option>'+mus.map(function(x){return "<option>"+x+"</option>";}).join("");
+  // Autocompletado del input de entreno: poblarlo desde la MISMA biblioteca (antes era una
+  // lista fija de ~20 que ya no cuadraba con los nombres reales). Así el datalist y la biblioteca
+  // ofrecen lo mismo, y musculoDe() (match por nombre exacto) acierta el músculo del resumen.
+  var dl=$("ent-ejercicios");
+  if(dl){ dl.innerHTML=EJERCICIOS.map(function(e){ return "<option value=\""+escAttr(e.n)+"\"></option>"; }).join(""); }
 }
 function abrirBiblio(btn){
   var ej=btn.closest(".ent-ej"); _bibTarget = ej? ej.querySelector(".ent-nombre") : null;
@@ -983,7 +1267,7 @@ function render(){
     let h="<table><tr><th>Fecha</th><th>Peso</th></tr>";
     ws.slice(-8).reverse().forEach(x=>h+=`<tr><td>${x.f}</td><td>${x.w.toFixed(1)} kg</td></tr>`);
     $("r_tabla").innerHTML=h+"</table>";
-  } else $("r_tabla").innerHTML="<p class='hint'>Aún no hay pesos. Apunta el de hoy para empezar la tendencia.</p>";
+  } else $("r_tabla").innerHTML="<div class='empty'><div class='ico'>⚖️</div><div class='et'>Empieza tu tendencia</div><div class='es'>Apunta el peso de hoy. En ~2 semanas la app calcula tu gasto REAL.</div></div>";
 
   const m0=mediaSemana(ws,0), m2=mediaSemana(ws,14);
   if(m0!=null && m2!=null){
