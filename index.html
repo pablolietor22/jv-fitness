@@ -202,6 +202,19 @@
   /* D10 · feedback "hapt-like" al tocar series (resalte breve de la fila) */
   @keyframes rowpulse{0%{background:rgba(61,220,151,.16)}100%{background:transparent}}
   .rowpulse{animation:rowpulse .5s ease-out;border-radius:8px}
+
+  /* Botón primario grande (acción principal de cada pestaña): más alto y con presencia */
+  button.btn-lg{min-height:52px;font-size:1.06rem;padding:15px 18px;letter-spacing:.01em}
+
+  /* Compartir sesión (acción secundaria sobre la tarjeta de resumen) */
+  .sharebtn{margin-top:12px}
+
+  /* Badges de logros */
+  .badges{display:flex;flex-wrap:wrap;gap:8px;margin:6px 0 2px}
+  .badge{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:.62rem;letter-spacing:.03em;
+    border:1px solid var(--line);border-radius:100px;padding:6px 11px;background:var(--ink-3);color:var(--soft)}
+  .badge .bi{font-size:.9rem}
+  .badge.locked{opacity:.4}
 </style>
 </head>
 <body>
@@ -401,7 +414,7 @@
   </div>
   <label>Ajuste de calorías (± kcal)</label><input id="aj_cal" type="number" step="50" value="0">
   <p class="hint" style="margin-top:8px">Si <b style="color:var(--soft)">fijas los carbos</b>, las calorías = suma de tus macros. Si no, los carbos son "el resto" (altos) y mandas con el ajuste de calorías.</p>
-  <button onclick="aplicarAjustes()">Aplicar mis ajustes</button>
+  <button class="btn-lg" onclick="aplicarAjustes()">Aplicar mis ajustes</button>
   <button class="sec" onclick="resetAjustes()">Volver a lo recomendado</button>
 </div>
 
@@ -412,7 +425,7 @@
     <div><label>Fecha</label><input id="r_fecha" type="date"></div>
     <div><label>Peso ayunas (kg)</label><input id="r_peso" type="number" step="0.1" placeholder="ej. 79.8"></div>
   </div>
-  <button onclick="registrarPeso()">Guardar peso</button>
+  <button class="btn-lg" onclick="registrarPeso()">Guardar peso</button>
   <p class="hint">El peso diario sube/baja por agua y glucógeno. <b style="color:var(--soft)">Manda la media semanal</b>, no el dato de un día.</p>
   <div id="r_tabla"></div>
 </div>
@@ -429,7 +442,7 @@
   <label>Fecha</label><input id="ent_fecha" type="date">
   <div id="ent_form"></div>
   <button class="sec" type="button" onclick="entAddEjercicio()">+ Añadir ejercicio</button>
-  <button type="button" onclick="guardarEntreno()">Guardar entreno</button>
+  <button class="btn-lg" type="button" onclick="guardarEntreno()">Guardar entreno</button>
   <p class="hint">Apunta cada serie (kg × reps, y el RIR si quieres). La app te marca si <b style="color:var(--soft)">progresas</b> respecto a la última vez que hiciste cada ejercicio — sobrecarga progresiva, lo que de verdad construye músculo.</p>
   <div id="ent_resumen" class="hidden" style="margin-top:14px"></div>
   <div id="ent_hist" style="margin-top:14px"></div>
@@ -475,12 +488,16 @@ Tus datos se guardan solo en este dispositivo.</p>
   <div class="modal-card">
     <button class="modal-x" type="button" title="Cerrar" aria-label="Cerrar" onclick="rirCerrar()">✕</button>
     <h2>¿Qué es el RIR?</h2>
-    <p class="hint" style="margin-top:0"><b style="color:var(--soft)">RIR = Reps In Reserve</b> = repeticiones que te quedaban en el depósito al acabar la serie. Mide el esfuerzo: cuántas reps MÁS podrías haber hecho antes de no poder mover la barra.</p>
-    <div class="kv"><span>RIR 3</span><span>fácil — te quedaban 3 reps</span></div>
-    <div class="kv"><span>RIR 2</span><span>exigente — 2 reps en reserva</span></div>
-    <div class="kv"><span>RIR 1</span><span>muy duro — 1 rep de margen</span></div>
-    <div class="kv"><span>RIR 0</span><span>la última rep buena que podías hacer</span></div>
-    <p class="hint" style="margin-top:12px"><b style="color:var(--soft)">RIR 0 vs fallo:</b> con <b style="color:var(--jade)">RIR 0</b> paras justo en tu última repetición LIMPIA — aún tienes esa rep, pero no una más. El <b style="color:var(--ember)">fallo muscular</b> es ir más allá: intentar otra rep y que el músculo NO pueda completarla (te quedas a medias o necesitas ayuda). Para casi todo, entrenar a RIR 1-3 construye igual de músculo que llegar al fallo, pero te machaca menos y recuperas mejor. El fallo, con cabeza y poco.</p>
+    <p class="hint" style="margin-top:0"><b style="color:var(--soft)">RIR = Reps In Reserve:</b> las repeticiones que te quedaban al acabar la serie.</p>
+    <div class="kv"><span>RIR 3</span><span>te quedaban 3 reps</span></div>
+    <div class="kv"><span>RIR 2</span><span>te quedaban 2 reps</span></div>
+    <div class="kv"><span>RIR 1</span><span>te quedaba 1 rep</span></div>
+    <div class="kv"><span>RIR 0</span><span style="color:var(--ember)">fallo muscular</span></div>
+    <div class="kv"><span>RIR −1</span><span style="color:var(--ember)">fallo + 1 rep extra (con ayuda)</span></div>
+    <div class="kv"><span>RIR −2</span><span style="color:var(--ember)">fallo + 2 reps extra (con ayuda)</span></div>
+    <p class="hint" style="margin-top:12px"><b style="color:var(--ember)">RIR 0 = fallo muscular:</b> la última repetición que podías completar tú solo, con buena técnica.</p>
+    <p class="hint" style="margin-top:8px"><b style="color:var(--ember)">RIR negativo (−1, −2):</b> ya llegaste al fallo y sacaste repeticiones EXTRA con ayuda (forzadas, dropset, un compañero). Es ir <b style="color:var(--soft)">MÁS ALLÁ del fallo</b>.</p>
+    <p class="hint" style="margin-top:8px"><b style="color:var(--jade)">Para construir músculo, entrena cerca del fallo: RIR 1-0.</b> Entrenar a RIR 1, 2 o 3 da un músculo parecido, pero cuanto MÁS LEJOS del fallo, menos te machaca y mejor recuperas → no necesitas ir al fallo absoluto siempre.</p>
     <button class="sec" type="button" onclick="rirCerrar()">Entendido</button>
   </div>
 </div>
@@ -593,10 +610,12 @@ const $=id=>document.getElementById(id);
 const show=(id,on)=>$(id).classList.toggle("hidden",!on);
 
 // ======= PESTAÑAS + TOAST (UX v0.3) =======
+// Orden de las pestañas (única fuente de verdad; antes estaba duplicado en aplicarTab/render y lo usa el swipe).
+const TABS=["plan","ajustes","registro","entrenos","calib"];
 let _tab="plan";
 function abrir(t){ _tab=t; aplicarTab(); if(t==="entrenos" && !$("ent_form").innerHTML.trim()) entInit(); window.scrollTo(0,0); }
 function aplicarTab(){
-  ["plan","ajustes","registro","entrenos","calib"].forEach(function(s){
+  TABS.forEach(function(s){
     show(s, s===_tab);
     var tb=$("tab-"+s); if(tb) tb.classList.toggle("activa", s===_tab);
   });
@@ -648,6 +667,25 @@ function celebrar(titulo, big, sub){
   confetti(40);
   setTimeout(cerrar, 3600);
 }
+// Count-up: anima el número de un elemento de su valor previo hasta target (solo si cambia).
+// Respeta reduced-motion (pone el valor final directo). suffix opcional (ej. "g", " kcal").
+function _reducedMotion(){ try{ return window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches; }catch(e){ return false; } }
+function countUp(el, target, suffix){
+  if(!el) return; suffix=suffix||"";
+  target=+target; if(isNaN(target)) return;
+  var prev=parseFloat((el.textContent||"").replace(/[^\d.-]/g,""));
+  if(isNaN(prev)) prev=0;
+  if(prev===target || _reducedMotion()){ el.textContent=Math.round(target)+suffix; return; }
+  var ini=prev, dur=600, t0=null;
+  function step(ts){
+    if(t0==null) t0=ts;
+    var k=Math.min(1,(ts-t0)/dur);
+    var e=1-Math.pow(1-k,3);                 // easeOutCubic
+    el.textContent=Math.round(ini+(target-ini)*e)+suffix;
+    if(k<1) requestAnimationFrame(step); else el.textContent=Math.round(target)+suffix;
+  }
+  requestAnimationFrame(step);
+}
 // SVG de "tick" trazado para el resumen.
 function tickSVG(){
   return "<div class='tickwrap'><svg viewBox='0 0 56 56'><circle cx='28' cy='28' r='24'></circle><path d='M16 29 l8 8 l16 -18'></path></svg></div>";
@@ -672,6 +710,49 @@ function calcRacha(){
     if(set[key]) dias7++;
   }
   return {dias7:dias7, total:arr.length};
+}
+
+// ======= BADGES DE LOGROS (derivados de los logs; no guardan estado propio) =======
+// Detecta si en TODO el historial hubo al menos un récord (peso o volumen) respecto al previo de cada ejercicio.
+function huboPR(){
+  var arr=get(LS_E,[]).slice().sort(function(a,b){ return a.f<b.f?-1:a.f>b.f?1:0; });
+  var prevVol={}, prevTop={};
+  for(var i=0;i<arr.length;i++){
+    var ejs=arr[i].ejercicios||[];
+    for(var x=0;x<ejs.length;x++){
+      var ej=ejs[x]; var nm=(ej.nombre||'').trim().toLowerCase();
+      var vol=(ej.series||[]).reduce(function(a,s){ return a+(s.reps*s.peso); },0);
+      var top=(ej.series||[]).reduce(function(a,s){ return s.peso>a?s.peso:a; },0);
+      if((prevVol[nm]!=null && vol>prevVol[nm]) || (prevTop[nm]!=null && top>prevTop[nm])) return true;
+      if(prevVol[nm]==null || vol>prevVol[nm]) prevVol[nm]=vol;
+      if(prevTop[nm]==null || top>prevTop[nm]) prevTop[nm]=top;
+    }
+  }
+  return false;
+}
+function calcBadges(){
+  var arr=get(LS_E,[]);
+  var diasSet={}; arr.forEach(function(w){ if(w&&w.f) diasSet[w.f]=true; });
+  var diasDistintos=Object.keys(diasSet).length;
+  var total=arr.length, pr=huboPR();
+  return [
+    {ico:"🎬", t:"Primer entreno", ok: total>=1},
+    {ico:"🏆", t:"Primer PR",       ok: pr},
+    {ico:"🔟", t:"10 entrenos",      ok: total>=10},
+    {ico:"📅", t:"7 días",           ok: diasDistintos>=7},
+    {ico:"🗓️", t:"30 días",          ok: diasDistintos>=30},
+    {ico:"💯", t:"100 entrenos",     ok: total>=100}
+  ];
+}
+function badgesHTML(){
+  var bs=calcBadges();
+  var ganados=bs.filter(function(b){ return b.ok; });
+  if(!ganados.length) return "";
+  // Muestra los ganados + el siguiente bloqueado como "próximo objetivo" (motivación).
+  var sig=bs.filter(function(b){ return !b.ok; })[0];
+  var list=ganados.map(function(b){ return "<span class='badge'><span class='bi'>"+b.ico+"</span>"+esc(b.t)+"</span>"; });
+  if(sig) list.push("<span class='badge locked'><span class='bi'>🔒</span>"+esc(sig.t)+"</span>");
+  return "<div class='eyebrow-lbl' style='margin:12px 0 4px'>Logros</div><div class='badges'>"+list.join("")+"</div>";
 }
 
 // ======= WIZARD (entrevista de bienvenida) =======
@@ -855,6 +936,14 @@ let _ent={ejercicios:[]};
 function esc(t){ var d=document.createElement('div'); d.textContent=(t==null?'':t); return d.innerHTML; }
 function escAttr(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;'); }
 function hoyLocal(){ var d=new Date(); return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); }
+// Formatea el RIR para mostrar: 0 = "fallo"; negativo = "fallo +1"/"fallo +2" (reps más allá del fallo); positivo = "RIR n".
+function fmtRir(rir){
+  if(rir==null || rir==='' || isNaN(+rir)) return '';
+  var n=+rir;
+  if(n===0) return 'fallo';
+  if(n<0) return 'fallo +'+Math.abs(n);
+  return 'RIR '+n;
+}
 function entSync(){
   var ejs=document.querySelectorAll('#ent_form .ent-ej');
   _ent.ejercicios=[].map.call(ejs,function(el){
@@ -868,16 +957,19 @@ function entSync(){
 }
 function entAddEjercicio(){ entSync(); _ent.ejercicios.push({nombre:'',series:[{peso:'',reps:'',rir:''}]}); renderEntForm(); }
 function entDelEjercicio(i){ entSync(); _ent.ejercicios.splice(i,1); if(!_ent.ejercicios.length)_ent.ejercicios=[{nombre:'',series:[{peso:'',reps:'',rir:''}]}]; renderEntForm(); }
-function entAddSerie(i){ entSync(); _ent.ejercicios[i].series.push({peso:'',reps:'',rir:''}); renderEntForm(); }
+function entAddSerie(i){ entSync(); var ss=_ent.ejercicios[i].series; var last=ss[ss.length-1]; ss.push(last?{peso:last.peso,reps:last.reps,rir:last.rir}:{peso:'',reps:'',rir:''}); renderEntForm(); }
 function entDelSerie(i,j){ entSync(); _ent.ejercicios[i].series.splice(j,1); if(!_ent.ejercicios[i].series.length)_ent.ejercicios[i].series=[{peso:'',reps:'',rir:''}]; renderEntForm(); }
 function renderEntForm(){
   $("ent_form").innerHTML=_ent.ejercicios.map(function(ej,i){
+    // placeholder de peso = peso de la última vez de este ejercicio (guía, no rellena el dato).
+    var prevS=ultimasSeries(ej.nombre);
+    var phPeso = (prevS && prevS.length && prevS[0].peso!=null) ? (prevS[0].peso+"") : "kg";
     var sets=ej.series.map(function(s,j){
       return '<div class="ent-serie row" style="gap:6px;align-items:center;margin-top:6px">'
         +'<span class="hint" style="margin:0;min-width:26px">'+(j+1)+'ª</span>'
-        +'<input class="ent-peso" type="number" inputmode="decimal" step="0.5" placeholder="kg" value="'+escAttr(s.peso)+'">'
+        +'<input class="ent-peso" type="number" inputmode="decimal" step="0.5" placeholder="'+escAttr(phPeso)+'" value="'+escAttr(s.peso)+'">'
         +'<input class="ent-reps" type="number" inputmode="numeric" placeholder="reps" value="'+escAttr(s.reps)+'">'
-        +'<input class="ent-rir" type="number" inputmode="numeric" placeholder="RIR" value="'+escAttr(s.rir)+'" style="max-width:64px">'
+        +'<input class="ent-rir" type="number" inputmode="numeric" step="1" placeholder="RIR" value="'+escAttr(s.rir)+'" style="max-width:64px" title="RIR — 0 = fallo; negativo = más allá del fallo">'
         +'<button class="sec" type="button" style="width:auto;margin:0;padding:8px 11px" onclick="entDelSerie('+i+','+j+')">✕</button>'
         +'</div>';
     }).join('');
@@ -891,6 +983,7 @@ function renderEntForm(){
       +'<button class="sec" type="button" title="¿Qué es el RIR? Toca para saberlo" style="width:auto;margin:0;padding:8px 11px;font-size:.7rem;font-family:var(--mono);letter-spacing:.03em" onclick="rirAbrir()">RIR ⓘ</button>'
       +'<button class="sec" type="button" style="width:auto;margin:0;padding:8px 11px" onclick="entDelEjercicio('+i+')">🗑</button>'
       +'</div>'+ultHtml+sets
+      +'<div class="hint" style="margin:6px 0 0;font-size:.68rem">RIR: <b style="color:var(--soft)">0 = fallo</b> · negativo (−1, −2) = reps más allá del fallo</div>'
       +'<input class="ent-nota" placeholder="Nota para este ejercicio (se guarda)" value="'+nota+'" oninput="guardarNotaEjercicio(this,'+i+')" style="margin-top:8px;font-size:.85rem">'
       +'<button class="sec" type="button" style="margin-top:8px" onclick="entAddSerie('+i+')">+ Serie</button>'
       +'</div>';
@@ -919,9 +1012,21 @@ function ultimaVez(nombre){
     var ejs=arr[k].ejercicios||[];
     for(var x=0;x<ejs.length;x++){
       if((ejs[x].nombre||'').trim().toLowerCase()===n && ejs[x].series && ejs[x].series.length){
-        var txt=ejs[x].series.map(function(s){ return s.peso+'kg×'+s.reps+(s.rir!=null?' @RIR'+s.rir:''); }).join('  ·  ');
+        var txt=ejs[x].series.map(function(s){ var fr=fmtRir(s.rir); return s.peso+'kg×'+s.reps+(fr?' @'+fr:''); }).join('  ·  ');
         return {f:arr[k].f, txt:txt};
       }
+    }
+  }
+  return null;
+}
+// ----- Series crudas de la última vez que se hizo ESTE ejercicio (para prefill de "1 toque") -----
+function ultimasSeries(nombre){
+  var n=(nombre||'').trim().toLowerCase(); if(!n) return null;
+  var arr=get(LS_E,[]).slice().sort(function(a,b){ return a.f<b.f?-1:a.f>b.f?1:0; });
+  for(var k=arr.length-1;k>=0;k--){
+    var ejs=arr[k].ejercicios||[];
+    for(var x=0;x<ejs.length;x++){
+      if((ejs[x].nombre||'').trim().toLowerCase()===n && ejs[x].series && ejs[x].series.length){ return ejs[x].series; }
     }
   }
   return null;
@@ -938,8 +1043,22 @@ function guardarNotaEjercicio(input, i){
   if(txt.trim()){ all[nombre]=txt; } else { delete all[nombre]; }
   set(LS_NOTAS, all);
 }
-// Al elegir/cambiar el nombre del ejercicio, recargar para traer su nota guardada.
-function entNombreCambia(input, i){ entSync(); renderEntForm(); }
+// Al elegir/cambiar el nombre del ejercicio, recargar para traer su nota guardada
+// y prefill de las series con la ÚLTIMA VEZ (solo si están en blanco; todo editable).
+function entNombreCambia(input, i){
+  entSync();
+  var ej=_ent.ejercicios[i];
+  if(ej){
+    var vacias=ej.series.every(function(s){ return !String(s.peso).trim() && !String(s.reps).trim() && !String(s.rir).trim(); });
+    if(vacias){
+      var prev=ultimasSeries(ej.nombre);
+      if(prev && prev.length){
+        ej.series=prev.map(function(s){ return {peso:(s.peso!=null?String(s.peso):''), reps:(s.reps!=null?String(s.reps):''), rir:(s.rir!=null?String(s.rir):'')}; });
+      }
+    }
+  }
+  renderEntForm();
+}
 // ----- Explicador RIR -----
 function rirAbrir(){ show("rirModal", true); }
 function rirCerrar(){ show("rirModal", false); }
@@ -1010,8 +1129,43 @@ function musculoDe(nombre){
   for(var i=0;i<EJERCICIOS.length;i++){ if(EJERCICIOS[i].n.toLowerCase()===n) return EJERCICIOS[i].m; }
   return "otros";
 }
+// Texto compartible de una sesión.
+function textoSesion(r){
+  if(!r) return "";
+  var rac=calcRacha();
+  var l=["💪 Entreno JV Fitness — "+hoyLocal(),
+    "• "+r.kgTot+" kg de volumen total",
+    "• "+r.nSeries+" series · "+r.nReps+" reps",
+    "• Foco: "+(r.foco||"—")];
+  if(rac.dias7>0) l.push("🔥 Racha: "+rac.dias7+" día"+(rac.dias7===1?"":"s")+" esta semana · "+rac.total+" entrenos en total");
+  return l.join("\n");
+}
+// Compartir: navigator.share -> fallback copiar al portapapeles -> fallback descargar .txt.
+function compartirSesion(){
+  var r=window._ultResumen; if(!r){ toast("Nada que compartir"); return; }
+  var txt=textoSesion(r);
+  if(navigator.share){
+    navigator.share({title:"Mi entreno", text:txt}).catch(function(){});
+    return;
+  }
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(txt).then(function(){ toast("✓ Copiado al portapapeles"); }).catch(function(){ descargarTxt(txt); });
+    return;
+  }
+  descargarTxt(txt);
+}
+function descargarTxt(txt){
+  try{
+    var blob=new Blob([txt],{type:"text/plain"}); var url=URL.createObjectURL(blob);
+    var a=document.createElement("a"); a.href=url; a.download="entreno-"+hoyLocal()+".txt";
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(function(){ URL.revokeObjectURL(url); }, 1000);
+    toast("✓ Descargado");
+  }catch(e){ toast("No se pudo compartir"); }
+}
 function mostrarResumenSesion(r){
   if(!r) return;
+  window._ultResumen=r;   // referencia para "Compartir"
   var box=$("ent_resumen"); if(!box) return;
   var rac=calcRacha();
   // Anillos (D4): topes de referencia razonables para una sesión, solo VISUALES (no son objetivos del motor).
@@ -1027,15 +1181,40 @@ function mostrarResumenSesion(r){
     +"<div class='rings'>"+rVol+rSer+rRep+"</div>"
     +"<div class='kv' style='margin-top:10px'><span>Músculo más trabajado</span><span style='color:var(--jade);font-weight:600'>"+esc(r.foco||"—")+"</span></div>"
     +(streak?"<div style='margin-top:10px;text-align:center'>"+streak+"</div>":"")
+    +badgesHTML()
+    +"<button class='sec sharebtn' type='button' onclick='compartirSesion()'>📤 Compartir</button>"
     +"</div>";
   show("ent_resumen", true);
   // animar anillos al render (de 0 a su valor): forzamos un reflow recolocando el offset final.
   setTimeout(function(){
     var fgs=box.querySelectorAll(".ring .fg");
     [].forEach.call(fgs,function(c){ var off=c.getAttribute("stroke-dashoffset"); c.style.strokeDashoffset=c.getAttribute("stroke-dasharray"); void c.offsetWidth; c.style.strokeDashoffset=off; });
+    // count-up de los números centrales (series y reps son enteros; kg solo si no usa formato "k").
+    var ctrs=box.querySelectorAll(".ring .ctr b");
+    if(ctrs.length>=3){
+      if(r.kgTot<1000){ ctrs[0].textContent="0"; countUp(ctrs[0], r.kgTot, ""); }
+      ctrs[1].textContent="0"; countUp(ctrs[1], r.nSeries, "");
+      ctrs[2].textContent="0"; countUp(ctrs[2], r.nReps, "");
+    }
   }, 30);
 }
 function entBorrar(id){ var arr=get(LS_E,[]).filter(function(w){ return w.id!==id; }); set(LS_E,arr); renderEntHistorial(); toast("Entreno borrado"); }
+// "Repetir entreno": carga los ejercicios/series de esa sesión en el formulario (fecha = hoy). Todo editable.
+function repetirEntreno(id){
+  var arr=get(LS_E,[]); var w=null;
+  for(var k=0;k<arr.length;k++){ if(arr[k].id===id){ w=arr[k]; break; } }
+  if(!w){ toast("No encontrado"); return; }
+  _ent={ejercicios:(w.ejercicios||[]).map(function(ej){
+    return { nombre:ej.nombre||'', series:(ej.series||[]).map(function(s){
+      return {peso:(s.peso!=null?String(s.peso):''), reps:(s.reps!=null?String(s.reps):''), rir:(s.rir!=null?String(s.rir):'')};
+    }) };
+  })};
+  if(!_ent.ejercicios.length) _ent.ejercicios=[{nombre:'',series:[{peso:'',reps:'',rir:''}]}];
+  var f=$("ent_fecha"); if(f) f.value=hoyLocal();
+  renderEntForm();
+  _tab="entrenos"; aplicarTab(); window.scrollTo(0,0);
+  toast("↻ Entreno cargado — edítalo y guarda");
+}
 function entVol(ej){ return ej.series.reduce(function(a,s){ return a + (s.reps*s.peso); },0); }
 function entTop(ej){ return ej.series.reduce(function(a,s){ return s.peso>a.peso?{peso:s.peso,reps:s.reps}:a; },{peso:0,reps:0}); }
 // 1RM estimado (Epley): peso * (1 + reps/30). Usa la mejor serie (mayor 1RM estimado).
@@ -1062,7 +1241,7 @@ function renderEntHistorial(){
   }); });
   var rac=calcRacha();
   var rachaChip = rac.total>0 ? "<div style='margin:2px 0 8px'><span class='streak'>🔥 <span><b>"+rac.dias7+"</b> día"+(rac.dias7===1?"":"s")+" esta semana · <b>"+rac.total+"</b> entrenos en total</span></span></div>" : "";
-  $("ent_hist").innerHTML="<div class='eyebrow-lbl'>Historial</div>"+rachaChip+arr.slice().reverse().map(function(w){
+  $("ent_hist").innerHTML="<div class='eyebrow-lbl'>Historial</div>"+rachaChip+badgesHTML()+arr.slice().reverse().map(function(w){
     var ejHtml=w.ejercicios.map(function(ej){
       var top=entTop(ej);
       var arrow = ej._delta==null ? "<span class='hint' style='margin:0'>1ª vez</span>"
@@ -1072,7 +1251,7 @@ function renderEntHistorial(){
       var record="";
       if(ej._recordPeso){ record="<div class='hint' style='margin:0 0 6px;color:var(--jade)'>🏆 ¡Nuevo récord! Peso máximo: "+top.peso+" kg</div>"; }
       else if(ej._recordVol){ record="<div class='hint' style='margin:0 0 6px;color:var(--jade)'>🏆 ¡Nuevo récord! Volumen: "+Math.round(ej._vol)+"</div>"; }
-      var sets=ej.series.map(function(s){ return s.peso+"kg×"+s.reps+(s.rir!=null?" @RIR"+s.rir:""); }).join("  ·  ");
+      var sets=ej.series.map(function(s){ var fr=fmtRir(s.rir); return s.peso+"kg×"+s.reps+(fr?" @"+fr:""); }).join("  ·  ");
       var b1=entMejor1RM(ej);
       var rm = b1.peso>0 ? "  ·  1RM≈"+Math.round(b1.e)+"kg" : "";
       // D5 · barra de volumen vs mejor previo (visual, llena al 100% en récord)
@@ -1083,7 +1262,8 @@ function renderEntHistorial(){
     }).join("");
     return "<div style='border-top:1px solid var(--line-soft);padding-top:10px;margin-top:10px'>"
       +"<div class='kv'><span style='color:var(--soft);font-weight:600'>"+esc(w.f)+"</span>"
-      +"<span><button class='sec' type='button' style='width:auto;margin:0;padding:6px 10px;font-size:.7rem' onclick=\"entBorrar('"+w.id+"')\">Borrar</button></span></div>"
+      +"<span style='display:flex;gap:6px'><button class='sec' type='button' style='width:auto;margin:0;padding:6px 10px;font-size:.7rem' onclick=\"repetirEntreno('"+w.id+"')\">↻ Repetir</button>"
+      +"<button class='sec' type='button' style='width:auto;margin:0;padding:6px 10px;font-size:.7rem' onclick=\"entBorrar('"+w.id+"')\">Borrar</button></span></div>"
       +ejHtml+"</div>";
   }).join("");
 }
@@ -1229,7 +1409,7 @@ function bibCerrar(){ show("bibModal", false); _bibTarget=null; }
 
 function render(){
   const p=get(LS_P);
-  if(!p){ ["plan","ajustes","registro","entrenos","calib"].forEach(i=>show(i,false)); show("tabs",false); show("onboarding",true); wizShow(0); return; }
+  if(!p){ TABS.forEach(i=>show(i,false)); show("tabs",false); show("onboarding",true); wizShow(0); return; }
   show("onboarding",false); show("tabs",true);
 
   const rec=plan(p);
@@ -1250,10 +1430,10 @@ function render(){
   const ajustado = ov.prot_gkg!=null || ov.grasa_gkg!=null || ov.carb_gkg!=null || (ov.cal_off||0)!==0;
 
   $("plan_perfil").textContent=`${p.nombre} · ${p.sexo}, ${p.edad} a · ${p.peso_kg} kg · ${p.altura_cm} cm`+(p.grasa_pct!=null?` · ~${p.grasa_pct}% grasa`:"")+(p.pasos?` · ${p.pasos} pasos/día (media)`:"")+` · ${p.objetivo.replace("_"," ")} (${p.intensidad_pct}%)`+(rec.porPasos?" · ⚡ actividad por pasos":"");
-  $("o_bmr").textContent=rec.bmr+" kcal"; $("o_tdee").textContent=rec.tdee+" kcal";
-  $("o_cal").textContent=cal;
-  $("o_p").textContent=prot+"g"; $("o_g").textContent=gr+"g"; $("o_c").textContent=carb+"g";
-  $("o_fibra").textContent=fibra+" g";
+  countUp($("o_bmr"), rec.bmr, " kcal"); countUp($("o_tdee"), rec.tdee, " kcal");
+  countUp($("o_cal"), cal, "");
+  countUp($("o_p"), prot, "g"); countUp($("o_g"), gr, "g"); countUp($("o_c"), carb, "g");
+  countUp($("o_fibra"), fibra, " g");
   $("o_notas").innerHTML = "Proteínas "+pgkg+" g/kg · Grasas "+ggkg+" g/kg · Carbohidratos: resto calórico disponible · Fibra ~14 g/1000 kcal.";
   $("o_ovnote").innerHTML = ajustado
     ? "✏️ <b style='color:var(--soft)'>Plan ajustado por ti.</b> Recomendado: "+rec.cal+" kcal · P"+rec.m.prot+" G"+rec.m.gr+" C"+rec.m.carb+". La app vigilará si progresas con tu ajuste."
@@ -1297,6 +1477,34 @@ try{ $("r_fecha").value=hoyLocal(); }catch(e){}
 // en blanco. Para borrar todo y empezar de cero: botón "Empezar de cero".
 bibInit();
 Object.keys(OTRO_MAP).forEach(function(id){ var el=$(id); if(el){ el.readOnly=true; el.style.cursor="pointer"; el.title="Editar"; el.onclick=function(){ otroEditar(id); }; } });
+
+// ----- Swipe horizontal entre pestañas (estilo app) -----
+// Cambia a la pestaña vecina si el gesto es claramente horizontal y > 60px.
+// Ignora si el dedo arranca sobre input/select/textarea/botón o si hay un modal abierto.
+function initSwipe(){
+  var x0=null, y0=null, ignore=false;
+  function modalAbierto(){ return !!document.querySelector(".modal:not(.hidden), .celebrate, #gate:not([style*='display: none'])"); }
+  function tabsVisibles(){ var t=$("tabs"); return t && !t.classList.contains("hidden"); }
+  document.addEventListener("touchstart", function(e){
+    if(!e.touches || e.touches.length!==1){ ignore=true; return; }
+    var tg=e.target;
+    ignore = !tabsVisibles() || modalAbierto() || (tg && tg.closest && !!tg.closest("input,select,textarea,button,a,.modal"));
+    var t=e.touches[0]; x0=t.clientX; y0=t.clientY;
+  }, {passive:true});
+  document.addEventListener("touchend", function(e){
+    if(ignore || x0==null){ x0=y0=null; return; }
+    var t=(e.changedTouches&&e.changedTouches[0]); if(!t){ x0=y0=null; return; }
+    var dx=t.clientX-x0, dy=t.clientY-y0;
+    x0=y0=null;
+    if(Math.abs(dx)<60) return;                 // gesto corto
+    if(Math.abs(dx)<Math.abs(dy)*1.5) return;    // no es claramente horizontal
+    var idx=TABS.indexOf(_tab); if(idx<0) return;
+    var nidx = dx<0 ? idx+1 : idx-1;             // izquierda = siguiente
+    if(nidx<0 || nidx>=TABS.length) return;
+    abrir(TABS[nidx]);
+  }, {passive:true});
+}
+initSwipe();
 render();
 </script>
 </body>
