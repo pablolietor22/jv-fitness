@@ -105,6 +105,8 @@
   .rirq-b{font-size:.7rem;padding:3px 7px;border-radius:6px;border:1px solid var(--ink-3);background:transparent;color:var(--dim);cursor:pointer}
   .rirq-b.on{color:var(--jade);border-color:var(--jade)}
   .bib-thumb{width:46px;height:34px;object-fit:cover;border-radius:6px;flex:none;background:var(--ink-3)}
+  /* miniatura del ejercicio en el formulario de entreno (petición Pablo 05/07: entreno MUY visual) */
+  .ent-thumb{width:44px;height:44px;object-fit:cover;border-radius:8px;flex:0 0 44px;background:var(--ink-3);cursor:pointer;border:1px solid var(--line-soft)}
   .bib-item{display:flex;align-items:center;gap:10px}
   .bib-ver{width:auto;padding:4px 9px;margin:0;flex:none}
   .wizchips{display:flex;gap:6px;flex-wrap:wrap;margin:-6px 0 14px}
@@ -229,6 +231,21 @@
     border:1px solid var(--line);border-radius:100px;padding:6px 11px;background:var(--ink-3);color:var(--soft)}
   .badge .bi{font-size:.9rem}
   .badge.locked{opacity:.4}
+
+  /* ============ v0.10 ============ */
+  /* F1 · chip del cronómetro de sesión (junto al título "Registrar entreno") */
+  .cronochip{margin-left:auto;display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);
+    font-size:.72rem;font-weight:500;letter-spacing:.03em;color:var(--jade);
+    border:1px solid var(--line);border-radius:100px;padding:4px 10px;background:var(--jade-soft)}
+  .cronochip.hidden{display:none}
+  .cronochip button{width:auto;margin:0;padding:0 4px;border:0;box-shadow:none;background:transparent;
+    color:var(--mute);font-size:.8rem;font-family:var(--body);font-weight:400;cursor:pointer}
+  .cronochip button:hover{box-shadow:none;color:var(--ember)}
+  /* F2 · calendario mensual de entrenos (Progreso): L-D, día con entreno en jade suave, hoy con borde */
+  .calmes{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-top:8px;
+    font-family:var(--mono);font-size:.74rem;text-align:center}
+  .calmes span{padding:7px 0;border-radius:8px;color:var(--soft);border:1px solid transparent}
+  .calmes .cab{color:var(--mute);font-size:.6rem;text-transform:uppercase;letter-spacing:.06em}
 </style>
 </head>
 <body>
@@ -265,7 +282,7 @@
 
 <header class="brandbar">
   <div class="logo"><span class="dot"></span>JV <b>Fitness</b></div>
-  <span class="tag">MVP v0.8 · motor v0.6</span>
+  <span class="tag">MVP v0.10 · motor v0.6</span>
 </header>
 <div class="statuschip"><span class="pulse"></span> cálculo science-based · ajustable · calibración real</div>
 
@@ -361,7 +378,8 @@
     </div>
     <input id="w_dias_otro" class="hidden" placeholder="Días/semana: explícaselo a Jarvis…">
     <input id="w_material_otro" class="hidden" placeholder="Tu material: explícaselo a Jarvis…">
-    <label>Músculos a priorizar (opcional)</label><input id="w_prioridad" placeholder="ej. espalda, hombros">
+    <label>¿Qué quieres mejorar?</label><input id="w_prioridad" placeholder="ej. espalda y hombros — o escribe «todo»">
+    <div class="hint" style="margin:4px 0 10px;font-size:.8rem">Según lo que pongas, la app te <b style="color:var(--jade)">programará y creará un entrenamiento</b> pensado para eso. Si pones <b>«todo»</b>, empezamos por unos básicos de <b>push / pull / legs</b> según tus días. Podrás editarlo cuando quieras.</div>
     <label>Lesiones o limitaciones (opcional)</label><input id="w_lesiones" placeholder="ej. hombro derecho">
   </div>
 
@@ -454,6 +472,8 @@
 <div id="calib" class="card hidden">
   <h2>Calibración · tu metabolismo real</h2>
   <div id="calib_body"></div>
+  <!-- F2 v0.10 · calendario del mes + informe mensual (lo rellena renderInformeMes()) -->
+  <div id="prog_mes"></div>
 </div>
 
 <!-- COMIDA (Fase 3 — diario de comida con base curada) -->
@@ -472,9 +492,29 @@
     <button class="sec" type="button" style="flex:1;width:auto;padding:5px" onclick="comGr(200)">200g</button>
   </div>
   <button class="sec" type="button" style="margin-top:8px" onclick="comAdd()">+ Añadir alimento</button>
+  <!-- F3/F4 v0.10 · foto-comida (beta honesta) y añadir rápido estilo MFP (aquí con macros gratis) -->
+  <div class="row" style="gap:6px;margin-top:6px">
+    <button class="sec" type="button" style="flex:1;width:auto;margin:0" onclick="fotoAbrir()">📷 Foto (beta)</button>
+    <button class="sec" type="button" style="flex:1;width:auto;margin:0" onclick="qaAbrir()">⚡ Añadir rápido</button>
+  </div>
+  <!-- F4 · quick add en línea: kcal obligatorias, macros opcionales -->
+  <div id="qa_form" class="hidden" style="margin-top:8px;border:1px solid var(--line-soft);border-radius:11px;padding:10px">
+    <div class="row" style="gap:6px">
+      <div><label>Kcal *</label><input id="qa_kcal" type="number" inputmode="numeric" placeholder="kcal"></div>
+      <div><label>P (g)</label><input id="qa_p" type="number" inputmode="decimal" placeholder="—"></div>
+      <div><label>C (g)</label><input id="qa_c" type="number" inputmode="decimal" placeholder="—"></div>
+      <div><label>G (g)</label><input id="qa_g" type="number" inputmode="decimal" placeholder="—"></div>
+    </div>
+    <div class="row" style="gap:6px;margin-top:8px">
+      <button class="sec" type="button" style="flex:1;width:auto;margin:0" onclick="qaCerrar()">Cancelar</button>
+      <button type="button" style="flex:2;width:auto;margin:0" onclick="qaAdd()">⚡ Añadir</button>
+    </div>
+  </div>
   <div id="com_tot" style="margin-top:12px"></div>
   <div id="com_list" style="margin-top:10px"></div>
-  <p class="hint">Base de alimentos curada (valores por 100 g). Más alimentos y <b style="color:var(--soft)">foto→macros</b> (le haces una foto al plato y calcula calorías) llegarán después. Suma tus comidas y compáralas con tu objetivo del Plan.</p>
+  <!-- F4 v0.10 · "Guardar día como comida" + lista "Mis comidas" (lo rellena renderMeals()) -->
+  <div id="meals_box" style="margin-top:12px"></div>
+  <p class="hint">Base de alimentos curada (valores por 100 g). El botón <b style="color:var(--soft)">📷 Foto (beta)</b> te da un rango honesto de calorías con 4 preguntas; el motor de visión real llegará después. Suma tus comidas y compáralas con tu objetivo del Plan.</p>
 
   <div class="card" style="margin-top:14px;padding:12px" id="agua_card">
     <div class="eyebrow-lbl">💧 Agua de hoy</div>
@@ -493,7 +533,7 @@
     <details style="margin-top:10px"><summary style="cursor:pointer;color:var(--jade);font-weight:600">¿Cuál merece la pena? · guía honesta para empezar</summary>
       <div class="hint" style="margin-top:6px">
         <b style="color:var(--soft)">Lo que de verdad ayuda es lo que mejora tu rendimiento y tu sobrecarga progresiva:</b><br><br>
-        <b style="color:var(--jade)">Creatina (evidencia ALTA)</b> — el suplemento con más ciencia detrás para fuerza y masa. 3-5 g CADA día (también los de descanso, funciona por saturación), a cualquier hora, sin fase de carga. Barata y segura.<br><br>
+        <b style="color:var(--jade)">Creatina (evidencia ALTA)</b> — el suplemento con más ciencia detrás para fuerza y masa. Regla fácil: <b>~1 g por cada 10 kg que peses, CADA día</b> (0,1 g/kg — p. ej. 75 kg ≈ 7-8 g; el mínimo eficaz son 3-5 g) también los días de descanso, a cualquier hora, sin fase de carga. Pasarte un poco no perjudica (el exceso se orina; solo cuesta más). <b>Monohidrato</b> siempre — busca el sello <b>Creapure®</b> en la etiqueta: garantiza la pureza; las de HCl/"tamponada" son marketing, no funcionan mejor. Barata y segura (en riñón sano; puede subir la creatinina en una analítica sin ser daño → dile a tu médico que la tomas).<br><br>
         <b style="color:var(--jade)">Cafeína / pre-entreno (evidencia ALTA en la cafeína)</b> — 3-6 mg/kg unos 30-60 min antes mejora fuerza, foco y baja la fatiga percibida. Ojo: el bote de "pre-entreno" es sobre todo cafeína + extras de marketing (la beta-alanina en dosis única solo da hormigueo). Un café solo ya te vale. Evita la cafeína por la tarde: el sueño de 7-9 h manda sobre cualquier suplemento.<br><br>
         <b style="color:#f4c04e">Proteína en polvo (es comida, no magia)</b> — probablemente el MENOS necesario: tu objetivo de proteína ya está calculado en el Plan (1,6 g/kg es el techo práctico) y normalmente se llega comiendo. Úsala solo como conveniencia si un día no llegas.<br><br>
         <b style="color:#f4c04e">L-carnitina (evidencia DÉBIL/mixta)</b> — en personas sanas los estudios no muestran mejora clara ni de rendimiento ni de pérdida de grasa. Si viene dentro de tu pre-entreno no estorba, pero no la compres suelta esperando milagros.
@@ -504,10 +544,28 @@
 
 <!-- ENTRENOS (Fase 3.3 — logging estilo Hevy) -->
 <div id="entrenos" class="card hidden">
-  <h2>Registrar entreno</h2>
+  <!-- F1 v0.10 · chip ⏱ del cronómetro de sesión: late mientras jvf_ent_start exista; ✕ lo descarta -->
+  <h2>Registrar entreno <span id="ent_crono_chip" class="cronochip hidden">⏱ <span id="ent_crono_t">0:00</span><button type="button" title="Descartar cronómetro" aria-label="Descartar cronómetro" onclick="cronoDescartar()">✕</button></span></h2>
+  <!-- F5 v0.10 · hint para el novato sin historial (lo rellena hintNovato()) -->
+  <div id="ent_hint_novato"></div>
+  <!-- F1 v0.10 · "📋 Mis rutinas" (plantillas guardadas por el usuario; lo rellena renderMisRutinas()) -->
+  <div id="ent_mis_rutinas"></div>
   <label>Fecha</label><input id="ent_fecha" type="date">
   <div id="ent_form"></div>
-  <button class="sec" type="button" onclick="entAddEjercicio()">+ Añadir ejercicio</button>
+  <div class="row" style="gap:6px">
+    <button class="sec" type="button" style="flex:1;width:auto" onclick="entAddEjercicio()">+ Añadir ejercicio</button>
+    <!-- F1 · visible solo si el form tiene ≥1 ejercicio con nombre (rutBtnSync) -->
+    <button class="sec hidden" id="rut_guardar_btn" type="button" style="flex:1;width:auto" onclick="rutGuardarAbrir()">💾 Guardar como rutina</button>
+  </div>
+  <!-- F1 · nombre de la rutina en línea (nada de prompt(): input + OK/Cancelar) -->
+  <div id="rut_guardar_form" class="hidden" style="margin-top:8px">
+    <div class="row" style="gap:6px;align-items:center">
+      <input id="rut_nombre" placeholder="Nombre de la rutina (ej. Push A)" style="flex:2">
+      <button type="button" style="flex:0 0 auto;width:auto;margin:0;padding:11px 14px" onclick="rutGuardarOk()">OK</button>
+      <button class="sec" type="button" style="flex:0 0 auto;width:auto;margin:0;padding:11px 14px" onclick="rutGuardarCancelar()">Cancelar</button>
+    </div>
+    <p class="hint" style="margin-top:6px">Se guarda solo la plantilla: ejercicios y nº de series, <b style="color:var(--soft)">sin pesos</b>. Los pesos van en cada entreno.</p>
+  </div>
   <button class="btn-lg" type="button" onclick="guardarEntreno()">Guardar entreno</button>
   <p class="hint">Apunta cada serie (kg × reps, y el RIR si quieres). La app te marca si <b style="color:var(--soft)">progresas</b> respecto a la última vez que hiciste cada ejercicio — sobrecarga progresiva, lo que de verdad construye músculo. Leyenda: <b style='color:var(--soft)'>vol</b> = kg totales movidos (peso×reps) · <b style='color:var(--soft)'>1RM≈</b> = tu máximo estimado a 1 repetición (fórmula Epley).</p>
   <div id="ent_resumen" class="hidden" style="margin-top:14px"></div>
@@ -572,6 +630,45 @@ Tus datos se guardan solo en este dispositivo.</p>
     <p class="hint" style="margin-top:8px">🔰 <b style="color:var(--soft)">Si estás empezando:</b> busca el fallo solo en máquinas o aislamiento (o con compañero). En libres pesados (banca, sentadilla) quédate a RIR 2 las primeras semanas: la técnica manda.</p>
     <p class="hint" style="margin-top:8px"><b style="color:var(--ember)">Consejo si empiezas:</b> de principiante normalmente NO conoces tu límite real —aún no dominas el ejercicio ni conectas bien con el músculo—, así que en máquinas conviene <b style="color:var(--ember)">tocar el fallo de verdad</b> (que una rep se quede a medias) para aprender dónde está. Así calibras tu RIR.</p>
     <button class="sec" type="button" onclick="rirCerrar()">Entendido</button>
+  </div>
+</div>
+
+<!-- MODAL: 📷 foto-comida (F3 v0.10) — estimador PENSANTE y honesto: la foto NO se analiza (aún);
+     pregunta lo que una foto no enseña (aceite, bebida, tamaño) y devuelve un RANGO de kcal. -->
+<div id="fotoModal" class="modal hidden">
+  <div class="modal-card">
+    <button class="modal-x" type="button" title="Cerrar" aria-label="Cerrar" onclick="fotoCerrar()">✕</button>
+    <h2>📷 Foto del plato (beta)</h2>
+    <p class="hint" style="margin-top:0">Haz la foto y responde: te doy un <b style="color:var(--soft)">rango honesto</b> de calorías. La foto queda solo como recordatorio — no se guarda ni se analiza (el motor de visión llegará).</p>
+    <input type="file" id="foto_file" accept="image/*" capture="environment" onchange="fotoPreview(this)">
+    <img id="foto_prev" class="hidden" alt="" style="width:100%;border-radius:12px;margin-top:8px">
+    <label>¿Tipo de plato?</label>
+    <div class="wizchips" id="foto_g_tipo" style="margin:0">
+      <span class="wchip done" onclick="fotoSel(this,'tipo','ligero')">🥗 ligero</span>
+      <span class="wchip done" onclick="fotoSel(this,'tipo','mixto')">🍛 mixto</span>
+      <span class="wchip done" onclick="fotoSel(this,'tipo','contundente')">🍖 contundente</span>
+    </div>
+    <label>¿Tamaño?</label>
+    <div class="wizchips" id="foto_g_tam" style="margin:0">
+      <span class="wchip done" onclick="fotoSel(this,'tam','S')">S</span>
+      <span class="wchip done" onclick="fotoSel(this,'tam','M')">M</span>
+      <span class="wchip done" onclick="fotoSel(this,'tam','L')">L</span>
+    </div>
+    <label>¿Lleva aceite / mantequilla / salsas?</label>
+    <div class="wizchips" id="foto_g_aceite" style="margin:0">
+      <span class="wchip done cur" onclick="fotoSel(this,'aceite','no')">no</span>
+      <span class="wchip done" onclick="fotoSel(this,'aceite','algo')">algo</span>
+      <span class="wchip done" onclick="fotoSel(this,'aceite','bastante')">bastante</span>
+    </div>
+    <label>¿Bebida calórica? (refresco, zumo, cerveza…)</label>
+    <div class="wizchips" id="foto_g_bebida" style="margin:0">
+      <span class="wchip done cur" onclick="fotoSel(this,'bebida','no')">no</span>
+      <span class="wchip done" onclick="fotoSel(this,'bebida','si')">sí</span>
+    </div>
+    <label>Descripción (opcional)</label>
+    <input id="foto_desc" placeholder="ej. lentejas con chorizo">
+    <button type="button" onclick="fotoEstimar()">Calcular estimación</button>
+    <div id="foto_res" class="hidden" style="margin-top:12px"></div>
   </div>
 </div>
 
@@ -802,7 +899,7 @@ function renderAgua(){
     +"<div class='pbar'><i style='width:"+pct+"%;background:#74c7ff'></i></div>";
 }
 var SUPLES=[
-  {id:"creatina", n:"Creatina · 3-5 g/día", ev:"ALTA", diario:true},
+  {id:"creatina", n:"Creatina · ~1 g por 10 kg/día (monohidrato Creapure)", ev:"ALTA", diario:true},
   {id:"cafeina", n:"Cafeína / pre-entreno", ev:"ALTA", diario:false},
   {id:"proteina", n:"Proteína en polvo (solo si no llegas)", ev:"MEDIA", diario:false},
   {id:"carnitina", n:"L-carnitina", ev:"BAJA", diario:false}
@@ -860,11 +957,171 @@ function renderComida(){
     h+="<div class='kv'><span>Calorías</span><span>"+Math.round(tot.kcal)+" kcal</span></div><div class='kv'><span>P / C / G</span><span>"+Math.round(tot.p)+" / "+Math.round(tot.c)+" / "+Math.round(tot.gr)+" g</span></div>";
   }
   h+="</div>"; $("com_tot").innerHTML=h;
-  if(!arr.length){ $("com_list").innerHTML="<div class='empty'><div class='ico'>🍽️</div><div class='et'>Sin comidas este día</div><div class='es'>Busca un alimento y los gramos para empezar.</div></div>"; return; }
+  if(!arr.length){ $("com_list").innerHTML="<div class='empty'><div class='ico'>🍽️</div><div class='et'>Sin comidas este día</div><div class='es'>Busca un alimento y los gramos para empezar.</div></div>"; try{ renderMeals(); }catch(e){} return; }
   $("com_list").innerHTML="<div class='eyebrow-lbl'>Lo que llevas</div>"+arr.map(function(x){
     var idx=full.indexOf(x);
-    return "<div class='kv'><span>"+esc(x.n)+" · "+x.g+" g</span><span style='font-variant-numeric:tabular-nums'>"+x.kcal+" kcal · P"+Math.round(x.p)+" C"+Math.round(x.c)+" G"+Math.round(x.gr)+" <button class='sec' type='button' style='width:auto;margin:0 0 0 6px;padding:4px 9px' onclick='comDel("+(x.id?JSON.stringify(x.id):idx)+")'>✕</button></span></div>";
+    // v0.10 · los items sin gramos (📷 foto, ⚡ rápido) no enseñan "· 0 g"
+    return "<div class='kv'><span>"+esc(x.n)+(x.g>0?" · "+x.g+" g":"")+"</span><span style='font-variant-numeric:tabular-nums'>"+x.kcal+" kcal · P"+Math.round(x.p)+" C"+Math.round(x.c)+" G"+Math.round(x.gr)+" <button class='sec' type='button' style='width:auto;margin:0 0 0 6px;padding:4px 9px' onclick='comDel("+(x.id?JSON.stringify(x.id):idx)+")'>✕</button></span></div>";
   }).join("");
+  try{ renderMeals(); }catch(e){}   // F4 · el botón "guardar día" y "Mis comidas" dependen del día mostrado
+}
+
+// ======= F3 · 📷 FOTO-COMIDA (v0.10) — interfaz YA; motor SEPARADO y honesto =======
+// Por qué así: el líder (MFP) NO estima raciones de la foto y su IA es premium+inglés; la literatura
+// manda preguntar lo que la foto no enseña (aceite, bebida, tamaño) y dar RANGOS, no un número mágico.
+// La foto NO se guarda (localStorage no da para fotos): es tu recordatorio. El número sale de tus respuestas.
+// FUNCIÓN PURA a propósito: el día que haya visión real se sustituye SOLO motorFotoComida y el resto queda.
+function motorFotoComida(datos){
+  // Tabla base kcal por tipo × tamaño + extras "invisibles" (aceite/salsas y bebida calórica).
+  var BASE={
+    ligero:      {S:[250,400],  M:[350,550],  L:[500,700]},
+    mixto:       {S:[400,550],  M:[550,750],  L:[750,1000]},
+    contundente: {S:[550,750],  M:[750,1000], L:[950,1300]}
+  };
+  var PROT={ligero:[25,35], mixto:[30,40], contundente:[35,50]};   // g de proteína típicos por tipo
+  var fila=BASE[datos.tipo]||BASE.mixto;
+  var r=(fila[datos.tam]||fila.M).slice();
+  var min=r[0], max=r[1];
+  if(datos.aceite==="algo"){ min+=80; max+=150; }
+  else if(datos.aceite==="bastante"){ min+=150; max+=300; }
+  if(datos.bebida==="si"){ min+=90; max+=200; }
+  var pr=PROT[datos.tipo]||PROT.mixto;
+  return {min:min, max:max, kcal:Math.round((min+max)/2), prot:Math.round((pr[0]+pr[1])/2)};
+}
+var _foto={tipo:null, tam:null, aceite:"no", bebida:"no"};
+function fotoAbrir(){
+  _foto={tipo:null, tam:null, aceite:"no", bebida:"no"}; window._fotoEst=null;
+  // resetear chips: tipo/tamaño sin elegir; aceite/bebida al "no" por defecto (primer chip)
+  ["foto_g_tipo","foto_g_tam","foto_g_aceite","foto_g_bebida"].forEach(function(id){
+    var g=$(id); if(!g) return;
+    var chips=g.querySelectorAll(".wchip");
+    [].forEach.call(chips,function(c,i){ c.classList.toggle("cur",(id==="foto_g_aceite"||id==="foto_g_bebida")&&i===0); });
+  });
+  var f=$("foto_file"); if(f) f.value="";
+  var im=$("foto_prev"); if(im){ im.removeAttribute("src"); im.classList.add("hidden"); }
+  var de=$("foto_desc"); if(de) de.value="";
+  var res=$("foto_res"); if(res){ res.innerHTML=""; res.classList.add("hidden"); }
+  show("fotoModal", true);
+}
+function fotoCerrar(){
+  show("fotoModal", false);
+  var im=$("foto_prev"); if(im){ im.removeAttribute("src"); im.classList.add("hidden"); }   // liberar memoria
+}
+// Preview SOLO en memoria (dataURL en el <img>): nada de la foto toca localStorage.
+function fotoPreview(inp){
+  var f=inp.files && inp.files[0]; if(!f) return;
+  var fr=new FileReader();
+  fr.onload=function(){ var im=$("foto_prev"); if(im){ im.src=fr.result; im.classList.remove("hidden"); } };
+  fr.readAsDataURL(f);
+}
+// Chip elegido: guarda el valor y marca visualmente solo ese chip del grupo.
+function fotoSel(el, campo, v){
+  _foto[campo]=v;
+  var sibs=el.parentNode.querySelectorAll(".wchip");
+  [].forEach.call(sibs,function(s){ s.classList.toggle("cur", s===el); });
+}
+function fotoEstimar(){
+  if(!_foto.tipo || !_foto.tam){ toast("Dime tipo y tamaño del plato"); return; }
+  var est=motorFotoComida(_foto);
+  window._fotoEst=est;
+  var res=$("foto_res"); if(!res) return;
+  res.innerHTML="<div class='kv'><span>Estimación</span><span>≈ <b style='color:var(--ember);font-size:1.05rem'>"+est.min+"-"+est.max+" kcal</b> <span class='hint' style='display:inline'>(apunto "+est.kcal+")</span></span></div>"
+    +"<div class='kv'><span>Proteína estimada</span><span>~"+est.prot+" g</span></div>"
+    +"<div class='aviso' style='margin-top:10px'>Estimación de RANGO sin ver la foto de verdad (el motor de visión llegará). La foto es tu recordatorio; el rango sale de tus respuestas.</div>"
+    +"<button type='button' class='btn-lg' onclick='fotoAddDiario()'>Añadir al diario</button>";
+  res.classList.remove("hidden");
+}
+// Entra al diario con la MISMA estructura que un alimento manual + marca foto:true (auditable).
+function fotoAddDiario(){
+  var est=window._fotoEst; if(!est){ toast("Calcula la estimación primero"); return; }
+  var f=(($("com_fecha")||{}).value)||hoyLocal();
+  var desc=(($("foto_desc")||{}).value||"").trim();
+  var arr=get(LS_COMIDA,[]);
+  arr.push({id:Date.now().toString(36)+Math.random().toString(36).slice(2,6), f:f, n:"📷 "+(desc||"Comida por foto"), g:0, kcal:est.kcal, p:est.prot, c:0, gr:0, foto:true});
+  set(LS_COMIDA,arr);
+  fotoCerrar(); renderComida();
+  toast("✓ Añadido ≈"+est.kcal+" kcal (rango "+est.min+"-"+est.max+")");
+}
+
+// ======= F4 · ⚡ AÑADIR RÁPIDO + 💾 MIS COMIDAS (v0.10) — los "wins" de MFP, gratis =======
+var LS_MEALS="jvf_meals";
+function qaAbrir(){ show("qa_form", true); setTimeout(function(){ try{ $("qa_kcal").focus(); }catch(e){} },60); }
+function qaCerrar(){ show("qa_form", false); }
+// Quick add: kcal obligatorias; P/C/G opcionales (MFP los cobra en premium — aquí gratis).
+function qaAdd(){
+  var kcal=+$("qa_kcal").value;
+  if(!(kcal>0)){ toast("Las kcal son obligatorias"); return; }
+  var p=+$("qa_p").value||0, c=+$("qa_c").value||0, g=+$("qa_g").value||0;
+  var f=(($("com_fecha")||{}).value)||hoyLocal(), arr=get(LS_COMIDA,[]);
+  // misma estructura que un alimento manual; g=0 = sin gramos que enseñar
+  arr.push({id:Date.now().toString(36)+Math.random().toString(36).slice(2,6), f:f, n:"⚡ Rápido", g:0, kcal:Math.round(kcal), p:+p.toFixed(1), c:+c.toFixed(1), gr:+g.toFixed(1)});
+  set(LS_COMIDA,arr);
+  $("qa_kcal").value=""; $("qa_p").value=""; $("qa_c").value=""; $("qa_g").value="";
+  qaCerrar(); renderComida(); toast("⚡ Añadido");
+}
+// "Mis comidas": plantillas de días enteros. Simple, sin edición en v1 (se borra y se rehace).
+function renderMeals(){
+  var el=$("meals_box"); if(!el) return;
+  var f=(($("com_fecha")||{}).value)||hoyLocal();
+  var hayDia=get(LS_COMIDA,[]).some(function(x){ return x.f===f; });
+  var meals=get(LS_MEALS,[]);
+  var h="";
+  if(hayDia){
+    h+='<button class="sec" type="button" style="margin-top:0" onclick="mealGuardarAbrir()">💾 Guardar día como comida</button>'
+      +'<div id="meal_form" class="hidden" style="margin-top:8px"><div class="row" style="gap:6px;align-items:center">'
+      +'<input id="meal_nombre" placeholder="Nombre (ej. Desayuno de diario)" style="flex:2">'
+      +'<button type="button" style="flex:0 0 auto;width:auto;margin:0;padding:11px 14px" onclick="mealGuardarOk()">OK</button>'
+      +'<button class="sec" type="button" style="flex:0 0 auto;width:auto;margin:0;padding:11px 14px" onclick="show(\'meal_form\',false)">Cancelar</button>'
+      +'</div></div>';
+  }
+  if(meals.length){
+    h+="<div class='eyebrow-lbl' style='margin-top:"+(hayDia?"12px":"0")+"'>💾 Mis comidas</div>"+meals.map(function(mm){
+      var kc=(mm.items||[]).reduce(function(a,x){ return a+(+x.kcal||0); },0);
+      return "<div class='kv'><span>"+esc(mm.nombre)+" <span class='hint' style='display:inline'>· "+Math.round(kc)+" kcal</span></span>"
+        +"<span style='display:flex;gap:6px'>"
+        +"<button class='sec' type='button' style='width:auto;margin:0;padding:6px 10px;font-size:.72rem' onclick=\"mealAddHoy('"+mm.id+"')\">➕ añadir hoy</button>"
+        +"<button class='sec' type='button' style='width:auto;margin:0;padding:6px 10px' title='Borrar' onclick=\"mealBorrar('"+mm.id+"')\">🗑</button>"
+        +"</span></div>";
+    }).join("");
+  }
+  el.innerHTML=h;
+}
+function mealGuardarAbrir(){
+  show("meal_form", true);
+  var i=$("meal_nombre"); if(i){ i.value=""; setTimeout(function(){ try{ i.focus(); }catch(e){} },60); }
+}
+function mealGuardarOk(){
+  var nombre=(($("meal_nombre")||{}).value||"").trim();
+  if(!nombre){ toast("Ponle nombre a la comida"); return; }
+  var f=(($("com_fecha")||{}).value)||hoyLocal();
+  var items=get(LS_COMIDA,[]).filter(function(x){ return x.f===f; });
+  if(!items.length){ toast("Este día no tiene comidas"); return; }
+  // copias limpias de los items (sin id ni fecha: se regeneran al volcar la plantilla a un día)
+  var copias=items.map(function(x){ var o={n:x.n, g:x.g||0, kcal:x.kcal||0, p:x.p||0, c:x.c||0, gr:x.gr||0}; if(x.foto) o.foto=true; return o; });
+  var meals=get(LS_MEALS,[]);
+  meals.push({id:Date.now().toString(36)+Math.random().toString(36).slice(2,6), nombre:nombre, items:copias});
+  set(LS_MEALS,meals);
+  renderMeals(); toast("💾 Comida guardada ("+copias.length+" alimentos)");
+}
+// ➕ añadir hoy: vuelca los items de la plantilla al día mostrado del diario.
+function mealAddHoy(id){
+  var meals=get(LS_MEALS,[]), meal=null;
+  for(var k=0;k<meals.length;k++){ if(meals[k].id===id){ meal=meals[k]; break; } }
+  if(!meal){ toast("No encontrada"); return; }
+  var f=(($("com_fecha")||{}).value)||hoyLocal(), arr=get(LS_COMIDA,[]);
+  (meal.items||[]).forEach(function(x){
+    var o={id:Date.now().toString(36)+Math.random().toString(36).slice(2,6), f:f, n:x.n, g:x.g||0, kcal:x.kcal||0, p:x.p||0, c:x.c||0, gr:x.gr||0};
+    if(x.foto) o.foto=true;
+    arr.push(o);
+  });
+  set(LS_COMIDA,arr); renderComida();
+  toast("➕ "+(meal.items||[]).length+" alimentos añadidos");
+}
+function mealBorrar(id){
+  var meals=get(LS_MEALS,[]), meal=meals.filter(function(x){ return x.id===id; })[0];
+  if(!confirm("¿Borrar la comida guardada \""+((meal&&meal.nombre)||"?")+"\"? Tu diario no se toca.")) return;
+  set(LS_MEALS, meals.filter(function(x){ return x.id!==id; }));
+  renderMeals(); toast("Comida borrada");
 }
 
 // ======= ESTADO / PERSISTENCIA =======
@@ -939,14 +1196,15 @@ document.addEventListener('DOMContentLoaded',function(){
     if(ents.length>20 && _old) setTimeout(function(){ toast("💾 Llevas tiempo sin copia de seguridad — toca Exportar en Ajustes"); }, 3500);
   }catch(e){}
 });
-function resetTodo(){ if(!confirm("⚠️ Esto borra TODO: perfil, pesos, entrenos, comidas, agua y suplementos. ¿Seguro?")) return; try{ localStorage.removeItem(LS_P); localStorage.removeItem(LS_W); localStorage.removeItem(LS_E); localStorage.removeItem("jvf_notas_ej"); localStorage.removeItem("jvf_comida"); localStorage.removeItem("jvf_agua"); localStorage.removeItem("jvf_suples_cfg"); localStorage.removeItem("jvf_suples_log"); }catch(e){} _mem={}; location.reload(); }
+function resetTodo(){ if(!confirm("⚠️ Esto borra TODO: perfil, pesos, entrenos, rutinas, comidas, agua y suplementos. ¿Seguro?")) return; try{ localStorage.removeItem(LS_P); localStorage.removeItem(LS_W); localStorage.removeItem(LS_E); localStorage.removeItem("jvf_notas_ej"); localStorage.removeItem("jvf_comida"); localStorage.removeItem("jvf_agua"); localStorage.removeItem("jvf_suples_cfg"); localStorage.removeItem("jvf_suples_log"); localStorage.removeItem("jvf_rutinas"); localStorage.removeItem("jvf_ent_start"); localStorage.removeItem("jvf_meals"); }catch(e){} _mem={}; location.reload(); }
 
 // ======= EXPORT / IMPORT (red de seguridad: backup + migración entre dispositivos) =======
 // Reemplazo total con confirmación. Reusa get/set, hoyLocal, toast, validar, render. NO toca motor ni gate.
 function exportarJSON(){ try{ set("jvf_last_export",hoyLocal()); }catch(e){}
   try{
-    var data={ app:"jvf", schema:1, app_version:"0.7", exportadoEl:new Date().toISOString(),
-      perfil:get(LS_P,null), pesos:get(LS_W,[]), entrenos:get(LS_E,[]), notas_ej:get("jvf_notas_ej",{}), comida:get("jvf_comida",[]), agua:get("jvf_agua",{}), suples_cfg:get("jvf_suples_cfg",null), suples_log:get("jvf_suples_log",{}) };
+    var data={ app:"jvf", schema:1, app_version:"0.10", exportadoEl:new Date().toISOString(),
+      perfil:get(LS_P,null), pesos:get(LS_W,[]), entrenos:get(LS_E,[]), notas_ej:get("jvf_notas_ej",{}), comida:get("jvf_comida",[]), agua:get("jvf_agua",{}), suples_cfg:get("jvf_suples_cfg",null), suples_log:get("jvf_suples_log",{}),
+      rutinas:get("jvf_rutinas",[]), meals:get("jvf_meals",[]), ent_start:get("jvf_ent_start",null) };   // v0.10 · backup completo
     var blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
     var url=URL.createObjectURL(blob);
     var a=document.createElement("a"); a.href=url; a.download="jvf-backup-"+hoyLocal()+".json";
@@ -973,7 +1231,11 @@ function procesarImport(file){
     pesos=pesos.filter(function(x){ return x&&typeof x.f==='string'&&+x.w>0; }).map(function(x){ return {f:x.f,w:+x.w}; });
     entrenos=entrenos.filter(function(w){ return w&&w.f&&Array.isArray(w.ejercicios); });
     comida=comida.filter(function(x){ return x&&x.f&&x.n; });
+    // v0.10 · rutinas y comidas guardadas viajan en el backup (reemplazo total, como el resto)
+    var rutinas=Array.isArray(data.rutinas)?data.rutinas.filter(function(r){ return r&&r.nombre&&Array.isArray(r.ejercicios); }):[];
+    var meals=Array.isArray(data.meals)?data.meals.filter(function(mm){ return mm&&mm.nombre&&Array.isArray(mm.items); }):[];
     set(LS_P,data.perfil); set(LS_W,pesos); set(LS_E,entrenos); set("jvf_notas_ej",notas); set("jvf_comida",comida); if(data.agua) set("jvf_agua",data.agua); if(data.suples_cfg) set("jvf_suples_cfg",data.suples_cfg); if(data.suples_log) set("jvf_suples_log",data.suples_log);
+    set("jvf_rutinas",rutinas); set("jvf_meals",meals); if(data.ent_start) set("jvf_ent_start",data.ent_start);
     render();
     toast("✓ Datos importados");
   };
@@ -1364,8 +1626,13 @@ function renderEntForm(){
       else _obj=' · <b style="color:var(--jade)">hoy: sube a '+(Math.round((+_t.peso+2.5)*10)/10)+' kg</b>';
     }
     var ultHtml = ultima ? '<div class="hint" style="margin:4px 0 0">↩ Última vez ('+esc(ultima.f)+'): '+esc(ultima.txt)+_obj+'</div>' : '';
+    // Miniatura del ejercicio (si está en la biblioteca con foto): entreno visual para principiantes.
+    // Toca la foto -> ficha visual (cómo se hace + músculos). Sale también en las rutinas sugeridas.
+    var _src=imgDe(ej.nombre);
+    var thumb=_src?'<img class="ent-thumb" loading="lazy" src="'+escAttr(_src)+'" alt="" title="Ver cómo se hace" onclick="entVerFicha('+JSON.stringify(ej.nombre).replace(/"/g,"&quot;")+')" onerror="this.style.display=\'none\'">':'';
     return '<div class="ent-ej" style="border:1px solid var(--line-soft);border-radius:12px;padding:12px;margin-top:10px">'
       +'<div class="row" style="gap:6px;align-items:center">'
+      +thumb
       +'<input class="ent-nombre" list="ent-ejercicios" placeholder="Ejercicio (ej. Press banca)" value="'+escAttr(ej.nombre)+'" onchange="entNombreCambia(this,'+i+')">'
       +'<button class="sec" type="button" title="Biblioteca" style="width:auto;margin:0;padding:8px 11px" onclick="abrirBiblio(this)">📚</button>'
       +'<button class="sec" type="button" title="¿Qué es el RIR? Toca para saberlo" style="width:auto;margin:0;padding:8px 11px;font-size:.7rem;font-family:var(--mono);letter-spacing:.03em" onclick="rirAbrir()">RIR ⓘ</button>'
@@ -1376,6 +1643,7 @@ function renderEntForm(){
       +'<div class="row" style="margin-top:8px;gap:6px"><button class="sec" type="button" style="flex:2" onclick="entAddSerie('+i+')">+ Serie</button><button class="sec" type="button" style="flex:1" onclick="restStart()" title="Temporizador de descanso">⏱ Descanso</button></div>'
       +'</div>';
   }).join('');
+  try{ rutBtnSync(); }catch(e){}   // F1 · "Guardar como rutina" solo si hay ≥1 ejercicio con nombre
 }
 var _entPulseHooked=false;
 function entInit(){
@@ -1393,6 +1661,9 @@ function entInit(){
       if(fila){ fila.classList.remove("rowpulse"); void fila.offsetWidth; fila.classList.add("rowpulse"); }
     }); _entPulseHooked=true; }
   }
+  // F1 v0.10 · rutinas guardadas + chip del crono (si había sesión en marcha, revive al volver);
+  // F5 v0.10 · hint para el novato sin historial.
+  try{ renderMisRutinas(); cronoRender(); rutBtnSync(); hintNovato(); }catch(e){}
 }
 // ----- "Última vez" (referencia estilo Hevy/Strong): qué hiciste la última sesión de ESTE ejercicio.
 // Solo lectura, no rellena nada automáticamente: ayuda a apuntar a la sobrecarga progresiva sin adivinar.
@@ -1505,9 +1776,19 @@ function guardarEntreno(){
   // D3 · detectar récord NUEVO (peso máx. o volumen) comparando con el mejor histórico PREVIO de cada ejercicio.
   var record=detectarRecord(ejs, arrPrev);
   var arr=arrPrev.slice();
-  arr.push({ id:(""+new Date().getTime()+"-"+Math.round(Math.random()*99999)), f:fecha, ejercicios:ejs });
+  // F1 v0.10 · cronómetro de sesión: hora de inicio ("HH:MM") y duración en minutos reales.
+  // Si no hubo crono (entreno apuntado a toro pasado), ambos van a null y no se enseña nada.
+  var _cst=+get(LS_ENT_START,0), _hIni=null, _durMin=null;
+  if(_cst>0){
+    var _d0=new Date(_cst);
+    _hIni=String(_d0.getHours()).padStart(2,"0")+":"+String(_d0.getMinutes()).padStart(2,"0");
+    _durMin=Math.min(600, Math.max(1, Math.round((Date.now()-_cst)/60000)));   // mínimo 1 min, tope 600
+  }
+  arr.push({ id:(""+new Date().getTime()+"-"+Math.round(Math.random()*99999)), f:fecha, ejercicios:ejs, hIni:_hIni, durMin:_durMin });
   set(LS_E,arr);
   var resumen=resumenSesion(ejs);
+  resumen.hIni=_hIni; resumen.durMin=_durMin;   // para la tarjeta de resumen ("🕐 19:04 · 52 min")
+  set(LS_ENT_START,null); cronoRender();        // el crono muere al guardar el entreno
   set("jvf_ent_draft",null);
   _ent={ejercicios:[]}; entInit(); renderEntHistorial();
   mostrarResumenSesion(resumen);
@@ -1683,6 +1964,8 @@ function mostrarResumenSesion(r){
     +tickSVG()
     +"<div class='rings'>"+rVol+rSer+rRep+"</div>"
     +"<div class='kv' style='margin-top:10px'><span>Músculo más trabajado</span><span style='color:var(--jade);font-weight:600'>"+esc(r.foco||"—")+"</span></div>"
+    // F1 v0.10 · hora de inicio y duración de la sesión (solo si el crono corrió)
+    +((r.hIni||r.durMin)?"<div class='kv'><span>Sesión</span><span>🕐 "+esc(r.hIni||"—")+(r.durMin?" · "+r.durMin+" min":"")+"</span></div>":"")
     +(streak?"<div style='margin-top:10px;text-align:center'>"+streak+"</div>":"")
     +badgesHTML()
     +"<button class='sec sharebtn' type='button' onclick='compartirSesion()'>📤 Compartir</button>"
@@ -1714,13 +1997,27 @@ var RUTINAS={
   fullbody_casa:{nombre:"Full-body en casa (mancuernas)",dias:["Sentadilla goblet|4","Press banca mancuernas|4","Remo con mancuerna|4","Press militar mancuernas|3","Curl con mancuernas|3","Flexiones|3"]},
   fullbody_corporal:{nombre:"Full-body peso corporal",dias:["Sentadilla búlgara|4","Flexiones|4","Dominadas|4","Fondos en banco|3","Plancha|3"]},
   torso:{nombre:"Torso (torso-pierna 4 días)",dias:["Press banca|4","Remo con barra|4","Press militar mancuernas|3","Jalón al pecho|3","Curl con barra|3","Extensión en polea (cuerda)|3"]},
-  pierna:{nombre:"Pierna (torso-pierna 4 días)",dias:["Sentadilla con barra|4","Peso muerto rumano|4","Prensa de piernas|3","Curl femoral tumbado|3","Elevación de gemelo de pie|4","Crunch|3"]}
+  pierna:{nombre:"Pierna (torso-pierna 4 días)",dias:["Sentadilla con barra|4","Peso muerto rumano|4","Prensa de piernas|3","Curl femoral tumbado|3","Elevación de gemelo de pie|4","Crunch|3"]},
+  // PPL de principiante (básicos estandarizados, volumen contenido). Inspirado en el beginner PPL de Hevy.
+  ppl_push:{nombre:"Push · empuje (principiante)",dias:["Press banca|4","Press militar mancuernas|3","Aperturas con mancuernas|3","Elevaciones laterales|3","Extensión en polea (cuerda)|3"]},
+  ppl_pull:{nombre:"Pull · tirón (principiante)",dias:["Jalón al pecho|4","Remo con barra|4","Remo con mancuerna|3","Face pull|3","Curl con mancuernas|3"]},
+  ppl_legs:{nombre:"Legs · pierna (principiante)",dias:["Sentadilla con barra|4","Prensa de piernas|3","Curl femoral tumbado|3","Extensión de cuádriceps|3","Elevación de gemelo de pie|4"]}
 };
+// Recomienda rutinas según "qué quieres mejorar" (w_prioridad), material y días/semana.
+// Regla dictada por Pablo: si el usuario pone "todo" (o nada concreto) -> PPL básicos según los días.
 function rutinaSugerida(){
-  var p=get(LS_P,{})||{}, c=p.coach||{}, mat=(c.material||"").toLowerCase(), dias=(c.dias_sem||"")+"";
+  var p=get(LS_P,{})||{}, c=p.coach||{}, mat=(c.material||"").toLowerCase(), dias=(c.dias_sem||"")+"", prio=(c.prioridad||"").toLowerCase().trim();
+  var muchosDias=/^(3-4|4-5|6|7)/.test(dias);
+  // Prioridad concreta por zona -> empuja el día PPL que la contiene primero.
+  if(prio && prio!=="todo"){
+    if(/pecho|hombro|tr[ií]ceps|empuj/.test(prio)) return muchosDias?[RUTINAS.ppl_push,RUTINAS.ppl_pull,RUTINAS.ppl_legs]:[RUTINAS.ppl_push];
+    if(/espalda|dorsal|b[ií]ceps|tir[óo]n|remo/.test(prio)) return muchosDias?[RUTINAS.ppl_pull,RUTINAS.ppl_push,RUTINAS.ppl_legs]:[RUTINAS.ppl_pull];
+    if(/pierna|cu[aá]dr|femoral|gl[uú]teo|gemelo/.test(prio)) return muchosDias?[RUTINAS.ppl_legs,RUTINAS.ppl_push,RUTINAS.ppl_pull]:[RUTINAS.ppl_legs];
+  }
+  // "todo" o sin material especial: PPL básicos si entrena muchos días, si no full-body.
   if(/solo peso/.test(mat)) return [RUTINAS.fullbody_corporal];
   if(/casa/.test(mat)) return [RUTINAS.fullbody_casa];
-  if(/^(3-4|4-5|6|7)/.test(dias)) return [RUTINAS.torso,RUTINAS.pierna];
+  if(muchosDias) return (prio==="todo")?[RUTINAS.ppl_push,RUTINAS.ppl_pull,RUTINAS.ppl_legs]:[RUTINAS.torso,RUTINAS.pierna];
   return [RUTINAS.fullbody];
 }
 function cargarRutina(key){
@@ -1728,7 +2025,39 @@ function cargarRutina(key){
   _ent.ejercicios=r.dias.map(function(d){ var pp=d.split("|"); var series=[]; for(var i=0;i<+pp[1];i++) series.push({peso:"",reps:"",rir:""});
     return {nombre:pp[0], notas:"", series:series}; });
   renderEntForm(); var cta=$("ent_cta_rut"); if(cta) cta.remove(); var cta2=$("ent_cta_rep"); if(cta2) cta2.remove();
+  rutinaNotaPrincipiante();
+  // F1 v0.10 · cargar una rutina sugerida del catálogo también arranca el cronómetro de sesión
+  set(LS_ENT_START, Date.now()); cronoRender();
   toast("✓ Rutina cargada — ajusta pesos y va");
+}
+// F5 v0.10 · ¿es novato? El nivel del coach (onboarding) decide cuánta chapa educativa recibe.
+function esNovato(){
+  var p=get(LS_P,{})||{}, c=p.coach||{};
+  return /principiante|nunca|empiezo|0 \(aún/i.test((c.nivel||"")+"");
+}
+// F5 v0.10 · hint bajo el título de Entrenos, SOLO para novato sin historial: su primer objetivo
+// no es el peso, es aprender el movimiento y encontrar su fallo real.
+function hintNovato(){
+  var el=$("ent_hint_novato"); if(!el) return;
+  if(esNovato() && !get(LS_E,[]).length){
+    el.innerHTML="<p class='hint' style='margin:6px 0 0'>🔰 Tu primer objetivo no es el peso: es <b style='color:var(--soft)'>aprender el movimiento</b> y descubrir dónde está tu fallo real (toca <a href='#' onclick='rirAbrir();return false' style='color:var(--jade)'>RIR ⓘ</a>).</p>";
+  } else { el.innerHTML=""; }
+}
+// Al cargar una rutina, nota educativa del fallo. F5 v0.10 · adaptativa por nivel:
+// LARGA para el novato (no conoce su límite, hay que explicarle cómo calibrarlo);
+// una sola línea corta para el resto (ya sabe qué es el RIR, no necesita el sermón).
+function rutinaNotaPrincipiante(){
+  var prev=$("ent_nota_princ"); if(prev) prev.remove();
+  var d=document.createElement("div"); d.id="ent_nota_princ"; d.className="hint";
+  d.style.cssText="margin:0 0 10px;font-size:.8rem;border-left:3px solid var(--jade);padding:8px 10px;background:rgba(255,255,255,.02)";
+  if(esNovato()){
+    d.innerHTML="🔰 <b>Empiezas: no te pases de volumen.</b> Céntrate en hacer bien estos básicos y mejorar semana a semana. "
+      +"Como aún no conoces tu límite, en máquinas conviene <b style='color:var(--ember)'>tocar el fallo</b> (que una rep se quede a medias) para aprender dónde está — así calibras tu RIR. "
+      +"<a href='#' onclick='rirAbrir();return false' style='color:var(--jade)'>¿Qué es el RIR? →</a>";
+  } else {
+    d.innerHTML="Entrena cerca del fallo (RIR 1-0) y apunta cada serie. <a href='#' onclick='rirAbrir();return false' style='color:var(--jade)'>RIR ⓘ</a>";
+  }
+  var f=$("ent_form"); if(f) f.parentNode.insertBefore(d,f);
 }
 // El formulario arranca con una fila placeholder (nombre y series vacíos); para los CTAs
 // "vacío" significa que el usuario aún no ha escrito nada, no que no haya filas.
@@ -1771,6 +2100,111 @@ function repetirEntreno(id){
   _tab="entrenos"; aplicarTab(); window.scrollTo(0,0);
   toast("↻ Entreno cargado — edítalo y guarda");
 }
+// ======= F1 · MIS RUTINAS (plantillas sin peso) + CRONÓMETRO DE SESIÓN (v0.10) =======
+// "Una cosa son las rutinas y otra los entrenos": la rutina es una PLANTILLA (solo ejercicios y
+// nº de series, sin pesos); el entreno es lo que haces HOY, con su hora de inicio y duración real.
+// El crono cuenta por TIMESTAMP (como el rest timer): si se bloquea la pantalla, al volver sigue bien.
+var LS_RUTINAS="jvf_rutinas", LS_ENT_START="jvf_ent_start";
+var _cronoTimer=null;
+function cronoFmt(ms){
+  var s=Math.max(0,Math.floor(ms/1000)), h=Math.floor(s/3600), m=Math.floor((s%3600)/60), ss=s%60;
+  return h>0 ? h+":"+String(m).padStart(2,"0")+":"+String(ss).padStart(2,"0") : m+":"+String(ss).padStart(2,"0");
+}
+function _cronoTick(){
+  var st=+get(LS_ENT_START,0);
+  if(!(st>0)){ cronoRender(); return; }   // sin start -> cronoRender apaga chip e interval
+  var el=$("ent_crono_t"); if(el) el.textContent=cronoFmt(Date.now()-st);
+}
+// Pinta (o esconde) el chip ⏱ según exista jvf_ent_start; arranca/para el interval de 1 s.
+function cronoRender(){
+  var chip=$("ent_crono_chip"); if(!chip) return;
+  var st=+get(LS_ENT_START,0);
+  if(!(st>0)){
+    chip.classList.add("hidden");
+    if(_cronoTimer){ clearInterval(_cronoTimer); _cronoTimer=null; }
+    return;
+  }
+  chip.classList.remove("hidden");
+  var el=$("ent_crono_t"); if(el) el.textContent=cronoFmt(Date.now()-st);
+  if(!_cronoTimer) _cronoTimer=setInterval(_cronoTick, 1000);
+}
+function cronoDescartar(){ set(LS_ENT_START,null); cronoRender(); toast("⏱ Cronómetro descartado"); }
+// Lista "📋 Mis rutinas" encima del formulario (solo si hay guardadas).
+function renderMisRutinas(){
+  var el=$("ent_mis_rutinas"); if(!el) return;
+  var rs=get(LS_RUTINAS,[]);
+  if(!rs.length){ el.innerHTML=""; return; }
+  el.innerHTML="<div class='eyebrow-lbl'>📋 Mis rutinas</div>"+rs.map(function(r){
+    var n=(r.ejercicios||[]).length;
+    return "<div class='kv'><span>"+esc(r.nombre)+" <span class='hint' style='display:inline'>· "+n+" ejercicio"+(n===1?"":"s")+"</span></span>"
+      +"<span style='display:flex;gap:6px'>"
+      +"<button class='sec' type='button' style='width:auto;margin:0;padding:6px 10px;font-size:.72rem;color:var(--jade);border-color:var(--jade)' onclick=\"rutIniciar('"+r.id+"')\">▶ Iniciar entreno</button>"
+      +"<button class='sec' type='button' style='width:auto;margin:0;padding:6px 10px' title='Borrar rutina' onclick=\"rutBorrar('"+r.id+"')\">🗑</button>"
+      +"</span></div>";
+  }).join("");
+}
+// El botón "💾 Guardar como rutina" solo aparece si el form tiene ≥1 ejercicio con nombre.
+function rutBtnSync(){
+  var b=$("rut_guardar_btn"); if(!b) return;
+  var tiene=false, noms=document.querySelectorAll("#ent_form .ent-nombre");
+  for(var i=0;i<noms.length;i++){ if((noms[i].value||"").trim()){ tiene=true; break; } }
+  b.classList.toggle("hidden", !tiene);
+  if(!tiene) show("rut_guardar_form", false);
+}
+function rutGuardarAbrir(){
+  show("rut_guardar_form", true);
+  var i=$("rut_nombre"); if(i){ i.value=""; setTimeout(function(){ try{ i.focus(); }catch(e){} },60); }
+}
+function rutGuardarCancelar(){ show("rut_guardar_form", false); }
+function rutGuardarOk(){
+  entSync();
+  var nombre=($("rut_nombre").value||"").trim();
+  if(!nombre){ toast("Ponle un nombre a la rutina"); return; }
+  // Solo nombres y nº de series: las rutinas son plantillas; los pesos/reps van en cada entreno.
+  var ejs=(_ent.ejercicios||[]).filter(function(e){ return (e.nombre||"").trim(); })
+    .map(function(e){ return {nombre:(e.nombre||"").trim(), series:Math.max(1,(e.series||[]).length)}; });
+  if(!ejs.length){ toast("Añade al menos un ejercicio con nombre"); return; }
+  var rs=get(LS_RUTINAS,[]);
+  rs.push({id:Date.now().toString(36)+Math.random().toString(36).slice(2,6), nombre:nombre, ejercicios:ejs});
+  set(LS_RUTINAS,rs);
+  show("rut_guardar_form", false);
+  renderMisRutinas();
+  toast("💾 Rutina guardada");
+}
+function rutBorrar(id){
+  var rs=get(LS_RUTINAS,[]), r=rs.filter(function(x){ return x.id===id; })[0];
+  if(!confirm("¿Borrar la rutina \""+((r&&r.nombre)||"?")+"\"? Tus entrenos guardados no se tocan.")) return;
+  set(LS_RUTINAS, rs.filter(function(x){ return x.id!==id; }));
+  renderMisRutinas(); toast("Rutina borrada");
+}
+// ▶ Iniciar entreno: carga la plantilla en el form (series vacías), fecha=hoy y ARRANCA el crono.
+function rutIniciar(id){
+  var rs=get(LS_RUTINAS,[]), r=null;
+  for(var k=0;k<rs.length;k++){ if(rs[k].id===id){ r=rs[k]; break; } }
+  if(!r){ toast("Rutina no encontrada"); return; }
+  _ent.ejercicios=(r.ejercicios||[]).map(function(e){
+    var ss=[], n=Math.max(1,+e.series||1);
+    for(var j=0;j<n;j++) ss.push({peso:"",reps:"",rir:""});
+    return {nombre:e.nombre||"", series:ss};
+  });
+  if(!_ent.ejercicios.length) _ent.ejercicios=[{nombre:'',series:[{peso:'',reps:'',rir:''}]}];
+  var f=$("ent_fecha"); if(f) f.value=hoyLocal();
+  renderEntForm();
+  var cta=$("ent_cta_rut"); if(cta) cta.remove(); var cta2=$("ent_cta_rep"); if(cta2) cta2.remove();
+  rutinaNotaPrincipiante();
+  set(LS_ENT_START, Date.now()); cronoRender();
+  window.scrollTo(0,0);
+  toast("▶ Entreno iniciado — el crono ya corre");
+}
+// Si el usuario entra directo (sin pulsar ▶) y empieza a teclear en el form, el primer tecleo
+// también fija el inicio de la sesión. De paso refresca el botón "Guardar como rutina".
+document.addEventListener("input", function(e){
+  var f=$("ent_form"); if(!f || !e.target || !f.contains(e.target)) return;
+  try{
+    if(!(+get(LS_ENT_START,0)>0)){ entSync(); if(!entFormVacio()){ set(LS_ENT_START, Date.now()); cronoRender(); } }
+    rutBtnSync();
+  }catch(err){}
+});
 function entVol(ej){ return ej.series.reduce(function(a,s){ return a + (s.reps*s.peso); },0); }
 function entTop(ej){ return ej.series.reduce(function(a,s){ return s.peso>a.peso?{peso:s.peso,reps:s.reps}:a; },{peso:0,reps:0}); }
 // 1RM estimado (Epley): peso * (1 + reps/30). Usa la mejor serie (mayor 1RM estimado).
@@ -1780,7 +2214,7 @@ function entMejor1RM(ej){
 }
 function renderEntHistorial(){
   var arr=get(LS_E,[]).slice().sort(function(a,b){ return a.f<b.f?-1:a.f>b.f?1:0; });
-  if(!arr.length){ $("ent_hist").innerHTML="<div class='empty'><div class='ico'>🏋️</div><div class='et'>Tu primer entreno empieza aquí</div><div class='es'>Registra el de hoy ↑ y verás tu progreso sesión a sesión.</div></div>"; return; }
+  if(!arr.length){ $("ent_hist").innerHTML="<div class='empty'><div class='ico'>🏋️</div><div class='et'>Tu primer entreno empieza aquí</div><div class='es'>Registra el de hoy ↑ y verás tu progreso sesión a sesión.</div></div>"; try{ renderInformeMes(); }catch(e){} return; }
   // Recorrido cronológico: detecta récord de VOLUMEN y de PESO MÁXIMO (top set) por ejercicio.
   var prevVol={}, prevTop={}, bestVol={};
   arr.forEach(function(w){ (w.ejercicios||[]).forEach(function(ej){
@@ -1816,14 +2250,109 @@ function renderEntHistorial(){
         +record+pbar
         +"<div class='hint' style='margin:2px 0 8px'>"+sets+"  ·  vol "+Math.round(ej._vol)+"  ·  top "+top.peso+"kg×"+top.reps+rm+"</div>";
     }).join("");
+    // F1 v0.10 · si la sesión tiene hora/duración del crono, se enseña junto a la fecha
+    var durTxt=(w.durMin>0)?" <span class='hint' style='display:inline;font-weight:400'>🕐 "+(w.hIni?esc(w.hIni)+" · ":"")+w.durMin+" min</span>":"";
     return "<div style='border-top:1px solid var(--line-soft);padding-top:10px;margin-top:10px'>"
-      +"<div class='kv'><span style='color:var(--soft);font-weight:600'>"+esc(w.f)+"</span>"
+      +"<div class='kv'><span style='color:var(--soft);font-weight:600'>"+esc(w.f)+durTxt+"</span>"
       +"<span style='display:flex;gap:6px'><button class='sec' type='button' style='width:auto;margin:0;padding:6px 10px;font-size:.7rem' onclick=\"repetirEntreno('"+w.id+"')\">↻ Repetir</button>"
       +"<button class='sec' type='button' style='width:auto;margin:0;padding:6px 10px;font-size:.7rem' onclick=\"entBorrar('"+w.id+"')\">Borrar</button></span></div>"
       +ejHtml+"</div>";
   }).join("");
+  try{ renderInformeMes(); }catch(e){}   // F2 · el informe/calendario del mes se refresca con el historial
 }
 function renderEntrenos(){ renderEntHistorial(); }
+
+// ======= F2 · INFORME MENSUAL + CALENDARIO (v0.10, pestaña Progreso) =======
+// Se calcula AL VUELO desde LS_E para CUALQUIER mes navegable con ◀ ▶ (Hevy solo enseña el
+// último mes: aquí superamos eso). El mes mostrado vive en variable, no se persiste a propósito.
+var _mesVista=null;   // {y, m} del mes mostrado; null = mes actual
+var MESES_ES=["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
+// Volumen (kg totales = Σ peso×reps) de un entreno completo.
+function volDeEntreno(w){
+  var v=0; ((w&&w.ejercicios)||[]).forEach(function(ej){ (ej.series||[]).forEach(function(s){ v+=(+s.reps||0)*(+s.peso||0); }); });
+  return v;
+}
+function progMesNav(d){
+  if(!_mesVista) return;
+  var m=_mesVista.m+d, y=_mesVista.y;
+  if(m<0){ m=11; y--; } if(m>11){ m=0; y++; }
+  _mesVista={y:y, m:m}; renderInformeMes();
+}
+function renderInformeMes(){
+  var el=$("prog_mes"); if(!el) return;
+  var hoy=new Date(hoyLocal()+"T12:00:00");
+  if(!_mesVista) _mesVista={y:hoy.getFullYear(), m:hoy.getMonth()};
+  var y=_mesVista.y, m=_mesVista.m, pref=y+"-"+String(m+1).padStart(2,"0");
+  var arr=get(LS_E,[]);
+  var delMes=arr.filter(function(w){ return ((w&&w.f)||"").slice(0,7)===pref; });
+  // --- calendario L-D: día con entreno en jade suave, hoy con borde ---
+  var diasSet={}; delMes.forEach(function(w){ diasSet[+w.f.slice(8,10)]=true; });
+  var nDias=new Date(y,m+1,0).getDate(), off=(new Date(y,m,1).getDay()+6)%7;   // lunes=0
+  var esEsteMes=(hoy.getFullYear()===y && hoy.getMonth()===m);
+  var celdas=["L","M","X","J","V","S","D"].map(function(c){ return "<span class='cab'>"+c+"</span>"; });
+  for(var i=0;i<off;i++) celdas.push("<span></span>");
+  for(var d=1;d<=nDias;d++){
+    var st="";
+    if(diasSet[d]) st+="background:var(--jade-soft);color:var(--jade);font-weight:600;";
+    if(esEsteMes && d===hoy.getDate()) st+="border-color:var(--jade);";
+    celdas.push("<span style='"+st+"'>"+d+"</span>");
+  }
+  // --- informe del mes mostrado ---
+  var nEnt=delMes.length, volTot=0, durTot=0, hayDur=false, seriesMus={};
+  delMes.forEach(function(w){
+    volTot+=volDeEntreno(w);
+    if(w.durMin>0){ durTot+=w.durMin; hayDur=true; }
+    (w.ejercicios||[]).forEach(function(ej){
+      var mus=musculoDe(ej.nombre); seriesMus[mus]=(seriesMus[mus]||0)+(ej.series||[]).length;
+    });
+  });
+  var topMus=Object.keys(seriesMus).sort(function(a,b){ return seriesMus[b]-seriesMus[a]; }).slice(0,3);
+  // PRs del mes: peso máximo por ejercicio que SUPERE el máximo de TODOS los meses anteriores
+  // (misma filosofía que detectarRecord: sin histórico previo no hay récord, hay estreno).
+  var iniMes=pref+"-01", maxPrev={}, maxMes={};
+  arr.forEach(function(w){
+    var f=(w&&w.f)||"", esPrevio=f<iniMes, esDelMes=f.slice(0,7)===pref;
+    if(!esPrevio && !esDelMes) return;
+    (w.ejercicios||[]).forEach(function(ej){
+      var nm=(ej.nombre||"").trim(); if(!nm) return;
+      var key=nm.toLowerCase();
+      var top=(ej.series||[]).reduce(function(a,s){ return +s.peso>a?+s.peso:a; },0);
+      if(esPrevio){ if(maxPrev[key]==null || top>maxPrev[key]) maxPrev[key]=top; }
+      else if(maxMes[key]==null || top>maxMes[key].kg){ maxMes[key]={kg:top, n:nm}; }
+    });
+  });
+  var prs=[];
+  Object.keys(maxMes).forEach(function(k){ if(maxPrev[k]!=null && maxMes[k].kg>maxPrev[k]) prs.push(maxMes[k]); });
+  prs.sort(function(a,b){ return b.kg-a.kg; }); prs=prs.slice(0,5);
+  // --- comparativa vs mes anterior (entrenos y volumen, con ▲▼) ---
+  var mA=m-1, yA=y; if(mA<0){ mA=11; yA--; }
+  var prefA=yA+"-"+String(mA+1).padStart(2,"0");
+  var antMes=arr.filter(function(w){ return ((w&&w.f)||"").slice(0,7)===prefA; });
+  var nAnt=antMes.length, volAnt=0; antMes.forEach(function(w){ volAnt+=volDeEntreno(w); });
+  function flecha(a,b){ return a>b?" <span style='color:var(--jade)'>▲</span>":(a<b?" <span style='color:var(--ember)'>▼</span>":" ="); }
+  // --- pintar ---
+  var h="<div class='eyebrow-lbl' style='margin-top:18px'>📅 Tus entrenos, mes a mes</div>"
+    +"<div class='kv' style='border-bottom:0'>"
+    +"<span><button class='sec' type='button' style='width:auto;margin:0;padding:4px 12px' onclick='progMesNav(-1)'>◀</button></span>"
+    +"<span style='color:var(--soft);font-weight:600;text-transform:capitalize'>"+MESES_ES[m]+" "+y+"</span>"
+    +"<span><button class='sec' type='button' style='width:auto;margin:0;padding:4px 12px' onclick='progMesNav(1)'>▶</button></span>"
+    +"</div><div class='calmes'>"+celdas.join("")+"</div>";
+  if(!nEnt){
+    h+="<p class='hint' style='margin-top:10px'>Sin entrenos en "+MESES_ES[m]+" "+y+". Navega con ◀ ▶ para ver otros meses.</p>";
+  } else {
+    h+="<div class='card' style='margin:10px 0 0;padding:12px'>"
+      +"<div class='eyebrow-lbl'>Informe de "+MESES_ES[m]+" "+y+"</div>"
+      +"<div class='kv'><span>Entrenos</span><span>"+nEnt+flecha(nEnt,nAnt)+" <span class='hint' style='display:inline'>(mes ant.: "+nAnt+")</span></span></div>"
+      +"<div class='kv'><span>Volumen total</span><span>"+Math.round(volTot)+" kg"+flecha(volTot,volAnt)+" <span class='hint' style='display:inline'>(mes ant.: "+Math.round(volAnt)+")</span></span></div>"
+      +(hayDur?"<div class='kv'><span>Tiempo entrenando</span><span>"+(durTot>=60?Math.floor(durTot/60)+" h "+(durTot%60)+" min":durTot+" min")+"</span></div>":"")
+      +(topMus.length?"<div class='kv'><span>Top músculos (series)</span><span style='text-transform:capitalize'>"+topMus.map(function(mm){ return esc(mm)+" ("+seriesMus[mm]+")"; }).join(" · ")+"</span></div>":"")
+      +(prs.length
+        ? "<div class='eyebrow-lbl' style='margin-top:10px'>🏆 PRs del mes</div>"+prs.map(function(p){ return "<div class='kv'><span>"+esc(p.n)+"</span><span style='color:var(--jade)'>"+p.kg+" kg</span></div>"; }).join("")
+        : "<p class='hint' style='margin:8px 0 0'>Sin PRs este mes (un PR = superar tu peso máximo de todos los meses anteriores).</p>")
+      +"</div>";
+  }
+  el.innerHTML=h;
+}
 
 // ======= BIBLIOTECA DE EJERCICIOS =======
 // Base curada a mano (free-exercise-db, dominio público / Unlicense, como referencia de cobertura).
@@ -2089,6 +2618,20 @@ function bibInit(){
     if(_lst.length<25) _lst=EJERCICIOS;
     dl.innerHTML=_lst.map(function(e){ return "<option value=\""+escAttr(e.n)+"\"></option>"; }).join("");
   }
+}
+// Foto del ejercicio en la biblioteca (o null). Para las miniaturas del formulario de entreno.
+function imgDe(nombre){
+  if(!nombre) return null;
+  var e=EJERCICIOS.filter(function(x){ return x.n===nombre; })[0];
+  return (e&&e.img) ? IMG_EJ+e.img : null;
+}
+// Abre la ficha visual de un ejercicio directamente desde el formulario de entreno (miniatura).
+function entVerFicha(nombre){
+  _bibTarget=null;
+  $("bib_buscar").value=""; $("bib_eq").value=""; $("bib_mus").value="";
+  show("bibModal", true);
+  bibRender();
+  bibVer(nombre);
 }
 function abrirBiblio(btn){
   var ej=btn.closest(".ent-ej"); _bibTarget = ej? ej.querySelector(".ent-nombre") : null;
