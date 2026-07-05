@@ -563,14 +563,14 @@ Tus datos se guardan solo en este dispositivo.</p>
     <p class="hint" style="margin-top:0"><b style="color:var(--soft)">RIR = Reps In Reserve:</b> las repeticiones que te quedaban al acabar la serie.</p>
     <div class="kv"><span>RIR 2</span><span>te quedaban 2 reps</span></div>
     <div class="kv"><span>RIR 1</span><span>te quedaba 1 rep</span></div>
-    <div class="kv"><span>RIR 0</span><span style="color:var(--ember)">fallo muscular</span></div>
-    <div class="kv"><span>RIR −1</span><span style="color:var(--ember)">fallo + 1 rep extra (con ayuda)</span></div>
-    <div class="kv"><span>RIR −2</span><span style="color:var(--ember)">fallo + 2 reps extra (con ayuda)</span></div>
-    <p class="hint" style="margin-top:12px"><b style="color:var(--ember)">RIR 0 = fallo muscular:</b> la última repetición que podías completar tú solo, con buena técnica.</p>
-    <p class="hint" style="margin-top:8px"><b style="color:var(--ember)">RIR negativo (−1, −2):</b> ya llegaste al fallo y sacaste repeticiones EXTRA con ayuda (forzadas, dropset, un compañero). Es ir <b style="color:var(--soft)">MÁS ALLÁ del fallo</b>.</p>
-    <p class="hint" style="margin-top:8px"><b style="color:var(--jade)">Para construir músculo, entrena a RIR 1-0</b> (cerca del fallo o al fallo). Dejar RIR 2 es el tope, y solo si ya tienes experiencia y conoces bien tu cuerpo.</p>
+    <div class="kv"><span>RIR 0</span><span style="color:var(--ember)">al límite (ninguna completa más)</span></div>
+    <div class="kv"><span>fallo</span><span style="color:var(--ember)">intentas otra y NO la completas</span></div>
+    <div class="kv"><span>RIR −1 / −2</span><span style="color:var(--ember)">más allá del fallo (parciales/ayuda)</span></div>
+    <p class="hint" style="margin-top:12px"><b style="color:var(--ember)">RIR 0 NO es lo mismo que el fallo.</b> RIR 0 = hiciste la última repetición COMPLETA que te salía y no intentaste otra. <b style="color:var(--ember)">Fallo</b> = intentaste la siguiente y se quedó a medias (no pudiste completarla).</p>
+    <p class="hint" style="margin-top:8px"><b style="color:var(--ember)">RIR negativo (−1, −2) = MÁS ALLÁ del fallo:</b> tras fallar, sigues sacando trabajo — <b style="color:var(--soft)">parciales</b> (acortando el recorrido), forzadas con ayuda de un compañero, dropset…</p>
+    <p class="hint" style="margin-top:8px"><b style="color:var(--jade)">Para construir músculo, entrena a RIR 1-0</b> (al borde del fallo). Dejar RIR 2 es el tope, y solo si ya tienes experiencia y conoces bien tu cuerpo.</p>
     <p class="hint" style="margin-top:8px">🔰 <b style="color:var(--soft)">Si estás empezando:</b> busca el fallo solo en máquinas o aislamiento (o con compañero). En libres pesados (banca, sentadilla) quédate a RIR 2 las primeras semanas: la técnica manda.</p>
-    <p class="hint" style="margin-top:8px"><b style="color:var(--ember)">Consejo si empiezas:</b> de principiante normalmente NO conoces tu punto de fallo —puede que aún no te hayas adaptado al ejercicio o no conectes bien con el músculo—, así que es mejor <b style="color:var(--ember)">ir al fallo (RIR 0)</b> para aprender de verdad dónde está tu límite.</p>
+    <p class="hint" style="margin-top:8px"><b style="color:var(--ember)">Consejo si empiezas:</b> de principiante normalmente NO conoces tu límite real —aún no dominas el ejercicio ni conectas bien con el músculo—, así que en máquinas conviene <b style="color:var(--ember)">tocar el fallo de verdad</b> (que una rep se quede a medias) para aprender dónde está. Así calibras tu RIR.</p>
     <button class="sec" type="button" onclick="rirCerrar()">Entendido</button>
   </div>
 </div>
@@ -1310,11 +1310,12 @@ let _ent={ejercicios:[]};
 function esc(t){ var d=document.createElement('div'); d.textContent=(t==null?'':t); return d.innerHTML; }
 function escAttr(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;'); }
 function hoyLocal(){ var d=new Date(); return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); }
-// Formatea el RIR para mostrar: 0 = "fallo"; negativo = "fallo +1"/"fallo +2" (reps más allá del fallo); positivo = "RIR n".
+// Formatea el RIR para mostrar: 0 = "al límite" (última rep completa, SIN fallar la siguiente);
+// negativo = "fallo +1"/"fallo +2" (trabajo más allá del fallo: parciales/ayuda); positivo = "RIR n".
 function fmtRir(rir){
   if(rir==null || rir==='' || isNaN(+rir)) return '';
   var n=+rir;
-  if(n===0) return 'fallo';
+  if(n===0) return 'al límite';
   if(n<0) return 'fallo +'+Math.abs(n);
   return 'RIR '+n;
 }
@@ -1349,7 +1350,7 @@ function renderEntForm(){
         +'<span class="hint" style="margin:0;min-width:26px">'+(j+1)+'ª</span>'
         +'<input class="ent-peso" type="number" inputmode="decimal" step="0.5" placeholder="'+escAttr(phPeso)+'" value="'+escAttr(s.peso)+'">'
         +'<input class="ent-reps" type="number" inputmode="numeric" placeholder="reps" value="'+escAttr(s.reps)+'">'
-        +'<input class="ent-rir" type="number" inputmode="numeric" step="1" placeholder="RIR" value="'+escAttr(s.rir)+'" style="max-width:64px" title="RIR — 0 = fallo; negativo = más allá del fallo">'
+        +'<input class="ent-rir" type="number" inputmode="numeric" step="1" placeholder="RIR" value="'+escAttr(s.rir)+'" style="max-width:64px" title="RIR — 0 = al límite (ninguna completa más); fallo = la siguiente no sale; negativo = más allá del fallo">'
         +'<span class="rirq">'+[0,1,2,3].map(function(v){ return '<button type="button" class="rirq-b'+(String(s.rir)===String(v)?' on':'')+'" onclick="entRirSet(this,'+v+')">'+v+'</button>'; }).join('')+'</span>'
         +'<button class="sec" type="button" style="width:auto;margin:0;padding:8px 11px" onclick="entDelSerie('+i+','+j+')">✕</button>'
         +'</div>';
@@ -1370,7 +1371,7 @@ function renderEntForm(){
       +'<button class="sec" type="button" title="¿Qué es el RIR? Toca para saberlo" style="width:auto;margin:0;padding:8px 11px;font-size:.7rem;font-family:var(--mono);letter-spacing:.03em" onclick="rirAbrir()">RIR ⓘ</button>'
       +'<button class="sec" type="button" style="width:auto;margin:0;padding:8px 11px" onclick="entDelEjercicio('+i+')">🗑</button>'
       +'</div>'+ultHtml+sets
-      +'<div class="hint" style="margin:6px 0 0;font-size:.68rem">RIR: <b style="color:var(--soft)">0 = fallo</b> · negativo (−1, −2) = reps más allá del fallo</div>'
+      +'<div class="hint" style="margin:6px 0 0;font-size:.68rem">RIR: <b style="color:var(--soft)">0 = al límite</b> (ninguna completa más) · <b style="color:var(--soft)">fallo</b> = intentas otra y no sale · negativo (−1, −2) = más allá del fallo (parciales/ayuda)</div>'
       +'<input class="ent-nota" placeholder="Nota para este ejercicio (se guarda)" value="'+nota+'" oninput="guardarNotaEjercicio(this,'+i+')" style="margin-top:8px;font-size:.85rem">'
       +'<div class="row" style="margin-top:8px;gap:6px"><button class="sec" type="button" style="flex:2" onclick="entAddSerie('+i+')">+ Serie</button><button class="sec" type="button" style="flex:1" onclick="restStart()" title="Temporizador de descanso">⏱ Descanso</button></div>'
       +'</div>';
