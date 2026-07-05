@@ -1,0 +1,9 @@
+# Cabeceras HTTP para el sitio estático de JV Fitness.
+# Formato compatible con Netlify Y Cloudflare Pages (ambos leen este archivo).
+# La app es un único index.html con JS embebido; sin llamadas a APIs externas todavía.
+/*
+  X-Frame-Options: SAMEORIGIN
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: no-referrer
+  Permissions-Policy: geolocation=(), microphone=()
+  Strict-Transport-Security: max-age=31536000; includeSubDomains
