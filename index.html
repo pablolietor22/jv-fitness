@@ -282,7 +282,7 @@
 
 <header class="brandbar">
   <div class="logo"><span class="dot"></span>JV <b>Fitness</b></div>
-  <span class="tag">MVP v0.11 · motor v0.6 · foto v2</span>
+  <span class="tag">MVP v0.12 · motor v0.6 · foto v2</span>
 </header>
 <div class="statuschip"><span class="pulse"></span> cálculo science-based · ajustable · calibración real</div>
 
@@ -305,6 +305,12 @@
   <div class="wstep" data-paso="0">
     <h2>Soy Jarvis 👋</h2>
     <p class="hint">Soy tu entrenador. Voy a hacerte unas preguntas para conocerte. <b style="color:var(--soft)">Cuanto más me cuentes, mejor te conozco</b> — y más personalizo tu entrenamiento, tu comida y los consejos que te doy. Tranquilo, no es un examen; se hace una sola vez.</p>
+    <!-- F v0.12 · selector de idioma (i18n-base): solo la ESTRUCTURA; English llegará después -->
+    <label>Idioma / Language</label>
+    <select id="f_idioma" onchange="idiomaCambia(this)">
+      <option value="es" selected>Español</option>
+      <option value="en" disabled>English (próximamente)</option>
+    </select>
   </div>
 
   <!-- 1 · Objetivo -->
@@ -520,7 +526,7 @@
   <div id="com_list" style="margin-top:10px"></div>
   <!-- F4 v0.10 · "Guardar día como comida" + lista "Mis comidas" (lo rellena renderMeals()) -->
   <div id="meals_box" style="margin-top:12px"></div>
-  <p class="hint">Base de alimentos curada (valores por 100 g). El botón <b style="color:var(--soft)">📷 Foto (beta)</b> te da un rango honesto de calorías con 4 preguntas; el motor de visión real llegará después. Suma tus comidas y compáralas con tu objetivo del Plan.</p>
+  <p class="hint">Base de alimentos curada (valores por 100 g). El botón <b style="color:var(--soft)">📷 Foto (beta)</b> te da un rango honesto de calorías con 4 preguntas; el motor de visión real llegará después. Suma tus comidas y compáralas con tu objetivo del Plan.<br>Datos de platos españoles: <a href="https://www.bedca.net" target="_blank" rel="noopener" style="color:var(--jade)">BEDCA/AESAN</a> (base oficial española).</p>
 
   <div class="card" style="margin-top:14px;padding:12px" id="agua_card">
     <div class="eyebrow-lbl">💧 Agua de hoy</div>
@@ -573,7 +579,9 @@
     <p class="hint" style="margin-top:6px">Se guarda solo la plantilla: ejercicios y nº de series, <b style="color:var(--soft)">sin pesos</b>. Los pesos van en cada entreno.</p>
   </div>
   <button class="btn-lg" type="button" onclick="guardarEntreno()">Guardar entreno</button>
-  <p class="hint">Apunta cada serie (kg × reps, y el RIR si quieres). La app te marca si <b style="color:var(--soft)">progresas</b> respecto a la última vez que hiciste cada ejercicio — sobrecarga progresiva, lo que de verdad construye músculo. Leyenda: <b style='color:var(--soft)'>vol</b> = kg totales movidos (peso×reps) · <b style='color:var(--soft)'>1RM≈</b> = tu máximo estimado a 1 repetición (fórmula Epley).</p>
+  <p class="hint">Apunta cada serie (kg × reps, y el RIR si quieres). La app te marca si <b style="color:var(--soft)">progresas</b> respecto a la última vez que hiciste cada ejercicio — sobrecarga progresiva, lo que de verdad construye músculo. Leyenda: <b style='color:var(--soft)'>vol</b> = kg totales movidos (peso×reps) · <b style='color:var(--soft)'>1RM≈</b> = tu máximo estimado a 1 repetición (fórmula Epley). Toca el <b style='color:var(--soft)'>nº de serie</b> para marcarla <b style='color:#f4a950'>W</b> calentamiento · <b style='color:#ff5555'>F</b> fallo · <b style='color:#74c7ff'>D</b> dropset.</p>
+  <!-- D v0.12 · toggle Hevy: ¿el calentamiento (W) cuenta en stats? Default NO (el calentamiento no es volumen efectivo); volDeEntreno y el informe lo respetan y recalculan al cambiarlo -->
+  <label class="hint" style="display:flex;gap:8px;align-items:center;cursor:pointer;margin-top:4px"><input type="checkbox" id="warmup_stats_chk" style="width:auto;margin:0" onchange="warmupToggle(this)"> Contar el calentamiento (W) en volumen y estadísticas</label>
   <div id="ent_resumen" class="hidden" style="margin-top:14px"></div>
   <div id="ent_hist" style="margin-top:14px"></div>
 </div>
@@ -636,6 +644,23 @@ Tus datos se guardan solo en este dispositivo.</p>
     <p class="hint" style="margin-top:8px">🔰 <b style="color:var(--soft)">Si estás empezando:</b> busca el fallo solo en máquinas o aislamiento (o con compañero). En libres pesados (banca, sentadilla) quédate a RIR 2 las primeras semanas: la técnica manda.</p>
     <p class="hint" style="margin-top:8px"><b style="color:var(--ember)">Consejo si empiezas:</b> de principiante normalmente NO conoces tu límite real —aún no dominas el ejercicio ni conectas bien con el músculo—, así que en máquinas conviene <b style="color:var(--ember)">tocar el fallo de verdad</b> (que una rep se quede a medias) para aprender dónde está. Así calibras tu RIR.</p>
     <button class="sec" type="button" onclick="rirCerrar()">Entendido</button>
+  </div>
+</div>
+
+<!-- MODAL: 🏋️ calculadora de discos (D v0.12, pack Hevy — allí es un ajuste; aquí siempre a mano).
+     Objetivo + barra (20/15/10) → discos por LADO con el juego estándar 25/20/15/10/5/2,5/1,25.
+     Si el peso no se puede clavar con discos estándar, se dice honestamente cuánto se logra. -->
+<div id="plateModal" class="modal hidden">
+  <div class="modal-card">
+    <button class="modal-x" type="button" title="Cerrar" aria-label="Cerrar" onclick="plateCerrar()">✕</button>
+    <h2>🏋️ Discos para la barra</h2>
+    <div class="row" style="gap:6px">
+      <div style="flex:2"><label>Peso objetivo (kg, barra incluida)</label><input id="plate_obj" type="number" inputmode="decimal" step="0.5" placeholder="ej. 60" oninput="plateRender()"></div>
+      <div style="flex:1"><label>Barra</label><select id="plate_barra" onchange="plateBarra()"><option value="20">20 kg</option><option value="15">15 kg</option><option value="10">10 kg</option></select></div>
+    </div>
+    <div id="plate_res" style="margin-top:10px"></div>
+    <p class="hint">Juego estándar por lado: 25 · 20 · 15 · 10 · 5 · 2,5 · 1,25 kg. La barra que elijas se recuerda.</p>
+    <button class="sec" type="button" onclick="plateCerrar()">Cerrar</button>
   </div>
 </div>
 
@@ -803,7 +828,7 @@ Tus datos se guardan solo en este dispositivo.</p>
       </div>
     </div>
     <div id="bc_res" class="hidden" style="margin-top:12px"></div>
-    <p class="hint" style="margin-top:14px">Datos de productos: <a href="https://openfoodfacts.org" target="_blank" rel="noopener" style="color:var(--jade)">Open Food Facts</a> — licencia ODbL.</p>
+    <p class="hint" style="margin-top:14px">Datos de productos: <a href="https://openfoodfacts.org" target="_blank" rel="noopener" style="color:var(--jade)">Open Food Facts</a> — licencia ODbL. Datos de alimentos españoles: <a href="https://www.bedca.net" target="_blank" rel="noopener" style="color:var(--jade)">BEDCA/AESAN</a>.</p>
   </div>
 </div>
 
@@ -983,6 +1008,41 @@ var FOODS=[
   {n:"Semillas de chía",kcal:486,p:17,c:42,f:31},{n:"Semillas de lino",kcal:534,p:18,c:29,f:42},
   {n:"Aceitunas",kcal:115,p:0.8,c:6,f:11},{n:"Plátano macho frito (aprox)",kcal:252,p:1.5,c:41,f:9}
 ];
+// B v0.12 · Alimentos españoles OFICIALES embebidos desde data/alimentos-espana-bedca.json
+// (filosofía single-file: el JSON se EMBEBE, no se fetchea). Valores por 100 g de porción
+// comestible. © Consorcio BEDCA / AESAN (bedca.net) — atribución obligatoria (ver hint de Comida).
+// Trazabilidad de cada registro (ids BEDCA) y decisiones (lenteja excluida, kcal Atwater en 2
+// casos) en data/README-alimentos.md. Generado el 2026-07-06; regenerable con regenerar-bedca.py.
+var FOODS_BEDCA=[
+  {n:"Aceitunas",kcal:120,p:1.3,c:1,f:12.5},{n:"Aceitunas negras (con hueso)",kcal:288,p:2,c:4,f:29.8},{n:"Albóndigas (en conserva)",kcal:141,p:6.8,c:6.8,f:9.7},
+  {n:"Almendras fritas saladas",kcal:590,p:19,c:4.5,f:56},{n:"Anchoas en aceite (conserva)",kcal:203,p:28.9,c:0,f:9.7},{n:"Arroz con leche",kcal:92,p:3.3,c:16.4,f:1.3},
+  {n:"Bacalao salado (remojado)",kcal:109,p:26,c:0,f:0.4},{n:"Berenjena frita",kcal:298,p:1.2,c:2.7,f:31.9},{n:"Bizcocho",kcal:381,p:6.5,c:39.6,f:21.9},
+  {n:"Boquerones fritos",kcal:137,p:20.1,c:0.5,f:6},{n:"Butifarra",kcal:240,p:10,c:5.5,f:20},{n:"Calamar asado",kcal:81,p:16.6,c:0.5,f:1.3},
+  {n:"Cecina",kcal:242,p:39,c:0,f:9.5},{n:"Cerveza",kcal:42,p:0.5,c:3.1,f:0},{n:"Chipirón",kcal:81,p:16.2,c:0.7,f:1.4},
+  {n:"Chorizo",kcal:322,p:27,c:1.9,f:23.1},{n:"Churro",kcal:358,p:4.6,c:40,f:20},{n:"Croquetas de pollo",kcal:154,p:5.8,c:20.4,f:5.3},
+  {n:"Cuajada",kcal:87,p:4.5,c:6.6,f:4.7},{n:"Empanada de carne",kcal:298,p:21.9,c:12,f:18.1},{n:"Empanadilla",kcal:247,p:4.8,c:29.7,f:12},
+  {n:"Ensaladilla rusa",kcal:110,p:2.7,c:9.8,f:6.7},{n:"Fabada asturiana",kcal:157,p:6.1,c:13.4,f:8.8},{n:"Flan de huevo",kcal:132,p:4.8,c:20.4,f:3.4},
+  {n:"Fuet",kcal:473,p:19.5,c:5.5,f:42},{n:"Gambas hervidas",kcal:94,p:19.8,c:0,f:1.7},{n:"Garbanzos en conserva",kcal:133,p:7.2,c:14.1,f:2.9},
+  {n:"Gazpacho",kcal:34,p:0.6,c:1.6,f:2.8},{n:"Horchata",kcal:98,p:1.2,c:17,f:2.7},{n:"Huevo frito",kcal:185,p:13.4,c:0.3,f:14.6},
+  {n:"Huevo revuelto (con mantequilla)",kcal:228,p:10.2,c:0.8,f:20.7},{n:"Jamón cocido (york)",kcal:113,p:21,c:0.4,f:3},{n:"Jamón ibérico de bellota",kcal:333,p:33.2,c:0.5,f:22.2},
+  {n:"Jamón ibérico de cebo",kcal:301,p:32.3,c:0.1,f:19.2},{n:"Jamón serrano",kcal:318,p:28.8,c:0.2,f:22.6},{n:"Leche condensada",kcal:334,p:8.5,c:53.6,f:9.2},
+  {n:"Lomo embuchado",kcal:321,p:34,c:0,f:20.7},{n:"Magdalena",kcal:385,p:6.1,c:39.9,f:22.4},{n:"Mejillones en escabeche",kcal:167,p:10.7,c:0,f:14},
+  {n:"Mejillón hervido",kcal:112,p:18.4,c:3.2,f:2.7},{n:"Merluza rebozada frita",kcal:149,p:10.7,c:3.5,f:10.3},{n:"Morcilla",kcal:323,p:11,c:3.2,f:30},
+  {n:"Morcilla frita",kcal:306,p:12.6,c:15,f:21.9},{n:"Mosto (zumo de uva)",kcal:62,p:0.4,c:15,f:0},{n:"Natillas",kcal:104,p:3.7,c:15.5,f:2.9},
+  {n:"Paella",kcal:172,p:12.4,c:17.4,f:5.7},{n:"Paella marinera",kcal:122,p:3.5,c:25.1,f:0.6},{n:"Panceta frita",kcal:734,p:4.7,c:0,f:80.9},
+  {n:"Paté de hígado de cerdo",kcal:338,p:14,c:5,f:29.5},{n:"Pulpo hervido",kcal:69,p:13.4,c:1.4,f:0.9},{n:"Queso manchego",kcal:388,p:28.8,c:0.5,f:30.4},
+  {n:"Rosquilla",kcal:349,p:7.8,c:49.3,f:13.2},{n:"Salchichón",kcal:420,p:25.8,c:2,f:34.7},{n:"San Jacobo",kcal:237,p:4.1,c:25.2,f:13.3},
+  {n:"Sardina asada",kcal:255,p:16.7,c:0,f:21.2},{n:"Sobrasada",kcal:595,p:12.9,c:0,f:61.4},{n:"Sofrito",kcal:209,p:1.1,c:4.7,f:21},
+  {n:"Tomate frito",kcal:84,p:1.5,c:5.2,f:6.4},{n:"Tortilla francesa",kcal:170,p:14.6,c:0.4,f:12.3},{n:"Turrón (tipo Alicante)",kcal:484,p:13.1,c:44.9,f:28.1},
+  {n:"Vino tinto",kcal:70,p:0.2,c:0.3,f:0}
+];
+// Fusión con dedup por nombre (case-insensitive): la base curada MANDA en las colisiones
+// (Aceitunas, Chorizo, Fuet, Jamón serrano, Lomo embuchado ya existían) para no cambiar por
+// sorpresa valores que el usuario lleva tiempo usando; el resto de BEDCA se añade tal cual.
+(function(){
+  var vistos={}; FOODS.forEach(function(x){ vistos[x.n.toLowerCase()]=1; });
+  FOODS_BEDCA.forEach(function(x){ if(!vistos[x.n.toLowerCase()]){ FOODS.push(x); vistos[x.n.toLowerCase()]=1; } });
+})();
 function comInit(){
   var d=$("com_fecha"); if(d && !d.value) d.value=hoyLocal();
   comFillDatalist();   // I6 · base curada + alimentos propios; se reconstruye por si acabas de crear uno
@@ -1014,18 +1074,20 @@ function comCopiarAyer(){
   var d=new Date(Date.parse(f+'T12:00:00')-864e5), ayer=d.toISOString().slice(0,10);
   var full=get(LS_COMIDA,[]), deAyer=full.filter(function(x){ return x.f===ayer; });
   if(!deAyer.length){ toast("Ayer ("+ayer+") no hay nada apuntado"); return; }
-  deAyer.forEach(function(x){ full.push({id:Date.now().toString(36)+Math.random().toString(36).slice(2,6), f:f, n:x.n, g:x.g, kcal:x.kcal, p:x.p, c:x.c, gr:x.gr}); });
+  // Fix ml · u viaja en la copia (si el item era en ml, la copia también); en los antiguos queda undefined y JSON lo omite (= g)
+  deAyer.forEach(function(x){ full.push({id:Date.now().toString(36)+Math.random().toString(36).slice(2,6), f:f, n:x.n, g:x.g, u:x.u, kcal:x.kcal, p:x.p, c:x.c, gr:x.gr}); });
   set(LS_COMIDA,full); renderComida(); toast("⧉ Copiado el día de ayer ("+deAyer.length+" alimentos)");
 }
 function comRecientes(){
   var el=$("com_recientes"); if(!el) return;
   var full=get(LS_COMIDA,[]); if(full.length<3){ el.innerHTML=""; return; }
   var freq={};
-  full.forEach(function(x){ if(!freq[x.n]) freq[x.n]={c:0,gs:{}}; freq[x.n].c++; freq[x.n].gs[x.g]=(freq[x.n].gs[x.g]||0)+1; });
+  // Fix ml · se recuerda la unidad del item (última vista) para que el chip no mienta ("200 ml", no "200g")
+  full.forEach(function(x){ if(!freq[x.n]) freq[x.n]={c:0,gs:{}}; freq[x.n].c++; freq[x.n].gs[x.g]=(freq[x.n].gs[x.g]||0)+1; freq[x.n].u=comUnidad(x); });
   var top=Object.keys(freq).sort(function(a,b){ return freq[b].c-freq[a].c; }).slice(0,6);
   el.innerHTML=top.length?'<div class="wizchips" style="margin:8px 0 0">'+top.map(function(n){
     var g=Object.keys(freq[n].gs).sort(function(a,b){ return freq[n].gs[b]-freq[n].gs[a]; })[0];
-    return '<span class="wchip done" onclick="comQuick('+JSON.stringify(n).replace(/"/g,"&quot;")+','+g+')">'+esc(n)+' '+g+'g</span>';
+    return '<span class="wchip done" onclick="comQuick('+JSON.stringify(n).replace(/"/g,"&quot;")+','+g+')">'+esc(n)+' '+g+freq[n].u+'</span>';
   }).join("")+'</div>':"";
 }
 function comGr(g){ var el=$("com_gramos"); if(el) el.value=g; if((($("com_nombre")||{}).value||'').trim()) comAdd(); }
@@ -1123,7 +1185,8 @@ function renderComida(){
   $("com_list").innerHTML="<div class='eyebrow-lbl'>Lo que llevas</div>"+arr.map(function(x){
     var idx=full.indexOf(x);
     // v0.10 · los items sin gramos (📷 foto, ⚡ rápido) no enseñan "· 0 g"
-    return "<div class='kv'><span>"+esc(x.n)+(x.g>0?" · "+x.g+" g":"")+"</span><span style='font-variant-numeric:tabular-nums'>"+x.kcal+" kcal · P"+Math.round(x.p)+" C"+Math.round(x.c)+" G"+Math.round(x.gr)+" <button class='sec' type='button' style='width:auto;margin:0 0 0 6px;padding:4px 9px' onclick='comDel("+(x.id?JSON.stringify(x.id):idx)+")'>✕</button></span></div>";
+    // Fix ml · comUnidad(x): los escaneados en ml enseñan "ml"; los antiguos sin u siguen en "g"
+    return "<div class='kv'><span>"+esc(x.n)+(x.g>0?" · "+x.g+" "+comUnidad(x):"")+"</span><span style='font-variant-numeric:tabular-nums'>"+x.kcal+" kcal · P"+Math.round(x.p)+" C"+Math.round(x.c)+" G"+Math.round(x.gr)+" <button class='sec' type='button' style='width:auto;margin:0 0 0 6px;padding:4px 9px' onclick='comDel("+(x.id?JSON.stringify(x.id):idx)+")'>✕</button></span></div>";
   }).join("");
   try{ renderMeals(); }catch(e){}   // F4 · el botón "guardar día" y "Mis comidas" dependen del día mostrado
 }
@@ -1568,9 +1631,114 @@ function mealBorrar(id){
 // Honestidad: OFF es colaborativa (errores de OCR, por-ración vs por-100g, huecos) → pantalla de
 // confirmación SIEMPRE editable y, si faltan kcal o proteína, se exige copiarlas de la etiqueta.
 // Red permitida: world.openfoodfacts.org (lookup por EAN) + jsDelivr (polyfill del lector). Nada más.
-var LS_BC_CACHE="jvf_barcode_cache";   // {ean:{producto:{...por 100 g}, ts}} — cachear respeta el límite de OFF (15 req/min) y da offline en productos repetidos
+var LS_BC_CACHE="jvf_barcode_cache";   // {ean:{producto:{...por 100 g o 100 ml + u:"g"|"ml" + dens}, ts}} — cachear respeta el límite de OFF (15 req/min) y da offline en productos repetidos
 var LS_ALIM="jvf_alimentos_propios";   // [{id, nombre, marca, ean|null, porcion_g, kcal100, p100, c100, g100}]
 var _bcStream=null, _bcTimer=null, _bcDetector=null, _bcProducto=null, _apEan=null;
+var _bcUnidadIn="g";                   // unidad en la que el usuario apunta la CANTIDAD (g|ml); se resetea en cada confirmación
+
+// [BC-ML-PURE-INICIO] — bloque PURO (sin DOM ni red): los tests de node lo extraen y ejecutan tal cual.
+// Bug real (helado de Pablo, noche 06/07): en OFF los líquidos/semilíquidos traen los valores bajo
+// claves *_100g pero REFERIDAS a 100 ml (lo declara nutrition_data_per), y el confirmador asumía
+// gramos. 100 ml de helado ≈ 62 g: no es lo mismo. Aquí vive toda la lógica g↔ml de la spec.
+
+// Tabla de densidades HONESTA (g/ml) — corta a propósito: SOLO productos cuya densidad se conoce.
+// helado 0,55-0,7 según lo aireado (overrun) → usamos el punto medio 0,62 · leche 1,03 ·
+// aceite 0,92 · refresco 1,04 (azucarado) · nata 1,0. Lo que no esté aquí NO se convierte:
+// mejor pedir la unidad del envase que inventar una densidad.
+var BC_DENS=[
+  {re:/helado|sorbete/i,               cat:/ice-cream|sorbet/,                      d:0.62, nota:"helado ≈ 0,62 g/ml (rango real 0,55-0,7 según lo aireado)"},
+  {re:/\bleche\b/i,                    cat:/(^|:)milks$|dairy-drinks|milk-drink/,   d:1.03, nota:"leche ≈ 1,03 g/ml"},
+  {re:/\baceite\b/i,                   cat:/(^|:)oils$|vegetable-oils|olive-oils/,  d:0.92, nota:"aceite ≈ 0,92 g/ml"},
+  {re:/refresco|\bcola\b|gaseosa/i,    cat:/sodas|carbonated-drinks|soft-drink/,    d:1.04, nota:"refresco ≈ 1,04 g/ml (azucarado)"},
+  {re:/\bnata\b/i,                     cat:/(^|:)creams$|dairy-creams/,             d:1.0,  nota:"nata ≈ 1,0 g/ml"}
+];
+// Densidad de un producto por nombre y/o categorías de OFF. Devuelve {d, nota} o null (= no se sabe).
+function bcDensidad(nombre, cats){
+  var texto=String(nombre||""), tags=(cats||[]).join(" ");
+  for(var i=0;i<BC_DENS.length;i++){
+    if(BC_DENS[i].re.test(texto) || (tags && BC_DENS[i].cat.test(tags))) return {d:BC_DENS[i].d, nota:BC_DENS[i].nota};
+  }
+  return null;
+}
+// Categorías de OFF que casi siempre etiquetan por 100 ml (heurística de ÚLTIMO recurso de la spec:
+// bebidas, helados, lácteos líquidos, salsas). "(^|:)milks$" evita falsos positivos tipo milk-powders.
+var BC_CATS_ML=/beverages|ice-cream|sorbet|(^|:)milks$|dairy-drinks|milk-drink|drinkable|(^|:)sauces$|-sauces/;
+// Detección de la unidad REAL de los valores por-100 de OFF. Devuelve {u:"g"|"ml", motivo:texto}.
+// Orden de confianza: 1) nutrition_data_per (lo declara la propia ficha) → 2) unidad del envase
+// (product_quantity_unit o el texto de quantity) → 3) unidad de la ración (serving) → 4) heurística
+// por categoría → 5) gramos por defecto (y se dice honestamente que es una suposición).
+function bcDetectarUnidad(p){
+  p=p||{};
+  var ndp=String(p.nutrition_data_per||"").toLowerCase().replace(/\s/g,"");
+  if(ndp==="100ml") return {u:"ml", motivo:"la ficha de OFF declara los valores por 100 ml"};
+  if(ndp==="100g")  return {u:"g",  motivo:"la ficha de OFF declara los valores por 100 g"};
+  var uq=String(p.product_quantity_unit||"").toLowerCase();
+  if(!uq){ var mq=/\d\s*(ml|cl|l|g|kg)\b/i.exec(String(p.quantity||"")); if(mq) uq=mq[1].toLowerCase(); }
+  if(uq==="ml"||uq==="cl"||uq==="l") return {u:"ml", motivo:"el envase se mide en "+uq+" (líquido)"};
+  if(uq==="g"||uq==="kg")            return {u:"g",  motivo:"el envase se mide en "+uq};
+  var squ=String(p.serving_quantity_unit||"").toLowerCase();
+  if(!squ){ var ms=/\d\s*(ml|cl|l|g|kg)\b/i.exec(String(p.serving_size||"")); if(ms) squ=ms[1].toLowerCase(); }
+  if(squ==="ml"||squ==="cl"||squ==="l") return {u:"ml", motivo:"la ración del envase viene en "+squ+" (líquido)"};
+  if(squ==="g"||squ==="kg")             return {u:"g",  motivo:"la ración del envase viene en gramos"};
+  var tags=(p.categories_tags||[]).join(" ");
+  if(tags && BC_CATS_ML.test(tags)) return {u:"ml", motivo:"por su categoría (bebida/helado/lácteo líquido/salsa) casi seguro va por 100 ml"};
+  return {u:"g", motivo:"sin pistas de líquido: asumo gramos — corrígelo si tu etiqueta dice ml"};
+}
+// Normaliza el producto crudo de OFF a nuestro por-100: {kcal100,p100,c100,g100,u,uMotivo,dens,servingAviso}.
+// GUARDIA per-serving (punto 5 de la spec): si OFF trae la nutrición POR RACIÓN, se recalcula a
+// por-100 con serving_quantity (regla de tres) o, si no se puede, se dejan los valores en null →
+// la regla dura de kcal+proteína obliga a copiarlos de la etiqueta. NUNCA se traga por-ración como por-100.
+function bcNormalizarOFF(p){
+  p=p||{}; var nu=p.nutriments||{};
+  function num(v){ return (v==null||v==="")?null:(isFinite(+v)?+v:null); }
+  var det=bcDetectarUnidad(p);
+  var ndp=String(p.nutrition_data_per||"").toLowerCase().replace(/\s/g,"");
+  var out={kcal100:null, p100:null, c100:null, g100:null, u:det.u, uMotivo:det.motivo, dens:null, servingAviso:null};
+  if(ndp==="serving"){
+    var sq=num(p.serving_quantity);
+    if(sq!=null && sq>0){
+      var f=100/sq;
+      var kS=num(nu["energy-kcal_serving"]);
+      if(kS==null && num(nu["energy_serving"])!=null) kS=num(nu["energy_serving"])/4.184;   // energy_serving viene en kJ
+      var pS=num(nu["proteins_serving"]), cS=num(nu["carbohydrates_serving"]), gS=num(nu["fat_serving"]);
+      out.kcal100=(kS==null?null:Math.round(kS*f));
+      out.p100=(pS==null?null:+(pS*f).toFixed(1));
+      out.c100=(cS==null?null:+(cS*f).toFixed(1));
+      out.g100=(gS==null?null:+(gS*f).toFixed(1));
+      // si faltan claves *_serving pero OFF ya dejó calculadas las *_100g, se usan (con el mismo aviso)
+      if(out.kcal100==null){ var k1=num(nu["energy-kcal_100g"]); if(k1==null && num(nu["energy_100g"])!=null) k1=Math.round(num(nu["energy_100g"])/4.184); out.kcal100=k1; }
+      if(out.p100==null) out.p100=num(nu["proteins_100g"]);
+      if(out.c100==null) out.c100=num(nu["carbohydrates_100g"]);
+      if(out.g100==null) out.g100=num(nu["fat_100g"]);
+      var squ2=String(p.serving_quantity_unit||det.u).toLowerCase();
+      out.servingAviso="⚠️ OFF traía estos valores POR RACIÓN ("+sq+" "+squ2+"): los he recalculado a por 100 "+out.u+" — compáralos con la etiqueta antes de añadir.";
+    } else {
+      out.servingAviso="⚠️ OFF trae estos valores POR RACIÓN y no dice de cuánto es la ración: no los puedo pasar a por-100 sin inventar. Copia los valores por 100 "+out.u+" de tu etiqueta.";
+    }
+  } else {
+    // camino normal: claves *_100g — que en líquidos significan "por 100 ml" (de ahí la unidad detectada)
+    var kcal=num(nu["energy-kcal_100g"]);
+    if(kcal==null && num(nu["energy_100g"])!=null) kcal=Math.round(num(nu["energy_100g"])/4.184);   // solo kJ → se convierte (1 kcal = 4,184 kJ)
+    out.kcal100=kcal; out.p100=num(nu["proteins_100g"]); out.c100=num(nu["carbohydrates_100g"]); out.g100=num(nu["fat_100g"]);
+  }
+  var marca=p.brands?String(p.brands).split(",")[0].trim():"";
+  var nombre=((p.product_name||"").trim()+(marca?" ("+marca+")":"")).trim();
+  out.dens=bcDensidad(nombre, p.categories_tags||[]);
+  return out;
+}
+// Factor para escalar los por-100 a lo que te has comido. cant viene en uIn; el producto va por 100 uProd.
+// Si las unidades no coinciden SOLO se convierte con densidad conocida (g = ml × d · ml = g ÷ d);
+// si no se conoce → {err:"densidad"}: se pide usar la unidad del envase, sin inventar.
+function bcFactorCantidad(cant, uIn, uProd, dens){
+  if(!(cant>0)) return {err:"cantidad"};
+  if(uIn===uProd) return {k:cant/100};
+  if(!dens || !(dens.d>0)) return {err:"densidad"};
+  var enProd=(uProd==="ml") ? (cant/dens.d) : (cant*dens.d);
+  return {k:enProd/100};
+}
+// Unidad de un item del diario: los antiguos no llevan u → gramos (compatibilidad, punto 4 de la spec).
+function comUnidad(x){ return (x && x.u==="ml") ? "ml" : "g"; }
+// [BC-ML-PURE-FIN]
 
 function bcEstado(msg){ var el=$("bc_estado"); if(el) el.textContent=msg||""; }
 function bcAbrir(){
@@ -1671,34 +1839,42 @@ function bcBuscar(ean){
   if(res){ res.innerHTML="<p class='hint'>Buscando "+esc(ean)+"…</p>"; res.classList.remove("hidden"); }
   var propio=get(LS_ALIM,[]).filter(function(a){ return a && a.ean===ean; })[0];
   if(propio){
+    // Los alimentos propios se dan de alta SIEMPRE por 100 g (así lo pide su modal) → u:"g" fijo.
     bcConfirmar({ean:ean, fuente:"propio", nombre:propio.nombre+(propio.marca?" ("+propio.marca+")":""),
       kcal100:(propio.kcal100==null?null:+propio.kcal100), p100:(propio.p100==null?null:+propio.p100),
       c100:(+propio.c100||0), g100:(+propio.g100||0), img:null, nutriscore:null, serving:null,
+      u:"g", uMotivo:"tus alimentos propios van por 100 g (como los diste de alta)",
+      dens:bcDensidad(propio.nombre,null), servingAviso:null,
       porcion:(+propio.porcion_g>0?+propio.porcion_g:null)});
     return;
   }
   var cache=get(LS_BC_CACHE,{});
   if(cache[ean] && cache[ean].producto){
     var cp=cache[ean].producto;
+    // Compat: entradas cacheadas ANTES de este fix no llevan u → se asumen gramos (punto 4 de la spec).
     bcConfirmar({ean:ean, fuente:"cache", nombre:cp.nombre||("Producto "+ean),
       kcal100:(cp.kcal100==null?null:+cp.kcal100), p100:(cp.p100==null?null:+cp.p100),
       c100:(+cp.c100||0), g100:(+cp.g100||0), img:cp.img||null, nutriscore:cp.nutriscore||null,
+      u:(cp.u==="ml")?"ml":"g",
+      uMotivo:(cp.u?"unidad guardada de tu escaneo anterior":"escaneo antiguo sin unidad: asumo gramos — corrígelo si va en ml"),
+      dens:(cp.dens && cp.dens.d>0)?cp.dens:bcDensidad(cp.nombre,null), servingAviso:null,
       serving:cp.serving||null, porcion:null});
     return;
   }
   // OJO: sin headers custom (el User-Agent no se puede tocar desde fetch de navegador). Sin API key.
-  var url="https://world.openfoodfacts.org/api/v2/product/"+encodeURIComponent(ean)+".json?fields=product_name,brands,nutriments,serving_size,nutriscore_grade,image_front_url";
+  // fields ampliado (fix ml): nutrition_data_per + unidades de envase/ración + categories_tags para
+  // detectar si los valores van por 100 g o por 100 ml, y serving_quantity para la guardia per-serving.
+  var url="https://world.openfoodfacts.org/api/v2/product/"+encodeURIComponent(ean)+".json?fields=product_name,brands,nutriments,serving_size,nutriscore_grade,image_front_url,nutrition_data_per,product_quantity,product_quantity_unit,quantity,serving_quantity,serving_quantity_unit,categories_tags";
   fetch(url).then(function(r){ return r.json(); }).then(function(j){
     if(!j || j.status!==1 || !j.product){ bcNoEncontrado(ean); return; }
-    var p=j.product, nu=p.nutriments||{};
-    function num(v){ return (v==null||v==="")?null:(isFinite(+v)?+v:null); }
-    var kcal=num(nu["energy-kcal_100g"]);
-    // Algunos productos solo traen la energía en kJ: se convierte (1 kcal = 4,184 kJ) en vez de pedirla a mano.
-    if(kcal==null && num(nu["energy_100g"])!=null) kcal=Math.round(num(nu["energy_100g"])/4.184);
+    var p=j.product;
+    // Toda la lógica por-100/unidad/per-serving vive en bcNormalizarOFF (pura, testeada en node).
+    var norm=bcNormalizarOFF(p);
     var marca=p.brands?String(p.brands).split(",")[0].trim():"";
     var nombre=((p.product_name||"").trim()+(marca?" ("+marca+")":"")).trim()||("Producto "+ean);
     bcConfirmar({ean:ean, fuente:"off", nombre:nombre,
-      kcal100:kcal, p100:num(nu["proteins_100g"]), c100:num(nu["carbohydrates_100g"]), g100:num(nu["fat_100g"]),
+      kcal100:norm.kcal100, p100:norm.p100, c100:norm.c100, g100:norm.g100,
+      u:norm.u, uMotivo:norm.uMotivo, dens:norm.dens, servingAviso:norm.servingAviso,
       img:(typeof p.image_front_url==="string" && p.image_front_url.indexOf("https://")===0)?p.image_front_url:null,
       nutriscore:(typeof p.nutriscore_grade==="string" && /^[a-e]$/i.test(p.nutriscore_grade))?p.nutriscore_grade.toUpperCase():null,
       serving:(typeof p.serving_size==="string" && p.serving_size)?p.serving_size:null, porcion:null});
@@ -1718,6 +1894,8 @@ function nsColor(g){ return (g==="A"||g==="B") ? "var(--jade)" : (g==="C" ? "#f4
 // y sin kcal+proteína no se deja añadir. Todo contenido de OFF pasa por esc/escAttr.
 function bcConfirmar(prod){
   _bcProducto=prod;
+  if(prod.u!=="ml") prod.u="g";                    // saneo: cualquier camino sin unidad clara = gramos
+  _bcUnidadIn=prod.u;                              // la cantidad se pregunta en LA UNIDAD del producto
   var res=$("bc_res"); if(!res) return;
   var falta=(prod.kcal100==null || prod.p100==null);
   function val(v){ return v==null?"":escAttr(v); }
@@ -1729,39 +1907,100 @@ function bcConfirmar(prod){
   if(prod.nutriscore) extras.push("Nutri-Score <b style='color:"+nsColor(prod.nutriscore)+"'>"+esc(prod.nutriscore)+"</b>");
   if(prod.serving) extras.push("ración del envase: "+esc(prod.serving));
   if(extras.length) h+="<div class='hint' style='margin-top:6px'>"+extras.join(" · ")+"</div>";
-  h+="<p class='hint' style='margin-top:8px'>Valores <b style='color:var(--soft)'>por 100 g</b> — compáralos con la etiqueta y corrige lo que no cuadre (la base es colaborativa).</p>";
+  // Fix ml · la unidad REAL, bien GRANDE (el bug del helado fue precisamente no verla): banner + porqué
+  // de la detección + enlace para corregirla a mano si OFF se equivoca (los números no cambian, cambia
+  // qué significan — por eso el cambio de base NO convierte nada).
+  var uTxt=(prod.u==="ml")?"100 ml":"100 g", uOtra=(prod.u==="ml")?"100 g":"100 ml";
+  h+="<div style='margin:10px 0 2px;padding:9px 12px;border-radius:10px;border:1px solid var(--jade);background:rgba(61,220,151,.10)'>"
+    +"<span style='font-size:1.05rem'>Valores <b style='color:var(--jade);font-size:1.25rem'>por "+uTxt+"</b></span>"
+    +"<span class='hint' style='display:block;margin-top:3px'>"+esc(prod.uMotivo||"")
+    +" · <a href='#' onclick='bcUnidadBase();return false;' style='color:var(--jade);text-decoration:underline'>¿Tu etiqueta dice por "+uOtra+"? Cámbialo</a></span></div>";
+  // Punto 5 de la spec · aviso MUY visible si OFF traía datos por ración (recalculados o pendientes de etiqueta)
+  if(prod.servingAviso) h+="<div class='aviso' style='margin-top:8px'>"+esc(prod.servingAviso)+"</div>";
+  h+="<p class='hint' style='margin-top:8px'>Compáralos con la etiqueta y corrige lo que no cuadre (la base es colaborativa).</p>";
   h+="<div class='row' style='gap:6px'>"
     +"<div><label>Kcal *</label><input id='bc_kcal' type='number' inputmode='decimal' value=\""+val(prod.kcal100)+"\"></div>"
     +"<div><label>P (g) *</label><input id='bc_p' type='number' inputmode='decimal' value=\""+val(prod.p100)+"\"></div>"
     +"<div><label>C (g)</label><input id='bc_c' type='number' inputmode='decimal' value=\""+val(prod.c100)+"\"></div>"
     +"<div><label>G (g)</label><input id='bc_g' type='number' inputmode='decimal' value=\""+val(prod.g100)+"\"></div></div>";
   if(falta) h+="<div class='aviso' style='margin-top:8px'>⚠️ A este producto le faltan kcal o proteína en la base: cópialas de la etiqueta antes de añadir.</div>";
-  h+="<label>Gramos que te has comido</label><input id='bc_gramos' type='number' inputmode='numeric' value=\""+((+prod.porcion>0)?+prod.porcion:100)+"\">";
+  // Cantidad en LA UNIDAD del producto + toggle manual g↔ml (punto 2 de la spec). El input conserva el
+  // id histórico bc_gramos aunque ahora guarda "cantidad en _bcUnidadIn" (renombrarlo rompería hábitos).
+  h+="<label>Cantidad que te has "+(prod.u==="ml"?"bebido/comido":"comido")+" (<span id='bc_u_lbl'>"+prod.u+"</span>)</label>";
+  h+="<div class='row' style='gap:6px;align-items:center'>"
+    +"<input id='bc_gramos' type='number' inputmode='decimal' style='flex:2' value=\""+((+prod._cant>0)?+prod._cant:((+prod.porcion>0)?+prod.porcion:100))+"\">"
+    +"<button class='sec' type='button' id='bc_u_g' style='flex:0 0 auto;width:auto;margin:0;padding:9px 14px' onclick=\"bcSetUnidadIn('g')\">g</button>"
+    +"<button class='sec' type='button' id='bc_u_ml' style='flex:0 0 auto;width:auto;margin:0;padding:9px 14px' onclick=\"bcSetUnidadIn('ml')\">ml</button></div>";
+  h+="<div id='bc_u_aviso' class='hint' style='margin-top:4px;min-height:1em'></div>";
   h+="<button type='button' class='btn-lg' onclick='bcAddDiario()'>Añadir al diario</button>";
   h+="<button class='sec' type='button' onclick='bcReintentar()'>↻ Escanear otro</button>";
   res.innerHTML=h; res.classList.remove("hidden");
+  bcPintarChipsUnidad();
   bcEstado("");
+}
+// Chips g/ml de la cantidad: marca el activo (borde/verde) y actualiza la etiqueta del label.
+function bcPintarChipsUnidad(){
+  ["g","ml"].forEach(function(u){
+    var b=$("bc_u_"+u); if(!b) return;
+    var on=(u===_bcUnidadIn);
+    b.style.borderColor=on?"var(--jade)":""; b.style.color=on?"var(--jade)":""; b.style.fontWeight=on?"700":"";
+  });
+  var l=$("bc_u_lbl"); if(l) l.textContent=_bcUnidadIn;
+}
+// Toggle de la unidad de ENTRADA (punto 3 de la spec): apuntar g de un producto-ml (o al revés) solo
+// se permite con densidad conocida; si no se conoce, mensaje honesto y se queda en la unidad del envase.
+function bcSetUnidadIn(u){
+  var prod=_bcProducto; if(!prod) return;
+  var uProd=(prod.u==="ml")?"ml":"g";
+  var av=$("bc_u_aviso");
+  if(u!==uProd && !(prod.dens && prod.dens.d>0)){
+    _bcUnidadIn=uProd; bcPintarChipsUnidad();
+    if(av) av.textContent="No conozco la densidad de este producto → usa la unidad del envase ("+uProd+"). No invento densidades.";
+    toast("Apúntalo en "+uProd+", como el envase");
+    return;
+  }
+  _bcUnidadIn=(u==="ml")?"ml":"g"; bcPintarChipsUnidad();
+  if(av) av.textContent=(_bcUnidadIn===uProd)?"":("Apuntas en "+_bcUnidadIn+" y lo convierto a "+uProd+" con densidad conocida: "+prod.dens.nota+".");
+}
+// "OFF se equivoca" (punto 2 de la spec): cambia la unidad BASE de los valores por-100. No convierte
+// nada — los mismos números pasan a significar por-100 de la otra unidad, que es justo lo que pasa
+// cuando la ficha de OFF trae mal nutrition_data_per. Recoge antes lo editado para no perderlo.
+function bcUnidadBase(){
+  var prod=_bcProducto; if(!prod) return;
+  function leer(id){ var v=parseFloat((($(id)||{}).value)); return isFinite(v)?v:null; }
+  var nom=((($("bc_nombre")||{}).value)||"").trim(); if(nom) prod.nombre=nom;
+  prod.kcal100=leer("bc_kcal"); prod.p100=leer("bc_p"); prod.c100=leer("bc_c"); prod.g100=leer("bc_g");
+  var cant=leer("bc_gramos"); if(cant>0) prod._cant=cant;
+  prod.u=(prod.u==="ml")?"g":"ml";
+  prod.uMotivo="corregida a mano por ti (la ficha de OFF decía lo contrario)";
+  bcConfirmar(prod);
 }
 function bcAddDiario(){
   var prod=_bcProducto; if(!prod){ toast("Escanea o busca un código primero"); return; }
   var nombre=((($("bc_nombre")||{}).value)||"").trim();
   var kcal=parseFloat(($("bc_kcal")||{}).value), p=parseFloat(($("bc_p")||{}).value);
   var c=parseFloat(($("bc_c")||{}).value), gr=parseFloat(($("bc_g")||{}).value);
-  var g=parseFloat(($("bc_gramos")||{}).value);
+  var g=parseFloat(($("bc_gramos")||{}).value);           // cantidad en _bcUnidadIn (g o ml)
+  var uProd=(prod.u==="ml")?"ml":"g", uIn=(_bcUnidadIn==="ml")?"ml":"g";
   if(!nombre){ toast("Ponle nombre al producto"); return; }
-  if(!(g>0)){ toast("¿Cuántos gramos te has comido?"); return; }
   // Regla dura: sin kcal y proteína NO se añade (son la base del plan; carbos/grasa pueden ir a 0).
   if(!isFinite(kcal) || kcal<0 || !isFinite(p) || p<0){ toast("Kcal y proteína son obligatorias — míralas en la etiqueta"); return; }
   if(!isFinite(c)||c<0) c=0; if(!isFinite(gr)||gr<0) gr=0;
-  var k=g/100, arr=get(LS_COMIDA,[]);
-  // Estructura EXACTA del diario (la misma que comAdd): valores escalados de por-100g a lo comido.
+  // Fix ml · el factor respeta la unidad: mismo por-100 si coinciden; densidad SOLO si se conoce.
+  var fk=bcFactorCantidad(g, uIn, uProd, prod.dens||null);
+  if(fk.err==="cantidad"){ toast("¿Cuánto te has comido? (en "+uIn+")"); return; }
+  if(fk.err==="densidad"){ toast("No conozco la densidad: apúntalo en "+uProd+", como el envase"); return; }
+  var k=fk.k, arr=get(LS_COMIDA,[]);
+  // Estructura EXACTA del diario (la misma que comAdd) + u con la unidad en que APUNTASTE la cantidad
+  // (los items antiguos no llevan u → gramos). Los macros van escalados de por-100 a lo comido.
   arr.push({id:Date.now().toString(36)+Math.random().toString(36).slice(2,6), f:((($("com_fecha")||{}).value)||hoyLocal()),
-    n:nombre, g:g, kcal:Math.round(kcal*k), p:+(p*k).toFixed(1), c:+(c*k).toFixed(1), gr:+(gr*k).toFixed(1)});
+    n:nombre, g:g, u:uIn, kcal:Math.round(kcal*k), p:+(p*k).toFixed(1), c:+(c*k).toFixed(1), gr:+(gr*k).toFixed(1)});
   set(LS_COMIDA,arr);
-  // Se cachea con los valores YA corregidos por el usuario (mejores que los crudos de OFF).
+  // Se cachea con los valores YA corregidos por el usuario (mejores que los crudos de OFF), incluida
+  // la unidad base y la densidad: el próximo escaneo del mismo EAN sale igual de bien SIN red.
   if(prod.ean && prod.fuente!=="propio"){
     var cache=get(LS_BC_CACHE,{});
-    cache[prod.ean]={producto:{nombre:nombre, kcal100:kcal, p100:p, c100:c, g100:gr, img:prod.img||null, nutriscore:prod.nutriscore||null, serving:prod.serving||null}, ts:Date.now()};
+    cache[prod.ean]={producto:{nombre:nombre, kcal100:kcal, p100:p, c100:c, g100:gr, u:uProd, dens:prod.dens||null, img:prod.img||null, nutriscore:prod.nutriscore||null, serving:prod.serving||null}, ts:Date.now()};
     set(LS_BC_CACHE,cache);
   }
   bcCerrar(); renderComida(); toast("✓ Añadido · "+Math.round(kcal*k)+" kcal");
@@ -1845,6 +2084,41 @@ function set(k,v){
 const $=id=>document.getElementById(id);
 const show=(id,on)=>$(id).classList.toggle("hidden",!on);
 
+// ======= F v0.12 · I18N-BASE (estructura de traducción) =======
+// Solo la ESTRUCTURA: diccionario 'es' con las ~40 cadenas más visibles y t(k). El día que llegue
+// el inglés: añadir I18N.en con las mismas claves, habilitar la opción del selector (paso Inicio)
+// y sustituir literales por t("clave") allí donde se pinte texto. t() cae a 'es' y luego a la
+// propia clave: NUNCA rompe aunque falte una traducción.
+var I18N={
+  es:{
+    // pestañas
+    tab_plan:"Plan", tab_ajustar:"Ajustar", tab_peso:"Peso", tab_entrenos:"Entrenos", tab_progreso:"Progreso", tab_comida:"Comida",
+    // wizard
+    wiz_empezar:"Empezar", wiz_siguiente:"Siguiente", wiz_atras:"Atrás", wiz_generar:"Generar mi plan", wiz_guardar:"💾 Guardar cambios",
+    // plan
+    plan_titulo:"Tu plan de hoy", plan_bmr:"BMR · reposo", plan_tdee:"TDEE · gasto total", plan_cal:"Calorías objetivo / día",
+    plan_prot:"Proteínas", plan_grasas:"Grasas", plan_carbos:"Carbohidratos", plan_fibra:"Fibra · objetivo salud", plan_editar:"Editar perfil",
+    // peso
+    peso_titulo:"Peso de hoy", peso_guardar:"Guardar peso", peso_fecha:"Fecha",
+    // entrenos
+    ent_titulo:"Registrar entreno", ent_guardar:"Guardar entreno", ent_add_ej:"+ Añadir ejercicio", ent_add_serie:"+ Serie",
+    ent_descanso:"⏱ Descanso", ent_rut_guardar:"💾 Guardar como rutina", ent_mis_rutinas:"📋 Mis rutinas",
+    ent_repetir:"↻ Repetir", ent_borrar:"Borrar", ent_historial:"Historial",
+    // comida
+    com_titulo:"Diario de comida", com_add:"+ Añadir alimento", com_scan:"📷 Escanear código", com_foto:"📷 Foto (beta)",
+    com_rapido:"⚡ Añadir rápido", com_agua:"💧 Agua de hoy", com_suples:"💊 Suplementos · seguimiento diario",
+    // progreso
+    prog_calib:"Calibración · tu metabolismo real", prog_mes:"📅 Tus entrenos, mes a mes", prog_series_rango:"Series por músculo esta semana vs tu rango",
+    // genéricos
+    g_cancelar:"Cancelar", g_ok:"OK", g_cerrar:"Cerrar", g_exportar:"📥 Exportar datos", g_importar:"📤 Importar datos",
+    g_reset:"Empezar de cero", g_guardado:"✓ Guardado",
+    idioma_pronto:"English is coming — de momento, castellano 💪"
+  }
+};
+var _lang="es";
+function t(k){ var d=I18N[_lang]||I18N.es; return (d && d[k]!=null) ? d[k] : ((I18N.es && I18N.es[k]!=null) ? I18N.es[k] : k); }
+function idiomaCambia(sel){ var v=(sel&&sel.value)||"es"; if(!I18N[v]){ if(sel) sel.value="es"; toast(t("idioma_pronto")); return; } _lang=v; }
+
 // ======= PESTAÑAS + TOAST (UX v0.3) =======
 // Orden de las pestañas (única fuente de verdad; antes estaba duplicado en aplicarTab/render y lo usa el swipe).
 const TABS=["plan","ajustes","registro","entrenos","calib","comida"];
@@ -1894,17 +2168,18 @@ document.addEventListener('DOMContentLoaded',function(){
     if(ents.length>20 && _old) setTimeout(function(){ toast("💾 Llevas tiempo sin copia de seguridad — toca Exportar en Ajustes"); }, 3500);
   }catch(e){}
 });
-function resetTodo(){ if(!confirm("⚠️ Esto borra TODO: perfil, pesos, entrenos, rutinas, comidas, alimentos propios, agua y suplementos. ¿Seguro?")) return; try{ localStorage.removeItem(LS_P); localStorage.removeItem(LS_W); localStorage.removeItem(LS_E); localStorage.removeItem("jvf_notas_ej"); localStorage.removeItem("jvf_comida"); localStorage.removeItem("jvf_agua"); localStorage.removeItem("jvf_suples_cfg"); localStorage.removeItem("jvf_suples_log"); localStorage.removeItem("jvf_rutinas"); localStorage.removeItem("jvf_ent_start"); localStorage.removeItem("jvf_meals"); localStorage.removeItem("jvf_alimentos_propios"); localStorage.removeItem("jvf_barcode_cache"); localStorage.removeItem("jvf_foto_ajustes"); }catch(e){} _mem={}; location.reload(); }
+function resetTodo(){ if(!confirm("⚠️ Esto borra TODO: perfil, pesos, entrenos, rutinas, comidas, alimentos propios, agua y suplementos. ¿Seguro?")) return; try{ localStorage.removeItem(LS_P); localStorage.removeItem(LS_W); localStorage.removeItem(LS_E); localStorage.removeItem("jvf_notas_ej"); localStorage.removeItem("jvf_comida"); localStorage.removeItem("jvf_agua"); localStorage.removeItem("jvf_suples_cfg"); localStorage.removeItem("jvf_suples_log"); localStorage.removeItem("jvf_rutinas"); localStorage.removeItem("jvf_ent_start"); localStorage.removeItem("jvf_meals"); localStorage.removeItem("jvf_alimentos_propios"); localStorage.removeItem("jvf_barcode_cache"); localStorage.removeItem("jvf_foto_ajustes"); localStorage.removeItem("jvf_warmup_stats"); localStorage.removeItem("jvf_plate_barra"); localStorage.removeItem("jvf_rest_seg"); }catch(e){} _mem={}; location.reload(); }
 
 // ======= EXPORT / IMPORT (red de seguridad: backup + migración entre dispositivos) =======
 // Reemplazo total con confirmación. Reusa get/set, hoyLocal, toast, validar, render. NO toca motor ni gate.
 function exportarJSON(){ try{ set("jvf_last_export",hoyLocal()); }catch(e){}
   try{
-    var data={ app:"jvf", schema:1, app_version:"0.10", exportadoEl:new Date().toISOString(),
+    var data={ app:"jvf", schema:1, app_version:"0.12", exportadoEl:new Date().toISOString(),
       perfil:get(LS_P,null), pesos:get(LS_W,[]), entrenos:get(LS_E,[]), notas_ej:get("jvf_notas_ej",{}), comida:get("jvf_comida",[]), agua:get("jvf_agua",{}), suples_cfg:get("jvf_suples_cfg",null), suples_log:get("jvf_suples_log",{}),
       rutinas:get("jvf_rutinas",[]), meals:get("jvf_meals",[]), ent_start:get("jvf_ent_start",null),   // v0.10 · backup completo
       alimentos_propios:get("jvf_alimentos_propios",[]), barcode_cache:get("jvf_barcode_cache",{}),   // I5/I6 · también viajan en el backup
-      foto_ajustes:get("jvf_foto_ajustes",{}) };   // F-FOTO-2 · lo aprendido de tus correcciones viaja en el backup
+      foto_ajustes:get("jvf_foto_ajustes",{}),   // F-FOTO-2 · lo aprendido de tus correcciones viaja en el backup
+      warmup_stats:get("jvf_warmup_stats",false), plate_barra:get("jvf_plate_barra",20), rest_seg:get("jvf_rest_seg",120) };   // D v0.12 · ajustes del pack Hevy (+ el descanso global, que faltaba)
     var blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
     var url=URL.createObjectURL(blob);
     var a=document.createElement("a"); a.href=url; a.download="jvf-backup-"+hoyLocal()+".json";
@@ -1942,6 +2217,10 @@ function procesarImport(file){
     set(LS_P,data.perfil); set(LS_W,pesos); set(LS_E,entrenos); set("jvf_notas_ej",notas); set("jvf_comida",comida); if(data.agua) set("jvf_agua",data.agua); if(data.suples_cfg) set("jvf_suples_cfg",data.suples_cfg); if(data.suples_log) set("jvf_suples_log",data.suples_log);
     set("jvf_rutinas",rutinas); set("jvf_meals",meals); if(data.ent_start) set("jvf_ent_start",data.ent_start);
     set("jvf_alimentos_propios",alimsProp); set("jvf_barcode_cache",bcCache); set("jvf_foto_ajustes",fotoAj);
+    // D v0.12 · ajustes del pack Hevy (los backups antiguos no los traen: se dejan como están)
+    if(data.warmup_stats!=null) set("jvf_warmup_stats",!!data.warmup_stats);
+    if(data.plate_barra!=null) set("jvf_plate_barra",+data.plate_barra||20);
+    if(data.rest_seg!=null) set("jvf_rest_seg",+data.rest_seg||120);
     render();
     toast("✓ Datos importados");
   };
@@ -2184,13 +2463,135 @@ function wizValida(n){
   if(n===5){ if(!$("w_dias").value) return "Dime cuántos días entrenas por semana (obligatorio)."; if(!$("w_material").value) return "Dime con qué material cuentas (obligatorio)."; }
   return null;
 }
+// [OTRO-PURE-INICIO] — C v0.12 · intérprete de los campos "Otro" por ECUACIONES (dictado Pablo
+// 06/07, "MONTALO PERFECTO"): reglas deterministas y tablas de keywords, NO IA. Función PURA
+// (sin DOM ni storage): los tests de node extraen este bloque tal cual y lo ejecutan.
+// Las fórmulas del motor NO se tocan: esto solo NORMALIZA lo que ENTRA en ellas — texto libre
+// del usuario -> opción estándar del formulario + eco honesto "Jarvis entiende: X".
+// Salida: {valor, eco, claro} · claro=false => no se entendió y se asume un default honesto.
+
+// minúsculas y sin tildes, para que "días", "Días" y "dias" casen igual (la ñ se conserva)
+function otroNorm(s){
+  return String(s==null?"":s).toLowerCase()
+    .replace(/á/g,"a").replace(/é/g,"e").replace(/í/g,"i").replace(/ó/g,"o").replace(/ú/g,"u").replace(/ü/g,"u");
+}
+// Todos los números del texto, en orden: cifras ("3", "3,5") y palabras ("cuatro"). Para rangos
+// "de 3 a 5". Ojo: primero salen las cifras y luego las palabras (suficiente: no se mezclan).
+function otroNums(t){
+  var out=[], m, re=/\d+(?:[.,]\d+)?/g;
+  while((m=re.exec(t))) out.push(parseFloat(m[0].replace(",",".")));
+  var PAL={"un":1,"uno":1,"una":1,"dos":2,"tres":3,"cuatro":4,"cinco":5,"seis":6,"siete":7,"ocho":8,"nueve":9,"diez":10,"once":11,"doce":12,"quince":15,"veinte":20};
+  var toks=t.split(/[^a-zñ]+/);
+  for(var i=0;i<toks.length;i++){ if(PAL[toks[i]]!=null) out.push(PAL[toks[i]]); }
+  return out;
+}
+function interpretarOtro(campo, texto){
+  var t=otroNorm(texto), ns=otroNums(t);
+  function R(valor, eco, claro){ return {valor:valor, eco:eco, claro:claro!==false}; }
+
+  if(campo==="w_dias_otro"){
+    // n días -> banda del desplegable que lo contiene, tirando a lo CONSERVADOR (4 -> "3-4"):
+    // mejor quedarse corto de volumen prometido que pasarse (T19/T25).
+    var banda=function(n){
+      if(n<0.5) return "0 (aún no entreno)";
+      if(n<1.5) return "1"; if(n<2.5) return "1-2"; if(n<3.5) return "2-3";
+      if(n<4.5) return "3-4"; if(n<5.75) return "4-5"; if(n<6.5) return "6"; return "7";
+    };
+    if(/todos los dias|a diario|cada dia|diariamente/.test(t)) return R("7","~7 días/semana (a diario)");
+    if(/dia si,? (y )?(otro|dia) no|alternos/.test(t)) return R("3-4","~3-4 días/semana (días alternos)");
+    if(/entre semana|laborables|de lunes a viernes/.test(t)) return R("4-5","~4-5 días/semana (entre semana)");
+    if(/finde|fin(es)? de semana/.test(t)) return R("1-2","~1-2 días/semana (los findes)");
+    if(ns.length>=2){ var lo=Math.min.apply(null,ns), hi=Math.max.apply(null,ns), b2=banda((lo+hi)/2); return R(b2,"~"+b2+" días/semana (me dijiste entre "+lo+" y "+hi+")"); }
+    if(ns.length===1){ var b1=banda(ns[0]); return R(b1,"~"+b1+" días/semana"); }
+    if(/nada|no entreno|aun no|todavia no|cero/.test(t)) return R("0 (aún no entreno)","aún no entrenas — empezamos de cero");
+    return R("2-3","no lo tengo claro, asumo 2-3 días/semana", false);
+  }
+
+  if(campo==="w_material_otro"){
+    var gym=/gym|gimnasio|box\b|crossfit|maquina|polea|rack|multipower/.test(t);
+    var casa=/mancuern|kettlebell|pesa rusa|banco|barra en casa|pesas en casa|gomas|banda/.test(t);
+    var corp=/calistenia|peso corporal|sin material|sin equipo|sin nada|solo (mi )?cuerpo|parque/.test(t);
+    if(/mixto|ambos|las dos|los dos|depende|a veces/.test(t) || (gym?1:0)+(casa?1:0)+(corp?1:0)>1) return R("Mixto","material Mixto (varios sitios/equipos)");
+    if(gym) return R("Gimnasio completo","Gimnasio completo");
+    if(casa) return R("Casa con mancuernas","Casa con mancuernas");
+    if(corp) return R("Solo peso corporal","Solo peso corporal");
+    return R("Mixto","no lo tengo claro, asumo material Mixto", false);
+  }
+
+  if(campo==="w_act_otro"){
+    // ordena de MÁS a MENOS exigente: el trabajo físico duro manda sobre cualquier otra pista
+    if(/obra|albañil|albanil|construccion|reparto|repartidor|mozo|almacen|carga|descarga|campo\b|agricultor|mudanza|dos veces al dia/.test(t)) return R("muy_activo","Muy activo (trabajo físico exigente)");
+    if(/deporte|entren|futbol|padel|tenis|natacion|\bnado\b|corro|correr|running|\bbici\b|ciclismo|crossfit|3-5|[45] (dias|veces)/.test(t)) return R("activo","Activo (deporte regular)");
+    if(/\b(ando|andando|andar|camino|caminando|caminar|paseo|pasear)\b|de pie|camarer|dependient|10.?000 pasos/.test(t)) return R("ligero","Ligero (te mueves a diario)");
+    if(/oficina|escritorio|sentado|ordenador|despacho|estudi|teletrabajo|no me muevo|sofa/.test(t)) return R("sedentario","Sedentario (día mayormente sentado)");
+    return R("sedentario","no lo tengo claro, asumo Sedentario (mejor quedarse corto que pasarse)", false);
+  }
+
+  if(campo==="w_estres_otro"){
+    if(/no (mucho|demasiado)|poco|tranquil|relajad|sin estres|cero|\bbien\b/.test(t)) return R("Bajo","estrés Bajo");
+    if(/examen|oposicion|agobi|ansiedad|mucho|muchisimo|alto|fatal|hasta arriba|no duermo|burnout|quemad/.test(t)) return R("Alto","estrés Alto");
+    if(/normal|regular|medio|depende|a veces|rachas/.test(t)) return R("Medio","estrés Medio");
+    return R("Medio","no lo tengo claro, asumo estrés Medio", false);
+  }
+
+  if(campo==="w_trabajo_otro"){
+    if(/obra|albañil|albanil|construccion|almacen|mozo|carga|reparto|campo\b|agricultor|mudanza|fisico|soldador|fontaner|jardin/.test(t)) return R("Físico","trabajo Físico");
+    if(/camarer|dependient|tienda|cociner|peluquer|de pie|enfermer|profesor/.test(t)) return R("De pie","trabajo De pie");
+    if(/oficina|ordenador|despacho|escritorio|estudiante|estudio|opositor|teletrabajo|programador|abogad|administrativ|conductor|taxista|camioner|sentado/.test(t)) return R("Sentado","trabajo Sentado");
+    return R("Sentado","no lo tengo claro, asumo trabajo Sentado", false);
+  }
+
+  if(campo==="w_nivel_otro"){
+    if(/empiezo|empezando|acabo de empezar|nunca|primera vez|nuevo|cero|principiante/.test(t)) return R("Principiante","Principiante");
+    if(/toda la vida|compet|avanzado/.test(t)) return R("Avanzado","Avanzado");
+    var anios=null;
+    if(ns.length){ anios=ns[0]; if(/\bmes(es)?\b/.test(t) && !/\ba[ñn]os?\b/.test(t)) anios=anios/12; }
+    if(anios!=null){
+      if(anios<1) return R("Principiante","Principiante (menos de 1 año entrenando)");
+      if(anios<4) return R("Intermedio","Intermedio (~"+Math.round(anios)+" años entrenando)");
+      return R("Avanzado","Avanzado ("+Math.round(anios)+"+ años entrenando)");
+    }
+    if(/un tiempo|algo de experiencia|he entrenado antes|intermedio|volviendo|retomo/.test(t)) return R("Intermedio","Intermedio");
+    return R("Principiante","no lo tengo claro, asumo Principiante (lo seguro para empezar)", false);
+  }
+
+  return null;   // campo sin reglas: el flujo antiguo sigue tal cual (texto libre al coach)
+}
+// [OTRO-PURE-FIN]
+
 // "Otros" -> abre un MODAL centrado (fondo difuminado) para escribirle a Jarvis.
 // El input w_X_otro queda como guardado de datos + display de solo-lectura (clic = reabrir).
 var OTRO_MAP={ w_act_otro:"f_act", w_nivel_otro:"w_nivel", w_dias_otro:"w_dias", w_material_otro:"w_material", w_estres_otro:"w_estres", w_trabajo_otro:"w_trabajo" };
 let _otroTarget=null, _otroSel=null;
 function wizOtro(sel, txtId){
   if(sel.value==="Otro"||sel.value==="Otros"){ otroAbrir(sel, txtId); }
-  else { var t=$(txtId); if(t){ t.value=""; t.classList.add("hidden"); } }
+  else { var t=$(txtId); if(t){ t.value=""; t.classList.add("hidden"); } var e=$(txtId+"_eco"); if(e) e.remove(); }
+}
+// C v0.12 · chip-eco bajo el input "Otro": "🤖 Jarvis entiende: X — toca para corregir".
+// Tocarlo = aceptar la interpretación como opción ESTÁNDAR del desplegable (queda editable).
+function ecoPinta(txtId){
+  var t=$(txtId); if(!t) return;
+  var old=$(txtId+"_eco"); if(old) old.remove();
+  var v=t.value.trim();
+  if(!v || t.classList.contains("hidden")) return;
+  var it=interpretarOtro(txtId, v); if(!it) return;
+  var d=document.createElement("div"); d.id=txtId+"_eco"; d.className="hint";
+  d.style.cssText="margin:4px 0 8px;color:var(--jade);cursor:pointer";
+  d.textContent="🤖 Jarvis entiende: "+it.eco+" — toca para corregir";
+  d.onclick=function(){ ecoCorregir(txtId); };
+  t.parentNode.insertBefore(d, t.nextSibling);
+}
+function ecoCorregir(txtId){
+  var t=$(txtId), sel=$(OTRO_MAP[txtId]); if(!t||!sel) return;
+  var it=interpretarOtro(txtId, t.value.trim()); if(!it) return;
+  for(var i=0;i<sel.options.length;i++){
+    if(sel.options[i].value===it.valor){
+      sel.value=it.valor; t.value=""; t.classList.add("hidden");
+      var e=$(txtId+"_eco"); if(e) e.remove();
+      toast("✓ "+it.eco+" — cámbialo en el desplegable si no es así");
+      return;
+    }
+  }
 }
 function otroAbrir(sel, txtId){
   _otroSel=sel; _otroTarget=txtId;
@@ -2203,17 +2604,36 @@ function otroGuardar(){
   if(_otroTarget){
     var v=$("otro_ta").value.trim(), t=$(_otroTarget); t.value=v;
     if(v){ t.classList.remove("hidden"); } else { t.classList.add("hidden"); if(_otroSel) _otroSel.value=""; }
+    ecoPinta(_otroTarget);   // C v0.12 · eco honesto de lo que Jarvis entiende (editable con un toque)
   }
   otroCerrar();
 }
 function otroCancelar(){ if(_otroTarget && !$(_otroTarget).value.trim() && _otroSel) _otroSel.value=""; otroCerrar(); }
 function otroCerrar(){ show("otroModal", false); _otroTarget=null; _otroSel=null; }
 function campoOtro(selId, txtId){ var v=$(selId).value; if(v==="Otro"||v==="Otros"){ var x=$(txtId).value.trim(); return x||v; } return v||null; }
+// C v0.12 · campoOtro CON intérprete: si hay texto libre, el VALOR que se guarda (y entra al
+// motor/coach) es la interpretación determinista, y el texto original se guarda APARTE (ambos).
+function campoOtroI(selId, txtId){
+  var v=$(selId).value;
+  if(v==="Otro"||v==="Otros"){
+    var x=$(txtId).value.trim();
+    if(!x) return {v:v, txt:null};                       // "Otro" sin texto: comportamiento antiguo
+    var it=interpretarOtro(txtId, x);
+    return {v:(it?it.valor:x), txt:x};
+  }
+  return {v:v||null, txt:null};
+}
 function restoreOtro(selId, txtId, val, otroLabel){
   var sel=$(selId), t=$(txtId); val=val||""; var match=false;
   for(var i=0;i<sel.options.length;i++){ if(sel.options[i].value===val){ match=true; break; } }
-  if(val && !match){ sel.value=otroLabel; t.value=val; t.classList.remove("hidden"); }
-  else { sel.value=val; t.value=""; t.classList.add("hidden"); }
+  if(val && !match){ sel.value=otroLabel; t.value=val; t.classList.remove("hidden"); try{ ecoPinta(txtId); }catch(e){} }
+  else { sel.value=val; t.value=""; t.classList.add("hidden"); var e2=$(txtId+"_eco"); if(e2) e2.remove(); }
+}
+// C v0.12 · como restoreOtro pero con el texto original guardado aparte (X_txt): si existe,
+// el select vuelve a "Otro", se enseña el texto y se repinta el eco de la interpretación.
+function restoreOtroTxt(selId, txtId, val, txt, otroLabel){
+  if(txt){ var sel=$(selId), t=$(txtId); sel.value=otroLabel; t.value=txt; t.classList.remove("hidden"); try{ ecoPinta(txtId); }catch(e){} return; }
+  restoreOtro(selId, txtId, val, otroLabel);
 }
 
 function guardarPerfil(){ _wizEdit=false;
@@ -2222,17 +2642,26 @@ function guardarPerfil(){ _wizEdit=false;
     if(/prote/.test(_sv))_sc.proteina=true; if(/carnitin/.test(_sv))_sc.carnitina=true; set(LS_SUP_CFG,_sc); } }catch(e){}
   const grasaRaw=$("f_grasa").value.trim();
   const prev=get(LS_P);
+  // C v0.12 · los "Otro" pasan por interpretarOtro: se guarda la INTERPRETACIÓN como valor (lo
+  // que leen motor/coach/rutinaSugerida) y el texto original aparte (X_txt). Ambos, como se dictó.
+  var _niv=campoOtroI("w_nivel","w_nivel_otro"), _dias=campoOtroI("w_dias","w_dias_otro"),
+      _mat=campoOtroI("w_material","w_material_otro"), _est=campoOtroI("w_estres","w_estres_otro"),
+      _tra=campoOtroI("w_trabajo","w_trabajo_otro");
+  // actividad: antes "Otro" caía a "activo" fijo; ahora el texto pasa por el intérprete.
+  // Las fórmulas del motor NO se tocan: solo se normaliza lo que ENTRA (un value válido de R.factores).
+  var _actTxt=($("f_act").value==="Otro" ? ($("w_act_otro").value.trim()||null) : null);
+  var _actInt=_actTxt ? interpretarOtro("w_act_otro", _actTxt) : null;
   const p={
     nombre:$("f_nombre").value.trim()||"Tú",
     sexo:$("f_sexo").value, edad:+$("f_edad").value, peso_kg:+$("f_peso").value,
     altura_cm:+$("f_altura").value, grasa_pct: grasaRaw===""?null:+grasaRaw,
-    actividad: ($("f_act").value==="Otro" ? "activo" : $("f_act").value), objetivo:$("f_obj").value, intensidad_pct:+$("f_int").value,
+    actividad: ($("f_act").value==="Otro" ? ((_actInt&&_actInt.valor)||"activo") : $("f_act").value), objetivo:$("f_obj").value, intensidad_pct:+$("f_int").value,
     pasos: +$("f_pasos").value||null,
     coach:{
-      actividad_nota: ($("f_act").value==="Otro" ? ($("w_act_otro").value.trim()||null) : null),
-      nivel:campoOtro("w_nivel","w_nivel_otro"), anios:$("w_anios").value.trim()||null, dias_sem:campoOtro("w_dias","w_dias_otro"),
-      material:campoOtro("w_material","w_material_otro"), prioridad:$("w_prioridad").value.trim()||null, lesiones:$("w_lesiones").value.trim()||null,
-      sueno_h: $("w_sueno").value.trim()||null, estres:campoOtro("w_estres","w_estres_otro"), trabajo:campoOtro("w_trabajo","w_trabajo_otro"),
+      actividad_nota: _actTxt,
+      nivel:_niv.v, nivel_txt:_niv.txt, anios:$("w_anios").value.trim()||null, dias_sem:_dias.v, dias_sem_txt:_dias.txt,
+      material:_mat.v, material_txt:_mat.txt, prioridad:$("w_prioridad").value.trim()||null, lesiones:$("w_lesiones").value.trim()||null,
+      sueno_h: $("w_sueno").value.trim()||null, estres:_est.v, estres_txt:_est.txt, trabajo:_tra.v, trabajo_txt:_tra.txt,
       comidas_dia:$("w_comidas").value.trim()||null, restricciones:$("w_restric").value.trim()||null, suplementos:$("w_suples").value.trim()||null,
       sobre_mi:$("w_sobremi").value.trim()||null
     }
@@ -2253,16 +2682,17 @@ function editarPerfil(){ const p=get(LS_P); if(p){
   $("f_obj").value=p.objetivo; $("f_int").value=p.intensidad_pct;
   $("f_pasos").value=p.pasos||"";
   var c=p.coach||{};
-  if(c.actividad_nota){ $("f_act").value="Otro"; $("w_act_otro").value=c.actividad_nota; $("w_act_otro").classList.remove("hidden"); }
-  else { $("f_act").value=p.actividad; $("w_act_otro").value=""; $("w_act_otro").classList.add("hidden"); }
-  restoreOtro("w_nivel","w_nivel_otro",c.nivel,"Otro");
+  if(c.actividad_nota){ $("f_act").value="Otro"; $("w_act_otro").value=c.actividad_nota; $("w_act_otro").classList.remove("hidden"); try{ ecoPinta("w_act_otro"); }catch(e){} }
+  else { $("f_act").value=p.actividad; $("w_act_otro").value=""; $("w_act_otro").classList.add("hidden"); var _ae=$("w_act_otro_eco"); if(_ae) _ae.remove(); }
+  // C v0.12 · si hay texto original guardado (X_txt), se restaura CON su eco interpretado
+  restoreOtroTxt("w_nivel","w_nivel_otro",c.nivel,c.nivel_txt,"Otro");
   $("w_anios").value=c.anios||"";
-  restoreOtro("w_dias","w_dias_otro",c.dias_sem,"Otro");
-  restoreOtro("w_material","w_material_otro",c.material,"Otros");
+  restoreOtroTxt("w_dias","w_dias_otro",c.dias_sem,c.dias_sem_txt,"Otro");
+  restoreOtroTxt("w_material","w_material_otro",c.material,c.material_txt,"Otros");
   $("w_prioridad").value=c.prioridad||""; $("w_lesiones").value=c.lesiones||"";
   $("w_sueno").value=c.sueno_h||"";
-  restoreOtro("w_estres","w_estres_otro",c.estres,"Otro");
-  restoreOtro("w_trabajo","w_trabajo_otro",c.trabajo,"Otro");
+  restoreOtroTxt("w_estres","w_estres_otro",c.estres,c.estres_txt,"Otro");
+  restoreOtroTxt("w_trabajo","w_trabajo_otro",c.trabajo,c.trabajo_txt,"Otro");
   $("w_comidas").value=c.comidas_dia||""; $("w_restric").value=c.restricciones||""; $("w_suples").value=c.suplementos||"";
   $("w_sobremi").value=c.sobre_mi||"";
 } _wizEdit=true; _wizSeen=WIZ_MAX; _tab="plan"; show("tabs",false); show("onboarding",true); show("plan",false); show("ajustes",false); show("registro",false); show("calib",false); wizShow(0); window.scrollTo(0,0); }
@@ -2324,32 +2754,72 @@ function entRirSet(btn,v){
 function entSync(){
   var ejs=document.querySelectorAll('#ent_form .ent-ej');
   _ent.ejercicios=[].map.call(ejs,function(el){
+    // D v0.12 · el DOM guarda también el tipo de serie (data-t), el descanso propio (.ent-desc)
+    // y la marca de superserie (data-ss): así entSync no pierde nada al re-renderizar.
+    var descEl=el.querySelector('.ent-desc');
     return {
       nombre: el.querySelector('.ent-nombre').value,
+      desc: (descEl?descEl.value:''),
+      ss: el.getAttribute('data-ss')==='1',
       series: [].map.call(el.querySelectorAll('.ent-serie'),function(s){
-        return {peso:String(s.querySelector('.ent-peso').value).replace(",","."), reps:s.querySelector('.ent-reps').value, rir:s.querySelector('.ent-rir').value};
+        return {peso:String(s.querySelector('.ent-peso').value).replace(",","."), reps:s.querySelector('.ent-reps').value, rir:s.querySelector('.ent-rir').value, t:(s.getAttribute('data-t')||'')};
       })
     };
   });
   try{ set("jvf_ent_draft",{f:(($("ent_fecha")||{}).value)||hoyLocal(), e:_ent}); }catch(e){}
 }
-function entAddEjercicio(){ entSync(); _ent.ejercicios.push({nombre:'',series:[{peso:'',reps:'',rir:''}]}); renderEntForm(); }
-function entDelEjercicio(i){ entSync(); _ent.ejercicios.splice(i,1); if(!_ent.ejercicios.length)_ent.ejercicios=[{nombre:'',series:[{peso:'',reps:'',rir:''}]}]; renderEntForm(); }
-function entAddSerie(i){ entSync(); var ss=_ent.ejercicios[i].series; var last=ss[ss.length-1]; ss.push(last?{peso:last.peso,reps:last.reps,rir:last.rir}:{peso:'',reps:'',rir:''}); renderEntForm(); restStart(); }
-function entDelSerie(i,j){ entSync(); _ent.ejercicios[i].series.splice(j,1); if(!_ent.ejercicios[i].series.length)_ent.ejercicios[i].series=[{peso:'',reps:'',rir:''}]; renderEntForm(); }
+function entAddEjercicio(){ entSync(); _ent.ejercicios.push({nombre:'',series:[{peso:'',reps:'',rir:'',t:''}]}); renderEntForm(); }
+function entDelEjercicio(i){ entSync(); _ent.ejercicios.splice(i,1); if(!_ent.ejercicios.length)_ent.ejercicios=[{nombre:'',series:[{peso:'',reps:'',rir:'',t:''}]}]; renderEntForm(); }
+// D v0.12 · la serie nueva copia peso/reps/RIR de la anterior pero SIEMPRE nace normal (t:'');
+// si el ejercicio está unido en superserie, el ⏱ NO arranca (te vas directo al siguiente).
+function entAddSerie(i){ entSync(); var ss=_ent.ejercicios[i].series; var last=ss[ss.length-1]; ss.push(last?{peso:last.peso,reps:last.reps,rir:last.rir,t:''}:{peso:'',reps:'',rir:'',t:''}); renderEntForm(); if(_ent.ejercicios[i].ss) return; restStartEj(i); }
+function entDelSerie(i,j){ entSync(); _ent.ejercicios[i].series.splice(j,1); if(!_ent.ejercicios[i].series.length)_ent.ejercicios[i].series=[{peso:'',reps:'',rir:'',t:''}]; renderEntForm(); }
+// D v0.12 · cicla el tipo de la serie j del ejercicio i: normal → W (calentamiento) → F (fallo) → D (dropset)
+function entTipoCiclar(i,j){
+  entSync();
+  var ss=(_ent.ejercicios[i]||{}).series; if(!ss||!ss[j]) return;
+  var ORD=['','w','f','d'], k=ORD.indexOf(ss[j].t||''); if(k<0) k=0;
+  ss[j].t=ORD[(k+1)%ORD.length];
+  renderEntForm();
+}
+// D v0.12 · unir/separar este ejercicio con el SIGUIENTE (superserie/circuito)
+function entSSToggle(i){
+  entSync();
+  var ej=_ent.ejercicios[i]; if(!ej) return;
+  ej.ss=!ej.ss;
+  renderEntForm();
+}
 function renderEntForm(){
+  // D v0.12 · superseries: cadena = ejercicios unidos con 🔗 ("unir con el siguiente"). Un ejercicio
+  // está en cadena si él enlaza al siguiente (ss) o el anterior enlaza con él. Cada cadena tiene su
+  // color (borde + etiqueta) y el ⏱ NO arranca entre miembros (te vas directo al siguiente).
+  var SS_COLS=['#74c7ff','#f4c04e','#c792ea','#3DDC97'];
+  var ssIdx=[], _cad=-1;
+  for(var q=0;q<_ent.ejercicios.length;q++){
+    var enCadena=_ent.ejercicios[q].ss || (q>0 && _ent.ejercicios[q-1].ss);
+    if(enCadena){ if(!(q>0 && _ent.ejercicios[q-1].ss)) _cad++; ssIdx[q]=_cad; } else ssIdx[q]=-1;
+  }
   $("ent_form").innerHTML=_ent.ejercicios.map(function(ej,i){
     // placeholder de peso = peso de la última vez de este ejercicio (guía, no rellena el dato).
     var prevS=ultimasSeries(ej.nombre);
     var phPeso = (prevS && prevS.length && prevS[0].peso!=null) ? (prevS[0].peso+"") : "kg";
     var sets=ej.series.map(function(s,j){
-      return '<div class="ent-serie row" style="gap:6px;align-items:center;margin-top:6px">'
-        +'<span class="hint" style="margin:0;min-width:26px">'+(j+1)+'ª</span>'
+      // D v0.12 · tipo de serie estilo Hevy: tocar el "1ª" cicla normal → W → F → D. Colores fijos
+      // (W naranja / F rojo / D azul); el estado vive en data-t para que entSync lo lea del DOM.
+      var _t=(s.t==='w'||s.t==='f'||s.t==='d')?s.t:'';
+      var TIPO={ '':{txt:(j+1)+'ª', col:'var(--mute)', tip:'serie normal — toca para marcar W calentamiento / F fallo / D dropset'},
+                 w:{txt:'W', col:'#f4a950', tip:'calentamiento — no cuenta en stats salvo que actives el toggle de abajo · toca para ciclar'},
+                 f:{txt:'F', col:'#ff5555', tip:'al fallo — toca para ciclar'},
+                 d:{txt:'D', col:'#74c7ff', tip:'dropset — toca para ciclar'} };
+      // gap 4px y paddings mínimos: la fila gana el tipo de serie y el 🏋️ SIN desbordar en 375px
+      return '<div class="ent-serie row" style="gap:4px;align-items:center;margin-top:6px" data-t="'+_t+'">'
+        +'<button type="button" class="ent-tipo" title="'+escAttr(TIPO[_t].tip)+'" onclick="entTipoCiclar('+i+','+j+')" style="width:auto;min-width:24px;margin:0;padding:6px 0;background:transparent;border:0;box-shadow:none;font-family:var(--mono);font-weight:700;font-size:.8rem;color:'+TIPO[_t].col+';cursor:pointer">'+TIPO[_t].txt+'</button>'
         +'<input class="ent-peso" type="number" inputmode="decimal" step="0.5" placeholder="'+escAttr(phPeso)+'" value="'+escAttr(s.peso)+'">'
+        +'<button type="button" title="Calculadora de discos para este peso" onclick="plateAbrir(this)" style="width:auto;margin:0;padding:6px 0;background:transparent;border:0;box-shadow:none;font-size:.85rem;cursor:pointer">🏋️</button>'
         +'<input class="ent-reps" type="number" inputmode="numeric" placeholder="reps" value="'+escAttr(s.reps)+'">'
         +'<input class="ent-rir" type="number" inputmode="numeric" step="1" placeholder="RIR" value="'+escAttr(s.rir)+'" style="max-width:64px" title="RIR — 0 = al límite (ninguna completa más); fallo = la siguiente no sale; negativo = más allá del fallo">'
         +'<span class="rirq">'+[0,1,2,3].map(function(v){ return '<button type="button" class="rirq-b'+(String(s.rir)===String(v)?' on':'')+'" onclick="entRirSet(this,'+v+')">'+v+'</button>'; }).join('')+'</span>'
-        +'<button class="sec" type="button" style="width:auto;margin:0;padding:8px 11px" onclick="entDelSerie('+i+','+j+')">✕</button>'
+        +'<button class="sec" type="button" style="width:auto;margin:0;padding:8px 8px" onclick="entDelSerie('+i+','+j+')">✕</button>'
         +'</div>';
     }).join('');
     var nota=escAttr(notaEjercicio(ej.nombre));
@@ -2361,21 +2831,36 @@ function renderEntForm(){
       else _obj=' · <b style="color:var(--jade)">hoy: sube a '+(Math.round((+_t.peso+2.5)*10)/10)+' kg</b>';
     }
     var ultHtml = ultima ? '<div class="hint" style="margin:4px 0 0">↩ Última vez ('+esc(ultima.f)+'): '+esc(ultima.txt)+_obj+'</div>' : '';
+    // B v0.12 · objetivo de la rutina cargada (reps/RIR/descanso del catálogo); el porqué, en el title.
+    var _meta=_entMeta[ej.nombre];
+    var metaHtml=_meta?'<div class="hint" style="margin:4px 0 0;color:var(--jade)" title="'+escAttr(_meta.nota)+'">🎯 objetivo: '+esc(_meta.txt)+'</div>':'';
     // Miniatura del ejercicio (si está en la biblioteca con foto): entreno visual para principiantes.
     // Toca la foto -> ficha visual (cómo se hace + músculos). Sale también en las rutinas sugeridas.
     var _src=imgDe(ej.nombre);
     var thumb=_src?'<img class="ent-thumb" loading="lazy" src="'+escAttr(_src)+'" alt="" title="Ver cómo se hace" onclick="entVerFicha('+JSON.stringify(ej.nombre).replace(/"/g,"&quot;")+')" onerror="this.style.display=\'none\'">':'';
-    return '<div class="ent-ej" style="border:1px solid var(--line-soft);border-radius:12px;padding:12px;margin-top:10px">'
+    // D v0.12 · miembro de superserie: borde izquierdo del color de su cadena + etiqueta 🔗
+    var _ssCol=(ssIdx[i]>=0)?SS_COLS[ssIdx[i]%SS_COLS.length]:null;
+    var ssLabel=_ssCol?'<div class="hint" style="margin:0 0 6px;color:'+_ssCol+'">🔗 Superserie '+(ssIdx[i]+1)+' — el ⏱ se salta entre sus ejercicios</div>':'';
+    var ssBtn=(i<_ent.ejercicios.length-1)
+      ? '<button class="sec" type="button" style="flex:1;width:auto'+(ej.ss?';border-color:'+_ssCol+';color:'+_ssCol:'')+'" onclick="entSSToggle('+i+')" title="Superserie: unir con el ejercicio de abajo (el ⏱ no arranca entre miembros)">🔗 '+(ej.ss?'unido ✓':'unir con ↓')+'</button>'
+      : '';
+    return '<div class="ent-ej" data-ss="'+(ej.ss?'1':'0')+'" style="border:1px solid var(--line-soft);border-radius:12px;padding:12px;margin-top:10px'+(_ssCol?';border-left:3px solid '+_ssCol:'')+'">'
+      +ssLabel
       +'<div class="row" style="gap:6px;align-items:center">'
       +thumb
       +'<input class="ent-nombre" list="ent-ejercicios" placeholder="Ejercicio (ej. Press banca)" value="'+escAttr(ej.nombre)+'" onchange="entNombreCambia(this,'+i+')">'
       +'<button class="sec" type="button" title="Biblioteca" style="width:auto;margin:0;padding:8px 11px" onclick="abrirBiblio(this)">📚</button>'
       +'<button class="sec" type="button" title="¿Qué es el RIR? Toca para saberlo" style="width:auto;margin:0;padding:8px 11px;font-size:.7rem;font-family:var(--mono);letter-spacing:.03em" onclick="rirAbrir()">RIR ⓘ</button>'
       +'<button class="sec" type="button" style="width:auto;margin:0;padding:8px 11px" onclick="entDelEjercicio('+i+')">🗑</button>'
-      +'</div>'+ultHtml+sets
+      +'</div>'+ultHtml+metaHtml+sets
       +'<div class="hint" style="margin:6px 0 0;font-size:.68rem">RIR: <b style="color:var(--soft)">0 = al límite</b> (ninguna completa más) · <b style="color:var(--soft)">fallo</b> = intentas otra y no sale · negativo (−1, −2) = más allá del fallo (parciales/ayuda)</div>'
       +'<input class="ent-nota" placeholder="Nota para este ejercicio (se guarda)" value="'+nota+'" oninput="guardarNotaEjercicio(this,'+i+')" style="margin-top:8px;font-size:.85rem">'
-      +'<div class="row" style="margin-top:8px;gap:6px"><button class="sec" type="button" style="flex:2" onclick="entAddSerie('+i+')">+ Serie</button><button class="sec" type="button" style="flex:1" onclick="restStart()" title="Temporizador de descanso">⏱ Descanso</button></div>'
+      // D v0.12 · descanso PROPIO del ejercicio en segundos (opcional): el ⏱ lo usa; vacío = global
+      +'<div class="row" style="margin-top:8px;gap:6px"><button class="sec" type="button" style="flex:2" onclick="entAddSerie('+i+')">+ Serie</button>'
+      +'<input class="ent-desc" type="number" inputmode="numeric" min="10" max="900" placeholder="seg" value="'+escAttr(ej.desc==null?'':ej.desc)+'" title="Descanso de ESTE ejercicio en segundos (lo usa el ⏱; vacío = el global)" style="flex:0 0 64px;width:64px;margin:0">'
+      +'<button class="sec" type="button" style="flex:1" onclick="restStartEj('+i+')" title="Temporizador de descanso (usa los segundos de este ejercicio si los pones)">⏱ Descanso</button>'
+      +ssBtn
+      +'</div>'
       +'</div>';
   }).join('');
   try{ rutBtnSync(); }catch(e){}   // F1 · "Guardar como rutina" solo si hay ≥1 ejercicio con nombre
@@ -2397,7 +2882,8 @@ function entInit(){
     }); _entPulseHooked=true; }
   }
   // F1 v0.10 · rutinas guardadas + chip del crono (si había sesión en marcha, revive al volver);
-  // F5 v0.10 · hint para el novato sin historial.
+  // F5 v0.10 · hint para el novato sin historial. D v0.12 · estado del toggle de calentamiento.
+  try{ var wch=$("warmup_stats_chk"); if(wch) wch.checked=warmupCuenta(); }catch(e){}
   try{ renderMisRutinas(); cronoRender(); rutBtnSync(); hintNovato(); }catch(e){}
 }
 // ----- "Última vez" (referencia estilo Hevy/Strong): qué hiciste la última sesión de ESTE ejercicio.
@@ -2451,7 +2937,7 @@ function entNombreCambia(input, i){
     if(vacias){
       var prev=ultimasSeries(ej.nombre);
       if(prev && prev.length){
-        ej.series=prev.map(function(s){ return {peso:(s.peso!=null?String(s.peso):''), reps:(s.reps!=null?String(s.reps):''), rir:(s.rir!=null?String(s.rir):'')}; });
+        ej.series=prev.map(function(s){ return {peso:(s.peso!=null?String(s.peso):''), reps:(s.reps!=null?String(s.reps):''), rir:(s.rir!=null?String(s.rir):''), t:(s.t==='w'||s.t==='f'||s.t==='d')?s.t:''}; });
       }
     }
   }
@@ -2460,6 +2946,50 @@ function entNombreCambia(input, i){
 // ----- Explicador RIR -----
 function rirAbrir(){ show("rirModal", true); }
 function rirCerrar(){ show("rirModal", false); }
+// [PLATE-PURE-INICIO] — D v0.12 · calculadora de discos, función PURA (los tests de node la
+// extraen tal cual). Greedy de mayor a menor con el juego estándar por LADO; si el objetivo no se
+// puede clavar con discos estándar, devuelve lo máximo alcanzable SIN pasarse y el resto honesto.
+var PLATE_DISCOS=[25,20,15,10,5,2.5,1.25];
+function calcDiscos(objetivo, barra){
+  objetivo=+objetivo; barra=+barra;
+  if(!(objetivo>0)||!(barra>0)) return {err:"datos"};
+  if(objetivo<barra) return {err:"menor", msg:"El objetivo ("+objetivo+" kg) es menor que la barra ("+barra+" kg): usa mancuernas o una barra más ligera."};
+  var porLado=(objetivo-barra)/2, resto=porLado, out=[];
+  for(var i=0;i<PLATE_DISCOS.length;i++){
+    var d=PLATE_DISCOS[i], n=Math.floor((resto+1e-9)/d);
+    if(n>0){ out.push({disco:d, n:n}); resto=+(resto-n*d).toFixed(2); }
+  }
+  var logrado=+(barra+2*(porLado-resto)).toFixed(2);
+  return {discos:out, porLado:+porLado.toFixed(2), resto:resto, logrado:logrado, exacto:resto<0.005};
+}
+// [PLATE-PURE-FIN]
+var LS_PLATE_BARRA="jvf_plate_barra";
+// 🏋️ de una fila de serie: abre el modal con el peso de ESA fila ya puesto (si lo hay).
+function plateAbrir(btn){
+  var v=null;
+  try{ var fila=btn && btn.closest && btn.closest(".ent-serie"); var pe=fila && fila.querySelector(".ent-peso"); var pv=pe && parseFloat(String(pe.value).replace(",",".")); if(pv>0) v=pv; }catch(e){}
+  var o=$("plate_obj"); if(o) o.value=(v!=null?v:"");
+  var b=$("plate_barra"); if(b) b.value=String(+get(LS_PLATE_BARRA,20)||20);
+  show("plateModal", true);
+  plateRender();
+  if(v==null){ setTimeout(function(){ try{ $("plate_obj").focus(); }catch(e){} },60); }
+}
+function plateCerrar(){ show("plateModal", false); }
+function plateBarra(){ var b=$("plate_barra"); if(b) set(LS_PLATE_BARRA, +b.value||20); plateRender(); }
+function plateRender(){
+  var res=$("plate_res"); if(!res) return;
+  var obj=parseFloat(String((($("plate_obj")||{}).value)||"").replace(",",".")), barra=+((($("plate_barra")||{}).value))||20;
+  if(!(obj>0)){ res.innerHTML="<p class='hint'>Pon el peso objetivo y te digo qué discos cargar por lado.</p>"; return; }
+  var r=calcDiscos(obj, barra);
+  if(r.err==="menor"){ res.innerHTML="<div class='aviso'>"+esc(r.msg)+"</div>"; return; }
+  if(r.err){ res.innerHTML="<p class='hint'>Datos no válidos.</p>"; return; }
+  var lista=r.discos.length
+    ? r.discos.map(function(d){ return "<div class='kv'><span>Disco de "+esc(String(d.disco).replace(".",","))+" kg</span><span>× "+d.n+" por lado</span></div>"; }).join("")
+    : "<p class='hint'>Barra sola, sin discos.</p>";
+  res.innerHTML=lista
+    +"<div class='kv' style='margin-top:6px'><span>Cargarás</span><span style='color:var(--jade);font-weight:700'>"+esc(String(r.logrado).replace(".",","))+" kg</span></div>"
+    +(r.exacto?"":"<div class='aviso' style='margin-top:8px'>Con discos estándar no se puede clavar: faltan "+esc(String(r.resto).replace(".",","))+" kg por lado. Redondea, o usa microdiscos si tu gym los tiene.</div>");
+}
 // ======= TEMPORIZADOR DE DESCANSO (auto-arranque al añadir serie) =======
 // Cuenta por TIMESTAMP, no por ticks: si se apaga/bloquea la pantalla, al volver el tiempo restante sigue siendo correcto.
 var LS_REST="jvf_rest_seg";
@@ -2487,13 +3017,20 @@ function restTick(){
   }
   t.textContent=restFmt(rem); $("restLbl").textContent="Descanso"; el.style.borderColor="var(--line,#244a40)";
 }
-function restStart(secs){
+function restStart(secs, noPersist){
   secs=secs||restSegDefault();
-  if(secs>=10 && secs<=900) set(LS_REST, secs);
+  // D v0.12 · noPersist: el descanso POR EJERCICIO no pisa el default global guardado
+  if(!noPersist && secs>=10 && secs<=900) set(LS_REST, secs);
   _restEnd=Date.now()+secs*1000;
   restBarEl().style.display="flex";
   if(_restTimer) clearInterval(_restTimer);
   restTick(); _restTimer=setInterval(restTick, 250);
+}
+// D v0.12 · ⏱ por ejercicio: usa sus segundos propios (.ent-desc / rutina del catálogo) si son
+// válidos; si no, el default global. Hevy lo llama "rest timer per exercise" — aquí gratis.
+function restStartEj(i){
+  var ej=(_ent.ejercicios||[])[i]||{}, d=parseInt(ej.desc,10);
+  if(d>=10 && d<=900) restStart(d, true); else restStart();
 }
 function restAdd(d){ if(!_restEnd) return; _restEnd+=d*1000; if(_restEnd<Date.now()) _restEnd=Date.now(); if(!_restTimer){ _restTimer=setInterval(restTick,250); } restTick(); }
 function restStop(){ if(_restTimer){ clearInterval(_restTimer); _restTimer=null; } _restEnd=0; var b=$("restBar"); if(b) b.style.display="none"; }
@@ -2502,9 +3039,14 @@ function guardarEntreno(){
   entSync();
   var fecha=$("ent_fecha").value;
   var ejs=_ent.ejercicios.map(function(ej){
-    return { nombre:(ej.nombre||'').trim(),
-      series: ej.series.filter(function(s){ return (+s.reps>0) && (s.peso===''||+s.peso>=0); }).map(function(s){ return {peso:(s.peso===''?'0':s.peso), reps:s.reps, rir:s.rir}; })
-                       .map(function(s){ var o={reps:+s.reps, peso:+s.peso}; if(s.rir!=='' && s.rir!=null && !isNaN(+s.rir)){ o.rir=+s.rir; } return o; }) };
+    var o={ nombre:(ej.nombre||'').trim(),
+      series: ej.series.filter(function(s){ return (+s.reps>0) && (s.peso===''||+s.peso>=0); }).map(function(s){ return {peso:(s.peso===''?'0':s.peso), reps:s.reps, rir:s.rir, t:s.t}; })
+                       .map(function(s){ var o2={reps:+s.reps, peso:+s.peso}; if(s.rir!=='' && s.rir!=null && !isNaN(+s.rir)){ o2.rir=+s.rir; } if(s.t==='w'||s.t==='f'||s.t==='d'){ o2.t=s.t; } return o2; }) };
+    // D v0.12 · SOLO se AÑADEN campos (la validación de arriba no se toca): t=tipo de serie,
+    // desc=descanso propio en segundos, ss=unido en superserie con el siguiente.
+    var _ds=parseInt(ej.desc,10); if(_ds>=10 && _ds<=900) o.desc=_ds;
+    if(ej.ss) o.ss=true;
+    return o;
   }).filter(function(ej){ return ej.nombre && ej.series.length; });
   if(!fecha || !ejs.length){ toast("Añade ejercicio con reps y peso"); return; }
   var arrPrev=get(LS_E,[]);
@@ -2525,6 +3067,8 @@ function guardarEntreno(){
   resumen.hIni=_hIni; resumen.durMin=_durMin;   // para la tarjeta de resumen ("🕐 19:04 · 52 min")
   set(LS_ENT_START,null); cronoRender();        // el crono muere al guardar el entreno
   set("jvf_ent_draft",null);
+  // B v0.12 · la guía 🎯 y el porqué de la rutina cargada mueren con el entreno guardado
+  _entMeta={}; var _pq=$("ent_rut_porque"); if(_pq) _pq.remove();
   _ent={ejercicios:[]}; entInit(); renderEntHistorial();
   mostrarResumenSesion(resumen);
   var btn=document.querySelector('#entrenos button[onclick="guardarEntreno()"]'); okFlash(btn); popEl(btn);
@@ -2623,7 +3167,8 @@ function volumenSemanal(){
   get(LS_E,[]).forEach(function(w){
     var t=Date.parse((w.f||'')+'T12:00:00'); if(isNaN(t)||t<desde) return;
     (w.ejercicios||[]).forEach(function(ej){
-      var efe=(ej.series||[]).filter(function(s){ var r=s.rir; return (r===''||r==null||isNaN(+r))?true:(+r<=3); }).length;
+      // D v0.12 · las W (calentamiento) no son series efectivas salvo que el toggle diga lo contrario
+      var efe=(ej.series||[]).filter(function(s){ if(!serieCuentaStats(s)) return false; var r=s.rir; return (r===''||r==null||isNaN(+r))?true:(+r<=3); }).length;
       if(!efe) return;
       var m=musculoDe(ej.nombre)||'otros'; acc[m]=(acc[m]||0)+efe;
     });
@@ -2725,45 +3270,187 @@ function entBorrar(id){
   set(LS_E,all.filter(function(x){ return x.id!==id; })); renderEntHistorial(); toast("Entreno borrado");
 }
 // "Repetir entreno": carga los ejercicios/series de esa sesión en el formulario (fecha = hoy). Todo editable.
-// Rutinas sugeridas por días/material/nivel (plantillas estáticas con ejercicios de la biblioteca).
-// Para el que llega sin saber qué hacer: 1 toque y tiene la sesión de hoy cargada. No toca el motor.
+// B v0.12 · RUTINAS ahora viene del catálogo validado data/rutinas-catalogo.json (88/88 nombres
+// verificados contra la biblioteca; volumen por bandas T19/T25 del master-file). Se EMBEBE aquí
+// (single-file). Se CONSERVAN las claves históricas que usa rutinaSugerida() y se añaden las
+// variantes que faltaban (fullbody_2d, *_int). Formato por ejercicio: n=nombre exacto de la
+// biblioteca · s=series · rmin/rmax=rango de reps · rir=RIR objetivo · desc=descanso en segundos
+// · nota=por qué está ahí. El campo porQue de la rutina cita las reglas del master-file.
 var RUTINAS={
-  fullbody:{nombre:"Full-body (2-3 días/sem)",dias:["Sentadilla con barra|4","Press banca|4","Remo con barra|4","Press militar mancuernas|3","Curl con mancuernas|3","Extensión en polea (cuerda)|3"]},
-  fullbody_casa:{nombre:"Full-body en casa (mancuernas)",dias:["Sentadilla goblet|4","Press banca mancuernas|4","Remo con mancuerna|4","Press militar mancuernas|3","Curl con mancuernas|3","Flexiones|3"]},
-  fullbody_corporal:{nombre:"Full-body peso corporal",dias:["Sentadilla búlgara|4","Flexiones|4","Dominadas|4","Fondos en banco|3","Plancha|3"]},
-  torso:{nombre:"Torso (torso-pierna 4 días)",dias:["Press banca|4","Remo con barra|4","Press militar mancuernas|3","Jalón al pecho|3","Curl con barra|3","Extensión en polea (cuerda)|3"]},
-  pierna:{nombre:"Pierna (torso-pierna 4 días)",dias:["Sentadilla con barra|4","Peso muerto rumano|4","Prensa de piernas|3","Curl femoral tumbado|3","Elevación de gemelo de pie|4","Crunch|3"]},
-  // PPL de principiante (básicos estandarizados, volumen contenido). Inspirado en el beginner PPL de Hevy.
-  ppl_push:{nombre:"Push · empuje (principiante)",dias:["Press banca|4","Press militar mancuernas|3","Aperturas con mancuernas|3","Elevaciones laterales|3","Extensión en polea (cuerda)|3"]},
-  ppl_pull:{nombre:"Pull · tirón (principiante)",dias:["Jalón al pecho|4","Remo con barra|4","Remo con mancuerna|3","Face pull|3","Curl con mancuernas|3"]},
-  ppl_legs:{nombre:"Legs · pierna (principiante)",dias:["Sentadilla con barra|4","Prensa de piernas|3","Curl femoral tumbado|3","Extensión de cuádriceps|3","Elevación de gemelo de pie|4"]}
+  fullbody:{nombre:"Full-body 3 días (gimnasio)",nivel:"principiante",porQue:"La opción con más evidencia de adherencia para novato: 3 sesiones idénticas (tipo lun/mié/vie), frecuencia 3×/músculo — cada músculo recibe 3 'primeras series frescas' (T24). Con 3 series/sesión el volumen semanal cae en ~9-12/músculo, banda de principiante dentro de 10-20 (T19/T25). RIR 2-3 en libres, técnica sobre carga (T13/T23).",
+    ej:[
+      {n:"Sentadilla con barra",s:3,rmin:6,rmax:10,rir:"2-3",desc:150,nota:"Prioridad de pierna al inicio (T24)."},
+      {n:"Press banca",s:3,rmin:6,rmax:10,rir:"2-3",desc:150,nota:"Empuje horizontal principal (T8)."},
+      {n:"Remo con barra",s:3,rmin:8,rmax:12,rir:"2-3",desc:120,nota:"Tirón que equilibra el empuje."},
+      {n:"Press militar mancuernas",s:2,rmin:8,rmax:12,rir:"2-3",desc:120,nota:"Hombro directo."},
+      {n:"Peso muerto rumano",s:3,rmin:8,rmax:12,rir:"2-3",desc:120,nota:"Femoral/glúteo."},
+      {n:"Curl con mancuernas",s:2,rmin:10,rmax:15,rir:"1-2",desc:75,nota:"Bíceps directo."},
+      {n:"Extensión en polea (cuerda)",s:2,rmin:10,rmax:15,rir:"1-2",desc:75,nota:"Tríceps directo."},
+      {n:"Elevación de gemelo de pie",s:2,rmin:10,rmax:15,rir:"1-2",desc:60,nota:"Gemelo."}
+    ]},
+  fullbody_2d:{nombre:"Full-body 2 días (gimnasio)",nivel:"principiante",porQue:"Frecuencia 2×/músculo/sem con una sola sesión repetida: reparte el volumen y da 'primeras series frescas' 2 veces (T24). Volumen ~8-12 series/músculo/sem, parte baja de la banda 10-20 por ser principiante (T19/T25). Compuestos primero, RIR 2-3 en libres para aprender técnica (T13/T23). Ideal para quien solo puede 2 días: cubre todo el cuerpo cada sesión.",
+    ej:[
+      {n:"Sentadilla con barra",s:4,rmin:6,rmax:10,rir:"2-3",desc:150,nota:"Compuesto de pierna primero: máximo estímulo con el SNC fresco (T24)."},
+      {n:"Press banca",s:4,rmin:6,rmax:10,rir:"2-3",desc:150,nota:"Empuje horizontal principal. Codos algo abiertos para énfasis en pecho (T8)."},
+      {n:"Remo con barra",s:4,rmin:8,rmax:12,rir:"2-3",desc:120,nota:"Tirón horizontal, equilibra el empuje. Espalda + bíceps indirecto."},
+      {n:"Press militar mancuernas",s:3,rmin:8,rmax:12,rir:"2-3",desc:120,nota:"Hombro directo; complementa el press banca."},
+      {n:"Peso muerto rumano",s:3,rmin:8,rmax:12,rir:"2-3",desc:120,nota:"Femoral y glúteo (la sentadilla sola no basta para el femoral)."},
+      {n:"Curl con mancuernas",s:3,rmin:10,rmax:15,rir:"1-2",desc:75,nota:"Bíceps directo; toca el fallo para calibrar tu RIR."},
+      {n:"Extensión en polea (cuerda)",s:3,rmin:10,rmax:15,rir:"1-2",desc:75,nota:"Tríceps directo. Aislamiento: descanso corto."},
+      {n:"Elevación de gemelo de pie",s:3,rmin:10,rmax:15,rir:"1-2",desc:60,nota:"Gemelo; el resto de la sesión lo trabaja poco."}
+    ]},
+  fullbody_casa:{nombre:"Full-body en casa (mancuernas)",nivel:"principiante",porQue:"Full-body 3×/sem solo con mancuernas (+ banco). Misma lógica de frecuencia 3× y volumen ~9-13/músculo dentro de 10-20 (T19/T24/T25). Selección de ejercicios estables (sentado/apoyado) que concentran tensión en el músculo objetivo (T14/T21). RIR 2-3 libres, 1-2 aislamiento (T13/T23).",
+    ej:[
+      {n:"Sentadilla goblet",s:3,rmin:8,rmax:12,rir:"2-3",desc:120,nota:"Cuádriceps; estable y fácil de aprender (T14)."},
+      {n:"Press banca mancuernas",s:3,rmin:8,rmax:12,rir:"2-3",desc:120,nota:"Pecho; más rango que la barra."},
+      {n:"Remo con mancuerna",s:3,rmin:8,rmax:12,rir:"2-3",desc:120,nota:"Espalda; apoyado en banco = estable (T21)."},
+      {n:"Peso muerto rumano con mancuernas",s:3,rmin:10,rmax:15,rir:"2-3",desc:120,nota:"Femoral/glúteo en rango estirado (T8·C21)."},
+      {n:"Press militar mancuernas",s:2,rmin:8,rmax:12,rir:"2-3",desc:120,nota:"Hombro directo."},
+      {n:"Curl con mancuernas",s:2,rmin:10,rmax:15,rir:"1-2",desc:75,nota:"Bíceps directo."},
+      {n:"Extensión sobre la cabeza",s:2,rmin:10,rmax:15,rir:"1-2",desc:75,nota:"Tríceps en posición estirada (T14·C46)."},
+      {n:"Elevación de gemelo con mancuerna",s:2,rmin:12,rmax:20,rir:"1-2",desc:60,nota:"Gemelo."}
+    ]},
+  fullbody_casa_int:{nombre:"Full-body mancuernas (intermedio)",nivel:"intermedio",porQue:"Full-body 3×/sem con mancuernas para intermedio: más series por músculo que la versión de principiante, apurando el RIR (0-1 en aislamiento). Frecuencia 3× reparte el volumen (~12-16/músculo) dentro de 10-20 (T19/T24/T25). Ejercicios estables que concentran tensión (T21). Compuestos primero (T24).",
+    ej:[
+      {n:"Sentadilla búlgara",s:4,rmin:8,rmax:12,rir:"1-2",desc:120,nota:"Cuádriceps/glúteo unilateral con carga alta."},
+      {n:"Press banca mancuernas",s:4,rmin:8,rmax:12,rir:"1-2",desc:120,nota:"Pecho con rango completo."},
+      {n:"Remo con mancuerna",s:4,rmin:8,rmax:12,rir:"1-2",desc:120,nota:"Espalda apoyada, estable (T21)."},
+      {n:"Peso muerto rumano con mancuernas",s:3,rmin:10,rmax:15,rir:"1-2",desc:120,nota:"Femoral/glúteo en estirado."},
+      {n:"Press militar mancuernas",s:3,rmin:8,rmax:12,rir:"1-2",desc:120,nota:"Hombro directo."},
+      {n:"Curl con mancuernas",s:2,rmin:10,rmax:15,rir:"0-1",desc:75,nota:"Bíceps directo."},
+      {n:"Extensión sobre la cabeza",s:2,rmin:10,rmax:15,rir:"0-1",desc:75,nota:"Tríceps en estirado."},
+      {n:"Elevación de gemelo con mancuerna",s:2,rmin:12,rmax:20,rir:"0-1",desc:60,nota:"Gemelo."}
+    ]},
+  fullbody_corporal:{nombre:"Full-body peso corporal",nivel:"principiante",porQue:"Sin equipo: progresas por reps y por variantes más difíciles (la sobrecarga progresiva sigue siendo el motor — T4/T5·Tesis#5). Volumen de tren superior/inferior en banda; brazos y hombro reciben menos trabajo DIRECTO (limitación real del peso corporal), se apoyan en el indirecto de flexiones/dominadas. RIR bajo (1-2): en corporal el fallo es más seguro. Compuestos primero (T24).",
+    ej:[
+      {n:"Sentadilla búlgara",s:4,rmin:8,rmax:15,rir:"1-2",desc:90,nota:"Cuádriceps/glúteo a una pierna: carga alta sin peso externo."},
+      {n:"Flexiones",s:4,rmin:8,rmax:20,rir:"1-2",desc:90,nota:"Empuje: pecho + hombro + tríceps."},
+      {n:"Dominadas",s:4,rmin:5,rmax:12,rir:"1-2",desc:120,nota:"Tirón: espalda + bíceps. Si no sales, usa 'Remo invertido'."},
+      {n:"Fondos en banco",s:2,rmin:8,rmax:15,rir:"1-2",desc:75,nota:"Tríceps directo."},
+      {n:"Puente de glúteo",s:3,rmin:10,rmax:20,rir:"1-2",desc:75,nota:"Glúteo/femoral directo."},
+      {n:"Elevación de piernas",s:3,rmin:10,rmax:20,rir:"1-2",desc:60,nota:"Abdomen."},
+      {n:"Elevación de gemelo a una pierna",s:3,rmin:12,rmax:25,rir:"1-2",desc:60,nota:"Gemelo a una pierna para más carga."}
+    ]},
+  ppl_push:{nombre:"Push · empuje (principiante)",nivel:"principiante",porQue:"Versión mejorada de la semilla PPL de la app: mismos básicos pero con rangos, RIR y descansos del master-file. Frecuencia 1×/músculo/sem (cada grupo en su día); volumen concentrado ~8-11/músculo dentro de banda (T19/T25). Empuje/tirón/pierna con el compuesto primero (T24). RIR 2-3 libres, 1-2 aislamiento (T13/T23). Si algún día priorizas un músculo, muévelo al inicio del bloque.",
+    ej:[
+      {n:"Press banca",s:3,rmin:6,rmax:10,rir:"2-3",desc:150,nota:"Empuje principal, primero (T24)."},
+      {n:"Press inclinado mancuernas",s:3,rmin:8,rmax:12,rir:"2-3",desc:120,nota:"Pecho superior: único ángulo con RCT directo (T8·C19)."},
+      {n:"Aperturas con mancuernas",s:3,rmin:12,rmax:15,rir:"1-2",desc:75,nota:"Pecho en rango estirado (T8·C21)."},
+      {n:"Press militar mancuernas",s:3,rmin:8,rmax:12,rir:"2-3",desc:120,nota:"Hombro directo."},
+      {n:"Elevaciones laterales",s:3,rmin:12,rmax:20,rir:"1-2",desc:60,nota:"Deltoides lateral, el que da anchura."},
+      {n:"Extensión en polea (cuerda)",s:3,rmin:10,rmax:15,rir:"1-2",desc:75,nota:"Tríceps directo."}
+    ]},
+  ppl_pull:{nombre:"Pull · tirón (principiante)",nivel:"principiante",porQue:"Versión mejorada de la semilla PPL de la app: mismos básicos pero con rangos, RIR y descansos del master-file. Frecuencia 1×/músculo/sem (cada grupo en su día); volumen concentrado ~8-11/músculo dentro de banda (T19/T25). Empuje/tirón/pierna con el compuesto primero (T24). RIR 2-3 libres, 1-2 aislamiento (T13/T23). Si algún día priorizas un músculo, muévelo al inicio del bloque.",
+    ej:[
+      {n:"Dominadas",s:3,rmin:5,rmax:10,rir:"2-3",desc:150,nota:"Tirón vertical principal. Asistida si hace falta."},
+      {n:"Remo con barra",s:3,rmin:8,rmax:12,rir:"2-3",desc:120,nota:"Tirón horizontal, grosor de espalda."},
+      {n:"Jalón al pecho",s:3,rmin:10,rmax:15,rir:"1-2",desc:90,nota:"Dorsal; complementa las dominadas."},
+      {n:"Face pull",s:2,rmin:12,rmax:20,rir:"1-2",desc:60,nota:"Deltoides posterior y salud de hombro."},
+      {n:"Curl con barra",s:3,rmin:8,rmax:12,rir:"1-2",desc:75,nota:"Bíceps directo."},
+      {n:"Curl martillo",s:2,rmin:10,rmax:15,rir:"1-2",desc:75,nota:"Braquial/antebrazo."}
+    ]},
+  ppl_legs:{nombre:"Legs · pierna (principiante)",nivel:"principiante",porQue:"Versión mejorada de la semilla PPL de la app: mismos básicos pero con rangos, RIR y descansos del master-file. Frecuencia 1×/músculo/sem (cada grupo en su día); volumen concentrado ~8-11/músculo dentro de banda (T19/T25). Empuje/tirón/pierna con el compuesto primero (T24). RIR 2-3 libres, 1-2 aislamiento (T13/T23). Si algún día priorizas un músculo, muévelo al inicio del bloque.",
+    ej:[
+      {n:"Sentadilla con barra",s:4,rmin:6,rmax:10,rir:"2-3",desc:180,nota:"Compuesto rey de pierna, primero (T24)."},
+      {n:"Prensa de piernas",s:4,rmin:10,rmax:15,rir:"1-2",desc:120,nota:"Más volumen de cuádriceps con menos fatiga técnica."},
+      {n:"Peso muerto rumano",s:3,rmin:8,rmax:12,rir:"2-3",desc:120,nota:"Femoral/glúteo en estirado."},
+      {n:"Curl femoral tumbado",s:3,rmin:10,rmax:15,rir:"1-2",desc:75,nota:"Femoral en flexión de rodilla (el RDL solo no basta)."},
+      {n:"Elevación de gemelo de pie",s:4,rmin:10,rmax:15,rir:"1-2",desc:60,nota:"Gemelo."},
+      {n:"Crunch",s:3,rmin:12,rmax:20,rir:"1-2",desc:60,nota:"Abdomen (flexión de columna)."}
+    ]},
+  torso:{nombre:"Torso (torso-pierna 4 días)",nivel:"intermedio",porQue:"Torso×2 + Pierna×2: frecuencia 2×/músculo con más volumen por sesión que el full-body de principiante. Cada grupo cae en ~12-19 series/sem, zona alta de la banda 10-20 (T19/T25) apropiada para intermedio. Compuestos primero y el músculo prioritario al inicio (T24). RIR 1-2 en compuestos, 0-1 en aislamiento (T13/T23). Descansos 120-150 s compuesto, 60-90 s aislamiento.",
+    ej:[
+      {n:"Press banca",s:3,rmin:6,rmax:10,rir:"1-2",desc:150,nota:"Empuje horizontal principal."},
+      {n:"Remo con barra",s:3,rmin:8,rmax:12,rir:"1-2",desc:120,nota:"Tirón horizontal principal."},
+      {n:"Press inclinado mancuernas",s:3,rmin:8,rmax:12,rir:"1-2",desc:120,nota:"Pecho superior (T8·C19)."},
+      {n:"Jalón al pecho",s:3,rmin:10,rmax:15,rir:"1-2",desc:90,nota:"Tirón vertical, dorsal."},
+      {n:"Elevaciones laterales",s:4,rmin:12,rmax:20,rir:"0-1",desc:60,nota:"Deltoides lateral (el que da anchura); poco trabajo indirecto, por eso más series directas."},
+      {n:"Curl con barra",s:3,rmin:8,rmax:12,rir:"0-1",desc:75,nota:"Bíceps directo (+ el indirecto de remos/jalón)."},
+      {n:"Extensión en polea (cuerda)",s:3,rmin:10,rmax:15,rir:"0-1",desc:75,nota:"Tríceps directo (+ el indirecto de los press)."}
+    ]},
+  pierna:{nombre:"Pierna (torso-pierna 4 días)",nivel:"intermedio",porQue:"Torso×2 + Pierna×2: frecuencia 2×/músculo con más volumen por sesión que el full-body de principiante. Cada grupo cae en ~12-19 series/sem, zona alta de la banda 10-20 (T19/T25) apropiada para intermedio. Compuestos primero y el músculo prioritario al inicio (T24). RIR 1-2 en compuestos, 0-1 en aislamiento (T13/T23). Descansos 120-150 s compuesto, 60-90 s aislamiento.",
+    ej:[
+      {n:"Sentadilla con barra",s:4,rmin:6,rmax:10,rir:"1-2",desc:180,nota:"Compuesto principal, primero (T24)."},
+      {n:"Peso muerto rumano",s:3,rmin:8,rmax:12,rir:"1-2",desc:150,nota:"Cadena posterior en estirado."},
+      {n:"Prensa de piernas",s:3,rmin:10,rmax:15,rir:"1-2",desc:120,nota:"Volumen extra de cuádriceps."},
+      {n:"Curl femoral tumbado",s:3,rmin:10,rmax:15,rir:"0-1",desc:75,nota:"Femoral en flexión de rodilla."},
+      {n:"Elevación de gemelo de pie",s:4,rmin:10,rmax:15,rir:"0-1",desc:60,nota:"Gemelo."},
+      {n:"Crunch en polea",s:3,rmin:12,rmax:20,rir:"0-1",desc:60,nota:"Abdomen con carga progresable."}
+    ]},
+  ppl_push_int:{nombre:"Push · empuje (intermedio)",nivel:"intermedio",porQue:"PPL×2 = 6 días (o 5 rotando) para intermedio con tiempo. Frecuencia 2×/músculo y volumen alto pero recuperable ~14-19 series/sem, dentro de 10-20 (T19/T25). El músculo prioritario abre cada sesión (T24). RIR 1-2 compuestos, 0-1 aislamiento (T13/T23). Si no llegas a 6 días, haz 5 y rota (la adherencia manda — Tesis#10/T24·C85). Descansos 120-180 s compuesto, 60-90 s aislamiento.",
+    ej:[
+      {n:"Press banca",s:3,rmin:6,rmax:10,rir:"1-2",desc:150,nota:"Empuje horizontal principal."},
+      {n:"Press inclinado mancuernas",s:3,rmin:8,rmax:12,rir:"1-2",desc:120,nota:"Pecho superior (T8·C19)."},
+      {n:"Press militar con barra",s:3,rmin:6,rmax:10,rir:"1-2",desc:150,nota:"Hombro compuesto."},
+      {n:"Elevaciones laterales",s:3,rmin:12,rmax:20,rir:"0-1",desc:60,nota:"Deltoides lateral."},
+      {n:"Extensión en polea (cuerda)",s:3,rmin:10,rmax:15,rir:"0-1",desc:75,nota:"Tríceps directo."},
+      {n:"Press francés",s:2,rmin:8,rmax:12,rir:"0-1",desc:75,nota:"Tríceps en estirado (cabeza larga)."}
+    ]},
+  ppl_pull_int:{nombre:"Pull · tirón (intermedio)",nivel:"intermedio",porQue:"PPL×2 = 6 días (o 5 rotando) para intermedio con tiempo. Frecuencia 2×/músculo y volumen alto pero recuperable ~14-19 series/sem, dentro de 10-20 (T19/T25). El músculo prioritario abre cada sesión (T24). RIR 1-2 compuestos, 0-1 aislamiento (T13/T23). Si no llegas a 6 días, haz 5 y rota (la adherencia manda — Tesis#10/T24·C85). Descansos 120-180 s compuesto, 60-90 s aislamiento.",
+    ej:[
+      {n:"Dominadas",s:3,rmin:6,rmax:12,rir:"1-2",desc:150,nota:"Tirón vertical principal."},
+      {n:"Remo con barra",s:3,rmin:8,rmax:12,rir:"1-2",desc:120,nota:"Tirón horizontal, grosor."},
+      {n:"Remo en polea baja",s:3,rmin:10,rmax:15,rir:"0-1",desc:90,nota:"Espalda con tensión constante."},
+      {n:"Pájaros (deltoides posterior)",s:3,rmin:12,rmax:20,rir:"0-1",desc:60,nota:"Deltoides posterior."},
+      {n:"Curl con barra",s:2,rmin:8,rmax:12,rir:"0-1",desc:75,nota:"Bíceps directo."},
+      {n:"Curl inclinado con mancuernas",s:2,rmin:10,rmax:15,rir:"0-1",desc:75,nota:"Bíceps en estirado (T18·C61)."}
+    ]},
+  ppl_legs_int:{nombre:"Legs · pierna (intermedio)",nivel:"intermedio",porQue:"PPL×2 = 6 días (o 5 rotando) para intermedio con tiempo. Frecuencia 2×/músculo y volumen alto pero recuperable ~14-19 series/sem, dentro de 10-20 (T19/T25). El músculo prioritario abre cada sesión (T24). RIR 1-2 compuestos, 0-1 aislamiento (T13/T23). Si no llegas a 6 días, haz 5 y rota (la adherencia manda — Tesis#10/T24·C85). Descansos 120-180 s compuesto, 60-90 s aislamiento.",
+    ej:[
+      {n:"Sentadilla con barra",s:4,rmin:6,rmax:10,rir:"1-2",desc:180,nota:"Compuesto principal, primero (T24)."},
+      {n:"Peso muerto rumano",s:3,rmin:8,rmax:12,rir:"1-2",desc:150,nota:"Femoral/glúteo en estirado."},
+      {n:"Prensa de piernas",s:3,rmin:10,rmax:15,rir:"1-2",desc:120,nota:"Volumen extra de cuádriceps."},
+      {n:"Curl femoral tumbado",s:3,rmin:10,rmax:15,rir:"0-1",desc:75,nota:"Femoral aislado."},
+      {n:"Elevación de gemelo de pie",s:3,rmin:10,rmax:15,rir:"0-1",desc:60,nota:"Gemelo."},
+      {n:"Crunch en polea",s:2,rmin:12,rmax:20,rir:"0-1",desc:60,nota:"Abdomen con carga."}
+    ]}
 };
-// Recomienda rutinas según "qué quieres mejorar" (w_prioridad), material y días/semana.
+// Recomienda rutinas según "qué quieres mejorar" (w_prioridad), material, días/semana y nivel.
 // Regla dictada por Pablo: si el usuario pone "todo" (o nada concreto) -> PPL básicos según los días.
+// B v0.12 · el NIVEL elige la variante: solo si el usuario DIJO ser intermedio/avanzado se le dan
+// las rutinas intermedias (RIR más apurado); en la duda, principiante — es lo seguro para aprender.
 function rutinaSugerida(){
   var p=get(LS_P,{})||{}, c=p.coach||{}, mat=(c.material||"").toLowerCase(), dias=(c.dias_sem||"")+"", prio=(c.prioridad||"").toLowerCase().trim();
   var muchosDias=/^(3-4|4-5|6|7)/.test(dias);
+  var inter=/interm|avanz/i.test((c.nivel||"")+"");
+  var PUSH=inter?RUTINAS.ppl_push_int:RUTINAS.ppl_push, PULL=inter?RUTINAS.ppl_pull_int:RUTINAS.ppl_pull, LEGS=inter?RUTINAS.ppl_legs_int:RUTINAS.ppl_legs;
   // Prioridad concreta por zona -> empuja el día PPL que la contiene primero.
   if(prio && prio!=="todo"){
-    if(/pecho|hombro|tr[ií]ceps|empuj/.test(prio)) return muchosDias?[RUTINAS.ppl_push,RUTINAS.ppl_pull,RUTINAS.ppl_legs]:[RUTINAS.ppl_push];
-    if(/espalda|dorsal|b[ií]ceps|tir[óo]n|remo/.test(prio)) return muchosDias?[RUTINAS.ppl_pull,RUTINAS.ppl_push,RUTINAS.ppl_legs]:[RUTINAS.ppl_pull];
-    if(/pierna|cu[aá]dr|femoral|gl[uú]teo|gemelo/.test(prio)) return muchosDias?[RUTINAS.ppl_legs,RUTINAS.ppl_push,RUTINAS.ppl_pull]:[RUTINAS.ppl_legs];
+    if(/pecho|hombro|tr[ií]ceps|empuj/.test(prio)) return muchosDias?[PUSH,PULL,LEGS]:[PUSH];
+    if(/espalda|dorsal|b[ií]ceps|tir[óo]n|remo/.test(prio)) return muchosDias?[PULL,PUSH,LEGS]:[PULL];
+    if(/pierna|cu[aá]dr|femoral|gl[uú]teo|gemelo/.test(prio)) return muchosDias?[LEGS,PUSH,PULL]:[LEGS];
   }
-  // "todo" o sin material especial: PPL básicos si entrena muchos días, si no full-body.
+  // "todo" o sin material especial: PPL si entrena muchos días; torso/pierna solo para intermedio
+  // declarado (su volumen/RIR es de intermedio en el catálogo); full-body para pocos días.
   if(/solo peso/.test(mat)) return [RUTINAS.fullbody_corporal];
-  if(/casa/.test(mat)) return [RUTINAS.fullbody_casa];
-  if(muchosDias) return (prio==="todo")?[RUTINAS.ppl_push,RUTINAS.ppl_pull,RUTINAS.ppl_legs]:[RUTINAS.torso,RUTINAS.pierna];
-  return [RUTINAS.fullbody];
+  if(/casa/.test(mat)) return [inter?RUTINAS.fullbody_casa_int:RUTINAS.fullbody_casa];
+  if(muchosDias) return (prio==="todo"||!inter)?[PUSH,PULL,LEGS]:[RUTINAS.torso,RUTINAS.pierna];
+  return [/^(0|1(\b|-))/.test(dias)?RUTINAS.fullbody_2d:RUTINAS.fullbody];
 }
+// B v0.12 · objetivo reps/RIR/descanso por NOMBRE de ejercicio, SOLO al cargar rutina del catálogo
+// (no persiste: es una guía de la sesión). renderEntForm lo pinta como nota "🎯 …".
+var _entMeta={};
 function cargarRutina(key){
   var r=RUTINAS[key]; if(!r) return;
-  _ent.ejercicios=r.dias.map(function(d){ var pp=d.split("|"); var series=[]; for(var i=0;i<+pp[1];i++) series.push({peso:"",reps:"",rir:""});
-    return {nombre:pp[0], notas:"", series:series}; });
+  _entMeta={};
+  _ent.ejercicios=r.ej.map(function(e){ var series=[]; for(var i=0;i<e.s;i++) series.push({peso:"",reps:"",rir:""});
+    // targetRIR y descansoSeg del catálogo, visibles como nota del ejercicio ("8-12 reps · RIR 2-3 · 120 s")
+    _entMeta[e.n]={txt:e.rmin+"-"+e.rmax+" reps · RIR "+e.rir+" · "+e.desc+" s", nota:e.nota||""};
+    return {nombre:e.n, notas:"", series:series, desc:e.desc}; });   // desc = descanso sugerido (input ⏱ del bloque D)
   renderEntForm(); var cta=$("ent_cta_rut"); if(cta) cta.remove(); var cta2=$("ent_cta_rep"); if(cta2) cta2.remove();
+  rutinaPorQue(r);
   rutinaNotaPrincipiante();
   // F1 v0.10 · cargar una rutina sugerida del catálogo también arranca el cronómetro de sesión
   set(LS_ENT_START, Date.now()); cronoRender();
   toast("✓ Rutina cargada — ajusta pesos y va");
+}
+// B v0.12 · el porqué science-based de la rutina (campo porQue del catálogo), colapsable al elegir.
+function rutinaPorQue(r){
+  var prev=$("ent_rut_porque"); if(prev) prev.remove();
+  if(!r || !r.porQue) return;
+  var d=document.createElement("details"); d.id="ent_rut_porque"; d.style.margin="0 0 10px";
+  d.innerHTML="<summary style='cursor:pointer;color:var(--jade);font-weight:600'>📋 "+esc(r.nombre)+" · ¿por qué esta rutina?</summary><div class='hint' style='margin:6px 0 0'>"+esc(r.porQue)+"</div>";
+  var f=$("ent_form"); if(f) f.parentNode.insertBefore(d,f);
 }
 // F5 v0.10 · ¿es novato? El nivel del coach (onboarding) decide cuánta chapa educativa recibe.
 function esNovato(){
@@ -2807,7 +3494,9 @@ function entCtaRutina(){
   var sug=rutinaSugerida(); var d=document.createElement("div"); d.id="ent_cta_rut";
   d.innerHTML="<div class='eyebrow-lbl'>¿No sabes por dónde empezar? Rutina sugerida según tu perfil</div>"+sug.map(function(r){
     var key=Object.keys(RUTINAS).filter(function(k){return RUTINAS[k]===r;})[0];
-    return "<button class='btn-lg' type='button' style='margin:0 0 8px' onclick='cargarRutina(\""+key+"\")'>📋 "+r.nombre+"</button>";
+    // B v0.12 · el porqué science-based (campo porQue del catálogo) colapsable bajo cada opción
+    return "<button class='btn-lg' type='button' style='margin:0 0 4px' onclick='cargarRutina(\""+key+"\")'>📋 "+esc(r.nombre)+"</button>"
+      +(r.porQue?"<details style='margin:0 0 8px'><summary style='cursor:pointer;color:var(--mute);font-size:.72rem'>¿por qué esta rutina?</summary><div class='hint' style='margin:4px 0 0'>"+esc(r.porQue)+"</div></details>":"");
   }).join("");
   var f=$("ent_form"); if(f) f.parentNode.insertBefore(d,f);
 }
@@ -2824,9 +3513,11 @@ function repetirEntreno(id){
   var arr=get(LS_E,[]); var w=null;
   for(var k=0;k<arr.length;k++){ if(arr[k].id===id){ w=arr[k]; break; } }
   if(!w){ toast("No encontrado"); return; }
+  _entMeta={}; var _pq=$("ent_rut_porque"); if(_pq) _pq.remove();   // B v0.12 · repetir entreno no arrastra la guía de otra rutina
   _ent={ejercicios:(w.ejercicios||[]).map(function(ej){
-    return { nombre:ej.nombre||'', series:(ej.series||[]).map(function(s){
-      return {peso:(s.peso!=null?String(s.peso):''), reps:(s.reps!=null?String(s.reps):''), rir:(s.rir!=null?String(s.rir):'')};
+    // D v0.12 · tipo de serie, descanso propio y superserie también se repiten
+    return { nombre:ej.nombre||'', desc:(ej.desc!=null?String(ej.desc):''), ss:!!ej.ss, series:(ej.series||[]).map(function(s){
+      return {peso:(s.peso!=null?String(s.peso):''), reps:(s.reps!=null?String(s.reps):''), rir:(s.rir!=null?String(s.rir):''), t:(s.t==='w'||s.t==='f'||s.t==='d')?s.t:''};
     }) };
   })};
   if(!_ent.ejercicios.length) _ent.ejercicios=[{nombre:'',series:[{peso:'',reps:'',rir:''}]}];
@@ -2917,6 +3608,7 @@ function rutIniciar(id){
   var rs=get(LS_RUTINAS,[]), r=null;
   for(var k=0;k<rs.length;k++){ if(rs[k].id===id){ r=rs[k]; break; } }
   if(!r){ toast("Rutina no encontrada"); return; }
+  _entMeta={}; var _pq=$("ent_rut_porque"); if(_pq) _pq.remove();   // B v0.12 · las plantillas del usuario no llevan guía del catálogo
   _ent.ejercicios=(r.ejercicios||[]).map(function(e){
     var ss=[], n=Math.max(1,+e.series||1);
     for(var j=0;j<n;j++) ss.push({peso:"",reps:"",rir:""});
@@ -2976,7 +3668,8 @@ function renderEntHistorial(){
       var record="";
       if(ej._recordPeso){ record="<div class='hint' style='margin:0 0 6px;color:var(--jade)'>🏆 ¡Nuevo récord! Peso máximo: "+top.peso+" kg</div>"; }
       else if(ej._recordVol){ record="<div class='hint' style='margin:0 0 6px;color:var(--jade)'>🏆 ¡Nuevo récord! Volumen: "+Math.round(ej._vol)+"</div>"; }
-      var sets=ej.series.map(function(s){ var fr=fmtRir(s.rir); return s.peso+"kg×"+s.reps+(fr?" @"+fr:""); }).join("  ·  ");
+      // D v0.12 · las series marcadas enseñan su tipo (W/F/D) delante
+      var sets=ej.series.map(function(s){ var fr=fmtRir(s.rir); return (s.t?s.t.toUpperCase()+"·":"")+s.peso+"kg×"+s.reps+(fr?" @"+fr:""); }).join("  ·  ");
       var b1=entMejor1RM(ej);
       var rm = b1.peso>0 ? "  ·  1RM≈"+Math.round(b1.e)+"kg" : "";
       // D5 · barra de volumen vs mejor previo (visual, llena al 100% en récord)
@@ -3002,9 +3695,21 @@ function renderEntrenos(){ renderEntHistorial(); }
 // último mes: aquí superamos eso). El mes mostrado vive en variable, no se persiste a propósito.
 var _mesVista=null;   // {y, m} del mes mostrado; null = mes actual
 var MESES_ES=["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
-// Volumen (kg totales = Σ peso×reps) de un entreno completo.
+// D v0.12 · ¿esta serie cuenta en las estadísticas? Las W (calentamiento) SOLO si el usuario activó
+// el toggle (default NO — el calentamiento no es volumen efectivo; Hevy lo resuelve igual, con un
+// ajuste). Al cambiar el toggle se recalculan historial + informe al vuelo (los datos guardados no
+// cambian: cambia qué se cuenta).
+var LS_WARMUP="jvf_warmup_stats";
+function warmupCuenta(){ return !!get(LS_WARMUP,false); }
+function serieCuentaStats(s){ return (s && s.t==='w') ? warmupCuenta() : true; }
+function warmupToggle(chk){
+  set(LS_WARMUP, !!(chk&&chk.checked));
+  try{ renderEntHistorial(); }catch(e){}   // renderEntHistorial refresca también el informe del mes
+  toast(warmupCuenta()?"Las series W ahora CUENTAN en stats":"Series W fuera de stats (default honesto)");
+}
+// Volumen (kg totales = Σ peso×reps) de un entreno completo. Respeta el toggle de calentamiento.
 function volDeEntreno(w){
-  var v=0; ((w&&w.ejercicios)||[]).forEach(function(ej){ (ej.series||[]).forEach(function(s){ v+=(+s.reps||0)*(+s.peso||0); }); });
+  var v=0; ((w&&w.ejercicios)||[]).forEach(function(ej){ (ej.series||[]).forEach(function(s){ if(!serieCuentaStats(s)) return; v+=(+s.reps||0)*(+s.peso||0); }); });
   return v;
 }
 function progMesNav(d){
@@ -3012,6 +3717,32 @@ function progMesNav(d){
   var m=_mesVista.m+d, y=_mesVista.y;
   if(m<0){ m=11; y--; } if(m>11){ m=0; y++; }
   _mesVista={y:y, m:m}; renderInformeMes();
+}
+// E v0.12 · series DIRECTAS de los últimos 7 días por músculo PRIMARIO (musculoDe). El estímulo
+// indirecto de los compuestos NO se suma: es la convención de las bandas del master-file (T19/T25,
+// Schoenfeld/Baz-Valle) y la misma que usa data/rutinas-catalogo.json. Respeta el toggle W.
+function seriesDirectasSemana(){
+  var desde=Date.now()-7*864e5, acc={};
+  get(LS_E,[]).forEach(function(w){
+    var t=Date.parse((w.f||'')+'T12:00:00'); if(isNaN(t)||t<desde) return;
+    (w.ejercicios||[]).forEach(function(ej){
+      var m=musculoDe(ej.nombre); if(m==='otros') return;   // sin músculo conocido no hay banda que aplicar
+      var n=(ej.series||[]).filter(serieCuentaStats).length;
+      if(n) acc[m]=(acc[m]||0)+n;
+    });
+  });
+  return acc;
+}
+// E v0.12 · ¿es este músculo el prioritario del perfil? (regex por zona, mismo espíritu que rutinaSugerida)
+function esMusculoPrioritario(mus){
+  var p=get(LS_P,{})||{}, prio=(((p.coach||{}).prioridad)||"").toLowerCase();
+  if(!prio || prio==="todo") return false;
+  var M={ "pecho":/pecho|pectoral|empuj/, "espalda":/espalda|dorsal|tir[óo]n|remo/, "hombros":/hombro|deltoide/,
+    "bíceps":/b[ií]ceps|brazo/, "tríceps":/tr[ií]ceps|brazo/, "cuádriceps":/pierna|cu[aá]dr/,
+    "femoral":/femoral|isquio|pierna/, "glúteo":/gl[uú]teo|culo/, "gemelo":/gemelo|pantorrilla|pierna/,
+    "abdomen":/abdomen|abdominal|core/, "trapecio":/trapecio/, "antebrazo":/antebrazo|agarre/, "aductor":/aductor/ };
+  var re=M[(mus||"").toLowerCase()];
+  return !!(re && re.test(prio));
 }
 function renderInformeMes(){
   var el=$("prog_mes"); if(!el) return;
@@ -3038,7 +3769,8 @@ function renderInformeMes(){
     volTot+=volDeEntreno(w);
     if(w.durMin>0){ durTot+=w.durMin; hayDur=true; }
     (w.ejercicios||[]).forEach(function(ej){
-      var mus=musculoDe(ej.nombre); seriesMus[mus]=(seriesMus[mus]||0)+(ej.series||[]).length;
+      // D v0.12 · el conteo de series del informe respeta el toggle de calentamiento
+      var mus=musculoDe(ej.nombre); seriesMus[mus]=(seriesMus[mus]||0)+(ej.series||[]).filter(serieCuentaStats).length;
     });
   });
   var topMus=Object.keys(seriesMus).sort(function(a,b){ return seriesMus[b]-seriesMus[a]; }).slice(0,3);
@@ -3065,8 +3797,28 @@ function renderInformeMes(){
   var antMes=arr.filter(function(w){ return ((w&&w.f)||"").slice(0,7)===prefA; });
   var nAnt=antMes.length, volAnt=0; antMes.forEach(function(w){ volAnt+=volDeEntreno(w); });
   function flecha(a,b){ return a>b?" <span style='color:var(--jade)'>▲</span>":(a<b?" <span style='color:var(--ember)'>▼</span>":" ="); }
+  // --- E v0.12 · "Series por músculo esta semana vs tu rango": semáforo contra la banda 10-20
+  //     del master-file (T19/T25). 🔵 por debajo (con aviso extra si es el músculo PRIORITARIO
+  //     del perfil) · 🟢 en rango · 🟠 por encima de lo recuperable. Ni Hevy da la banda citada. ---
+  var accSem=seriesDirectasSemana(), musSem=Object.keys(accSem), hSem="";
+  if(musSem.length){
+    musSem.sort(function(a,b){ return accSem[b]-accSem[a]; });
+    var filasSem=musSem.map(function(m2){
+      var c=accSem[m2], ico, col, txt;
+      if(c<10){ ico="🔵"; col="#74c7ff"; txt="por debajo del rango"+(esMusculoPrioritario(m2)?" — ¡y es tu músculo PRIORITARIO! dale más series":""); }
+      else if(c<=20){ ico="🟢"; col="var(--jade)"; txt="en rango (10-20)"; }
+      else { ico="🟠"; col="#f4a950"; txt="por encima de lo recuperable (Temas 19/25)"; }
+      return "<div class='kv'><span style='text-transform:capitalize'>"+esc(m2)+"</span><span style='color:"+col+";font-variant-numeric:tabular-nums'>"+ico+" "+c+" series · "+esc(txt)+"</span></div>";
+    }).join("");
+    hSem="<div class='card' style='margin:0 0 12px;padding:12px'>"
+      +"<div class='eyebrow-lbl'>Series por músculo esta semana vs tu rango</div>"
+      +"<div class='hint' style='margin:2px 0 6px'>Series <b style='color:var(--soft)'>DIRECTAS</b> (solo el músculo primario de cada ejercicio) en los últimos 7 días, contra la banda <b style='color:var(--soft)'>10-20 series/músculo/semana</b> del master-file (Temas 19/25 — Pelland 2025, Schoenfeld 2017, Baz-Valle 2022). El trabajo indirecto de los compuestos no se suma pero existe: un músculo pequeño puede ir bien servido con menos directas.</div>"
+      +filasSem
+      +"<div class='hint' style='margin:8px 0 0'>Principio 10 del master-file: <b style='color:var(--soft)'>más no es mejor si no lo sostienes</b> — el volumen que no recuperas frena el progreso.</div>"
+      +"</div>";
+  }
   // --- pintar ---
-  var h="<div class='eyebrow-lbl' style='margin-top:18px'>📅 Tus entrenos, mes a mes</div>"
+  var h=hSem+"<div class='eyebrow-lbl' style='margin-top:18px'>📅 Tus entrenos, mes a mes</div>"
     +"<div class='kv' style='border-bottom:0'>"
     +"<span><button class='sec' type='button' style='width:auto;margin:0;padding:4px 12px' onclick='progMesNav(-1)'>◀</button></span>"
     +"<span style='color:var(--soft);font-weight:600;text-transform:capitalize'>"+MESES_ES[m]+" "+y+"</span>"
