@@ -491,7 +491,13 @@
     <button class="sec" type="button" style="flex:1;width:auto;padding:5px" onclick="comGr(150)">150g</button>
     <button class="sec" type="button" style="flex:1;width:auto;padding:5px" onclick="comGr(200)">200g</button>
   </div>
-  <button class="sec" type="button" style="margin-top:8px" onclick="comAdd()">+ Añadir alimento</button>
+  <!-- I5 · escáner de barcode junto al alta manual: mismo diario, dos puertas de entrada -->
+  <div class="row" style="gap:6px;margin-top:8px">
+    <button class="sec" type="button" style="flex:1;width:auto;margin:0" onclick="comAdd()">+ Añadir alimento</button>
+    <button class="sec" type="button" style="flex:1;width:auto;margin:0" onclick="bcAbrir()">📷 Escanear código</button>
+  </div>
+  <!-- I6 · entrada directa al alimento propio (sin pasar por el escáner) -->
+  <p class="hint" style="margin-top:6px;text-align:center"><a href="#" onclick="apAbrir(null);return false;" style="color:var(--mute);text-decoration:underline">¿No está en la lista? Crea tu alimento propio</a></p>
   <!-- F3/F4 v0.10 · foto-comida (beta honesta) y añadir rápido estilo MFP (aquí con macros gratis) -->
   <div class="row" style="gap:6px;margin-top:6px">
     <button class="sec" type="button" style="flex:1;width:auto;margin:0" onclick="fotoAbrir()">📷 Foto (beta)</button>
@@ -633,42 +639,196 @@ Tus datos se guardan solo en este dispositivo.</p>
   </div>
 </div>
 
-<!-- MODAL: 📷 foto-comida (F3 v0.10) — estimador PENSANTE y honesto: la foto NO se analiza (aún);
-     pregunta lo que una foto no enseña (aceite, bebida, tamaño) y devuelve un RANGO de kcal. -->
+<!-- MODAL: 📷 foto-comida v2 (F-FOTO-2) — motor de ECUACIONES, no IA (spec dictada 2026-07-06):
+     la foto se MIDE en un canvas local (fracción de plato, colores dominantes, brillos — píxeles,
+     sin red, sin guardar nada) y esas medidas solo PRE-marcan chips: el usuario SIEMPRE confirma.
+     Cada tipo de plato abre SUS 2-3 preguntas con "no lo sé = medio" siempre disponible (regla
+     dictada). Salida: rango + desglose por decisión; si el usuario corrige las kcal, la app
+     aprende su ajuste por tipo (jvf_foto_ajustes) de forma determinista. -->
 <div id="fotoModal" class="modal hidden">
   <div class="modal-card">
     <button class="modal-x" type="button" title="Cerrar" aria-label="Cerrar" onclick="fotoCerrar()">✕</button>
     <h2>📷 Foto del plato (beta)</h2>
-    <p class="hint" style="margin-top:0">Haz la foto y responde: te doy un <b style="color:var(--soft)">rango honesto</b> de calorías. La foto queda solo como recordatorio — no se guarda ni se analiza (el motor de visión llegará).</p>
+    <p class="hint" style="margin-top:0">Hago <b style="color:var(--soft)">medidas simples</b> de la foto aquí mismo (píxeles, sin IA — no sale de tu móvil) y te pre-marco lo que parece. Tú confirmas, yo calculo con <b style="color:var(--soft)">ecuaciones</b> y te doy un rango honesto con su desglose. La foto no se guarda.</p>
     <input type="file" id="foto_file" accept="image/*" capture="environment" onchange="fotoPreview(this)">
     <img id="foto_prev" class="hidden" alt="" style="width:100%;border-radius:12px;margin-top:8px">
+    <div id="foto_pistas" class="hint hidden" style="margin-top:8px"></div>
     <label>¿Tipo de plato?</label>
     <div class="wizchips" id="foto_g_tipo" style="margin:0">
-      <span class="wchip done" onclick="fotoSel(this,'tipo','ligero')">🥗 ligero</span>
-      <span class="wchip done" onclick="fotoSel(this,'tipo','mixto')">🍛 mixto</span>
-      <span class="wchip done" onclick="fotoSel(this,'tipo','contundente')">🍖 contundente</span>
+      <span class="wchip done" data-v="legumbres" onclick="fotoSel(this,'tipo','legumbres')">🥘 legumbres</span>
+      <span class="wchip done" data-v="carne" onclick="fotoSel(this,'tipo','carne')">🥩 carne</span>
+      <span class="wchip done" data-v="pescado" onclick="fotoSel(this,'tipo','pescado')">🐟 pescado</span>
+      <span class="wchip done" data-v="pasta" onclick="fotoSel(this,'tipo','pasta')">🍝 pasta/arroz</span>
+      <span class="wchip done" data-v="ensalada" onclick="fotoSel(this,'tipo','ensalada')">🥗 ensalada/verdura</span>
+      <span class="wchip done" data-v="frito" onclick="fotoSel(this,'tipo','frito')">🍤 frito/rebozado</span>
+      <span class="wchip done" data-v="mixto" onclick="fotoSel(this,'tipo','mixto')">🍛 mixto / no sé</span>
     </div>
-    <label>¿Tamaño?</label>
+
+    <!-- Preguntas PROPIAS de cada tipo (solo se ve el bloque del tipo elegido). "no lo sé" = medio SIEMPRE. -->
+    <div id="foto_q_legumbres" class="hidden">
+      <label>¿De bote o guisadas?</label>
+      <div class="wizchips" id="foto_g_leg_prep" style="margin:0">
+        <span class="wchip done" data-v="bote" onclick="fotoSel(this,'leg_prep','bote')">de bote</span>
+        <span class="wchip done" data-v="guisadas" onclick="fotoSel(this,'leg_prep','guisadas')">guisadas</span>
+        <span class="wchip done cur" data-v="nose" data-def="1" onclick="fotoSel(this,'leg_prep','nose')">no lo sé</span>
+      </div>
+      <label>¿Con chorizo / compango?</label>
+      <div class="wizchips" id="foto_g_leg_comp" style="margin:0">
+        <span class="wchip done" data-v="sin" onclick="fotoSel(this,'leg_comp','sin')">sin</span>
+        <span class="wchip done" data-v="algo" onclick="fotoSel(this,'leg_comp','algo')">algo</span>
+        <span class="wchip done" data-v="completo" onclick="fotoSel(this,'leg_comp','completo')">compango completo</span>
+        <span class="wchip done cur" data-v="nose" data-def="1" onclick="fotoSel(this,'leg_comp','nose')">no lo sé</span>
+      </div>
+    </div>
+    <div id="foto_q_carne" class="hidden">
+      <label>¿Qué carne es?</label>
+      <div class="wizchips" id="foto_g_car_tipo" style="margin:0">
+        <span class="wchip done" data-v="pollo" onclick="fotoSel(this,'car_tipo','pollo')">pollo</span>
+        <span class="wchip done" data-v="cerdo" onclick="fotoSel(this,'car_tipo','cerdo')">cerdo</span>
+        <span class="wchip done" data-v="ternera" onclick="fotoSel(this,'car_tipo','ternera')">ternera</span>
+        <span class="wchip done cur" data-v="nose" data-def="1" onclick="fotoSel(this,'car_tipo','nose')">no lo sé</span>
+      </div>
+      <label>¿Cómo de grasa? (si no lo sabes: medio)</label>
+      <div class="wizchips" id="foto_g_car_grasa" style="margin:0">
+        <span class="wchip done" data-v="magro" onclick="fotoSel(this,'car_grasa','magro')">magra</span>
+        <span class="wchip done" data-v="medio" onclick="fotoSel(this,'car_grasa','medio')">media</span>
+        <span class="wchip done" data-v="graso" onclick="fotoSel(this,'car_grasa','graso')">grasa</span>
+        <span class="wchip done cur" data-v="nose" data-def="1" onclick="fotoSel(this,'car_grasa','nose')">no lo sé</span>
+      </div>
+      <label>¿Plancha o frita?</label>
+      <div class="wizchips" id="foto_g_car_coc" style="margin:0">
+        <span class="wchip done" data-v="plancha" onclick="fotoSel(this,'car_coc','plancha')">plancha</span>
+        <span class="wchip done" data-v="frito" onclick="fotoSel(this,'car_coc','frito')">frita</span>
+        <span class="wchip done cur" data-v="nose" data-def="1" onclick="fotoSel(this,'car_coc','nose')">no lo sé</span>
+      </div>
+    </div>
+    <div id="foto_q_pescado" class="hidden">
+      <label>¿Blanco o azul?</label>
+      <div class="wizchips" id="foto_g_pes_tipo" style="margin:0">
+        <span class="wchip done" data-v="blanco" onclick="fotoSel(this,'pes_tipo','blanco')">blanco (merluza…)</span>
+        <span class="wchip done" data-v="azul" onclick="fotoSel(this,'pes_tipo','azul')">azul (salmón…)</span>
+        <span class="wchip done cur" data-v="nose" data-def="1" onclick="fotoSel(this,'pes_tipo','nose')">no lo sé</span>
+      </div>
+      <label>¿Plancha/horno o frito/rebozado?</label>
+      <div class="wizchips" id="foto_g_pes_coc" style="margin:0">
+        <span class="wchip done" data-v="plancha" onclick="fotoSel(this,'pes_coc','plancha')">plancha/horno</span>
+        <span class="wchip done" data-v="frito" onclick="fotoSel(this,'pes_coc','frito')">frito/rebozado</span>
+        <span class="wchip done cur" data-v="nose" data-def="1" onclick="fotoSel(this,'pes_coc','nose')">no lo sé</span>
+      </div>
+    </div>
+    <div id="foto_q_pasta" class="hidden">
+      <label>¿Con salsa?</label>
+      <div class="wizchips" id="foto_g_pas_salsa" style="margin:0">
+        <span class="wchip done" data-v="sin" onclick="fotoSel(this,'pas_salsa','sin')">sin salsa</span>
+        <span class="wchip done" data-v="poca" onclick="fotoSel(this,'pas_salsa','poca')">poca</span>
+        <span class="wchip done" data-v="bastante" onclick="fotoSel(this,'pas_salsa','bastante')">bastante</span>
+        <span class="wchip done cur" data-v="nose" data-def="1" onclick="fotoSel(this,'pas_salsa','nose')">no lo sé</span>
+      </div>
+    </div>
+    <div id="foto_q_ensalada" class="hidden">
+      <label>¿Aliño de aceite? (es LA variable: cada cucharada suma ~120 kcal)</label>
+      <div class="wizchips" id="foto_g_ens_alino" style="margin:0">
+        <span class="wchip done" data-v="sin" onclick="fotoSel(this,'ens_alino','sin')">sin aliño</span>
+        <span class="wchip done" data-v="1" onclick="fotoSel(this,'ens_alino','1')">1 cucharada</span>
+        <span class="wchip done" data-v="2" onclick="fotoSel(this,'ens_alino','2')">2 o más</span>
+        <span class="wchip done cur" data-v="nose" data-def="1" onclick="fotoSel(this,'ens_alino','nose')">no lo sé</span>
+      </div>
+    </div>
+    <div id="foto_q_frito" class="hidden">
+      <label>¿Bien escurrido (papel/rejilla)?</label>
+      <div class="wizchips" id="foto_g_fri_escurrido" style="margin:0">
+        <span class="wchip done" data-v="bien" onclick="fotoSel(this,'fri_escurrido','bien')">bien escurrido</span>
+        <span class="wchip done" data-v="no" onclick="fotoSel(this,'fri_escurrido','no')">sin escurrir</span>
+        <span class="wchip done cur" data-v="nose" data-def="1" onclick="fotoSel(this,'fri_escurrido','nose')">no lo sé</span>
+      </div>
+    </div>
+    <!-- Fritura TRANSVERSAL (dictado): aparece si el plato es frito o si marcas "frita/o" en carne/pescado -->
+    <div id="foto_q_fritgrasa" class="hidden">
+      <label>¿Has freído con aceite o mantequilla?</label>
+      <div class="wizchips" id="foto_g_frit_grasa" style="margin:0">
+        <span class="wchip done" data-v="aceite" onclick="fotoSel(this,'frit_grasa','aceite')">aceite</span>
+        <span class="wchip done" data-v="mantequilla" onclick="fotoSel(this,'frit_grasa','mantequilla')">mantequilla</span>
+        <span class="wchip done cur" data-v="nose" data-def="1" onclick="fotoSel(this,'frit_grasa','nose')">no lo sé</span>
+      </div>
+    </div>
+    <!-- Fallback v1: plato mixto / no sé → el estimador original por contundencia -->
+    <div id="foto_q_mixto" class="hidden">
+      <label>¿Cómo es el plato?</label>
+      <div class="wizchips" id="foto_g_v1tipo" style="margin:0">
+        <span class="wchip done" data-v="ligero" onclick="fotoSel(this,'v1tipo','ligero')">🥗 ligero</span>
+        <span class="wchip done cur" data-v="mixto" data-def="1" onclick="fotoSel(this,'v1tipo','mixto')">🍛 mixto</span>
+        <span class="wchip done" data-v="contundente" onclick="fotoSel(this,'v1tipo','contundente')">🍖 contundente</span>
+      </div>
+      <label>¿Lleva aceite / mantequilla / salsas?</label>
+      <div class="wizchips" id="foto_g_aceite" style="margin:0">
+        <span class="wchip done cur" data-v="no" data-def="1" onclick="fotoSel(this,'aceite','no')">no</span>
+        <span class="wchip done" data-v="algo" onclick="fotoSel(this,'aceite','algo')">algo</span>
+        <span class="wchip done" data-v="bastante" onclick="fotoSel(this,'aceite','bastante')">bastante</span>
+      </div>
+    </div>
+
+    <label>¿Tamaño de la ración?</label>
     <div class="wizchips" id="foto_g_tam" style="margin:0">
-      <span class="wchip done" onclick="fotoSel(this,'tam','S')">S</span>
-      <span class="wchip done" onclick="fotoSel(this,'tam','M')">M</span>
-      <span class="wchip done" onclick="fotoSel(this,'tam','L')">L</span>
-    </div>
-    <label>¿Lleva aceite / mantequilla / salsas?</label>
-    <div class="wizchips" id="foto_g_aceite" style="margin:0">
-      <span class="wchip done cur" onclick="fotoSel(this,'aceite','no')">no</span>
-      <span class="wchip done" onclick="fotoSel(this,'aceite','algo')">algo</span>
-      <span class="wchip done" onclick="fotoSel(this,'aceite','bastante')">bastante</span>
+      <span class="wchip done" data-v="S" onclick="fotoSel(this,'tam','S')">S</span>
+      <span class="wchip done" data-v="M" onclick="fotoSel(this,'tam','M')">M</span>
+      <span class="wchip done" data-v="L" onclick="fotoSel(this,'tam','L')">L</span>
     </div>
     <label>¿Bebida calórica? (refresco, zumo, cerveza…)</label>
     <div class="wizchips" id="foto_g_bebida" style="margin:0">
-      <span class="wchip done cur" onclick="fotoSel(this,'bebida','no')">no</span>
-      <span class="wchip done" onclick="fotoSel(this,'bebida','si')">sí</span>
+      <span class="wchip done cur" data-v="no" data-def="1" onclick="fotoSel(this,'bebida','no')">no</span>
+      <span class="wchip done" data-v="si" onclick="fotoSel(this,'bebida','si')">sí</span>
     </div>
     <label>Descripción (opcional)</label>
     <input id="foto_desc" placeholder="ej. lentejas con chorizo">
     <button type="button" onclick="fotoEstimar()">Calcular estimación</button>
     <div id="foto_res" class="hidden" style="margin-top:12px"></div>
+  </div>
+</div>
+
+<!-- MODAL: 📷 escáner de código de barras (I5) — motor: Open Food Facts (la misma base que usa
+     Yuka en España). Cámara trasera + BarcodeDetector (nativo SOLO si de verdad soporta ean_13;
+     si no, polyfill WASM desde jsDelivr). El input manual está SIEMPRE visible: un desktop sin
+     cámara sigue pudiendo buscar por código. -->
+<div id="barcodeModal" class="modal hidden">
+  <div class="modal-card">
+    <button class="modal-x" type="button" title="Cerrar" aria-label="Cerrar" onclick="bcCerrar()">✕</button>
+    <h2>📷 Escanear código</h2>
+    <div id="bc_scan">
+      <video id="bc_video" class="hidden" playsinline muted autoplay style="width:100%;max-height:240px;object-fit:cover;border-radius:12px;background:var(--ink-3)"></video>
+      <div id="bc_estado" class="hint" style="margin-top:6px;min-height:1.1em"></div>
+      <label>o escribe el código a mano</label>
+      <div class="row" style="gap:6px;align-items:center">
+        <input id="bc_manual" inputmode="numeric" placeholder="ej. 8480000278678" style="flex:2" onkeydown="if(event.key==='Enter'){event.preventDefault();bcBuscarManual();}">
+        <button type="button" style="flex:0 0 auto;width:auto;margin:0;padding:11px 14px" onclick="bcBuscarManual()">Buscar</button>
+      </div>
+    </div>
+    <div id="bc_res" class="hidden" style="margin-top:12px"></div>
+    <p class="hint" style="margin-top:14px">Datos de productos: <a href="https://openfoodfacts.org" target="_blank" rel="noopener" style="color:var(--jade)">Open Food Facts</a> — licencia ODbL.</p>
+  </div>
+</div>
+
+<!-- MODAL: 🍽 alimento propio (I6) — como "My Foods" de MFP pero por 100 g (así no te ata la
+     ración del envase). Si viene del escáner trae el EAN preasignado: queda vinculado y el
+     escáner lo encontrará ANTES de preguntar a Open Food Facts. -->
+<div id="alimentoPropioModal" class="modal hidden">
+  <div class="modal-card">
+    <button class="modal-x" type="button" title="Cerrar" aria-label="Cerrar" onclick="apCerrar()">✕</button>
+    <h2>🍽 Crear alimento propio</h2>
+    <div id="ap_ean_info" class="hint hidden" style="margin-top:0"></div>
+    <label>Nombre *</label><input id="ap_nombre" placeholder="ej. Yogur proteico de fresa">
+    <label>Marca (opcional)</label><input id="ap_marca" placeholder="ej. Hacendado">
+    <label>Ración habitual en gramos (opcional)</label><input id="ap_porcion" type="number" inputmode="numeric" placeholder="ej. 125">
+    <p class="hint" style="margin-top:10px">Nutrición <b style="color:var(--soft)">por 100 g</b>, tal cual la etiqueta. Kcal y proteína son obligatorias; el resto, si lo sabes.</p>
+    <div class="row" style="gap:6px">
+      <div><label>Kcal *</label><input id="ap_kcal" type="number" inputmode="decimal" placeholder="kcal"></div>
+      <div><label>P (g) *</label><input id="ap_p" type="number" inputmode="decimal" placeholder="—"></div>
+      <div><label>C (g)</label><input id="ap_c" type="number" inputmode="decimal" placeholder="—"></div>
+      <div><label>G (g)</label><input id="ap_g" type="number" inputmode="decimal" placeholder="—"></div>
+    </div>
+    <div class="row" style="margin-top:12px">
+      <button class="sec" type="button" onclick="apCerrar()" style="flex:1;width:auto">Cancelar</button>
+      <button type="button" onclick="apGuardar()" style="flex:2;width:auto">Guardar alimento</button>
+    </div>
   </div>
 </div>
 
@@ -825,16 +985,18 @@ var FOODS=[
 ];
 function comInit(){
   var d=$("com_fecha"); if(d && !d.value) d.value=hoyLocal();
-  var dl=$("com-foods"); if(dl && !dl.children.length){ dl.innerHTML=FOODS.map(function(x){ return "<option value=\""+escAttr(x.n)+"\"></option>"; }).join(""); }
+  comFillDatalist();   // I6 · base curada + alimentos propios; se reconstruye por si acabas de crear uno
   renderComida(); comRecientes(); renderAgua(); renderSuples();
 }
 function comAdd(){
   var nombre=($("com_nombre").value||'').trim(), g=+$("com_gramos").value;
   if(!nombre || !(g>0)){ toast("Pon alimento y gramos"); return; }
   var _q=nombre.toLowerCase();
-  var fd=FOODS.filter(function(x){ return x.n.toLowerCase()===_q; })[0];
-  if(!fd){ var _cand=FOODS.filter(function(x){ return x.n.toLowerCase().indexOf(_q)>=0; }); if(_cand.length===1) fd=_cand[0]; else if(_cand.length>1){ toast("Hay "+_cand.length+" que encajan — elige uno de la lista"); return; } }
-  if(!fd){ toast("No está en la base; elige uno de la lista"); return; }
+  // I6 · los alimentos propios entran ANTES que la base curada (si el nombre coincide, el tuyo manda)
+  var _base=apComoFoods().concat(FOODS);
+  var fd=_base.filter(function(x){ return x.n.toLowerCase()===_q; })[0];
+  if(!fd){ var _cand=_base.filter(function(x){ return x.n.toLowerCase().indexOf(_q)>=0; }); if(_cand.length===1) fd=_cand[0]; else if(_cand.length>1){ toast("Hay "+_cand.length+" que encajan — elige uno de la lista"); return; } }
+  if(!fd){ toast("No está en la base — elige de la lista, escanea el código o crea un alimento propio"); return; }
   var k=g/100, arr=get(LS_COMIDA,[]);
   arr.push({id:Date.now().toString(36)+Math.random().toString(36).slice(2,6), f:($("com_fecha").value||hoyLocal()), n:fd.n, g:g, kcal:Math.round(fd.kcal*k), p:+(fd.p*k).toFixed(1), c:+(fd.c*k).toFixed(1), gr:+(fd.f*k).toFixed(1)});
   var _obj=window._obj||null, _f=($("com_fecha").value||hoyLocal());
@@ -966,39 +1128,245 @@ function renderComida(){
   try{ renderMeals(); }catch(e){}   // F4 · el botón "guardar día" y "Mis comidas" dependen del día mostrado
 }
 
-// ======= F3 · 📷 FOTO-COMIDA (v0.10) — interfaz YA; motor SEPARADO y honesto =======
-// Por qué así: el líder (MFP) NO estima raciones de la foto y su IA es premium+inglés; la literatura
-// manda preguntar lo que la foto no enseña (aceite, bebida, tamaño) y dar RANGOS, no un número mágico.
-// La foto NO se guarda (localStorage no da para fotos): es tu recordatorio. El número sale de tus respuestas.
-// FUNCIÓN PURA a propósito: el día que haya visión real se sustituye SOLO motorFotoComida y el resto queda.
-function motorFotoComida(datos){
-  // Tabla base kcal por tipo × tamaño + extras "invisibles" (aceite/salsas y bebida calórica).
-  var BASE={
-    ligero:      {S:[250,400],  M:[350,550],  L:[500,700]},
-    mixto:       {S:[400,550],  M:[550,750],  L:[750,1000]},
-    contundente: {S:[550,750],  M:[750,1000], L:[950,1300]}
-  };
-  var PROT={ligero:[25,35], mixto:[30,40], contundente:[35,50]};   // g de proteína típicos por tipo
-  var fila=BASE[datos.tipo]||BASE.mixto;
-  var r=(fila[datos.tam]||fila.M).slice();
-  var min=r[0], max=r[1];
-  if(datos.aceite==="algo"){ min+=80; max+=150; }
-  else if(datos.aceite==="bastante"){ min+=150; max+=300; }
-  if(datos.bebida==="si"){ min+=90; max+=200; }
-  var pr=PROT[datos.tipo]||PROT.mixto;
-  return {min:min, max:max, kcal:Math.round((min+max)/2), prot:Math.round((pr[0]+pr[1])/2)};
+// ======= F3 · 📷 FOTO-COMIDA v2 — MOTOR DE ECUACIONES, NO IA (spec dictada 2026-07-06) =======
+// Filosofía (dictada por Pablo): "un gran número de ecuaciones dependiendo de lo que se pueda
+// apreciar en la foto, píxel por píxel, SIN IA… si no lo sabes, pon medio". Tres capas:
+//   Capa 1 · el canvas MIDE la foto (fracción de plato, color dominante, brillos). Medir ≠ reconocer:
+//            las medidas solo PRE-marcan chips del formulario; el usuario siempre confirma o corrige.
+//   Capa 2 · árbol de preguntas POR TIPO de plato + ecuaciones con bases kcal/100 g reales (BEDCA/USDA,
+//            citadas en cada rama) y "no lo sé = medio" siempre.
+//   Capa 3 · salida rango + desglose POR DECISIÓN (ves cada ecuación y corriges la que falle) +
+//            aprendizaje determinista de tus correcciones por tipo (jvf_foto_ajustes) — media
+//            incremental con tope, sin IA: la app "te conoce" como Sinapsis conoce a Pablo.
+// La foto JAMÁS se guarda ni sale del móvil (canvas en memoria). Si el canvas falla → flujo manual.
+// El día que llegue la visión-IA, SOLO rellenará el formulario: estas ecuaciones siguen mandando.
+
+// --- Capa 1 · fotoFeatures: MEDIR la foto (píxeles, sin IA, sin red, cero dependencias) ---
+// Devuelve {ok, frac: 0-1 del plato cubierto de comida, color: 'verde|marron|beige|blanco'|null,
+// brillo: true si hay reflejos especulares (pista de grasa/fritura)}. Si algo falla → {ok:false}
+// y el modal queda en manual puro (degradación honesta a v1: sin pistas, mismas preguntas).
+function fotoFeatures(img){
+  try{
+    if(!img || !img.naturalWidth || !img.naturalHeight) return {ok:false};
+    var W=120, H=Math.max(16, Math.round(img.naturalHeight*W/img.naturalWidth));
+    var cv=document.createElement("canvas"); cv.width=W; cv.height=H;
+    var ctx=cv.getContext("2d"); if(!ctx) return {ok:false};
+    ctx.drawImage(img,0,0,W,H);
+    var d=ctx.getImageData(0,0,W,H).data, n=W*H, i,r,g,b,mx,mn;
+    // 1ª pasada · localizar el PLATO: centroide de los píxeles claros y sin color (loza clara)
+    var px=0, py=0, pn=0;
+    for(i=0;i<n;i++){
+      r=d[i*4]; g=d[i*4+1]; b=d[i*4+2]; mx=r>g?(r>b?r:b):(g>b?g:b); mn=r<g?(r<b?r:b):(g<b?g:b);
+      if(mx>150 && mx-mn<40){ px+=i%W; py+=(i/W)|0; pn++; }
+    }
+    var cx, cy, rad;
+    if(pn>n*0.05){
+      cx=px/pn; cy=py/pn;
+      // radio = percentil 90 de las distancias al centroide: capta el BORDE exterior del plato
+      // tanto si se ve entero (disco) como si la comida tapa el centro y solo queda el aro
+      var ds=[];
+      for(i=0;i<n;i++){
+        r=d[i*4]; g=d[i*4+1]; b=d[i*4+2]; mx=r>g?(r>b?r:b):(g>b?g:b); mn=r<g?(r<b?r:b):(g<b?g:b);
+        if(mx>150 && mx-mn<40){ var qx=i%W-cx, qy=((i/W)|0)-cy; ds.push(qx*qx+qy*qy); }
+      }
+      ds.sort(function(a2,b2){ return a2-b2; });
+      rad=Math.sqrt(ds[Math.min(ds.length-1,Math.floor(ds.length*0.9))])*1.05;
+    }
+    else { cx=W/2; cy=H/2; rad=Math.min(W,H)*0.45; }                        // sin plato claro → círculo central
+    if(rad<6) return {ok:false};
+    // 2ª pasada · dentro del círculo: cuánta comida hay y de qué color es
+    var dentro=0, comida=0, brillo=0, cnt={verde:0,marron:0,beige:0,blanco:0};
+    for(i=0;i<n;i++){
+      var x=i%W, y=(i/W)|0, dx=x-cx, dy=y-cy;
+      if(dx*dx+dy*dy>rad*rad) continue;
+      dentro++;
+      r=d[i*4]; g=d[i*4+1]; b=d[i*4+2]; mx=r>g?(r>b?r:b):(g>b?g:b); mn=r<g?(r<b?r:b):(g<b?g:b);
+      if((mx>150&&mx-mn<40)||mx<45) continue;                               // plato o sombra: no es comida
+      comida++;
+      if(mx>230&&mx-mn>25) brillo++;                                        // brillo especular = reflejo de grasa
+      if(g>r*1.08&&g>b*1.08) cnt.verde++;                                   // verde → verdura/ensalada
+      else if(r>g*1.12&&g>=b&&mx<190) cnt.marron++;                         // marrón-rojizo → legumbre/guiso/carne
+      else if(r>200&&g>170&&b<150) cnt.beige++;                             // beige-amarillo → frito/rebozado/pasta
+      else if(mx>190&&mx-mn<55) cnt.blanco++;                               // blanco → arroz/pescado/lácteo
+    }
+    if(!dentro || comida<dentro*0.04) return {ok:false};                    // no se aprecia comida → sin pistas
+    var top=null, topN=0, k;
+    for(k in cnt){ if(cnt[k]>topN){ topN=cnt[k]; top=k; } }
+    if(topN<comida*0.25) top=null;                                          // sin color dominante claro → sin pista
+    return {ok:true, frac:Math.round((comida/dentro)*100)/100, color:top, brillo:(brillo/comida)>0.02};
+  }catch(e){ return {ok:false}; }                                           // canvas roto (CORS/formato) → v1
 }
-var _foto={tipo:null, tam:null, aceite:"no", bebida:"no"};
+
+// --- Capa 2+3 · motorFotoComida: FUNCIÓN PURA (no toca DOM ni storage; misma entrada → misma salida) ---
+// Entrada: {tipo, tam:'S|M|L', bebida:'no|si', r:{respuestas del árbol}, feat: salida de fotoFeatures
+//          o null, ajustes: contenido de jvf_foto_ajustes o null}. También acepta la entrada v1 plana
+//          ({tipo:'ligero|mixto|contundente', tam, aceite, bebida}) → cae sola en la rama fallback v1.
+// Salida:  {min, max, kcal, prot, desglose:[texto por decisión], tipo: clave usada para el ajuste}.
+function motorFotoComida(datos){
+  datos=datos||{};
+  var r=datos.r||datos, D=[], min=0, max=0, prot=0, tipoKey;
+  var tam=(datos.tam==="S"||datos.tam==="L")?datos.tam:"M";
+  function ns(v){ return v==null||v==="nose"; }                 // regla dictada: "si no lo sabes = medio"
+  var V2={legumbres:1,carne:1,pescado:1,pasta:1,ensalada:1,frito:1};
+
+  if(V2[datos.tipo]){
+    tipoKey=datos.tipo;
+    // Gramos típicos de ración por tipo × tamaño (ración casera española, redondeada)
+    var G={legumbres:{S:250,M:350,L:450}, carne:{S:120,M:180,L:250}, pescado:{S:125,M:180,L:250},
+           pasta:{S:180,M:280,L:400}, ensalada:{S:150,M:250,L:350}, frito:{S:150,M:220,L:320}}[tipoKey];
+    var g=G[tam];
+
+    if(tipoKey==="legumbres"){
+      // Base cocidas 90-120 kcal/100 g · BEDCA: lenteja cocida ~92 · judía blanca cocida ~90 · garbanzo cocido ~119
+      min=g*0.90; max=g*1.20; prot=g*0.09;                       // proteína ~9 g/100 g cocidas (BEDCA)
+      D.push("base legumbres cocidas ("+g+" g × 90-120 kcal/100 g) "+Math.round(min)+"-"+Math.round(max));
+      var prep=ns(r.leg_prep)?"medio":r.leg_prep;
+      if(prep==="guisadas"){ min+=80; max+=150; D.push("guisadas (sofrito con aceite) +80-150"); }
+      else if(prep==="medio"){ min+=40; max+=90; D.push("preparación no sabida → medio +40-90"); }
+      else D.push("de bote, sin guisar +0");
+      var comp=ns(r.leg_comp)?"medio":r.leg_comp;
+      if(comp==="algo"){ min+=80; max+=150; prot+=6; D.push("algo de chorizo (~20-30 g a ~455 kcal/100 g, BEDCA) +80-150"); }
+      else if(comp==="completo"){ min+=150; max+=250; prot+=12; D.push("compango completo (chorizo+morcilla+tocino) +150-250"); }
+      else if(comp==="medio"){ min+=60; max+=120; prot+=5; D.push("compango no sabido → medio +60-120"); }
+      else D.push("sin compango +0");
+    }
+    else if(tipoKey==="carne"){
+      // kcal/100 g por nivel de grasa · BEDCA: pechuga de pollo ~112 (magra) · lomo de cerdo ~146 (media) ·
+      // entrecot/costilla ~190-220 (grasa). "Si no lo sabes: medio" (regla dictada).
+      var NIV={magro:[105,125], medio:[135,160], graso:[185,220]};
+      var niv=ns(r.car_grasa)?"medio":r.car_grasa;
+      var bs=(NIV[niv]||NIV.medio).slice();
+      var ct=ns(r.car_tipo)?null:r.car_tipo;
+      if(ct==="pollo"){ bs[0]-=10; bs[1]-=10; }                  // el pollo tira a menos calórico a igual corte
+      else if(ct==="ternera"){ bs[0]+=5; bs[1]+=10; }
+      min=g*bs[0]/100; max=g*bs[1]/100; prot=g*0.22;             // proteína ~21-23 g/100 g (BEDCA)
+      D.push("base carne "+(ct?ct+" ":"")+niv+" ("+g+" g × "+bs[0]+"-"+bs[1]+" kcal/100 g) "+Math.round(min)+"-"+Math.round(max));
+      var coc=ns(r.car_coc)?"medio":r.car_coc;
+      if(coc==="frito"){ min+=60; max+=120; D.push("frita (aceite absorbido) +60-120"); }
+      else if(coc==="medio"){ min+=30; max+=60; D.push("cocción no sabida → medio +30-60"); }
+      else { max+=25; D.push("a la plancha (chorrito) +0-25"); }
+    }
+    else if(tipoKey==="pescado"){
+      // kcal/100 g · blanco 75-100 (BEDCA: merluza ~65, lubina ~90) · azul 160-200 (BEDCA salmón ~182; USDA ~208)
+      var pt=ns(r.pes_tipo)?"medio":r.pes_tipo;
+      var pb= pt==="blanco"?[75,100] : pt==="azul"?[160,200] : [110,150];   // no sabido → medio entre ambos
+      min=g*pb[0]/100; max=g*pb[1]/100; prot=g*0.19;             // proteína ~17-21 g/100 g (BEDCA)
+      D.push("base pescado "+(pt==="medio"?"(tipo no sabido → medio)":pt)+" ("+g+" g × "+pb[0]+"-"+pb[1]+" kcal/100 g) "+Math.round(min)+"-"+Math.round(max));
+      var pc=ns(r.pes_coc)?"medio":r.pes_coc;
+      if(pc==="frito"){ min+=100; max+=180; D.push("frito/rebozado (harina + aceite absorbido) +100-180"); }
+      else if(pc==="medio"){ min+=50; max+=90; D.push("cocción no sabida → medio +50-90"); }
+      else { max+=25; D.push("plancha/horno (chorrito) +0-25"); }
+    }
+    else if(tipoKey==="pasta"){
+      // Cocidos 130-160 kcal/100 g · USDA: espagueti cocido ~158 · arroz blanco cocido ~130
+      min=g*1.30; max=g*1.60; prot=g*0.05;                        // proteína ~5 g/100 g cocidos (USDA)
+      D.push("base pasta/arroz cocidos ("+g+" g × 130-160 kcal/100 g) "+Math.round(min)+"-"+Math.round(max));
+      var sal=ns(r.pas_salsa)?"medio":r.pas_salsa;
+      if(sal==="poca"){ min+=50; max+=90; D.push("poca salsa +50-90"); }
+      else if(sal==="bastante"){ min+=90; max+=150; D.push("bastante salsa (tomate frito/nata) +90-150"); }
+      else if(sal==="medio"){ min+=50; max+=100; D.push("salsa no sabida → medio +50-100"); }
+      else D.push("sin salsa +0");
+    }
+    else if(tipoKey==="ensalada"){
+      // Hortaliza cruda 15-35 kcal/100 g · BEDCA: lechuga ~15 · tomate ~20 · zanahoria ~33
+      min=g*0.15; max=g*0.35; prot=g*0.02;
+      D.push("base verdura/hortaliza ("+g+" g × 15-35 kcal/100 g) "+Math.round(min)+"-"+Math.round(max));
+      // LA variable es el aceite: 1 cucharada sopera ≈ 13,5 g ≈ 119 kcal (USDA: aceite de oliva 884 kcal/100 g)
+      var ali=ns(r.ens_alino)?"medio":r.ens_alino;
+      if(ali==="1"){ min+=110; max+=130; D.push("1 cucharada de aceite +110-130"); }
+      else if(ali==="2"){ min+=230; max+=300; D.push("2+ cucharadas de aceite +230-300"); }
+      else if(ali==="medio"){ min+=110; max+=130; D.push("aliño no sabido → 1 cucharada +110-130"); }
+      else D.push("sin aliño +0");
+    }
+    else {                                                        // frito/rebozado como categoría propia
+      // Alimento rebozado 140-190 kcal/100 g + GRASA ABSORBIDA: la fritura absorbe un 8-25% del peso
+      // (tecnología de alimentos). Aceite 884 kcal/100 g (USDA) ≈ 8,8 kcal/g · mantequilla 717 ≈ 7,2 kcal/g.
+      min=g*1.40; max=g*1.90; prot=g*0.10;
+      D.push("base alimento rebozado/frito ("+g+" g × 140-190 kcal/100 g) "+Math.round(min)+"-"+Math.round(max));
+      var kcalg=(r.frit_grasa==="mantequilla")?7.2:8.8;
+      var escu=ns(r.fri_escurrido)?"medio":r.fri_escurrido;
+      var ab= escu==="bien"?[0.08,0.12] : escu==="no"?[0.18,0.25] : [0.12,0.18];
+      var abTxt= escu==="bien"?"bien escurrido (8-12% del peso)" : escu==="no"?"sin escurrir (18-25% del peso)" : "escurrido no sabido → medio (12-18%)";
+      min+=g*ab[0]*kcalg; max+=g*ab[1]*kcalg;
+      D.push("grasa absorbida · "+abTxt+" +"+Math.round(g*ab[0]*kcalg)+"-"+Math.round(g*ab[1]*kcalg));
+    }
+    // Fritura TRANSVERSAL (dictado): la mantequilla no suma más kcal por gramo (717 vs 884, USDA),
+    // pero es ~51% grasa saturada → se ANOTA en el desglose, coherente con el master-file.
+    var esFrito = tipoKey==="frito" || (tipoKey==="carne"&&r.car_coc==="frito") || (tipoKey==="pescado"&&r.pes_coc==="frito");
+    if(esFrito && r.frit_grasa==="mantequilla") D.push("frito en mantequilla · ojo: ~51% grasa saturada (USDA)");
+  } else {
+    // --- RAMA FALLBACK v1 (plato "mixto / no sé", o llamada con el formato antiguo) ---
+    // Tabla original v1: rangos por contundencia × tamaño + extras "invisibles". Intacta a propósito.
+    tipoKey="mixto";
+    var BASE={ ligero:      {S:[250,400],  M:[350,550],  L:[500,700]},
+               mixto:       {S:[400,550],  M:[550,750],  L:[750,1000]},
+               contundente: {S:[550,750],  M:[750,1000], L:[950,1300]} };
+    var PROT={ligero:[25,35], mixto:[30,40], contundente:[35,50]};
+    // r.v1tipo manda (árbol v2, tipo "mixto/no sé"); si no existe, formato v1 plano (datos.tipo directo)
+    var v1t=BASE[r.v1tipo]?r.v1tipo:(BASE[datos.tipo]?datos.tipo:"mixto");
+    var fila=BASE[v1t], rg=(fila[tam]||fila.M).slice();
+    min=rg[0]; max=rg[1];
+    var pr=PROT[v1t]||PROT.mixto; prot=(pr[0]+pr[1])/2;
+    D.push("base plato "+v1t+" tamaño "+tam+" · "+min+"-"+max);
+    var ac=r.aceite||datos.aceite;
+    if(ac==="algo"){ min+=80; max+=150; D.push("algo de aceite/salsas +80-150"); }
+    else if(ac==="bastante"){ min+=150; max+=300; D.push("bastante aceite/salsas +150-300"); }
+  }
+
+  // Corrección por la MEDIDA del canvas (Capa 1): plato ¾ de lleno → ración ×0,75 (ejemplo dictado).
+  // 80% de cobertura ≈ ración completa. El canvas solo REDUCE (tope 1,0): el tamaño ya lo dijo S/M/L;
+  // suelo 0,55 para que una medida rara no desbarre la estimación.
+  if(datos.feat && datos.feat.ok && datos.feat.frac>0){
+    var fr=Math.round(Math.min(1.0, Math.max(0.55, datos.feat.frac/0.8))*100)/100;
+    if(fr!==1){ min*=fr; max*=fr; prot*=fr; D.push("el plato se ve al "+Math.round(datos.feat.frac*100)+"% de lleno → ración ×"+fr); }
+  }
+  // Bebida calórica (transversal, fuera del plato) · refresco/cerveza 330 ml ≈ 140 kcal (USDA) · zumo ≈ 150
+  if(datos.bebida==="si"){ min+=90; max+=200; D.push("bebida calórica +90-200"); }
+  // Capa 3 · ajuste aprendido de TUS correcciones (determinista, por tipo, con tope ±40%)
+  var aj=datos.ajustes && datos.ajustes[tipoKey];
+  if(aj && aj.n>=1 && Math.abs(aj.pct)>=0.05){
+    min*=(1+aj.pct); max*=(1+aj.pct);
+    D.push("ajuste personal "+(aj.pct>0?"+":"")+Math.round(aj.pct*100)+"% aprendido de "+aj.n+(aj.n>1?" correcciones tuyas":" corrección tuya"));
+  }
+  min=Math.round(min/10)*10; max=Math.round(max/10)*10;
+  return {min:min, max:max, kcal:Math.round((min+max)/2), prot:Math.round(prot), desglose:D, tipo:tipoKey};
+}
+
+// --- Capa 3 · fotoAjusteNuevo: aprendizaje determinista (media incremental del desvío, con topes) ---
+// PURA también: entra el ajuste previo ({pct,n}|null) + kcal del motor + kcal corregidas por el usuario;
+// sale el ajuste nuevo o el previo si la corrección es ruido (<3%). Tope ±40%: corrige, no reescribe.
+function fotoAjusteNuevo(prev, kcalMotor, kcalUser){
+  if(!(kcalMotor>0)||!(kcalUser>0)) return prev||null;
+  var desv=(kcalUser-kcalMotor)/kcalMotor;
+  if(Math.abs(desv)<0.03) return prev||null;
+  if(desv>1) desv=1; if(desv<-0.6) desv=-0.6;                    // una corrección loca no puede dominar
+  var n=(prev&&prev.n)||0, pct=(prev&&prev.pct)||0;
+  var nuevo=(pct*n+desv)/(n+1);
+  if(nuevo>0.4) nuevo=0.4; if(nuevo<-0.4) nuevo=-0.4;
+  return {pct:Math.round(nuevo*100)/100, n:n+1};
+}
+// FIN-MOTOR-PURO (marcador para los tests de dev con node; no borrar)
+
+// --- Estado del formulario v2 · cada campo con su valor por defecto ("nose" = no lo sé → medio) ---
+var FOTO_DEF={tipo:null, tam:null, bebida:"no", v1tipo:"mixto", aceite:"no",
+  leg_prep:"nose", leg_comp:"nose", car_tipo:"nose", car_grasa:"nose", car_coc:"nose",
+  pes_tipo:"nose", pes_coc:"nose", pas_salsa:"nose", ens_alino:"nose",
+  fri_escurrido:"nose", frit_grasa:"nose"};
+var FOTO_NOMBRE={legumbres:"Plato de legumbres", carne:"Plato de carne", pescado:"Plato de pescado",
+  pasta:"Pasta/arroz", ensalada:"Ensalada/verdura", frito:"Frito/rebozado", mixto:"Comida por foto"};
+var _foto={};
 function fotoAbrir(){
-  _foto={tipo:null, tam:null, aceite:"no", bebida:"no"}; window._fotoEst=null;
-  // resetear chips: tipo/tamaño sin elegir; aceite/bebida al "no" por defecto (primer chip)
-  ["foto_g_tipo","foto_g_tam","foto_g_aceite","foto_g_bebida"].forEach(function(id){
-    var g=$(id); if(!g) return;
-    var chips=g.querySelectorAll(".wchip");
-    [].forEach.call(chips,function(c,i){ c.classList.toggle("cur",(id==="foto_g_aceite"||id==="foto_g_bebida")&&i===0); });
-  });
+  _foto={}; var k; for(k in FOTO_DEF) _foto[k]=FOTO_DEF[k];
+  window._fotoEst=null; window._fotoFeat=null;
+  var md=$("fotoModal");
+  if(md){
+    [].forEach.call(md.querySelectorAll(".wchip"),function(c){ c.classList.remove("cur"); });
+    [].forEach.call(md.querySelectorAll(".wchip[data-def]"),function(c){ c.classList.add("cur"); });
+    [].forEach.call(md.querySelectorAll("[id^='foto_q_']"),function(b2){ b2.classList.add("hidden"); });
+  }
   var f=$("foto_file"); if(f) f.value="";
   var im=$("foto_prev"); if(im){ im.removeAttribute("src"); im.classList.add("hidden"); }
+  var pi=$("foto_pistas"); if(pi){ pi.innerHTML=""; pi.classList.add("hidden"); }
   var de=$("foto_desc"); if(de) de.value="";
   var res=$("foto_res"); if(res){ res.innerHTML=""; res.classList.add("hidden"); }
   show("fotoModal", true);
@@ -1006,41 +1374,111 @@ function fotoAbrir(){
 function fotoCerrar(){
   show("fotoModal", false);
   var im=$("foto_prev"); if(im){ im.removeAttribute("src"); im.classList.add("hidden"); }   // liberar memoria
+  window._fotoFeat=null;
 }
 // Preview SOLO en memoria (dataURL en el <img>): nada de la foto toca localStorage.
+// Cuando la imagen carga, la Capa 1 la mide y aplica las pistas (pre-marcar, nunca decidir).
 function fotoPreview(inp){
   var f=inp.files && inp.files[0]; if(!f) return;
   var fr=new FileReader();
-  fr.onload=function(){ var im=$("foto_prev"); if(im){ im.src=fr.result; im.classList.remove("hidden"); } };
+  fr.onload=function(){
+    var im=$("foto_prev"); if(!im) return;
+    im.onload=function(){ im.onload=null; try{ fotoPistas(im); }catch(e){} };
+    im.src=fr.result; im.classList.remove("hidden");
+  };
   fr.readAsDataURL(f);
 }
-// Chip elegido: guarda el valor y marca visualmente solo ese chip del grupo.
+// Chip elegido: guarda el valor, marca visualmente solo ese chip y refresca bloques dependientes.
 function fotoSel(el, campo, v){
   _foto[campo]=v;
   var sibs=el.parentNode.querySelectorAll(".wchip");
   [].forEach.call(sibs,function(s){ s.classList.toggle("cur", s===el); });
+  if(campo==="tipo") fotoMostrarBloque(v);
+  if(campo==="tipo"||campo==="car_coc"||campo==="pes_coc") fotoFritGrasaVis();
+}
+// Enseña SOLO el bloque de preguntas del tipo elegido (el resto se esconde).
+function fotoMostrarBloque(t){
+  var TIPOS=["legumbres","carne","pescado","pasta","ensalada","frito","mixto"];
+  TIPOS.forEach(function(k){ var b2=$("foto_q_"+k); if(b2) b2.classList.toggle("hidden", k!==t); });
+}
+// La pregunta transversal de fritura (aceite/mantequilla) aparece si hay fritura en juego.
+function fotoFritGrasaVis(){
+  var on = _foto.tipo==="frito" || (_foto.tipo==="carne"&&_foto.car_coc==="frito") || (_foto.tipo==="pescado"&&_foto.pes_coc==="frito");
+  var b2=$("foto_q_fritgrasa"); if(b2) b2.classList.toggle("hidden", !on);
+}
+// Pre-marcar un chip desde una PISTA del canvas — SOLO si el usuario no ha tocado ese campo aún.
+function fotoPreMarca(campo, v){
+  if(_foto[campo]!==FOTO_DEF[campo]) return false;               // el usuario manda: no pisar su elección
+  var g2=$("foto_g_"+campo); if(!g2) return false;
+  var hit=g2.querySelector(".wchip[data-v='"+v+"']"); if(!hit) return false;
+  [].forEach.call(g2.querySelectorAll(".wchip"),function(s){ s.classList.toggle("cur", s===hit); });
+  _foto[campo]=v;
+  if(campo==="tipo") fotoMostrarBloque(v);
+  fotoFritGrasaVis();
+  return true;
+}
+// Capa 1 → UI: aplicar las medidas como pistas HONESTAS (pre-marcan, jamás deciden; se dice tal cual).
+function fotoPistas(im){
+  var ft=fotoFeatures(im);
+  window._fotoFeat=(ft&&ft.ok)?ft:null;
+  var box=$("foto_pistas"); if(!box) return;
+  if(!window._fotoFeat){ box.innerHTML=""; box.classList.add("hidden"); return; }    // canvas KO → manual puro
+  var msgs=[];
+  var MAPA={verde:"ensalada", marron:"legumbres", beige:(ft.brillo?"frito":"pasta"), blanco:"pasta"};
+  var NOM={ensalada:"ensalada/verdura", legumbres:"legumbres/guiso", frito:"frito/rebozado", pasta:"pasta/arroz"};
+  var t=ft.color?MAPA[ft.color]:null;
+  if(t && fotoPreMarca("tipo",t)) msgs.push("por el color dominante te pre-marco <b>"+NOM[t]+"</b>");
+  if(ft.brillo){
+    var pm=false, tp=_foto.tipo;
+    if(tp==="carne") pm=fotoPreMarca("car_coc","frito");
+    else if(tp==="pescado") pm=fotoPreMarca("pes_coc","frito");
+    else if(tp==="ensalada") pm=fotoPreMarca("ens_alino","1");
+    else if(tp==="legumbres") pm=fotoPreMarca("leg_prep","guisadas");
+    else if(tp==="pasta") pm=fotoPreMarca("pas_salsa","poca");
+    else pm=fotoPreMarca("aceite","algo");
+    if(pm) msgs.push("veo brillos de grasa → pre-marco fritura/aceite");
+  }
+  if(ft.frac) msgs.push("plato al ~"+Math.round(ft.frac*100)+"% de lleno (corregiré la ración)");
+  if(!msgs.length){ box.innerHTML=""; box.classList.add("hidden"); return; }
+  box.innerHTML="📐 <b style='color:var(--soft)'>Medido en la foto</b> (píxeles, sin IA — corrígeme con un toque): "+msgs.join(" · ")+".";
+  box.classList.remove("hidden");
 }
 function fotoEstimar(){
   if(!_foto.tipo || !_foto.tam){ toast("Dime tipo y tamaño del plato"); return; }
-  var est=motorFotoComida(_foto);
+  var datos={tipo:_foto.tipo, tam:_foto.tam, bebida:_foto.bebida, r:_foto, feat:window._fotoFeat, ajustes:get("jvf_foto_ajustes",{})};
+  var est=motorFotoComida(datos);
   window._fotoEst=est;
   var res=$("foto_res"); if(!res) return;
-  res.innerHTML="<div class='kv'><span>Estimación</span><span>≈ <b style='color:var(--ember);font-size:1.05rem'>"+est.min+"-"+est.max+" kcal</b> <span class='hint' style='display:inline'>(apunto "+est.kcal+")</span></span></div>"
+  // Desglose POR DECISIÓN visible: el usuario VE cada ecuación y corrige la que falle (perfeccionismo = transparencia)
+  var dl=est.desglose.map(function(x){ return "<div class='hint' style='margin:3px 0'>· "+esc(x)+"</div>"; }).join("");
+  res.innerHTML="<div class='kv'><span>Estimación</span><span>≈ <b style='color:var(--ember);font-size:1.05rem'>"+est.min+"-"+est.max+" kcal</b></span></div>"
+    +"<div class='kv'><span>Apunto</span><span><input id='foto_kcal_edit' type='number' inputmode='numeric' min='0' step='5' value='"+est.kcal+"' style='width:86px;display:inline-block;margin:0;padding:6px 8px;text-align:right'> kcal</span></div>"
     +"<div class='kv'><span>Proteína estimada</span><span>~"+est.prot+" g</span></div>"
-    +"<div class='aviso' style='margin-top:10px'>Estimación de RANGO sin ver la foto de verdad (el motor de visión llegará). La foto es tu recordatorio; el rango sale de tus respuestas.</div>"
+    +"<details open style='margin-top:8px'><summary style='cursor:pointer;color:var(--jade);font-weight:600'>Cómo lo he calculado (ecuaciones, no IA)</summary>"+dl+"</details>"
+    +"<div class='aviso' style='margin-top:10px'>Rango salido de TUS respuestas + medidas simples de la foto (píxeles, sin IA). Si conoces mejor el plato, corrige las kcal de «Apunto» antes de guardar: <b>aprendo tu ajuste</b> para la próxima vez (solo en este dispositivo).</div>"
     +"<button type='button' class='btn-lg' onclick='fotoAddDiario()'>Añadir al diario</button>";
   res.classList.remove("hidden");
 }
 // Entra al diario con la MISMA estructura que un alimento manual + marca foto:true (auditable).
+// Si el usuario corrigió las kcal, la Capa 3 aprende su ajuste por tipo (jvf_foto_ajustes).
 function fotoAddDiario(){
   var est=window._fotoEst; if(!est){ toast("Calcula la estimación primero"); return; }
+  var kcalU=est.kcal, aprendido=false;
+  var ke=$("foto_kcal_edit"); if(ke && +ke.value>0) kcalU=Math.round(+ke.value);
+  try{
+    if(kcalU!==est.kcal){
+      var ajs=get("jvf_foto_ajustes",{});
+      var nuevo=fotoAjusteNuevo(ajs[est.tipo]||null, est.kcal, kcalU);
+      if(nuevo){ ajs[est.tipo]=nuevo; set("jvf_foto_ajustes",ajs); aprendido=true; }
+    }
+  }catch(e){}
   var f=(($("com_fecha")||{}).value)||hoyLocal();
   var desc=(($("foto_desc")||{}).value||"").trim();
   var arr=get(LS_COMIDA,[]);
-  arr.push({id:Date.now().toString(36)+Math.random().toString(36).slice(2,6), f:f, n:"📷 "+(desc||"Comida por foto"), g:0, kcal:est.kcal, p:est.prot, c:0, gr:0, foto:true});
+  arr.push({id:Date.now().toString(36)+Math.random().toString(36).slice(2,6), f:f, n:"📷 "+(desc||FOTO_NOMBRE[est.tipo]||"Comida por foto"), g:0, kcal:kcalU, p:est.prot, c:0, gr:0, foto:true});
   set(LS_COMIDA,arr);
   fotoCerrar(); renderComida();
-  toast("✓ Añadido ≈"+est.kcal+" kcal (rango "+est.min+"-"+est.max+")");
+  toast("✓ Añadido "+kcalU+" kcal (rango "+est.min+"-"+est.max+")"+(aprendido?" · apunto tu corrección para aprender":""));
 }
 
 // ======= F4 · ⚡ AÑADIR RÁPIDO + 💾 MIS COMIDAS (v0.10) — los "wins" de MFP, gratis =======
@@ -1124,6 +1562,266 @@ function mealBorrar(id){
   renderMeals(); toast("Comida borrada");
 }
 
+// ======= I5 · 📷 ESCÁNER DE BARCODE (Open Food Facts) + I6 · 🍽 ALIMENTO PROPIO (06/07) =======
+// Por qué: el escáner de MFP es Premium desde oct-2022; aquí va GRATIS con Open Food Facts, la
+// misma base que usan Yuka y ElCoCo en España (~368k productos, Hacendado casi completo).
+// Honestidad: OFF es colaborativa (errores de OCR, por-ración vs por-100g, huecos) → pantalla de
+// confirmación SIEMPRE editable y, si faltan kcal o proteína, se exige copiarlas de la etiqueta.
+// Red permitida: world.openfoodfacts.org (lookup por EAN) + jsDelivr (polyfill del lector). Nada más.
+var LS_BC_CACHE="jvf_barcode_cache";   // {ean:{producto:{...por 100 g}, ts}} — cachear respeta el límite de OFF (15 req/min) y da offline en productos repetidos
+var LS_ALIM="jvf_alimentos_propios";   // [{id, nombre, marca, ean|null, porcion_g, kcal100, p100, c100, g100}]
+var _bcStream=null, _bcTimer=null, _bcDetector=null, _bcProducto=null, _apEan=null;
+
+function bcEstado(msg){ var el=$("bc_estado"); if(el) el.textContent=msg||""; }
+function bcAbrir(){
+  _bcProducto=null;
+  var res=$("bc_res"); if(res){ res.innerHTML=""; res.classList.add("hidden"); }
+  var man=$("bc_manual"); if(man) man.value="";
+  show("barcodeModal", true);
+  bcIniciarCamara();
+}
+function bcCerrar(){ bcPararCamara(); show("barcodeModal", false); }
+// Parar la cámara SIEMPRE (al detectar, al cerrar, al buscar a mano): si no, el LED se queda
+// encendido y la batería se va. stop() de cada track es lo único que la apaga de verdad.
+function bcPararCamara(){
+  if(_bcTimer){ clearInterval(_bcTimer); _bcTimer=null; }
+  if(_bcStream){ try{ _bcStream.getTracks().forEach(function(t){ t.stop(); }); }catch(e){} _bcStream=null; }
+  var v=$("bc_video"); if(v){ try{ v.pause(); }catch(e){} try{ v.srcObject=null; }catch(e){} v.classList.add("hidden"); }
+}
+function bcIniciarCamara(){
+  // La cámara solo existe en contexto seguro (https o localhost). En file:// avisamos claro;
+  // el input manual de abajo sigue funcionando igual (el lookup a OFF no necesita cámara).
+  if(location.protocol==="file:"){ bcEstado("La cámara necesita HTTPS o localhost — usa el código a mano."); return; }
+  if(!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia)){ bcEstado("Este navegador no permite usar la cámara — usa el código a mano."); return; }
+  bcEstado("Pidiendo permiso de cámara…");
+  navigator.mediaDevices.getUserMedia({video:{facingMode:"environment"}}).then(function(stream){
+    _bcStream=stream;
+    var v=$("bc_video"); if(!v){ bcPararCamara(); return; }
+    v.srcObject=stream; v.classList.remove("hidden");
+    var pr=v.play(); if(pr && pr.catch) pr.catch(function(){});
+    bcPrepararDetector();
+  }).catch(function(){
+    bcEstado("La cámara necesita HTTPS o localhost, o el permiso está denegado — usa el código a mano.");
+  });
+}
+// Detector: nativo SOLO si la clase existe Y getSupportedFormats() incluye ean_13 (en desktop la
+// clase puede existir y no detectar NADA — hay que comprobar formatos, no solo la clase). Si no,
+// polyfill "barcode-detector" (ZXing en WASM) desde jsDelivr con import() dinámico.
+function bcResolverDetector(){
+  if("BarcodeDetector" in window){
+    try{
+      return window.BarcodeDetector.getSupportedFormats().then(function(fmts){
+        if(fmts && fmts.indexOf("ean_13")>=0) return window.BarcodeDetector;
+        return bcCargarPolyfill();
+      }).catch(function(){ return bcCargarPolyfill(); });
+    }catch(e){ return bcCargarPolyfill(); }
+  }
+  return bcCargarPolyfill();
+}
+function bcCargarPolyfill(){
+  // Única dependencia CDN permitida. Si jsDelivr no responde (sin red, bloqueado), null → mensaje honesto.
+  try{
+    return import("https://cdn.jsdelivr.net/npm/barcode-detector@3/+esm").then(function(mod){
+      if(mod && mod.BarcodeDetector) return mod.BarcodeDetector;
+      if(mod && mod.default && mod.default.BarcodeDetector) return mod.default.BarcodeDetector;
+      return null;
+    }).catch(function(){ return null; });
+  }catch(e){ return Promise.resolve(null); }
+}
+function bcPrepararDetector(){
+  if(_bcDetector){ bcEstado("Apunta al código de barras…"); bcLoop(); return; }
+  bcEstado("Cargando lector de códigos…");
+  bcResolverDetector().then(function(D){
+    if(!D){ bcEstado("No se pudo cargar el lector de códigos (¿sin internet?) — escribe el código a mano."); return; }
+    try{ _bcDetector=new D({formats:["ean_13","ean_8"]}); }
+    catch(e){ bcEstado("El lector no arranca en este navegador — escribe el código a mano."); return; }
+    if(_bcStream){ bcEstado("Apunta al código de barras…"); bcLoop(); }
+  });
+}
+// Bucle de detección cada ~300 ms sobre el vídeo (de sobra para un EAN y no quema batería).
+function bcLoop(){
+  if(_bcTimer) clearInterval(_bcTimer);
+  var ocupado=false;   // no lanzar un detect() nuevo si el anterior no terminó (el WASM puede tardar)
+  _bcTimer=setInterval(function(){
+    var v=$("bc_video");
+    if(ocupado || !_bcDetector || !_bcStream || !v || v.readyState<2) return;
+    ocupado=true;
+    _bcDetector.detect(v).then(function(codes){
+      ocupado=false;
+      if(codes && codes.length && codes[0].rawValue) bcDetectado(String(codes[0].rawValue));
+    }).catch(function(){ ocupado=false; });
+  }, 300);
+}
+function bcDetectado(ean){
+  ean=String(ean).replace(/\D/g,"");
+  if(!ean) return;
+  bcPararCamara();
+  bcBuscar(ean);
+}
+function bcBuscarManual(){
+  var ean=((($("bc_manual")||{}).value)||"").replace(/\D/g,"");
+  if(ean.length<8){ toast("El código tiene 8 o 13 cifras (EAN)"); return; }
+  bcPararCamara();
+  bcBuscar(ean);
+}
+// Orden de búsqueda: 1º alimentos PROPIOS (si el ean coincide, tus datos mandan), 2º caché local
+// (offline + respeto al rate limit), 3º Open Food Facts.
+function bcBuscar(ean){
+  var res=$("bc_res");
+  if(res){ res.innerHTML="<p class='hint'>Buscando "+esc(ean)+"…</p>"; res.classList.remove("hidden"); }
+  var propio=get(LS_ALIM,[]).filter(function(a){ return a && a.ean===ean; })[0];
+  if(propio){
+    bcConfirmar({ean:ean, fuente:"propio", nombre:propio.nombre+(propio.marca?" ("+propio.marca+")":""),
+      kcal100:(propio.kcal100==null?null:+propio.kcal100), p100:(propio.p100==null?null:+propio.p100),
+      c100:(+propio.c100||0), g100:(+propio.g100||0), img:null, nutriscore:null, serving:null,
+      porcion:(+propio.porcion_g>0?+propio.porcion_g:null)});
+    return;
+  }
+  var cache=get(LS_BC_CACHE,{});
+  if(cache[ean] && cache[ean].producto){
+    var cp=cache[ean].producto;
+    bcConfirmar({ean:ean, fuente:"cache", nombre:cp.nombre||("Producto "+ean),
+      kcal100:(cp.kcal100==null?null:+cp.kcal100), p100:(cp.p100==null?null:+cp.p100),
+      c100:(+cp.c100||0), g100:(+cp.g100||0), img:cp.img||null, nutriscore:cp.nutriscore||null,
+      serving:cp.serving||null, porcion:null});
+    return;
+  }
+  // OJO: sin headers custom (el User-Agent no se puede tocar desde fetch de navegador). Sin API key.
+  var url="https://world.openfoodfacts.org/api/v2/product/"+encodeURIComponent(ean)+".json?fields=product_name,brands,nutriments,serving_size,nutriscore_grade,image_front_url";
+  fetch(url).then(function(r){ return r.json(); }).then(function(j){
+    if(!j || j.status!==1 || !j.product){ bcNoEncontrado(ean); return; }
+    var p=j.product, nu=p.nutriments||{};
+    function num(v){ return (v==null||v==="")?null:(isFinite(+v)?+v:null); }
+    var kcal=num(nu["energy-kcal_100g"]);
+    // Algunos productos solo traen la energía en kJ: se convierte (1 kcal = 4,184 kJ) en vez de pedirla a mano.
+    if(kcal==null && num(nu["energy_100g"])!=null) kcal=Math.round(num(nu["energy_100g"])/4.184);
+    var marca=p.brands?String(p.brands).split(",")[0].trim():"";
+    var nombre=((p.product_name||"").trim()+(marca?" ("+marca+")":"")).trim()||("Producto "+ean);
+    bcConfirmar({ean:ean, fuente:"off", nombre:nombre,
+      kcal100:kcal, p100:num(nu["proteins_100g"]), c100:num(nu["carbohydrates_100g"]), g100:num(nu["fat_100g"]),
+      img:(typeof p.image_front_url==="string" && p.image_front_url.indexOf("https://")===0)?p.image_front_url:null,
+      nutriscore:(typeof p.nutriscore_grade==="string" && /^[a-e]$/i.test(p.nutriscore_grade))?p.nutriscore_grade.toUpperCase():null,
+      serving:(typeof p.serving_size==="string" && p.serving_size)?p.serving_size:null, porcion:null});
+  }).catch(function(){
+    if(res){ res.innerHTML="<div class='aviso'>No se pudo consultar Open Food Facts (¿sin conexión?). Reintenta, o crea el alimento a mano.</div>"
+      +"<button class='sec' type='button' onclick='bcReintentar()'>↻ Reintentar</button>"
+      +"<button class='sec' type='button' onclick='apAbrir(\""+escAttr(ean)+"\")'>Crear alimento propio</button>"; res.classList.remove("hidden"); }
+  });
+}
+function bcReintentar(){
+  _bcProducto=null;
+  var res=$("bc_res"); if(res){ res.innerHTML=""; res.classList.add("hidden"); }
+  bcIniciarCamara();
+}
+function nsColor(g){ return (g==="A"||g==="B") ? "var(--jade)" : (g==="C" ? "#f4c04e" : "var(--ember)"); }
+// Pantalla de confirmación EDITABLE: el usuario valida SIEMPRE los datos (OFF puede traer errores)
+// y sin kcal+proteína no se deja añadir. Todo contenido de OFF pasa por esc/escAttr.
+function bcConfirmar(prod){
+  _bcProducto=prod;
+  var res=$("bc_res"); if(!res) return;
+  var falta=(prod.kcal100==null || prod.p100==null);
+  function val(v){ return v==null?"":escAttr(v); }
+  var h="<div class='eyebrow-lbl' style='margin-top:0'>"+(prod.fuente==="propio"?"🍽 Tu alimento propio":(prod.fuente==="cache"?"📦 Guardado de un escaneo anterior":"Encontrado en Open Food Facts"))+"</div>";
+  h+="<div style='display:flex;gap:10px;align-items:flex-start'>";
+  if(prod.img) h+="<img src=\""+escAttr(prod.img)+"\" alt=\"\" style='width:56px;height:56px;object-fit:cover;border-radius:8px;background:var(--ink-3);flex:none;margin-top:22px' onerror=\"this.style.display='none'\">";
+  h+="<div style='flex:1'><label>Nombre</label><input id='bc_nombre' value=\""+escAttr(prod.nombre)+"\"></div></div>";
+  var extras=[];
+  if(prod.nutriscore) extras.push("Nutri-Score <b style='color:"+nsColor(prod.nutriscore)+"'>"+esc(prod.nutriscore)+"</b>");
+  if(prod.serving) extras.push("ración del envase: "+esc(prod.serving));
+  if(extras.length) h+="<div class='hint' style='margin-top:6px'>"+extras.join(" · ")+"</div>";
+  h+="<p class='hint' style='margin-top:8px'>Valores <b style='color:var(--soft)'>por 100 g</b> — compáralos con la etiqueta y corrige lo que no cuadre (la base es colaborativa).</p>";
+  h+="<div class='row' style='gap:6px'>"
+    +"<div><label>Kcal *</label><input id='bc_kcal' type='number' inputmode='decimal' value=\""+val(prod.kcal100)+"\"></div>"
+    +"<div><label>P (g) *</label><input id='bc_p' type='number' inputmode='decimal' value=\""+val(prod.p100)+"\"></div>"
+    +"<div><label>C (g)</label><input id='bc_c' type='number' inputmode='decimal' value=\""+val(prod.c100)+"\"></div>"
+    +"<div><label>G (g)</label><input id='bc_g' type='number' inputmode='decimal' value=\""+val(prod.g100)+"\"></div></div>";
+  if(falta) h+="<div class='aviso' style='margin-top:8px'>⚠️ A este producto le faltan kcal o proteína en la base: cópialas de la etiqueta antes de añadir.</div>";
+  h+="<label>Gramos que te has comido</label><input id='bc_gramos' type='number' inputmode='numeric' value=\""+((+prod.porcion>0)?+prod.porcion:100)+"\">";
+  h+="<button type='button' class='btn-lg' onclick='bcAddDiario()'>Añadir al diario</button>";
+  h+="<button class='sec' type='button' onclick='bcReintentar()'>↻ Escanear otro</button>";
+  res.innerHTML=h; res.classList.remove("hidden");
+  bcEstado("");
+}
+function bcAddDiario(){
+  var prod=_bcProducto; if(!prod){ toast("Escanea o busca un código primero"); return; }
+  var nombre=((($("bc_nombre")||{}).value)||"").trim();
+  var kcal=parseFloat(($("bc_kcal")||{}).value), p=parseFloat(($("bc_p")||{}).value);
+  var c=parseFloat(($("bc_c")||{}).value), gr=parseFloat(($("bc_g")||{}).value);
+  var g=parseFloat(($("bc_gramos")||{}).value);
+  if(!nombre){ toast("Ponle nombre al producto"); return; }
+  if(!(g>0)){ toast("¿Cuántos gramos te has comido?"); return; }
+  // Regla dura: sin kcal y proteína NO se añade (son la base del plan; carbos/grasa pueden ir a 0).
+  if(!isFinite(kcal) || kcal<0 || !isFinite(p) || p<0){ toast("Kcal y proteína son obligatorias — míralas en la etiqueta"); return; }
+  if(!isFinite(c)||c<0) c=0; if(!isFinite(gr)||gr<0) gr=0;
+  var k=g/100, arr=get(LS_COMIDA,[]);
+  // Estructura EXACTA del diario (la misma que comAdd): valores escalados de por-100g a lo comido.
+  arr.push({id:Date.now().toString(36)+Math.random().toString(36).slice(2,6), f:((($("com_fecha")||{}).value)||hoyLocal()),
+    n:nombre, g:g, kcal:Math.round(kcal*k), p:+(p*k).toFixed(1), c:+(c*k).toFixed(1), gr:+(gr*k).toFixed(1)});
+  set(LS_COMIDA,arr);
+  // Se cachea con los valores YA corregidos por el usuario (mejores que los crudos de OFF).
+  if(prod.ean && prod.fuente!=="propio"){
+    var cache=get(LS_BC_CACHE,{});
+    cache[prod.ean]={producto:{nombre:nombre, kcal100:kcal, p100:p, c100:c, g100:gr, img:prod.img||null, nutriscore:prod.nutriscore||null, serving:prod.serving||null}, ts:Date.now()};
+    set(LS_BC_CACHE,cache);
+  }
+  bcCerrar(); renderComida(); toast("✓ Añadido · "+Math.round(kcal*k)+" kcal");
+}
+function bcNoEncontrado(ean){
+  var res=$("bc_res"); if(!res) return;
+  res.innerHTML="<div class='aviso'>Este código no está en Open Food Facts (base colaborativa: productos muy nuevos o muy locales pueden faltar).</div>"
+    +"<button type='button' class='btn-lg' onclick='apAbrir(\""+escAttr(ean)+"\")'>Crear alimento propio</button>"
+    +"<button class='sec' type='button' onclick='bcReintentar()'>↻ Escanear otro</button>";
+  res.classList.remove("hidden");
+}
+// Batería/privacidad: si la pestaña pasa a segundo plano con la cámara abierta, se apaga.
+document.addEventListener("visibilitychange", function(){
+  if(document.hidden && _bcStream){ bcPararCamara(); bcEstado("Cámara parada al salir de la app — pulsa ↻ Escanear otro o escribe el código."); }
+});
+
+// ---- I6 · alimento propio ----
+function apAbrir(ean){
+  _apEan=(typeof ean==="string" && ean)?ean:null;
+  ["ap_nombre","ap_marca","ap_porcion","ap_kcal","ap_p","ap_c","ap_g"].forEach(function(id){ var el=$(id); if(el) el.value=""; });
+  var info=$("ap_ean_info");
+  if(info){
+    if(_apEan){ info.textContent="Código "+_apEan+" — se guarda vinculado: la próxima vez el escáner lo encuentra directo."; info.classList.remove("hidden"); }
+    else info.classList.add("hidden");
+  }
+  bcPararCamara();                       // por si venimos del escáner
+  show("barcodeModal", false);
+  show("alimentoPropioModal", true);
+  setTimeout(function(){ try{ $("ap_nombre").focus(); }catch(e){} }, 60);
+}
+function apCerrar(){ show("alimentoPropioModal", false); _apEan=null; }
+function apGuardar(){
+  var nombre=((($("ap_nombre")||{}).value)||"").trim();
+  var marca=((($("ap_marca")||{}).value)||"").trim();
+  var porcion=parseFloat(($("ap_porcion")||{}).value);
+  var kcal=parseFloat(($("ap_kcal")||{}).value), p=parseFloat(($("ap_p")||{}).value);
+  var c=parseFloat(($("ap_c")||{}).value), g=parseFloat(($("ap_g")||{}).value);
+  if(!nombre){ toast("El nombre es obligatorio"); return; }
+  if(!isFinite(kcal) || kcal<0 || !isFinite(p) || p<0){ toast("Kcal y proteína por 100 g son obligatorias"); return; }
+  if(!isFinite(c)||c<0) c=0; if(!isFinite(g)||g<0) g=0;
+  var arr=get(LS_ALIM,[]);
+  arr.push({id:Date.now().toString(36)+Math.random().toString(36).slice(2,6), nombre:nombre, marca:marca||null,
+    ean:_apEan||null, porcion_g:(porcion>0?porcion:null), kcal100:kcal, p100:p, c100:c, g100:g});
+  set(LS_ALIM,arr);
+  comFillDatalist();                     // que aparezca YA en el buscador de la pestaña Comida
+  apCerrar();
+  toast("🍽 Guardado — búscalo por su nombre al añadir alimento");
+}
+// Los propios "disfrazados" de FOODS ({n,kcal,p,c,f} por 100 g) para reutilizar comAdd tal cual.
+function apComoFoods(){
+  return get(LS_ALIM,[]).map(function(a){
+    return {n:a.nombre+(a.marca?" ("+a.marca+")":""), kcal:+a.kcal100||0, p:+a.p100||0, c:+a.c100||0, f:+a.g100||0, propio:true};
+  });
+}
+// Datalist del buscador de Comida: primero tus alimentos (los usas más), luego la base curada.
+function comFillDatalist(){
+  var dl=$("com-foods"); if(!dl) return;
+  dl.innerHTML=apComoFoods().concat(FOODS).map(function(x){ return "<option value=\""+escAttr(x.n)+"\"></option>"; }).join("");
+}
+
 // ======= ESTADO / PERSISTENCIA =======
 const LS_P="jvf_perfil", LS_W="jvf_pesos", LS_E="jvf_entrenos";
 // Almacenamiento a prueba de fallos: si localStorage esta bloqueado (modo incognito,
@@ -1196,7 +1894,7 @@ document.addEventListener('DOMContentLoaded',function(){
     if(ents.length>20 && _old) setTimeout(function(){ toast("💾 Llevas tiempo sin copia de seguridad — toca Exportar en Ajustes"); }, 3500);
   }catch(e){}
 });
-function resetTodo(){ if(!confirm("⚠️ Esto borra TODO: perfil, pesos, entrenos, rutinas, comidas, agua y suplementos. ¿Seguro?")) return; try{ localStorage.removeItem(LS_P); localStorage.removeItem(LS_W); localStorage.removeItem(LS_E); localStorage.removeItem("jvf_notas_ej"); localStorage.removeItem("jvf_comida"); localStorage.removeItem("jvf_agua"); localStorage.removeItem("jvf_suples_cfg"); localStorage.removeItem("jvf_suples_log"); localStorage.removeItem("jvf_rutinas"); localStorage.removeItem("jvf_ent_start"); localStorage.removeItem("jvf_meals"); }catch(e){} _mem={}; location.reload(); }
+function resetTodo(){ if(!confirm("⚠️ Esto borra TODO: perfil, pesos, entrenos, rutinas, comidas, alimentos propios, agua y suplementos. ¿Seguro?")) return; try{ localStorage.removeItem(LS_P); localStorage.removeItem(LS_W); localStorage.removeItem(LS_E); localStorage.removeItem("jvf_notas_ej"); localStorage.removeItem("jvf_comida"); localStorage.removeItem("jvf_agua"); localStorage.removeItem("jvf_suples_cfg"); localStorage.removeItem("jvf_suples_log"); localStorage.removeItem("jvf_rutinas"); localStorage.removeItem("jvf_ent_start"); localStorage.removeItem("jvf_meals"); localStorage.removeItem("jvf_alimentos_propios"); localStorage.removeItem("jvf_barcode_cache"); localStorage.removeItem("jvf_foto_ajustes"); }catch(e){} _mem={}; location.reload(); }
 
 // ======= EXPORT / IMPORT (red de seguridad: backup + migración entre dispositivos) =======
 // Reemplazo total con confirmación. Reusa get/set, hoyLocal, toast, validar, render. NO toca motor ni gate.
@@ -1204,7 +1902,9 @@ function exportarJSON(){ try{ set("jvf_last_export",hoyLocal()); }catch(e){}
   try{
     var data={ app:"jvf", schema:1, app_version:"0.10", exportadoEl:new Date().toISOString(),
       perfil:get(LS_P,null), pesos:get(LS_W,[]), entrenos:get(LS_E,[]), notas_ej:get("jvf_notas_ej",{}), comida:get("jvf_comida",[]), agua:get("jvf_agua",{}), suples_cfg:get("jvf_suples_cfg",null), suples_log:get("jvf_suples_log",{}),
-      rutinas:get("jvf_rutinas",[]), meals:get("jvf_meals",[]), ent_start:get("jvf_ent_start",null) };   // v0.10 · backup completo
+      rutinas:get("jvf_rutinas",[]), meals:get("jvf_meals",[]), ent_start:get("jvf_ent_start",null),   // v0.10 · backup completo
+      alimentos_propios:get("jvf_alimentos_propios",[]), barcode_cache:get("jvf_barcode_cache",{}),   // I5/I6 · también viajan en el backup
+      foto_ajustes:get("jvf_foto_ajustes",{}) };   // F-FOTO-2 · lo aprendido de tus correcciones viaja en el backup
     var blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
     var url=URL.createObjectURL(blob);
     var a=document.createElement("a"); a.href=url; a.download="jvf-backup-"+hoyLocal()+".json";
@@ -1234,8 +1934,14 @@ function procesarImport(file){
     // v0.10 · rutinas y comidas guardadas viajan en el backup (reemplazo total, como el resto)
     var rutinas=Array.isArray(data.rutinas)?data.rutinas.filter(function(r){ return r&&r.nombre&&Array.isArray(r.ejercicios); }):[];
     var meals=Array.isArray(data.meals)?data.meals.filter(function(mm){ return mm&&mm.nombre&&Array.isArray(mm.items); }):[];
+    // I5/I6 · alimentos propios y caché de barcode se restauran igual (reemplazo total, como el resto)
+    var alimsProp=Array.isArray(data.alimentos_propios)?data.alimentos_propios.filter(function(a){ return a&&a.nombre; }):[];
+    var bcCache=(data.barcode_cache && typeof data.barcode_cache==="object" && !Array.isArray(data.barcode_cache))?data.barcode_cache:{};
+    // F-FOTO-2 · ajustes aprendidos del motor de foto (reemplazo total, como el resto)
+    var fotoAj=(data.foto_ajustes && typeof data.foto_ajustes==="object" && !Array.isArray(data.foto_ajustes))?data.foto_ajustes:{};
     set(LS_P,data.perfil); set(LS_W,pesos); set(LS_E,entrenos); set("jvf_notas_ej",notas); set("jvf_comida",comida); if(data.agua) set("jvf_agua",data.agua); if(data.suples_cfg) set("jvf_suples_cfg",data.suples_cfg); if(data.suples_log) set("jvf_suples_log",data.suples_log);
     set("jvf_rutinas",rutinas); set("jvf_meals",meals); if(data.ent_start) set("jvf_ent_start",data.ent_start);
+    set("jvf_alimentos_propios",alimsProp); set("jvf_barcode_cache",bcCache); set("jvf_foto_ajustes",fotoAj);
     render();
     toast("✓ Datos importados");
   };
@@ -2393,63 +3099,63 @@ var EJERCICIOS=[
   {n:"Press militar de pie con barra",eq:"Barra",m:"Hombros",img:"Standing_Military_Press/0.jpg",m2:["Tríceps"]},{n:"Press militar en máquina",eq:"Máquina",m:"Hombros",img:"Machine_Shoulder_Military_Press/0.jpg",m2:["Tríceps"]},
   {n:"Press militar en multipower",eq:"Máquina",m:"Hombros",img:"Smith_Machine_Overhead_Shoulder_Press/0.jpg",m2:["Tríceps"]},
   {n:"Elevaciones laterales",eq:"Mancuerna",m:"Hombros",img:"Side_Lateral_Raise/0.jpg"},{n:"Elevaciones laterales en polea",eq:"Cable",m:"Hombros",img:"Standing_Low-Pulley_Deltoid_Raise/0.jpg",m2:["Antebrazo"]},
-  {n:"Elevaciones laterales en máquina",eq:"Máquina",m:"Hombros"},
+  {n:"Elevaciones laterales en máquina",eq:"Máquina",m:"Hombros",img:"Side_Lateral_Raise/0.jpg"},
   {n:"Elevaciones frontales",eq:"Mancuerna",m:"Hombros",img:"Front_Dumbbell_Raise/0.jpg"},{n:"Elevaciones frontales en polea",eq:"Cable",m:"Hombros",img:"Front_Cable_Raise/0.jpg"},
   {n:"Elevaciones frontales con barra",eq:"Barra",m:"Hombros",img:"Standing_Front_Barbell_Raise_Over_Head/0.jpg"},
   {n:"Pájaros (deltoides posterior)",eq:"Mancuerna",m:"Hombros",img:"Reverse_Flyes/0.jpg"},{n:"Pájaros en polea",eq:"Cable",m:"Hombros",img:"Cable_Rear_Delt_Fly/0.jpg"},
   {n:"Pájaros en máquina (reverse peck deck)",eq:"Máquina",m:"Hombros",img:"Reverse_Machine_Flyes/0.jpg"},
   {n:"Press Arnold",eq:"Mancuerna",m:"Hombros",img:"Arnold_Dumbbell_Press/0.jpg",m2:["Tríceps"]},{n:"Remo al mentón con barra",eq:"Barra",m:"Hombros",img:"Upright_Barbell_Row/0.jpg",m2:["Trapecio"]},
   {n:"Remo al mentón en polea",eq:"Cable",m:"Hombros",img:"Upright_Cable_Row/0.jpg"},{n:"Press de hombro con kettlebell",eq:"Kettlebell",m:"Hombros",img:"Two-Arm_Kettlebell_Military_Press/0.jpg",m2:["Tríceps"]},
-  {n:"Elevaciones laterales con banda",eq:"Banda",m:"Hombros",img:"Lateral_Raise_-_With_Bands/0.jpg"},{n:"Tirones de cara con banda",eq:"Banda",m:"Hombros"},
+  {n:"Elevaciones laterales con banda",eq:"Banda",m:"Hombros",img:"Lateral_Raise_-_With_Bands/0.jpg"},{n:"Tirones de cara con banda",eq:"Banda",m:"Hombros",img:"Face_Pull/0.jpg"},
   // ---- BÍCEPS ----
   {n:"Curl con barra",eq:"Barra",m:"Bíceps",img:"Barbell_Curl/0.jpg",m2:["Antebrazo"]},{n:"Curl con barra Z",eq:"Barra",m:"Bíceps",img:"EZ-Bar_Curl/0.jpg"},
   {n:"Curl con mancuernas",eq:"Mancuerna",m:"Bíceps",img:"Dumbbell_Bicep_Curl/0.jpg",m2:["Antebrazo"]},{n:"Curl alterno con mancuernas",eq:"Mancuerna",m:"Bíceps",img:"Dumbbell_Alternate_Bicep_Curl/0.jpg",m2:["Antebrazo"]},
   {n:"Curl martillo",eq:"Mancuerna",m:"Bíceps",img:"Hammer_Curls/0.jpg"},{n:"Curl inclinado con mancuernas",eq:"Mancuerna",m:"Bíceps",img:"Incline_Dumbbell_Curl/0.jpg"},
   {n:"Curl en predicador",eq:"Máquina",m:"Bíceps",img:"Machine_Preacher_Curls/0.jpg"},{n:"Curl en predicador con barra",eq:"Barra",m:"Bíceps",img:"Preacher_Curl/0.jpg"},
-  {n:"Curl en polea",eq:"Cable",m:"Bíceps",img:"Standing_Biceps_Cable_Curl/0.jpg"},{n:"Curl en polea a la cara (bayesian)",eq:"Cable",m:"Bíceps"},
-  {n:"Curl concentrado",eq:"Mancuerna",m:"Bíceps",img:"Concentration_Curls/0.jpg",m2:["Antebrazo"]},{n:"Curl spider",eq:"Mancuerna",m:"Bíceps"},
-  {n:"Curl con banda",eq:"Banda",m:"Bíceps"},
+  {n:"Curl en polea",eq:"Cable",m:"Bíceps",img:"Standing_Biceps_Cable_Curl/0.jpg"},{n:"Curl en polea a la cara (bayesian)",eq:"Cable",m:"Bíceps",img:"Overhead_Cable_Curl/0.jpg"},
+  {n:"Curl concentrado",eq:"Mancuerna",m:"Bíceps",img:"Concentration_Curls/0.jpg",m2:["Antebrazo"]},{n:"Curl spider",eq:"Mancuerna",m:"Bíceps",img:"Spider_Curl/0.jpg"},
+  {n:"Curl con banda",eq:"Banda",m:"Bíceps",img:"Alternate_Hammer_Curl/0.jpg"},
   // ---- TRÍCEPS ----
   {n:"Extensión en polea (cuerda)",eq:"Cable",m:"Tríceps",img:"Triceps_Pushdown_-_Rope_Attachment/0.jpg"},{n:"Extensión en polea con barra",eq:"Cable",m:"Tríceps",img:"Triceps_Pushdown/0.jpg"},
   {n:"Extensión en polea agarre invertido",eq:"Cable",m:"Tríceps",img:"Reverse_Grip_Triceps_Pushdown/0.jpg"},
   {n:"Press francés",eq:"Barra",m:"Tríceps",img:"EZ-Bar_Skullcrusher/0.jpg",m2:["Antebrazo"]},{n:"Press francés con mancuernas",eq:"Mancuerna",m:"Tríceps",img:"Lying_Dumbbell_Tricep_Extension/0.jpg",m2:["Pecho", "Hombros"]},
   {n:"Extensión sobre la cabeza",eq:"Mancuerna",m:"Tríceps",img:"Standing_Dumbbell_Triceps_Extension/0.jpg"},{n:"Extensión sobre la cabeza en polea",eq:"Cable",m:"Tríceps",img:"Cable_Rope_Overhead_Triceps_Extension/0.jpg"},
   {n:"Fondos en banco",eq:"Peso corporal",m:"Tríceps",img:"Bench_Dips/0.jpg",m2:["Pecho", "Hombros"]},{n:"Fondos para tríceps en máquina",eq:"Máquina",m:"Tríceps",img:"Dip_Machine/0.jpg",m2:["Pecho", "Hombros"]},
-  {n:"Patada de tríceps",eq:"Mancuerna",m:"Tríceps",img:"Tricep_Dumbbell_Kickback/0.jpg"},{n:"Patada de tríceps en polea",eq:"Cable",m:"Tríceps"},
+  {n:"Patada de tríceps",eq:"Mancuerna",m:"Tríceps",img:"Tricep_Dumbbell_Kickback/0.jpg"},{n:"Patada de tríceps en polea",eq:"Cable",m:"Tríceps",img:"Kneeling_Cable_Triceps_Extension/0.jpg"},
   {n:"Press cerrado",eq:"Barra",m:"Tríceps",img:"Close-Grip_Barbell_Bench_Press/0.jpg",m2:["Pecho", "Hombros"]},{n:"Extensión de tríceps con banda",eq:"Banda",m:"Tríceps",img:"Speed_Band_Overhead_Triceps/0.jpg"},
   // ---- CUÁDRICEPS ----
   {n:"Sentadilla con barra",eq:"Barra",m:"Cuádriceps",img:"Barbell_Squat/0.jpg",m2:["Gemelo", "Glúteo", "Femoral", "Espalda"]},{n:"Sentadilla frontal",eq:"Barra",m:"Cuádriceps",img:"Front_Barbell_Squat/0.jpg",m2:["Gemelo", "Glúteo", "Femoral"]},
   {n:"Sentadilla en multipower",eq:"Máquina",m:"Cuádriceps",img:"Smith_Machine_Squat/0.jpg",m2:["Gemelo", "Glúteo", "Femoral", "Espalda"]},
-  {n:"Prensa de piernas",eq:"Máquina",m:"Cuádriceps",img:"Leg_Press/0.jpg",m2:["Gemelo", "Glúteo", "Femoral"]},{n:"Prensa horizontal",eq:"Máquina",m:"Cuádriceps"},
+  {n:"Prensa de piernas",eq:"Máquina",m:"Cuádriceps",img:"Leg_Press/0.jpg",m2:["Gemelo", "Glúteo", "Femoral"]},{n:"Prensa horizontal",eq:"Máquina",m:"Cuádriceps",img:"Leg_Press/0.jpg"},
   {n:"Extensión de cuádriceps",eq:"Máquina",m:"Cuádriceps",img:"Leg_Extensions/0.jpg"},{n:"Zancadas",eq:"Mancuerna",m:"Cuádriceps",img:"Dumbbell_Lunges/0.jpg",m2:["Gemelo", "Glúteo", "Femoral"]},
-  {n:"Zancadas con barra",eq:"Barra",m:"Cuádriceps",img:"Barbell_Lunge/0.jpg",m2:["Gemelo", "Glúteo", "Femoral"]},{n:"Zancadas caminando",eq:"Mancuerna",m:"Cuádriceps"},
+  {n:"Zancadas con barra",eq:"Barra",m:"Cuádriceps",img:"Barbell_Lunge/0.jpg",m2:["Gemelo", "Glúteo", "Femoral"]},{n:"Zancadas caminando",eq:"Mancuerna",m:"Cuádriceps",img:"Bodyweight_Walking_Lunge/0.jpg"},
   {n:"Sentadilla búlgara",eq:"Mancuerna",m:"Cuádriceps",img:"Split_Squat_with_Dumbbells/0.jpg",m2:["Glúteo", "Femoral"]},{n:"Hack squat",eq:"Máquina",m:"Cuádriceps",img:"Hack_Squat/0.jpg",m2:["Gemelo", "Glúteo", "Femoral"]},
   {n:"Sentadilla goblet",eq:"Mancuerna",m:"Cuádriceps",img:"Goblet_Squat/0.jpg",m2:["Gemelo", "Glúteo", "Femoral", "Hombros"]},{n:"Subida al cajón con mancuernas",eq:"Mancuerna",m:"Cuádriceps",img:"Dumbbell_Step_Ups/0.jpg",m2:["Gemelo", "Glúteo", "Femoral"]},
-  {n:"Sentadilla a peso corporal",eq:"Peso corporal",m:"Cuádriceps",img:"Bodyweight_Squat/0.jpg",m2:["Glúteo", "Femoral"]},{n:"Sentadilla sissy",eq:"Peso corporal",m:"Cuádriceps"},
+  {n:"Sentadilla a peso corporal",eq:"Peso corporal",m:"Cuádriceps",img:"Bodyweight_Squat/0.jpg",m2:["Glúteo", "Femoral"]},{n:"Sentadilla sissy",eq:"Peso corporal",m:"Cuádriceps",img:"Weighted_Sissy_Squat/0.jpg"},
   {n:"Sentadilla con kettlebell",eq:"Kettlebell",m:"Cuádriceps",img:"Goblet_Squat/0.jpg",m2:["Gemelo", "Glúteo", "Femoral", "Hombros"]},
   // ---- FEMORAL ----
   {n:"Peso muerto rumano",eq:"Barra",m:"Femoral",img:"Romanian_Deadlift/0.jpg",m2:["Gemelo", "Glúteo", "Espalda"]},{n:"Peso muerto rumano con mancuernas",eq:"Mancuerna",m:"Femoral",img:"Stiff-Legged_Dumbbell_Deadlift/0.jpg",m2:["Glúteo", "Espalda"]},
   {n:"Peso muerto piernas rígidas",eq:"Barra",m:"Femoral",img:"Stiff-Legged_Barbell_Deadlift/0.jpg",m2:["Glúteo", "Espalda"]},
   {n:"Curl femoral tumbado",eq:"Máquina",m:"Femoral",img:"Lying_Leg_Curls/0.jpg"},{n:"Curl femoral sentado",eq:"Máquina",m:"Femoral",img:"Seated_Leg_Curl/0.jpg"},
   {n:"Curl femoral de pie",eq:"Máquina",m:"Femoral",img:"Standing_Leg_Curl/0.jpg"},{n:"Buenos días",eq:"Barra",m:"Femoral",img:"Good_Morning/0.jpg",m2:["Abdomen", "Glúteo", "Espalda"]},
-  {n:"Curl nórdico",eq:"Peso corporal",m:"Femoral",img:"Natural_Glute_Ham_Raise/0.jpg",m2:["Gemelo", "Glúteo", "Espalda"]},{n:"Peso muerto a una pierna",eq:"Mancuerna",m:"Femoral"},
+  {n:"Curl nórdico",eq:"Peso corporal",m:"Femoral",img:"Natural_Glute_Ham_Raise/0.jpg",m2:["Gemelo", "Glúteo", "Espalda"]},{n:"Peso muerto a una pierna",eq:"Mancuerna",m:"Femoral",img:"Stiff-Legged_Dumbbell_Deadlift/0.jpg"},
   // ---- GLÚTEO ----
-  {n:"Hip thrust",eq:"Barra",m:"Glúteo",img:"Barbell_Hip_Thrust/0.jpg",m2:["Gemelo", "Femoral"]},{n:"Hip thrust en máquina",eq:"Máquina",m:"Glúteo"},
-  {n:"Patada de glúteo en polea",eq:"Cable",m:"Glúteo",img:"One-Legged_Cable_Kickback/0.jpg",m2:["Femoral"]},{n:"Patada de glúteo en máquina",eq:"Máquina",m:"Glúteo"},
-  {n:"Abducción en máquina",eq:"Máquina",m:"Glúteo",img:"Thigh_Abductor/0.jpg"},{n:"Abducción de cadera en polea",eq:"Cable",m:"Glúteo"},
+  {n:"Hip thrust",eq:"Barra",m:"Glúteo",img:"Barbell_Hip_Thrust/0.jpg",m2:["Gemelo", "Femoral"]},{n:"Hip thrust en máquina",eq:"Máquina",m:"Glúteo",img:"Barbell_Hip_Thrust/0.jpg"},
+  {n:"Patada de glúteo en polea",eq:"Cable",m:"Glúteo",img:"One-Legged_Cable_Kickback/0.jpg",m2:["Femoral"]},{n:"Patada de glúteo en máquina",eq:"Máquina",m:"Glúteo",img:"Glute_Kickback/0.jpg"},
+  {n:"Abducción en máquina",eq:"Máquina",m:"Glúteo",img:"Thigh_Abductor/0.jpg"},{n:"Abducción de cadera en polea",eq:"Cable",m:"Glúteo",img:"Cable_Hip_Adduction/0.jpg"},
   {n:"Puente de glúteo",eq:"Peso corporal",m:"Glúteo",img:"Butt_Lift_Bridge/0.jpg",m2:["Femoral"]},{n:"Puente de glúteo con barra",eq:"Barra",m:"Glúteo",img:"Barbell_Glute_Bridge/0.jpg",m2:["Gemelo", "Femoral"]},
   {n:"Patada de glúteo con banda",eq:"Banda",m:"Glúteo",img:"Hip_Extension_with_Bands/0.jpg",m2:["Femoral"]},{n:"Swing con kettlebell",eq:"Kettlebell",m:"Glúteo",img:"One-Arm_Kettlebell_Swings/0.jpg",m2:["Gemelo", "Espalda", "Hombros"]},
   // ---- GEMELO ----
   {n:"Elevación de gemelo de pie",eq:"Máquina",m:"Gemelo",img:"Standing_Calf_Raises/0.jpg"},{n:"Elevación de gemelo sentado",eq:"Máquina",m:"Gemelo",img:"Seated_Calf_Raise/0.jpg"},
   {n:"Elevación de gemelo en prensa",eq:"Máquina",m:"Gemelo",img:"Calf_Press_On_The_Leg_Press_Machine/0.jpg"},{n:"Elevación de gemelo con mancuerna",eq:"Mancuerna",m:"Gemelo",img:"Standing_Dumbbell_Calf_Raise/0.jpg"},
-  {n:"Elevación de gemelo con barra",eq:"Barra",m:"Gemelo",img:"Standing_Barbell_Calf_Raise/0.jpg"},{n:"Elevación de gemelo a una pierna",eq:"Peso corporal",m:"Gemelo"},
+  {n:"Elevación de gemelo con barra",eq:"Barra",m:"Gemelo",img:"Standing_Barbell_Calf_Raise/0.jpg"},{n:"Elevación de gemelo a una pierna",eq:"Peso corporal",m:"Gemelo",img:"Standing_Dumbbell_Calf_Raise/0.jpg"},
   // ---- ABDOMEN ----
   {n:"Crunch",eq:"Peso corporal",m:"Abdomen",img:"Crunches/0.jpg"},{n:"Crunch invertido",eq:"Peso corporal",m:"Abdomen",img:"Reverse_Crunch/0.jpg"},
   {n:"Elevación de piernas",eq:"Peso corporal",m:"Abdomen",img:"Flat_Bench_Lying_Leg_Raise/0.jpg"},{n:"Elevación de piernas colgado",eq:"Peso corporal",m:"Abdomen",img:"Hanging_Leg_Raise/0.jpg"},
   {n:"Plancha",eq:"Peso corporal",m:"Abdomen",img:"Plank/0.jpg"},{n:"Plancha lateral",eq:"Peso corporal",m:"Abdomen",img:"Side_Bridge/0.jpg",m2:["Hombros"]},
   {n:"Rueda abdominal",eq:"Peso corporal",m:"Abdomen",img:"Ab_Roller/0.jpg",m2:["Hombros"]},{n:"Crunch en polea",eq:"Cable",m:"Abdomen",img:"Cable_Crunch/0.jpg"},
   {n:"Crunch en máquina",eq:"Máquina",m:"Abdomen",img:"Ab_Crunch_Machine/0.jpg"},{n:"Giro ruso",eq:"Peso corporal",m:"Abdomen",img:"Russian_Twist/0.jpg",m2:["Espalda"]},
-  {n:"Encogimientos colgado",eq:"Peso corporal",m:"Abdomen"},{n:"Leñador en polea",eq:"Cable",m:"Abdomen",img:"Standing_Cable_Wood_Chop/0.jpg",m2:["Hombros"]},
+  {n:"Encogimientos colgado",eq:"Peso corporal",m:"Abdomen",img:"Hanging_Leg_Raise/0.jpg"},{n:"Leñador en polea",eq:"Cable",m:"Abdomen",img:"Standing_Cable_Wood_Chop/0.jpg",m2:["Hombros"]},
   // ---- TRAPECIO ----
   {n:"Encogimientos con barra",eq:"Barra",m:"Trapecio",img:"Barbell_Shrug/0.jpg"},{n:"Encogimientos con mancuernas",eq:"Mancuerna",m:"Trapecio",img:"Dumbbell_Shrug/0.jpg"},
   {n:"Encogimientos en polea",eq:"Cable",m:"Trapecio",img:"Cable_Shrugs/0.jpg"},{n:"Encogimientos en máquina",eq:"Máquina",m:"Trapecio",img:"Leverage_Shrug/0.jpg",m2:["Antebrazo"]},
