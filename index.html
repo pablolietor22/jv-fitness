@@ -2091,12 +2091,25 @@ if(MODO_LIBRE){ try{ var _tg=document.querySelector(".tag"); if(_tg) _tg.textCon
 function wizChips(){
   var el=$("wiz_chips"); if(!el) return;
   el.innerHTML=WIZ_NOM.map(function(t,i){
-    var cls="wchip"+(i===_wiz?" cur":(MODO_LIBRE||_wizEdit||i<=_wizSeen?" done":""));
-    var click=(MODO_LIBRE||_wizEdit||i<=_wizSeen)?' onclick="wizGo('+i+')"':'';
+    // Decisión Pablo 06/07: navegar es LIBRE para todos; lo único que valida es GENERAR el plan.
+    var cls="wchip"+(i===_wiz?" cur":(i<=_wizSeen?" done":""));
+    var click=' onclick="wizGo('+i+')"';
     return "<span class='"+cls+"'"+click+">"+t+"</span>";
   }).join("");
 }
-function wizGo(n){ if(n===_wiz) return; if(MODO_LIBRE||_wizEdit||n<=_wizSeen){ show("f_err",false); wizShow(n); } }
+function wizGo(n){ if(n===_wiz) return; show("f_err",false); wizShow(n); }
+// Simulador del modo libre: rellena los huecos con un perfil de prueba para que el motor (que
+// valida de verdad y NO se toca) genere el plan y Pablo VEA el resultado al instante.
+function wizSimular(){
+  function def(id,v){ var el=$(id); if(el && (el.value===""||el.value==null)) el.value=v; }
+  def("f_obj","ganar_musculo"); def("f_int","15"); def("f_nombre","Simulado"); def("f_edad","25");
+  def("f_sexo","hombre"); def("f_peso","75"); def("f_altura","175"); def("f_act","sedentario");
+  def("w_nivel","Principiante"); def("w_dias","3-4"); def("w_material","Gimnasio completo");
+  def("w_estres","Bajo"); def("w_trabajo","Sentado");
+  var ed=$("f_edad"); if(ed && !(+ed.value>=14 && +ed.value<=100)) ed.value="25";
+  var pe=$("f_peso"); if(pe && !(+pe.value>=30 && +pe.value<=300)) pe.value="75";
+  var al=$("f_altura"); if(al && !(+al.value>=120 && +al.value<=230)) al.value="175";
+}
 function wizGuardarDirecto(){
   // Valida TODOS los pasos con obligatorios; al primer error salta a ese paso y lo enseña.
   if(!MODO_LIBRE){ for(var i=1;i<=WIZ_MAX;i++){ var e=wizValida(i); if(e){ wizShow(i); $("f_err").textContent=e; show("f_err",true); return; } } }
@@ -2137,10 +2150,14 @@ function wizGibber(n){
 }
 let _gibStep=-1;
 function wizNext(){
-  var err=wizValida(_wiz);
-  // Modo libre TOTAL (petición Pablo 06/07): tampoco corta al GENERAR — el objetivo es ver qué
-  // hace el motor con datos incompletos (NaN, huecos...) y cazar esos bugs ANTES que un usuario.
-  if(err && MODO_LIBRE){ if(_wiz===WIZ_MAX){ toast("🔓 libre: generando con datos incompletos (caza-bugs)"); } err=null; }
+  // Pasos intermedios: nunca cortan (navegación libre para todos). El único juez es el último paso.
+  if(_wiz<WIZ_MAX){ var errSoft=wizValida(_wiz); if(errSoft){ toast("✍️ Pendiente: "+errSoft); } }
+  var err=null;
+  if(_wiz===WIZ_MAX && !MODO_LIBRE){
+    // Generar de verdad: valida TODOS los pasos y salta al primero que falte.
+    for(var i=1;i<=WIZ_MAX;i++){ var e=wizValida(i); if(e){ wizShow(i); $("f_err").textContent=e; show("f_err",true); return; } }
+  }
+  if(_wiz===WIZ_MAX && MODO_LIBRE){ wizSimular(); toast("🔓 PLAN SIMULADO: huecos rellenados con datos de prueba"); }
   if(err){ $("f_err").textContent=err; show("f_err",true); return; }
   var g=wizGibber(_wiz);
   if(g && _gibStep!==_wiz){   // 1ª vez: Jarvis pregunta. 2ª vez (si insistes): pasa igual.
