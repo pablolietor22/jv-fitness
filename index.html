@@ -2084,7 +2084,9 @@ var WIZ_NOM=["Inicio","Objetivo","Tú","Cuerpo","Actividad","Entreno","Vida","Co
 // sin candados — todos los chips clicables, atrás/adelante libre, los obligatorios no cortan la
 // navegación (solo cortan al GENERAR el plan, que eso sí necesita los datos). El usuario normal
 // no lo ve: sin el parámetro, todo sigue igual.
-var MODO_LIBRE=/[?&](libre|dev)=1/.test(location.search);
+// Tambien se activa SOLO al abrir el ARCHIVO en local (file:// = siempre eres tu revisando):
+// doble clic al html del taller y ya estas en libre, sin recordar parametros.
+var MODO_LIBRE=/[?&](libre|dev)=1/.test(location.search) || location.protocol==="file:";
 if(MODO_LIBRE){ try{ var _tg=document.querySelector(".tag"); if(_tg) _tg.textContent+=" · 🔓 libre"; }catch(e){} }
 function wizChips(){
   var el=$("wiz_chips"); if(!el) return;
@@ -2097,7 +2099,8 @@ function wizChips(){
 function wizGo(n){ if(n===_wiz) return; if(MODO_LIBRE||_wizEdit||n<=_wizSeen){ show("f_err",false); wizShow(n); } }
 function wizGuardarDirecto(){
   // Valida TODOS los pasos con obligatorios; al primer error salta a ese paso y lo enseña.
-  for(var i=1;i<=WIZ_MAX;i++){ var e=wizValida(i); if(e){ wizShow(i); $("f_err").textContent=e; show("f_err",true); return; } }
+  if(!MODO_LIBRE){ for(var i=1;i<=WIZ_MAX;i++){ var e=wizValida(i); if(e){ wizShow(i); $("f_err").textContent=e; show("f_err",true); return; } } }
+  else { toast("🔓 libre: guardando tal cual (caza-bugs)"); }
   show("f_err",false); _wizEdit=false; guardarPerfil();
 }
 function wizShow(n){
@@ -2135,8 +2138,9 @@ function wizGibber(n){
 let _gibStep=-1;
 function wizNext(){
   var err=wizValida(_wiz);
-  // Modo libre: los obligatorios no cortan el PASEO (solo cortan el último paso, generar el plan).
-  if(err && MODO_LIBRE && _wiz<WIZ_MAX){ err=null; }
+  // Modo libre TOTAL (petición Pablo 06/07): tampoco corta al GENERAR — el objetivo es ver qué
+  // hace el motor con datos incompletos (NaN, huecos...) y cazar esos bugs ANTES que un usuario.
+  if(err && MODO_LIBRE){ if(_wiz===WIZ_MAX){ toast("🔓 libre: generando con datos incompletos (caza-bugs)"); } err=null; }
   if(err){ $("f_err").textContent=err; show("f_err",true); return; }
   var g=wizGibber(_wiz);
   if(g && _gibStep!==_wiz){   // 1ª vez: Jarvis pregunta. 2ª vez (si insistes): pasa igual.
