@@ -421,7 +421,7 @@
 
 <header class="brandbar">
   <div class="logo"><span class="dot"></span>JV <b>Fitness</b></div>
-  <span class="tag">MVP v0.13.3 · motor v0.7 · foto v2 · flex</span>
+  <span class="tag">MVP v0.13.4 · motor v0.7 · foto v2 · flex</span>
 </header>
 <div class="statuschip"><span class="pulse"></span> cálculo science-based · ajustable · calibración real</div>
 
@@ -508,13 +508,15 @@
     <label>Media de pasos al día (opcional)</label><input id="f_pasos" type="number" placeholder="ej. 12000">
     <p class="hint">Los pasos capturan tu <b style="color:var(--soft)">NEAT</b> (el gasto de moverte fuera del gym). Si andas mucho, te subo las calorías aunque no pises pesas.</p>
     <label>¿Deporte además del gym? (fútbol, baloncesto, pádel…)</label>
-    <select id="f_deporte">
+    <select id="f_deporte" onchange="wizDeporte(this)">
       <option value="0">No / casi nunca</option>
       <option value="0.5">Suave o de vez en cuando</option>
       <option value="1.5">Intenso, 1-2 días/semana</option>
       <option value="3.5">Intenso, 3 o más días</option>
+      <option value="Otro">Otro / no encaja — cuéntamelo</option>
     </select>
     <input id="w_deporte_nota" placeholder="Cuéntaselo a Jarvis (opcional): ej. baloncesto en la calle, ganas y sigues jugando…">
+    <p id="w_deporte_futuro" class="hint hidden" style="margin:4px 0 8px;color:var(--soft)">Pongo lo de ahora. Si cambia, edítalo y te recalculo — y tu peso real me va afinando igualmente.</p>
     <p class="hint">Si sudas de verdad, tu deporte <b style="color:var(--soft)">cuenta como días de entreno</b>: lo sumo a tu gym y te subo las calorías.</p>
   </div>
 
@@ -2735,7 +2737,7 @@ function resetTodo(){ if(!confirm("⚠️ Esto borra TODO: perfil, pesos, entren
 // Reemplazo total con confirmación. Reusa get/set, hoyLocal, toast, validar, render. NO toca motor ni gate.
 function exportarJSON(){ try{ set("jvf_last_export",hoyLocal()); }catch(e){}
   try{
-    var data={ app:"jvf", schema:1, app_version:"0.13.3", exportadoEl:new Date().toISOString(),
+    var data={ app:"jvf", schema:1, app_version:"0.13.4", exportadoEl:new Date().toISOString(),
       perfil:get(LS_P,null), pesos:get(LS_W,[]), entrenos:get(LS_E,[]), notas_ej:get("jvf_notas_ej",{}), comida:get("jvf_comida",[]), agua:get("jvf_agua",{}), suples_cfg:get("jvf_suples_cfg",null), suples_log:get("jvf_suples_log",{}),
       rutinas:get("jvf_rutinas",[]), meals:get("jvf_meals",[]), ent_start:get("jvf_ent_start",null),   // v0.10 · backup completo
       alimentos_propios:get("jvf_alimentos_propios",[]), barcode_cache:get("jvf_barcode_cache",{}),   // I5/I6 · también viajan en el backup
@@ -4152,7 +4154,7 @@ function otroNorm(s){
 function otroNums(t){
   var out=[], m, re=/\d+(?:[.,]\d+)?/g;
   while((m=re.exec(t))) out.push(parseFloat(m[0].replace(",",".")));
-  var PAL={"un":1,"uno":1,"una":1,"dos":2,"tres":3,"cuatro":4,"cinco":5,"seis":6,"siete":7,"ocho":8,"nueve":9,"diez":10,"once":11,"doce":12,"quince":15,"veinte":20};
+  var PAL={"dos":2,"tres":3,"cuatro":4,"cinco":5,"seis":6,"siete":7,"ocho":8,"nueve":9,"diez":10,"once":11,"doce":12,"quince":15,"veinte":20};   // sin "un/uno/una": son artículos y daban falsos positivos («una barbaridad»→1) — verif. O1
   var toks=t.split(/[^a-zñ]+/);
   for(var i=0;i<toks.length;i++){ if(PAL[toks[i]]!=null) out.push(PAL[toks[i]]); }
   return out;
@@ -4215,9 +4217,9 @@ function interpretarOtro(campo, texto){
 
   if(campo==="w_nivel_otro"){
     if(/empiezo|empezando|acabo de empezar|nunca|primera vez|nuevo|cero|principiante/.test(t)) return R("Principiante","Principiante");
-    if(/toda la vida|compet|avanzado/.test(t)) return R("Avanzado","Avanzado");
+    if(/toda la vida|compet|avanzado|experto|veterano|\bpro\b|muchos a[ñn]os|llevo a[ñn]os|bestia|crack|nivel alto/.test(t)) return R("Avanzado","Avanzado");   // «experto» y sinónimos ahora SÍ se reconocen (rama bot-ajedrez, caso real de Pablo)
     var anios=null;
-    if(ns.length){ anios=ns[0]; if(/\bmes(es)?\b/.test(t) && !/\ba[ñn]os?\b/.test(t)) anios=anios/12; }
+    if(ns.length){ anios=ns[0]; if(/\bmes(es)?\b/.test(t) && !/\ba[ñn]os?\b/.test(t)) anios=anios/12; if(anios<=0 || anios>50) anios=null; }   // sanity: «mido 180» no es «180 años entrenando» → silencio
     if(anios!=null){
       if(anios<1) return R("Principiante","Principiante (menos de 1 año entrenando)");
       if(anios<4) return R("Intermedio","Intermedio (~"+Math.round(anios)+" años entrenando)");
@@ -4230,6 +4232,33 @@ function interpretarOtro(campo, texto){
   return null;   // campo sin reglas: el flujo antiguo sigue tal cual (texto libre al coach)
 }
 // [OTRO-PURE-FIN]
+
+// O2 v0.13.4 · deporte "Otro": mapea el texto libre al nivel numérico MÁS CERCANO del desplegable
+// (0 / 0.5 / 1.5 / 3.5) de forma CONSERVADORA y SILENCIOSA (nunca pinta eco, regla O1). El motor
+// (factorDeporte) NO se toca: solo elegimos qué número entra. Sin señal clara de intensidad ⇒ 0.5,
+// que factorDeporte trata como "no mueve calorías" (nota para el coach). Mejor corto que pasarse.
+function interpretarDeporte(texto){
+  var t=otroNorm(texto||""); if(!t) return 0;
+  var ns=otroNums(t);
+  if(/\bno\b|nada|nunca|ningun|\bcero\b|lo dej|sin deporte/.test(t) && !ns.length) return 0;
+  var intenso=/intens|fuerte|duro|sud(o|ar|as)|compit|federad|partido|a tope|exig|reventad|matador|le doy/.test(t);
+  var dias = ns.length ? Math.max.apply(null, ns) : null;   // de rangos "2-3" nos quedamos con el alto
+  if(intenso && dias!=null) return dias>=3 ? 3.5 : 1.5;
+  if(intenso) return 1.5;                                    // intenso pero sin frecuencia clara: conservador
+  return 0.5;                                                // sin intensidad clara: nota al coach, 0 kcal extra
+}
+// Valor numérico que ENTRA al motor: si el select es "Otro", se deriva de la nota (silencioso).
+function deporteValor(){
+  var raw=$("f_deporte").value;
+  if(raw==="Otro") return interpretarDeporte(($("w_deporte_nota")||{}).value||"");
+  return +raw||0;
+}
+// UX del select de deporte: "Otro" enseña el hint honesto de recalibración futura y enfoca la nota.
+function wizDeporte(sel){
+  var f=$("w_deporte_futuro");
+  if(sel && sel.value==="Otro"){ if(f) f.classList.remove("hidden"); try{ $("w_deporte_nota").focus(); }catch(e){} }
+  else if(f){ f.classList.add("hidden"); }
+}
 
 // "Otros" -> abre un MODAL centrado (fondo difuminado) para escribirle a Jarvis.
 // El input w_X_otro queda como guardado de datos + display de solo-lectura (clic = reabrir).
@@ -4246,7 +4275,11 @@ function ecoPinta(txtId){
   var old=$(txtId+"_eco"); if(old) old.remove();
   var v=t.value.trim();
   if(!v || t.classList.contains("hidden")) return;
-  var it=interpretarOtro(txtId, v); if(!it) return;
+  // O1 v0.13.4 · el eco SOLO se pinta si la interpretación es de ALTA confianza (match claro).
+  // Baja confianza / default de relleno (it.claro===false) ⇒ NO se muestra chip: el texto libre
+  // se acepta en silencio (ya va a coach.*), se usa el default sensato sin anunciarlo, y la Capa 2
+  // corrige por el progreso. Nunca mostramos "asumo X" de un default que probablemente esté mal.
+  var it=interpretarOtro(txtId, v); if(!it || !it.claro) return;
   var d=document.createElement("div"); d.id=txtId+"_eco"; d.className="hint";
   d.style.cssText="margin:4px 0 8px;color:var(--jade);cursor:pointer";
   d.textContent="🤖 Jarvis entiende: "+it.eco+" — toca para corregir";
@@ -4329,7 +4362,7 @@ function guardarPerfil(){ _wizEdit=false;
     altura_cm:+$("f_altura").value, grasa_pct: grasaRaw===""?null:+grasaRaw,
     actividad: ($("f_act").value==="Otro" ? ((_actInt&&_actInt.valor)||"activo") : $("f_act").value), objetivo:$("f_obj").value, intensidad_pct:+$("f_int").value,
     pasos: +$("f_pasos").value||null,
-    deporte: +$("f_deporte").value||0,
+    deporte: deporteValor(),   // O2 v0.13.4 · si el select es "Otro", el número sale de la nota (silencioso)
     coach:{
       actividad_nota: _actTxt,
       deporte_nota: $("w_deporte_nota").value.trim()||null,
