@@ -7,6 +7,8 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#0B1614">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
 <title>JV Fitness — App</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -150,6 +152,74 @@
   .cb-chip:hover{border-color:var(--jade);box-shadow:none}
   .cb-chip:active{transform:translateY(1px)}
   .cb-send{flex:none;width:auto;margin:0;padding:0 16px}
+
+  /* ===== 🧠 JARVIS v0.13.1 · estado vacío misterioso (SOLO capa de presentación) ===== */
+  /* Fondo más profundo/oscuro que el resto de la app + campo de estrellas CSS puro. */
+  #cerebro.cb-card{position:relative;overflow:hidden;border-color:#1c3a32;
+    background:
+      radial-gradient(120% 90% at 50% -12%, #102b24 0%, rgba(9,20,17,0) 55%),
+      radial-gradient(90% 70% at 50% 118%, #0a2019 0%, rgba(7,15,13,0) 60%),
+      linear-gradient(180deg,#08130f,#060d0b)}
+  #cerebro.cb-card::before{content:"";position:absolute;inset:0;pointer-events:none;z-index:0;
+    background-image:
+      radial-gradient(1px 1px at 12% 18%, rgba(238,242,236,.55), transparent),
+      radial-gradient(1px 1px at 82% 12%, rgba(61,220,151,.5), transparent),
+      radial-gradient(1px 1px at 68% 34%, rgba(238,242,236,.35), transparent),
+      radial-gradient(1px 1px at 24% 62%, rgba(238,242,236,.3), transparent),
+      radial-gradient(1.5px 1.5px at 90% 70%, rgba(255,106,61,.4), transparent),
+      radial-gradient(1px 1px at 44% 82%, rgba(238,242,236,.3), transparent),
+      radial-gradient(1px 1px at 58% 8%, rgba(238,242,236,.3), transparent);
+    animation:cbtwinkle 7s ease-in-out infinite}
+  @keyframes cbtwinkle{0%,100%{opacity:.4}50%{opacity:.7}}
+  #cerebro.cb-card > *{position:relative;z-index:1}
+
+  /* El ORBE: ente vivo — núcleo jade radial + aura ember + respiración (CSS puro). */
+  .cb-orb{position:relative;flex:none;border-radius:50%;
+    background:radial-gradient(circle at 35% 28%, #d6ffee 0%, #6fe9b8 22%, #3DDC97 42%, #1c8f66 64%, #0c4331 84%, #072a20 100%);
+    box-shadow:0 0 44px 6px rgba(61,220,151,.30), 0 0 92px 24px rgba(255,106,61,.22),
+      inset -6px -9px 26px rgba(0,0,0,.55), inset 7px 9px 22px rgba(255,255,255,.28);
+    animation:cbbreath 6s ease-in-out infinite}
+  .cb-orb::before{content:"";position:absolute;inset:8%;border-radius:50%;
+    background:radial-gradient(circle at 50% 55%, rgba(61,220,151,.6) 0%, rgba(61,220,151,0) 62%);
+    mix-blend-mode:screen;animation:cbcore 6s ease-in-out infinite}
+  .cb-orb::after{content:"";position:absolute;inset:0;border-radius:50%;
+    background:radial-gradient(circle at 32% 26%, rgba(255,255,255,.5) 0%, rgba(255,255,255,0) 30%);
+    mix-blend-mode:screen;animation:cbsheen 11s linear infinite}
+  .cb-orb-lg{width:132px;height:132px}
+  .cb-orb-sm{width:26px;height:26px;animation-duration:5s;
+    box-shadow:0 0 10px 1px rgba(61,220,151,.5), 0 0 16px 4px rgba(255,106,61,.28),
+      inset -2px -3px 7px rgba(0,0,0,.5), inset 2px 3px 6px rgba(255,255,255,.3)}
+  @keyframes cbbreath{0%,100%{transform:scale(1)}50%{transform:scale(1.055)}}
+  @keyframes cbcore{0%,100%{opacity:.4;transform:scale(.9)}50%{opacity:.9;transform:scale(1.06)}}
+  @keyframes cbsheen{0%{transform:rotate(0)}100%{transform:rotate(360deg)}}
+
+  /* Hero (estado vacío): orbe + «Pregúntame.» + subtítulo. */
+  .cb-hero{display:flex;flex-direction:column;align-items:center;text-align:center;padding:24px 10px 8px}
+  .cb-hero .cb-ask{font-family:var(--display);font-weight:700;font-size:1.95rem;letter-spacing:-.02em;
+    color:var(--bone);margin-top:26px;text-shadow:0 0 30px rgba(61,220,151,.28)}
+  .cb-hero .cb-sub{font-family:var(--body);font-size:.9rem;color:var(--mute);max-width:260px;margin-top:6px}
+
+  /* Orbe encogido en cabecera (con chat activo). */
+  .cb-headorb{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+  /* el .hidden global (definido antes) lo pisan .cb-hero/.cb-headorb por orden; se re-fuerza aquí */
+  .cb-hero.hidden,.cb-headorb.hidden{display:none}
+  .cb-headorb .cb-headname{font-family:var(--display);font-weight:700;font-size:1.02rem;letter-spacing:.02em;color:var(--bone)}
+  #cerebro.cb-chatting .cb-log{margin-top:2px}
+
+  /* Chips de temas al ENFOCAR el input (pop-up rápido, no roba foco, no bloquea teclear). */
+  .cb-inzone{margin-top:12px}
+  .cb-topics{display:flex;flex-wrap:wrap;gap:6px;overflow:hidden;max-height:0;opacity:0;
+    transform:translateY(6px);transition:max-height .28s ease,opacity .2s ease,transform .28s ease}
+  .cb-topics.open{max-height:50vh;overflow-y:auto;opacity:1;transform:translateY(0);margin-bottom:9px}
+  .cb-topic{font-size:.8rem;padding:7px 12px;border-radius:100px;border:1px solid var(--line);
+    background:var(--ink-3);color:var(--soft);cursor:pointer;width:auto;margin:0;font-family:var(--body);
+    font-weight:500;box-shadow:none;transition:border .15s,color .15s;animation:cbchipin .3s ease-out both}
+  .cb-topic:hover{border-color:var(--jade);color:var(--jade)}
+  .cb-topic:active{transform:translateY(1px)}
+  @keyframes cbchipin{from{opacity:0;transform:translateY(6px) scale(.96)}to{opacity:1;transform:none}}
+  .cb-chip-back{color:var(--mute);border-color:var(--line-soft)}
+  .cb-foot{font-family:var(--body);font-size:.68rem;color:var(--mute-2);margin-top:14px;line-height:1.5}
+
   /* gate de contraseña (puerta simple compartida) */
   #gate{position:fixed;inset:0;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;
     background:radial-gradient(900px 500px at 50% -10%, #14342c 0%, rgba(20,52,44,0) 60%), var(--ink);padding:24px;text-align:center}
@@ -232,6 +302,36 @@
   /* D10 · feedback "hapt-like" al tocar series (resalte breve de la fila) */
   @keyframes rowpulse{0%{background:rgba(61,220,151,.16)}100%{background:transparent}}
   .rowpulse{animation:rowpulse .5s ease-out;border-radius:8px}
+
+  /* ===== M · CAPA FLEX (personalidad/marketing · Deducción Visible) v0.13.3 ===== */
+  @keyframes flexin{from{opacity:0;transform:translateY(-8px) scale(.98)}to{opacity:1;transform:none}}
+  @keyframes flexsheen{0%{transform:translateX(-120%)}100%{transform:translateX(120%)}}
+  .flexcard{position:relative;overflow:hidden;margin:0 0 14px;padding:14px 40px 12px 14px;border-radius:14px;
+    background:linear-gradient(135deg,var(--jade-soft),var(--ember-soft));border:1px solid var(--line);
+    box-shadow:0 6px 22px rgba(0,0,0,.28), inset 0 0 0 1px rgba(61,220,151,.08)}
+  .flexcard.flexin{animation:flexin .34s cubic-bezier(.2,.8,.3,1.2)}
+  .flexcard::before{content:"";position:absolute;top:0;left:0;width:40%;height:100%;
+    background:linear-gradient(100deg,transparent,rgba(238,242,236,.10),transparent);
+    animation:flexsheen 2.6s ease-in-out .2s 1;pointer-events:none}
+  .flexcard .flexhead{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:.66rem;
+    letter-spacing:.12em;text-transform:uppercase;color:var(--jade)}
+  .flexcard .flexhead span{color:var(--jade)}
+  .flexcard .flexmsg{margin:7px 0 0;color:var(--bone);font-size:.96rem;line-height:1.45}
+  .flexcard .flexfoot{margin:10px 0 0;font-family:var(--mono);font-size:.62rem;color:var(--mute);
+    display:flex;align-items:center;gap:7px}
+  .flexcard .flexx{position:absolute;top:8px;right:8px;width:28px;height:28px;line-height:1;
+    border:1px solid var(--line-soft);border-radius:8px;background:rgba(17,35,29,.55);color:var(--mute);
+    font-size:.9rem;cursor:pointer;padding:0}
+  .flexcard .flexx:hover{color:var(--bone);border-color:var(--line)}
+  select.flextono{font-family:var(--mono);font-size:.68rem;color:var(--soft);background:rgba(17,35,29,.7);
+    border:1px solid var(--line-soft);border-radius:8px;padding:3px 6px;cursor:pointer}
+  /* M1 · chips de contexto al registrar peso */
+  .flexchips{margin:10px 0 2px}
+  .flexchips-lbl{font-family:var(--mono);font-size:.64rem;letter-spacing:.06em;color:var(--mute);margin:0 0 6px}
+  .flexchip{display:inline-block;margin:0 6px 6px 0;padding:7px 11px;width:auto;border-radius:100px;
+    border:1px solid var(--line-soft);background:rgba(17,35,29,.55);color:var(--soft);font-size:.8rem;cursor:pointer}
+  .flexchip.on{border-color:var(--jade);color:var(--bone);background:var(--jade-soft);box-shadow:0 0 0 1px rgba(61,220,151,.25)}
+  .pesoctx{font-size:.9rem;letter-spacing:.02em}
 
   /* Botón primario grande (acción principal de cada pestaña): más alto y con presencia */
   button.btn-lg{min-height:52px;font-size:1.06rem;padding:15px 18px;letter-spacing:.01em}
@@ -321,7 +421,7 @@
 
 <header class="brandbar">
   <div class="logo"><span class="dot"></span>JV <b>Fitness</b></div>
-  <span class="tag">MVP v0.13 · motor v0.7 · foto v2</span>
+  <span class="tag">MVP v0.13.3 · motor v0.7 · foto v2 · flex</span>
 </header>
 <div class="statuschip"><span class="pulse"></span> cálculo science-based · ajustable · calibración real</div>
 
@@ -333,7 +433,7 @@
   <button class="tab"        id="tab-entrenos" onclick="abrir('entrenos')">Entrenos</button>
   <button class="tab"        id="tab-calib"    onclick="abrir('calib')">Progreso</button>
   <button class="tab"        id="tab-comida"   onclick="abrir('comida')">Comida</button>
-  <button class="tab"        id="tab-cerebro"  onclick="abrir('cerebro')">🧠 Cerebro</button>
+  <button class="tab"        id="tab-cerebro"  onclick="abrir('cerebro')">🧠 JARVIS</button>
 </nav>
 
 <!-- WIZARD / ONBOARDING (entrevista de bienvenida — voz de Jarvis) -->
@@ -477,6 +577,8 @@
 
 <!-- PLAN -->
 <div id="plan" class="card hidden">
+  <!-- M · CAPA FLEX · aquí aparece la tarjeta "Jarvis nota…" cuando un patrón se dispara (la pinta flexRefrescar) -->
+  <div id="flex_host"></div>
   <h2>Tu plan de hoy</h2>
   <div id="plan_perfil" class="hint" style="margin-top:0"></div>
   <div class="kv"><span>BMR · reposo</span><span id="o_bmr"></span></div>
@@ -509,6 +611,14 @@
   <p class="hint" style="margin-top:8px">Si <b style="color:var(--soft)">fijas los carbos</b>, las calorías = suma de tus macros. Si no, los carbos son "el resto" (altos) y mandas con el ajuste de calorías.</p>
   <button class="btn-lg" onclick="aplicarAjustes()">Aplicar mis ajustes</button>
   <button class="sec" onclick="resetAjustes()">Volver a lo recomendado</button>
+  <!-- M4 · tono de la capa FLEX (personalidad de Jarvis). «Caña» es opt-in con aviso. -->
+  <div class="eyebrow-lbl" style="margin-top:14px">🗣️ Cómo te habla Jarvis</div>
+  <p class="hint" style="margin-top:0">Cuando Jarvis nota un patrón (repites un alimento, racha de entrenos…) te lo dice con este tono. <b style="color:var(--soft)">«Caña»</b> es humor cariñoso y directo — opt-in, se activa con aviso.</p>
+  <select id="aj_flex_tono" class="flextono" style="width:auto" onchange="flexSetTono(this.value)">
+    <option value="carinoso">cariñoso (por defecto)</option>
+    <option value="neutro">neutro</option>
+    <option value="cana">caña 🌶️ (opt-in)</option>
+  </select>
 </div>
 
 <!-- REGISTRO -->
@@ -518,6 +628,8 @@
     <div><label>Fecha</label><input id="r_fecha" type="date"></div>
     <div><label>Peso ayunas (kg)</label><input id="r_peso" type="number" step="0.1" placeholder="ej. 79.8"><div class="row" style="gap:6px;margin-top:6px"><button class="sec" type="button" style="flex:1;width:auto;padding:6px" onclick="pesoStep(-0.1)">−0,1</button><button class="sec" type="button" style="flex:1;width:auto;padding:6px" onclick="pesoStep(0.1)">+0,1</button></div></div>
   </div>
+  <!-- M1 · chips de contexto (opcional): capturan el "por qué" del día junto al peso. Los pinta flexPesoChipsRender() -->
+  <div id="flex_peso_chips" class="flexchips"></div>
   <button class="btn-lg" onclick="registrarPeso()">Guardar peso</button>
   <p class="hint">El peso diario sube/baja por agua y glucógeno. <b style="color:var(--soft)">Manda la media semanal</b>, no el dato de un día.</p>
   <div id="r_tabla"></div>
@@ -611,18 +723,32 @@
 <!-- 🧠 CEREBRO v1 (v0.13-B) — chat determinista SIN IA: motor de intención [CEREBRO-PURE] sobre
      CEREBRO_KB (destilado del master-file.md). Doctrina: ecuaciones puras tipo bot de ajedrez;
      la IA llegará DESPUÉS por encima. Si no reconoce el patrón, lo dice y guarda la pregunta. -->
-<div id="cerebro" class="card hidden">
-  <h2>🧠 Cerebro</h2>
-  <p class="hint" style="margin-top:0">Pregúntame de entreno, comida o tu plan — o cuéntame cómo estás (<b style="color:var(--soft)">«he dormido mal»</b>) y lo apunto. Respondo <b style="color:var(--soft)">solo con la ciencia del master</b>; si no sé algo, te lo digo.</p>
+<div id="cerebro" class="card hidden cb-card">
+  <!-- Cabecera con el orbe ENCOGIDO (aparece al haber mensajes) -->
+  <div id="cb_headorb" class="cb-headorb hidden">
+    <span class="cb-orb cb-orb-sm" aria-hidden="true"></span>
+    <span class="cb-headname">JARVIS</span>
+  </div>
+  <!-- ESTADO VACÍO misterioso: el orbe respira + «Pregúntame.» + subtítulo. Nada más a la vista. -->
+  <div id="cb_hero" class="cb-hero">
+    <div class="cb-orb cb-orb-lg" aria-hidden="true"></div>
+    <div class="cb-ask">Pregúntame.</div>
+    <div class="cb-sub">¿Qué necesitas? ¿En qué te ayudo?</div>
+  </div>
   <div id="cb_log" class="cb-log"></div>
   <div id="cb_chips" class="cb-chips"></div>
-  <div class="row" style="gap:6px;margin-top:10px">
-    <input id="cb_in" placeholder="Escribe tu pregunta…" autocomplete="off" style="flex:1;min-width:0;width:auto"
-      onkeydown="if(event.key==='Enter'){cbEnviar();}">
-    <button type="button" class="cb-send" onclick="cbEnviar()" aria-label="Enviar">➤</button>
+  <div class="cb-inzone">
+    <!-- Pop-up de temas al enfocar el input (no roba foco, no bloquea teclear) -->
+    <div id="cb_topics" class="cb-topics" aria-label="Temas rápidos"></div>
+    <div class="row" style="gap:6px">
+      <input id="cb_in" placeholder="Escribe tu pregunta…" autocomplete="off" style="flex:1;min-width:0;width:auto"
+        onfocus="cbTopicsOpen()" onblur="setTimeout(cbTopicsClose,150)" oninput="if(this.value)cbTopicsClose()"
+        onkeydown="if(event.key==='Enter'){cbEnviar();}">
+      <button type="button" class="cb-send" onclick="cbEnviar()" aria-label="Enviar">➤</button>
+    </div>
   </div>
   <div id="cb_diario"></div>
-  <p class="hint" style="margin-top:12px">⚕️ El Cerebro cita la ciencia del master file de JV Fitness y <b style="color:var(--soft)">NO da consejo médico</b>: para temas de salud, medicación o lesiones, acude a un profesional sanitario. 🔒 Todo lo que hablas aquí se queda <b style="color:var(--soft)">solo en tu dispositivo</b> — nada viaja a ningún servidor.</p>
+  <p class="cb-foot">⚕️ Cita la ciencia del master file · <b style="color:var(--mute)">no es consejo médico</b> (salud/lesiones → profesional). 🔒 Todo se queda <b style="color:var(--mute)">solo en tu dispositivo</b>.</p>
 </div>
 
 <!-- ENTRENOS (Fase 3.3 — logging estilo Hevy · v0.12.2 máquina de vistas home/registro/editor) -->
@@ -1227,7 +1353,79 @@ var FOODS_V013=[
   {n:"Pasta (cruda)",kcal:359,p:12.5,c:71.7,f:1.5},                    // etiqueta típica/OFF (solo había cocida)
   {n:"Cacao soluble (tipo ColaCao)",kcal:389,p:4.7,c:84,f:2.4},        // OFF
   {n:"Pollo asado (con piel)",kcal:239,p:27.3,c:0,f:13.6},             // USDA
-  {n:"Palomitas de maíz (sin mantequilla)",kcal:387,p:12,c:78,f:4.5}   // USDA
+  {n:"Palomitas de maíz (sin mantequilla)",kcal:387,p:12,c:78,f:4.5},   // USDA
+  // v0.13.2 · 2026-07-07 — ampliación de despensa (~60): carnes/pescados, legumbres, frutas,
+  // verduras, lácteos+bebidas vegetales, frutos secos/semillas, panes/cereales, snacks y platos
+  // españoles que faltaban. Entra por el MISMO embudo de dedup (por eso 0 colisiones con lo previo).
+  // Fuentes: BEDCA = bedca.net · OFF = Open Food Facts (ficha España) · USDA = FoodData Central.
+  // — Carnes y pescados · por 100 g —
+  {n:"Conejo",kcal:133,p:22,c:0,f:5},                            // BEDCA
+  {n:"Pato (pechuga)",kcal:195,p:23,c:0,f:11},                   // USDA
+  {n:"Cordero (pierna)",kcal:234,p:25,c:0,f:15},                 // BEDCA
+  {n:"Costillas de cerdo",kcal:277,p:20,c:0,f:21},               // USDA
+  {n:"Hígado de ternera",kcal:135,p:20,c:3.9,f:3.6},             // BEDCA
+  {n:"Trucha",kcal:148,p:21,c:0,f:7},                            // BEDCA
+  {n:"Rape",kcal:68,p:15,c:0,f:0.6},                             // BEDCA
+  {n:"Sepia",kcal:79,p:16,c:0.7,f:1},                            // BEDCA
+  {n:"Almejas",kcal:74,p:12,c:4,f:1},                            // BEDCA
+  {n:"Langostinos",kcal:96,p:21,c:0,f:1},                        // BEDCA
+  {n:"Emperador (pez espada)",kcal:121,p:20,c:0,f:4.5},          // BEDCA
+  {n:"Salmón ahumado",kcal:117,p:20,c:0,f:4},                    // OFF (prot ~20 g: valor real, cuadra kcal — verif. v0.13-E)
+  {n:"Surimi (palitos de cangrejo)",kcal:95,p:8,c:12,f:1},       // OFF
+  {n:"Mortadela",kcal:311,p:16,c:3,f:26},                        // BEDCA
+  // — Legumbres · por 100 g (cocidas) —
+  {n:"Habas cocidas",kcal:110,p:8,c:18,f:0.6},                   // BEDCA
+  {n:"Judías pintas cocidas",kcal:143,p:9,c:25,f:0.5},           // USDA
+  {n:"Soja cocida",kcal:173,p:17,c:10,f:9},                      // USDA
+  {n:"Edamame",kcal:121,p:12,c:9,f:5},                           // USDA
+  // — Frutas · por 100 g —
+  {n:"Cerezas",kcal:63,p:1,c:16,f:0.2},                          // BEDCA
+  {n:"Ciruela",kcal:46,p:0.7,c:11,f:0.3},                        // BEDCA
+  {n:"Albaricoque",kcal:48,p:1.4,c:11,f:0.4},                    // BEDCA
+  {n:"Higos",kcal:74,p:0.8,c:19,f:0.3},                          // USDA
+  {n:"Granada",kcal:83,p:1.7,c:19,f:1.2},                        // USDA
+  {n:"Frambuesas",kcal:52,p:1.2,c:12,f:0.7},                     // USDA
+  {n:"Mandarina",kcal:53,p:0.8,c:13,f:0.3},                      // BEDCA
+  {n:"Caqui",kcal:70,p:0.6,c:18,f:0.2},                          // USDA
+  {n:"Coco (fresco)",kcal:354,p:3.3,c:15,f:33},                  // USDA
+  // — Verduras · por 100 g —
+  {n:"Acelga",kcal:19,p:1.8,c:3.7,f:0.2},                        // BEDCA
+  {n:"Alcachofa",kcal:47,p:3.3,c:11,f:0.2},                      // BEDCA
+  {n:"Puerro",kcal:61,p:1.5,c:14,f:0.3},                         // BEDCA
+  {n:"Apio",kcal:16,p:0.7,c:3,f:0.2},                            // USDA
+  {n:"Remolacha",kcal:43,p:1.6,c:10,f:0.2},                      // USDA
+  {n:"Coles de Bruselas",kcal:43,p:3.4,c:9,f:0.3},               // USDA
+  {n:"Repollo",kcal:25,p:1.3,c:6,f:0.1},                         // BEDCA
+  // — Lácteos y bebidas vegetales —
+  {n:"Queso parmesano",kcal:431,p:38,c:4,f:29},                  // USDA
+  {n:"Queso cheddar",kcal:402,p:25,c:1.3,f:33},                  // USDA
+  {n:"Queso azul",kcal:353,p:21,c:2.3,f:29},                     // USDA
+  {n:"Yogur desnatado",kcal:41,p:4.3,c:6,f:0.2},                 // BEDCA
+  {n:"Leche de avena",kcal:45,p:0.3,c:7,f:1.5,u:"ml"},           // OFF
+  {n:"Bebida de soja",kcal:42,p:3.3,c:2.5,f:1.8,u:"ml"},         // OFF
+  {n:"Bebida de almendras",kcal:22,p:0.5,c:3,f:1.1,u:"ml"},      // OFF
+  // — Frutos secos y semillas · por 100 g —
+  {n:"Piñones",kcal:673,p:14,c:13,f:68},                         // USDA
+  {n:"Nueces de macadamia",kcal:718,p:8,c:14,f:76},              // USDA
+  {n:"Semillas de calabaza",kcal:559,p:30,c:11,f:49},            // USDA
+  {n:"Semillas de girasol",kcal:584,p:21,c:20,f:51},             // USDA
+  {n:"Semillas de sésamo",kcal:573,p:18,c:23,f:50},              // USDA
+  // — Panes y cereales · por 100 g —
+  {n:"Pan de centeno",kcal:259,p:9,c:48,f:3.3},                  // BEDCA
+  {n:"Bagel",kcal:250,p:10,c:48,f:1.5},                          // USDA
+  {n:"Muesli",kcal:363,p:10,c:66,f:6},                           // OFF
+  {n:"Trigo sarraceno cocido",kcal:92,p:3.4,c:20,f:0.6},         // USDA
+  {n:"Pan rallado",kcal:395,p:13,c:72,f:5.5},                    // BEDCA
+  // — Snacks y dulces · por 100 g —
+  {n:"Crema de cacao y avellanas",kcal:539,p:6.3,c:57.5,f:30.9}, // OFF
+  {n:"Donut glaseado",kcal:452,p:5,c:51,f:25},                   // USDA
+  {n:"Gominolas",kcal:343,p:6.9,c:79,f:0.2},                     // OFF
+  {n:"Barrita de cereales",kcal:380,p:6,c:68,f:9},               // OFF
+  // — Platos españoles · por 100 g —
+  {n:"Salmorejo",kcal:80,p:1.8,c:7,f:5},                         // OFF
+  {n:"Pisto",kcal:75,p:1.5,c:6,f:5},                             // BEDCA
+  {n:"Croquetas de jamón",kcal:220,p:6,c:20,f:13},               // OFF
+  {n:"Boquerones en vinagre",kcal:156,p:17,c:0.3,f:9}            // OFF
 ];
 // Fusión con dedup por nombre (case-insensitive): la base curada MANDA en las colisiones
 // (Aceitunas, Chorizo, Fuet, Jamón serrano, Lomo embuchado ya existían) para no cambiar por
@@ -2435,7 +2633,7 @@ const show=(id,on)=>$(id).classList.toggle("hidden",!on);
 var I18N={
   es:{
     // pestañas
-    tab_plan:"Plan", tab_ajustar:"Ajustar", tab_peso:"Peso", tab_entrenos:"Entrenos", tab_progreso:"Progreso", tab_comida:"Comida", tab_cerebro:"🧠 Cerebro",
+    tab_plan:"Plan", tab_ajustar:"Ajustar", tab_peso:"Peso", tab_entrenos:"Entrenos", tab_progreso:"Progreso", tab_comida:"Comida", tab_cerebro:"🧠 JARVIS",
     // 🧠 cerebro v0.13-B (textos que pinta el JS del chat)
     cb_saludo:"Soy el Cerebro de Jarvis 🧠 — respondo con reglas y ciencia del master, sin inventar nada. Pregúntame («¿cuánta proteína al día?») o cuéntame cómo estás («he dormido mal») y lo apunto.",
     cb_fallback:"Aún no reconozco ese patrón 🤷. Soy un motor de reglas (sin IA) y JAMÁS me invento una respuesta: he guardado tu pregunta para ampliar mi base con ciencia real del master. Prueba a decírmelo de otra forma.",
@@ -2522,7 +2720,7 @@ document.addEventListener('DOMContentLoaded',function(){
     if(ents.length>20 && _old) setTimeout(function(){ toast("💾 Llevas tiempo sin copia de seguridad — toca Exportar en Ajustes"); }, 3500);
   }catch(e){}
 });
-function resetTodo(){ if(!confirm("⚠️ Esto borra TODO: perfil, pesos, entrenos, rutinas, comidas, alimentos propios, agua, suplementos, lo hablado con el Cerebro y las fotos de progreso. ¿Seguro?")) return; try{ localStorage.removeItem(LS_P); localStorage.removeItem(LS_W); localStorage.removeItem(LS_E); localStorage.removeItem("jvf_notas_ej"); localStorage.removeItem("jvf_comida"); localStorage.removeItem("jvf_agua"); localStorage.removeItem("jvf_suples_cfg"); localStorage.removeItem("jvf_suples_log"); localStorage.removeItem("jvf_rutinas"); localStorage.removeItem("jvf_ent_start"); localStorage.removeItem("jvf_meals"); localStorage.removeItem("jvf_alimentos_propios"); localStorage.removeItem("jvf_barcode_cache"); localStorage.removeItem("jvf_foto_ajustes"); localStorage.removeItem("jvf_warmup_stats"); localStorage.removeItem("jvf_plate_barra"); localStorage.removeItem("jvf_rest_seg"); localStorage.removeItem("jvf_cerebro_diario"); localStorage.removeItem("jvf_cerebro_norec"); localStorage.removeItem("jvf_fotos_consent"); localStorage.removeItem("jvf_fotos_meta"); }catch(e){} _mem={};
+function resetTodo(){ if(!confirm("⚠️ Esto borra TODO: perfil, pesos, entrenos, rutinas, comidas, alimentos propios, agua, suplementos, lo hablado con el Cerebro y las fotos de progreso. ¿Seguro?")) return; try{ localStorage.removeItem(LS_P); localStorage.removeItem(LS_W); localStorage.removeItem(LS_E); localStorage.removeItem("jvf_notas_ej"); localStorage.removeItem("jvf_comida"); localStorage.removeItem("jvf_agua"); localStorage.removeItem("jvf_suples_cfg"); localStorage.removeItem("jvf_suples_log"); localStorage.removeItem("jvf_rutinas"); localStorage.removeItem("jvf_ent_start"); localStorage.removeItem("jvf_meals"); localStorage.removeItem("jvf_alimentos_propios"); localStorage.removeItem("jvf_barcode_cache"); localStorage.removeItem("jvf_foto_ajustes"); localStorage.removeItem("jvf_warmup_stats"); localStorage.removeItem("jvf_plate_barra"); localStorage.removeItem("jvf_rest_seg"); localStorage.removeItem("jvf_cerebro_diario"); localStorage.removeItem("jvf_cerebro_norec"); localStorage.removeItem("jvf_fotos_consent"); localStorage.removeItem("jvf_fotos_meta"); localStorage.removeItem("jvf_flex_cfg"); localStorage.removeItem("jvf_flex_visto"); }catch(e){} _mem={};
   // 📸 v0.13-C · las fotos viven en IndexedDB: se borra la base entera ANTES de recargar (con
   // timeout de seguridad — si el borrado se quedara bloqueado, la app no se cuelga: recarga igual
   // y el intento de borrado sigue en cola del navegador).
@@ -2537,7 +2735,7 @@ function resetTodo(){ if(!confirm("⚠️ Esto borra TODO: perfil, pesos, entren
 // Reemplazo total con confirmación. Reusa get/set, hoyLocal, toast, validar, render. NO toca motor ni gate.
 function exportarJSON(){ try{ set("jvf_last_export",hoyLocal()); }catch(e){}
   try{
-    var data={ app:"jvf", schema:1, app_version:"0.13", exportadoEl:new Date().toISOString(),
+    var data={ app:"jvf", schema:1, app_version:"0.13.3", exportadoEl:new Date().toISOString(),
       perfil:get(LS_P,null), pesos:get(LS_W,[]), entrenos:get(LS_E,[]), notas_ej:get("jvf_notas_ej",{}), comida:get("jvf_comida",[]), agua:get("jvf_agua",{}), suples_cfg:get("jvf_suples_cfg",null), suples_log:get("jvf_suples_log",{}),
       rutinas:get("jvf_rutinas",[]), meals:get("jvf_meals",[]), ent_start:get("jvf_ent_start",null),   // v0.10 · backup completo
       alimentos_propios:get("jvf_alimentos_propios",[]), barcode_cache:get("jvf_barcode_cache",{}),   // I5/I6 · también viajan en el backup
@@ -2548,6 +2746,7 @@ function exportarJSON(){ try{ set("jvf_last_export",hoyLocal()); }catch(e){}
       // IndexedDB y NO viajan en este JSON a propósito (dispararían el tamaño). Export de fotos
       // aparte: PENDIENTE (documentado; de momento las fotos no se pueden migrar de dispositivo).
       fotos_meta:get("jvf_fotos_meta",[]),
+      flex_cfg:get("jvf_flex_cfg",null), flex_visto:get("jvf_flex_visto",null),   // M · capa FLEX: tono elegido + descartes del día
       fotos_aviso:"Las fotos de progreso NO van en este JSON: viven solo en el dispositivo (IndexedDB). Exportarlas aparte esta pendiente." };
     var blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
     var url=URL.createObjectURL(blob);
@@ -2572,7 +2771,7 @@ function procesarImport(file){
     var notas=(data.notas_ej && typeof data.notas_ej==="object")?data.notas_ej:{};
     if(!confirm("Esto REEMPLAZA todos tus datos actuales (perfil, pesos, entrenos, notas) por los del archivo. Las FOTOS no viajan en los backups: las de este dispositivo se conservan y las del backup no vienen. ¿Continuar?")) return;
     var comida=Array.isArray(data.comida)?data.comida:[];
-    pesos=pesos.filter(function(x){ return x&&typeof x.f==='string'&&+x.w>0; }).map(function(x){ return {f:x.f,w:+x.w}; });
+    pesos=pesos.filter(function(x){ return x&&typeof x.f==='string'&&+x.w>0; }).map(function(x){ var o={f:x.f,w:+x.w}; if(Array.isArray(x.ctx)&&x.ctx.length) o.ctx=x.ctx.filter(function(c){ return typeof c==='string'; }); return o; });   // M1 · el contexto (chips) viaja con el peso
     entrenos=entrenos.filter(function(w){ return w&&w.f&&Array.isArray(w.ejercicios); });
     comida=comida.filter(function(x){ return x&&x.f&&x.n; });
     // v0.10 · rutinas y comidas guardadas viajan en el backup (reemplazo total, como el resto)
@@ -2593,6 +2792,9 @@ function procesarImport(file){
     // 🧠 v0.13-B · diario del Cerebro + cola de preguntas sin patrón (los backups antiguos no los traen: se dejan como están)
     if(Array.isArray(data.cerebro_diario)) set("jvf_cerebro_diario", data.cerebro_diario.filter(function(x){ return x && x.f; }));
     if(Array.isArray(data.cerebro_norec)) set("jvf_cerebro_norec", data.cerebro_norec.filter(function(x){ return x && x.q; }));
+    // M · capa FLEX (los backups antiguos no la traen: se deja como está)
+    if(data.flex_cfg && typeof data.flex_cfg==="object") set("jvf_flex_cfg", data.flex_cfg);
+    if(data.flex_visto && typeof data.flex_visto==="object") set("jvf_flex_visto", data.flex_visto);
     render();
     toast("✓ Datos importados");
   };
@@ -3232,16 +3434,24 @@ function cerebroAccion(texto){
 // [CEREBRO-PURE-FIN]
 
 // --- capa impura del Cerebro: chat (DOM) + captura sin fricción (storage) + números reales ---
-var _cbCap=null, _cbUltimaQ=null, _cbIniciado=false;
+var _cbCap=null, _cbUltimaQ=null, _cbIniciado=false, _cbChat=false;
 function cbInit(){
   cbDiarioRender();
   if(_cbIniciado) return;
   _cbIniciado=true;
-  cbMsg("j", esc(t("cb_saludo")));
-  cbChips(["¿Cuánta proteína al día?","¿Cuántas calorías me quedan hoy?","He dormido mal","¿La creatina funciona?"]);
+  // v0.13.1 · estado vacío MISTERIOSO: el orbe habla por sí solo. Ya NO se pinta un saludo aquí;
+  // los temas salen al ENFOCAR el input (cbTopicsOpen) y el texto libre sigue siendo primera clase.
+}
+// v0.13.1 · al primer mensaje el orbe se encoge a la cabecera y arranca el modo chat (presentación).
+function cbEnterChat(){
+  if(_cbChat) return; _cbChat=true;
+  var c=$("cerebro"); if(c) c.classList.add("cb-chatting");
+  show("cb_hero", false);
+  show("cb_headorb", true);
 }
 function cbMsg(quien, html){
   var log=$("cb_log"); if(!log) return;
+  cbEnterChat();
   var d=document.createElement("div");
   d.className="cb-b "+(quien==="u"?"cb-u":"cb-j");
   d.innerHTML=html;
@@ -3253,7 +3463,81 @@ function cbChips(arr){
   box.innerHTML=(arr||[]).map(function(c){ return "<button type='button' class='cb-chip' onclick='cbChip(this)'>"+esc(c)+"</button>"; }).join("");
 }
 function cbChip(btn){ cbEnviarTexto(btn.textContent); }
-function cbEnviar(){ var el=$("cb_in"), v=el?el.value:""; if(!String(v).trim()) return; if(el) el.value=""; cbEnviarTexto(v); }
+function cbEnviar(){ var el=$("cb_in"), v=el?el.value:""; if(!String(v).trim()) return; if(el) el.value=""; cbTopicsClose(); cbEnviarTexto(v); }
+
+// ===== v0.13.1 · Pop-up de temas al enfocar el input (SOLO presentación + wiring a flujos existentes) =====
+// Los 8 chips de Pablo: 6 lanzan una pregunta real por el flujo existente (cbEnviarTexto → cerebroMatch/
+// cerebroAccion); «Temas generales» y «No sé qué preguntar» abren el navegador de troncos de CEREBRO_KB.
+var CB_TOPICS=[
+  {e:"🍽",l:"¿Comida?",           q:"¿cuántas comidas al día?"},
+  {e:"😴",l:"Sueño",              q:"¿cuánto hay que dormir?"},
+  {e:"🏋️",l:"Entreno",            q:"¿cuántas series por músculo a la semana?"},
+  {e:"🔢",l:"¿Cuántas calorías?", q:"¿cuántas calorías me quedan hoy?"},
+  {e:"😵",l:"He dormido mal",     q:"he dormido mal"},
+  {e:"💊",l:"La creatina",        q:"¿cuánta creatina tomo al día?"},
+  {e:"📚",l:"Temas generales",    nav:1},
+  {e:"🔎",l:"No sé qué preguntar", nav:1}
+];
+function cbTopicsOpen(){
+  var box=$("cb_topics"); if(!box) return;
+  if(!box.dataset.built){ cbTopicsBuild(box); box.dataset.built="1"; }
+  box.classList.add("open");
+}
+function cbTopicsClose(){ var box=$("cb_topics"); if(box) box.classList.remove("open"); }
+function cbTopicsBuild(box){
+  box.innerHTML="";
+  CB_TOPICS.forEach(function(tp,i){
+    var b=document.createElement("button");
+    b.type="button"; b.className="cb-topic";
+    b.style.animationDelay=(i*0.03)+"s";
+    b.textContent=tp.e+" "+tp.l;
+    // no robar foco al input (así no se corta el teclear): se evita el blur al tocar el chip
+    b.addEventListener("mousedown", function(ev){ ev.preventDefault(); });
+    b.onclick=function(){ cbTopicsClose(); if(tp.nav){ cbNavTroncos(); } else { cbEnviarTexto(tp.q); } };
+    box.appendChild(b);
+  });
+}
+// Navegador de troncos: agrupa CEREBRO_KB por tronco → toca uno → sus ramas como chips → responde
+// por el motor REAL (cbEnviarTexto con la 1ª clave de la rama). No inventa ni toca la KB.
+var CB_TRONCO_NOMBRE={
+  alimentacion:"🍽 Superávit / Déficit", recomposicion:"🔄 Recomposición", calorias:"🔢 Calorías / TDEE",
+  carbohidratos:"🍚 Carbohidratos", proteina:"🥩 Proteína", grasa:"🥑 Grasa", sueno:"😴 Sueño",
+  creatina:"💊 Creatina", suplementacion:"💊 Suplementos", esteroides:"⚗️ Esteroides", melatonina:"🌙 Melatonina",
+  chicle:"🍬 Chicle", fatiga:"🪫 Fatiga", volumen:"📊 Volumen", fallo:"🎯 Fallo / RIR", orden:"🔀 Orden de ejercicios",
+  repeticiones:"🔁 Repeticiones", tecnica:"🧩 Técnica", sodio:"🧂 Sal / Sodio", agua:"💧 Agua", fibra:"🌾 Fibra",
+  cardio:"🏃 Cardio", pasos:"👟 Pasos / NEAT", bascula:"⚖️ Báscula", ayuno:"⏳ Ayuno", comidas:"🍽 Nº de comidas",
+  estado:"🛌 Cómo estoy hoy", estimulo:"⚡ Estímulo", pecho:"💪 Pecho", abdomen:"🔺 Abdomen", biceps:"💪 Bíceps",
+  entreno:"🏋️ Entreno"
+};
+function cbRamaLabel(e){
+  var s=String(e.rama||"").replace(/^ESTADO-/,"").replace(/-/g," ").trim();
+  return s ? s.charAt(0).toUpperCase()+s.slice(1) : (e.claves&&e.claves[0]||"tema");
+}
+function cbNavTroncos(){
+  cbMsg("j", esc("Estos son mis temas 📚 — toca uno y te enseño lo que sé de él:"));
+  var box=$("cb_chips"); if(!box) return; box.innerHTML="";
+  var seen=[];
+  CEREBRO_KB.forEach(function(e){ if(seen.indexOf(e.tronco)<0) seen.push(e.tronco); });
+  seen.forEach(function(tr){
+    var b=document.createElement("button"); b.type="button"; b.className="cb-chip";
+    b.textContent=CB_TRONCO_NOMBRE[tr]||tr;
+    b.onclick=function(){ cbNavTronco(tr); };
+    box.appendChild(b);
+  });
+}
+function cbNavTronco(tr){
+  var box=$("cb_chips"); if(!box) return; box.innerHTML="";
+  cbMsg("j", esc((CB_TRONCO_NOMBRE[tr]||tr)+" — elige lo que quieras saber:"));
+  var back=document.createElement("button"); back.type="button"; back.className="cb-chip cb-chip-back";
+  back.textContent="← Temas"; back.onclick=cbNavTroncos; box.appendChild(back);
+  CEREBRO_KB.forEach(function(e){
+    if(e.tronco!==tr) return;
+    var b=document.createElement("button"); b.type="button"; b.className="cb-chip";
+    b.textContent=cbRamaLabel(e);
+    b.onclick=function(){ cbEnviarTexto((e.claves&&e.claves[0])||e.rama); };
+    box.appendChild(b);
+  });
+}
 // La cita del master «(— Tema X, …)» se pinta pequeña y en mono, como sello de fuente.
 function cbHtmlRespuesta(r){
   var m=/^([\s\S]*?)\s*(\(—[^)]*\))\s*$/.exec(r);
@@ -3485,6 +3769,173 @@ function celebrar(titulo, big, sub){
   confetti(40);
   setTimeout(cerrar, 3600);
 }
+// ======= M · CAPA FLEX (personalidad/marketing · Deducción Visible) v0.13.3 =======
+// Filosofía Pablo: apoya el marketing y RECUERDA, pero NO es imprescindible. Reconoce PATRONES
+// del usuario (ECUACIONES de frecuencia sobre el diario) y reacciona con gracia. REGLA DURA K2:
+// puede presumir de lo que sabe pero JAMÁS anunciar una acción que no ocurre (nada de "te subo las
+// calorías" — solo observa y sugiere). PRINCIPIO DE LA DEDUCCIÓN VISIBLE: lo deducido se REVELA.
+//
+// [FLEX-PURE-INICIO] — detectores PUROS: reciben los datos como argumentos (sin DOM ni storage) y
+// devuelven {id, txt, emoji} o null. Testeables byte a byte en _tests/test-flex.node.js.
+// Cada mensaje trae 3 variantes de TONO: carinoso (default) · neutro · cana (opt-in, ⚖️ = revisar).
+var FLEX_MS_DIA=864e5;
+function _flexDias(f,hoy){ var a=Date.parse((f||"")+"T12:00:00"), b=Date.parse((hoy||"")+"T12:00:00"); if(isNaN(a)||isNaN(b)) return null; return Math.round((b-a)/FLEX_MS_DIA); }
+function _flexFechaOffset(hoy,delta){ var b=Date.parse((hoy||"")+"T12:00:00"); if(isNaN(b)) return ""; return new Date(b+delta*FLEX_MS_DIA).toISOString().slice(0,10); }
+function _flexTono(variantes,tono){ return variantes[tono]!=null ? variantes[tono] : variantes.carinoso; }
+// artículo aproximado por la 1ª palabra (heurística ES: acaba en 'a' → la, si no → el). ⚖️ revisable.
+function _flexArticulo(nombre){ var w=String(nombre||"").trim().toLowerCase().split(/\s+/)[0]||""; return /a$/.test(w)?"la ":"el "; }
+function _flexCorto(nombre){ return String(nombre||"").replace(/\s*\(aprox\.?\)\s*/ig,"").replace(/^[^\wáéíóúñ]+/i,"").trim(); }
+
+// D1 · alimento repetido ≥4 veces en los últimos 7 días → mensaje con gracia (el canónico de Pablo).
+function flexAlimentoRepetido(comida,hoy,tono){
+  comida=comida||[]; var freq={};
+  comida.forEach(function(x){ if(!x||!x.n||!x.f) return; var d=_flexDias(x.f,hoy); if(d==null||d<0||d>=7) return; freq[x.n]=(freq[x.n]||0)+1; });
+  var top=null, topN=0;
+  Object.keys(freq).forEach(function(n){ if(freq[n]>topN){ topN=freq[n]; top=n; } });
+  if(top==null||topN<4) return null;
+  var c=_flexCorto(top), cl=c.toLowerCase(), art=_flexArticulo(c);
+  var variantes={
+    carinoso:"Pablito, veo que te gusta "+art+cl+", eh compadre 😄 — está muy bien, pero a ver si variamos un poco.",
+    neutro:"Has apuntado "+c+" "+topN+" veces esta semana. Variar las fuentes mejora el aporte de micronutrientes.",
+    cana:"¿Otra vez "+cl+"?? 😅 Van "+topN+" esta semana, crack. Está de lujo, pero varía un poco, que no vives solo de eso." // ⚖️ tono fuerte
+  };
+  return {id:"alim_rep:"+top, emoji:"🍕", txt:_flexTono(variantes,tono), meta:{nombre:top, veces:topN}};
+}
+// D2 · agua olvidada ≥3 de los últimos 7 días (solo si el usuario USA el registro de agua) → recordatorio.
+function flexAguaOlvidada(agua,hoy,tono){
+  agua=agua||{}; var keys=Object.keys(agua); if(!keys.length) return null;
+  var usoReciente=keys.some(function(f){ var d=_flexDias(f,hoy); return d!=null&&d>=0&&d<=14&&agua[f]>0; });
+  if(!usoReciente) return null;
+  var sin=0; for(var i=1;i<=7;i++){ var f=_flexFechaOffset(hoy,-i); if(!(agua[f]>0)) sin++; }
+  if(sin<3) return null;
+  var variantes={
+    carinoso:"Estos días el agua se te olvida 💧 ("+sin+" sin apuntar). Sin drama — pero hidratarte te ayuda con energía y recuperación.",
+    neutro:"Agua sin registrar "+sin+" de los últimos 7 días. La hidratación influye en rendimiento y saciedad.",
+    cana:"El agua, compadre… "+sin+" días en blanco 💧 ¿Vives del aire? Échale un par de vasos, que es gratis." // ⚖️ tono fuerte
+  };
+  return {id:"agua_olvido", emoji:"💧", txt:_flexTono(variantes,tono), meta:{diasSin:sin}};
+}
+// D3 · racha de entrenos: ≥3 entrenos en los últimos 7 días → felicitación.
+function flexRachaEntrenos(entrenos,hoy,tono){
+  entrenos=entrenos||[]; var n=0;
+  entrenos.forEach(function(w){ if(!w||!w.f) return; var d=_flexDias(w.f,hoy); if(d!=null&&d>=0&&d<7) n++; });
+  if(n<3) return null;
+  var variantes={
+    carinoso:"¡"+n+" entrenos esta semana! 🔥 Así se hace, compadre — la constancia es lo que mueve la aguja.",
+    neutro:"Llevas "+n+" entrenos en los últimos 7 días. Buena frecuencia para progresar.",
+    cana:n+" entrenos ya, máquina 💪 Como sigas así te van a salir músculos hasta en las pestañas. Sigue." // ⚖️ tono fuerte
+  };
+  return {id:"racha_entrenos", emoji:"🔥", txt:_flexTono(variantes,tono), meta:{entrenos:n}};
+}
+// D4 · sin registrar peso ≥7 días → "hace una semana que no te peso, sin datos no puedo afinar".
+function flexSinPeso(pesos,hoy,tono){
+  pesos=pesos||[]; if(!pesos.length) return null;
+  var maxf=null; pesos.forEach(function(x){ if(x&&x.f&&(maxf==null||x.f>maxf)) maxf=x.f; });
+  var d=_flexDias(maxf,hoy); if(d==null||d<7) return null;
+  var variantes={
+    carinoso:"Oye, hace "+d+" días que no te peso ⚖️ — sin datos no puedo afinar tu plan. Súbete un ratito en ayunas cuando puedas.",
+    neutro:"Último peso hace "+d+" días. Sin pesajes recientes la calibración del gasto queda desactualizada.",
+    cana:d+" días sin pesarte, compadre ⚖️ La báscula no muerde. Sin datos voy a ciegas — pésate y hablamos." // ⚖️ tono fuerte
+  };
+  return {id:"sin_peso", emoji:"⚖️", txt:_flexTono(variantes,tono), meta:{dias:d}};
+}
+// D5 · creatina configurada (LS_SUP_CFG.creatina) pero sin registrar HOY → recordatorio suave.
+function flexCreatinaHoy(supCfg,supLog,hoy,tono){
+  supCfg=supCfg||{}; supLog=supLog||{}; if(!supCfg.creatina) return null;
+  var logHoy=supLog[hoy]||{}; if(logHoy.creatina) return null;
+  var variantes={
+    carinoso:"¿Creatina de hoy? 💊 Aún no la veo apuntada. Funciona por saturación: cada día suma, también los de descanso.",
+    neutro:"Creatina no registrada hoy. La creatina actúa por saturación acumulada — la constancia diaria es lo que cuenta.",
+    cana:"La creatina, crack 💊 Hoy sigue sin marcar. Es saturación: te la saltas y le quitas gracia. Tómatela." // ⚖️ tono fuerte
+  };
+  return {id:"creatina_hoy", emoji:"💊", txt:_flexTono(variantes,tono), meta:{}};
+}
+// Orquestador PURO: corre los 5 detectores y devuelve los hits en orden de prioridad (positivo primero).
+function flexDetectarTodos(datos,hoy,tono){
+  tono=tono||"carinoso"; var d=datos||{}; var out=[];
+  [ flexRachaEntrenos(d.entrenos,hoy,tono),
+    flexAlimentoRepetido(d.comida,hoy,tono),
+    flexSinPeso(d.pesos,hoy,tono),
+    flexCreatinaHoy(d.suples_cfg,d.suples_log,hoy,tono),
+    flexAguaOlvidada(d.agua,hoy,tono)
+  ].forEach(function(h){ if(h) out.push(h); });
+  return out;
+}
+// dedup PURO: quita los hits cuyo id ya se vio hoy (jvf_flex_visto lo decide la capa impura).
+function flexFiltrarVistos(hits,vistos){ vistos=vistos||[]; return (hits||[]).filter(function(h){ return h&&vistos.indexOf(h.id)<0; }); }
+// M1 · chips de contexto del peso (constante + badges puros para el historial).
+var FLEX_PESO_CHIPS=[
+  {id:"cheat",  emoji:"🍕", label:"comí de más/sal"},
+  {id:"agua",   emoji:"💧", label:"poca agua"},
+  {id:"deporte",emoji:"🏀", label:"deporte ayer"},
+  {id:"dormir", emoji:"😴", label:"dormí mal"}
+];
+function flexCtxBadges(ctx){
+  ctx=ctx||[]; if(!ctx.length) return ""; var map={}; FLEX_PESO_CHIPS.forEach(function(c){ map[c.id]=c.emoji; });
+  return ctx.map(function(id){ return map[id]||""; }).filter(Boolean).join("");
+}
+// [FLEX-PURE-FIN]
+
+// ---- Capa IMPURA de la FLEX (DOM + storage): decide qué pintar y recuerda el descarte del día ----
+var _flexPesoCtxSel={};   // selección temporal de chips antes de guardar el peso
+var _flexActualId=null;   // id del hit que se está mostrando (para re-pintar al cambiar el tono)
+function flexCfg(){ var c=get("jvf_flex_cfg",{}); var t=(c&&c.tono)||"carinoso"; if(["carinoso","neutro","cana"].indexOf(t)<0) t="carinoso"; return {tono:t}; }
+function flexVistoHoy(){ var v=get("jvf_flex_visto",{}); var h=hoyLocal(); if(!v||v.f!==h){ v={f:h,ids:[]}; } if(!Array.isArray(v.ids)) v.ids=[]; return v; }
+function flexMarcarVisto(id){ var v=flexVistoHoy(); if(v.ids.indexOf(id)<0) v.ids.push(id); set("jvf_flex_visto",v); }
+function flexDatos(){ return { comida:get(LS_COMIDA,[]), agua:get(LS_AGUA,{}), entrenos:get(LS_E,[]), pesos:get(LS_W,[]), suples_cfg:get(LS_SUP_CFG,{}), suples_log:get(LS_SUP_LOG,{}) }; }
+function flexRefrescar(){
+  var host=$("flex_host"); if(!host) return;
+  var hits=flexDetectarTodos(flexDatos(), hoyLocal(), flexCfg().tono);
+  var pend=flexFiltrarVistos(hits, flexVistoHoy().ids);
+  if(!pend.length){ host.innerHTML=""; _flexActualId=null; return; }
+  flexPintarTarjeta(pend[0]);
+  flexMarcarVisto(pend[0].id);   // "no repetir el mismo el mismo día": se marca al mostrarse
+}
+function flexTonoSelectorHTML(){
+  var t=flexCfg().tono, o=function(v,l){ return "<option value='"+v+"'"+(t===v?" selected":"")+">"+l+"</option>"; };
+  return "<select class='flextono' onchange='flexSetTono(this.value)'>"+o("carinoso","cariñoso")+o("neutro","neutro")+o("cana","caña 🌶️")+"</select>";
+}
+function flexPintarTarjeta(hit){
+  var host=$("flex_host"); if(!host||!hit) return; _flexActualId=hit.id;
+  host.innerHTML="<div class='flexcard' id='flexcard'>"
+    +"<button class='flexx' type='button' title='Descartar por hoy' onclick=\"flexDescartar()\">✕</button>"
+    +"<div class='flexhead'>"+esc(hit.emoji)+" <span>Jarvis nota…</span></div>"
+    +"<div class='flexmsg'>"+esc(hit.txt)+"</div>"
+    +"<div class='flexfoot'>Tono: "+flexTonoSelectorHTML()+"</div>"
+    +"</div>";
+  try{ var c=$("flexcard"); c.classList.remove("flexin"); void c.offsetWidth; c.classList.add("flexin"); }catch(e){}
+}
+function flexDescartar(){ if(_flexActualId) flexMarcarVisto(_flexActualId); var h=$("flex_host"); if(h) h.innerHTML=""; _flexActualId=null; toast("Vale, lo dejo por hoy 👌"); }   // sin arg: usa _flexActualId → cero texto del usuario en el onclick (fix XSS verif. v0.13-F)
+function flexSetTono(v){
+  if(["carinoso","neutro","cana"].indexOf(v)<0) return;
+  if(v==="cana" && flexCfg().tono!=="cana"){
+    if(!confirm("Modo «caña» 🌶️: Jarvis te hablará MÁS directo, con pullas cariñosas. Es humor, JAMÁS para hacerte sentir mal — y lo quitas cuando quieras. ¿Lo activo?")){
+      try{ var s1=$("aj_flex_tono"); if(s1) s1.value=flexCfg().tono; var s2=document.querySelector('.flexcard .flextono'); if(s2) s2.value=flexCfg().tono; }catch(e){}
+      return;
+    }
+  }
+  set("jvf_flex_cfg",{tono:v});
+  flexSyncAjustes();
+  // re-pinta la MISMA tarjeta con el nuevo tono (sin volver a filtrar: el id ya está "visto")
+  if(_flexActualId){
+    var hits=flexDetectarTodos(flexDatos(), hoyLocal(), v), cur=null;
+    hits.forEach(function(h){ if(h.id===_flexActualId) cur=h; });
+    if(cur) flexPintarTarjeta(cur); else flexRefrescar();
+  }
+  toast("Tono: "+({carinoso:"cariñoso",neutro:"neutro",cana:"caña 🌶️"}[v]||v));
+}
+function flexSyncAjustes(){ var s=$("aj_flex_tono"); if(s) s.value=flexCfg().tono; }
+// M1 · chips de contexto en la pestaña Peso
+function flexPesoChipsRender(){
+  var el=$("flex_peso_chips"); if(!el) return;
+  el.innerHTML="<div class='flexchips-lbl'>¿Algo que apuntar de hoy? (opcional)</div>"
+    +FLEX_PESO_CHIPS.map(function(c){ var on=!!_flexPesoCtxSel[c.id];
+      return "<button type='button' class='flexchip"+(on?" on":"")+"' onclick=\"flexPesoChipToggle('"+c.id+"')\">"+c.emoji+" "+esc(c.label)+"</button>";
+    }).join("");
+}
+function flexPesoChipToggle(id){ _flexPesoCtxSel[id]=!_flexPesoCtxSel[id]; flexPesoChipsRender(); }
+function flexInitUI(){ try{ flexRefrescar(); flexSyncAjustes(); flexPesoChipsRender(); }catch(e){} }
+
 // Count-up: anima el número de un elemento de su valor previo hasta target (solo si cambia).
 // Respeta reduced-motion (pone el valor final directo). suffix opcional (ej. "g", " kcal").
 function _reducedMotion(){ try{ return window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches; }catch(e){ return false; } }
@@ -3943,8 +4394,12 @@ function registrarPeso(){
   if(!f||!(w>=30&&w<=300)){ toast("Pon la fecha y un peso válido (30-300 kg, ej. 79.8)"); return; }
   var _prev=get(LS_W,[]); var _ult=_prev.length?_prev[_prev.length-1]:null;
   if(_ult&&Math.abs(w-_ult.w)>_ult.w*0.08 && !confirm("¿Seguro? Tu último peso fue "+(+_ult.w).toFixed(1)+" kg y esto es un salto grande.")) return;
-  const ws=get(LS_W,[]).filter(x=>x.f!==f); ws.push({f,w}); ws.sort((a,b)=>a.f<b.f?-1:1);
-  set(LS_W,ws); $("r_peso").value=""; render();
+  const ws=get(LS_W,[]).filter(x=>x.f!==f);
+  // M1 · adjunta el contexto (chips) elegido junto al peso; si no hay chips, la entrada queda como siempre {f,w}
+  var _ctx=Object.keys(_flexPesoCtxSel).filter(function(k){ return _flexPesoCtxSel[k]; });
+  var _entry={f,w}; if(_ctx.length) _entry.ctx=_ctx;
+  ws.push(_entry); ws.sort((a,b)=>a.f<b.f?-1:1);
+  set(LS_W,ws); $("r_peso").value=""; _flexPesoCtxSel={}; render();
   var btn=document.querySelector('#registro button[onclick="registrarPeso()"]'); okFlash(btn); popEl(btn);
   toast("✓ Peso guardado");
 }
@@ -5991,7 +6446,131 @@ var EJERCICIOS=[
   {n:"Bicicleta estática",eq:"Máquina",m:"Cuádriceps",img:"Bicycling_Stationary/0.jpg",m2:["Gemelo", "Glúteo", "Femoral"]},
   {n:"Elíptica",eq:"Máquina",m:"Cuádriceps",img:"Elliptical_Trainer/0.jpg",m2:["Gemelo", "Glúteo", "Femoral"]},
   {n:"Remo indoor (remoergómetro)",eq:"Máquina",m:"Cuádriceps",img:"Rowing_Stationary/0.jpg",m2:["Bíceps", "Gemelo", "Glúteo", "Femoral"]},
-  {n:"Escaladora (stairmaster)",eq:"Máquina",m:"Cuádriceps",img:"Stairmaster/0.jpg",m2:["Gemelo", "Glúteo", "Femoral"]}
+  {n:"Escaladora (stairmaster)",eq:"Máquina",m:"Cuádriceps",img:"Stairmaster/0.jpg",m2:["Gemelo", "Glúteo", "Femoral"]},
+  // ---- AMPLIACIÓN v0.13.2 · 2026-07-07 (curada de free-exercise-db, dominio público/Unlicense; enums equipo/músculo internos) ----
+  {n:"Press de pecho en máquina Hammer",eq:"Máquina",m:"Pecho",img:"Leverage_Chest_Press/0.jpg",m2:["Hombros", "Tríceps"]},
+  {n:"Press de pecho en polea de pie",eq:"Cable",m:"Pecho",img:"Standing_Cable_Chest_Press/0.jpg",m2:["Hombros", "Tríceps"]},
+  {n:"Aperturas con mancuerna a un brazo",eq:"Mancuerna",m:"Pecho",img:"One-Arm_Flat_Bench_Dumbbell_Flye/0.jpg"},
+  {n:"Aperturas inclinadas con giro (mancuernas)",eq:"Mancuerna",m:"Pecho",img:"Incline_Dumbbell_Flyes_-_With_A_Twist/0.jpg",m2:["Hombros"]},
+  {n:"Press guillotina con barra",eq:"Barra",m:"Pecho",img:"Barbell_Guillotine_Bench_Press/0.jpg",m2:["Hombros", "Tríceps"]},
+  {n:"Press declinado agarre ancho con barra",eq:"Barra",m:"Pecho",img:"Wide-Grip_Decline_Barbell_Bench_Press/0.jpg",m2:["Hombros", "Tríceps"]},
+  {n:"Cruce en polea (iron cross)",eq:"Cable",m:"Pecho",img:"Cable_Iron_Cross/0.jpg"},
+  {n:"Flexiones con pies elevados",eq:"Peso corporal",m:"Pecho",img:"Push-Ups_With_Feet_Elevated/0.jpg",m2:["Hombros", "Tríceps"]},
+  {n:"Flexión a plancha lateral",eq:"Peso corporal",m:"Pecho",img:"Push_Up_to_Side_Plank/0.jpg",m2:["Abdomen", "Hombros", "Tríceps"]},
+  {n:"Remo en landmine a dos manos",eq:"Barra",m:"Espalda",img:"Bent_Over_Two-Arm_Long_Bar_Row/0.jpg",m2:["Bíceps"]},
+  {n:"Remo con mancuernas agarre neutro",eq:"Mancuerna",m:"Espalda",img:"Bent_Over_Two-Dumbbell_Row_With_Palms_In/0.jpg",m2:["Bíceps"]},
+  {n:"Jalón al pecho en rango completo",eq:"Cable",m:"Espalda",img:"Full_Range-Of-Motion_Lat_Pulldown/0.jpg",m2:["Bíceps", "Hombros"]},
+  {n:"Jalón con triángulo (agarre en V)",eq:"Cable",m:"Espalda",img:"V-Bar_Pulldown/0.jpg",m2:["Bíceps", "Hombros"]},
+  {n:"Remo en polea a la altura del pecho",eq:"Cable",m:"Espalda",img:"Elevated_Cable_Rows/0.jpg",m2:["Trapecio"]},
+  {n:"Remo en polea alta arrodillado",eq:"Cable",m:"Espalda",img:"Kneeling_High_Pulley_Row/0.jpg",m2:["Bíceps"]},
+  {n:"Jalón con cuerda brazos rectos",eq:"Cable",m:"Espalda",img:"Rope_Straight-Arm_Pulldown/0.jpg"},
+  {n:"Superman (extensión lumbar en suelo)",eq:"Peso corporal",m:"Espalda",img:"Superman/0.jpg",m2:["Glúteo", "Femoral"]},
+  {n:"Buenos días sentado",eq:"Barra",m:"Espalda",img:"Seated_Good_Mornings/0.jpg",m2:["Glúteo"]},
+  {n:"Dominadas tras nuca agarre ancho",eq:"Peso corporal",m:"Espalda",img:"Wide-Grip_Rear_Pull-Up/0.jpg",m2:["Bíceps", "Hombros"]},
+  {n:"Remo en polea a un brazo (shotgun)",eq:"Cable",m:"Espalda",img:"Shotgun_Row/0.jpg",m2:["Bíceps"]},
+  {n:"Remo con barra tumbado en banco cóncavo",eq:"Barra",m:"Espalda",img:"Lying_Cambered_Barbell_Row/0.jpg",m2:["Bíceps", "Trapecio"]},
+  {n:"Press de hombros con mancuernas de pie",eq:"Mancuerna",m:"Hombros",img:"Standing_Dumbbell_Press/0.jpg",m2:["Tríceps"]},
+  {n:"Press Bradford con barra",eq:"Barra",m:"Hombros",img:"Bradford_Rocky_Presses/0.jpg",m2:["Tríceps"]},
+  {n:"Push press tras nuca",eq:"Barra",m:"Hombros",img:"Push_Press_-_Behind_the_Neck/0.jpg",m2:["Gemelo", "Cuádriceps", "Tríceps"]},
+  {n:"Elevaciones alternas frontal y lateral",eq:"Mancuerna",m:"Hombros",img:"Alternating_Deltoid_Raise/0.jpg"},
+  {n:"Elevaciones laterales en polea sentado",eq:"Cable",m:"Hombros",img:"Cable_Seated_Lateral_Raise/0.jpg",m2:["Espalda", "Trapecio"]},
+  {n:"Elevación lateral a un brazo",eq:"Mancuerna",m:"Hombros",img:"One-Arm_Side_Laterals/0.jpg"},
+  {n:"Elevación lateral tumbado a un brazo",eq:"Mancuerna",m:"Hombros",img:"Lying_One-Arm_Lateral_Raise/0.jpg"},
+  {n:"Pájaros sentado",eq:"Mancuerna",m:"Hombros",img:"Seated_Bent-Over_Rear_Delt_Raise/0.jpg"},
+  {n:"Pájaros con cabeza apoyada en banco",eq:"Mancuerna",m:"Hombros",img:"Bent_Over_Dumbbell_Rear_Delt_Raise_With_Head_On_Bench/0.jpg"},
+  {n:"Remo al deltoides posterior en polea con cuerda",eq:"Cable",m:"Hombros",img:"Cable_Rope_Rear-Delt_Rows/0.jpg",m2:["Bíceps", "Espalda"]},
+  {n:"Rotación externa con banda",eq:"Banda",m:"Hombros",img:"External_Rotation_with_Band/0.jpg"},
+  {n:"Rotación interna con banda",eq:"Banda",m:"Hombros",img:"Internal_Rotation_with_Band/0.jpg"},
+  {n:"Pájaros con rotación externa",eq:"Mancuerna",m:"Hombros",img:"Reverse_Flyes_With_External_Rotation/0.jpg"},
+  {n:"Press alterno de pie (see-saw)",eq:"Mancuerna",m:"Hombros",img:"See-Saw_Press_Alternating_Side_Press/0.jpg",m2:["Abdomen", "Tríceps"]},
+  {n:"Cargada y press con barra",eq:"Barra",m:"Hombros",img:"Clean_and_Press/0.jpg",m2:["Abdomen", "Gemelo", "Glúteo", "Femoral", "Espalda", "Cuádriceps", "Trapecio", "Tríceps"]},
+  {n:"Press de hombros en máquina Hammer",eq:"Máquina",m:"Hombros",img:"Leverage_Shoulder_Press/0.jpg",m2:["Tríceps"]},
+  {n:"Curl con mancuernas sentado",eq:"Mancuerna",m:"Bíceps",img:"Seated_Dumbbell_Curl/0.jpg"},
+  {n:"Curl en polea a un brazo",eq:"Cable",m:"Bíceps",img:"Standing_One-Arm_Cable_Curl/0.jpg"},
+  {n:"Curl predicador en polea",eq:"Cable",m:"Bíceps",img:"Cable_Preacher_Curl/0.jpg",m2:["Antebrazo"]},
+  {n:"Curl predicador a un brazo con mancuerna",eq:"Mancuerna",m:"Bíceps",img:"One_Arm_Dumbbell_Preacher_Curl/0.jpg"},
+  {n:"Curl con barra Z agarre cerrado",eq:"Barra",m:"Bíceps",img:"Close-Grip_EZ_Bar_Curl/0.jpg",m2:["Antebrazo"]},
+  {n:"Curl con barra agarre ancho",eq:"Barra",m:"Bíceps",img:"Wide-Grip_Standing_Barbell_Curl/0.jpg"},
+  {n:"Curl con barra agarre cerrado",eq:"Barra",m:"Bíceps",img:"Close-Grip_Standing_Barbell_Curl/0.jpg",m2:["Antebrazo"]},
+  {n:"Curl en polea tumbado",eq:"Cable",m:"Bíceps",img:"Lying_Cable_Curl/0.jpg"},
+  {n:"Curl predicador inverso con barra",eq:"Barra",m:"Bíceps",img:"Reverse_Barbell_Preacher_Curls/0.jpg",m2:["Antebrazo"]},
+  {n:"Curl Zottman en predicador",eq:"Mancuerna",m:"Bíceps",img:"Zottman_Preacher_Curl/0.jpg",m2:["Antebrazo"]},
+  {n:"Curl concentrado de pie",eq:"Mancuerna",m:"Bíceps",img:"Standing_Concentration_Curl/0.jpg",m2:["Antebrazo"]},
+  {n:"Curl concentrado con barra sentado",eq:"Barra",m:"Bíceps",img:"Seated_Close-Grip_Concentration_Barbell_Curl/0.jpg"},
+  {n:"Extensión de tríceps sentado con mancuerna",eq:"Mancuerna",m:"Tríceps",img:"Seated_Triceps_Press/0.jpg"},
+  {n:"Patada de tríceps a dos manos",eq:"Mancuerna",m:"Tríceps",img:"Standing_Bent-Over_Two-Arm_Dumbbell_Triceps_Extension/0.jpg"},
+  {n:"Extensión de tríceps en polea baja",eq:"Cable",m:"Tríceps",img:"Low_Cable_Triceps_Extension/0.jpg"},
+  {n:"Extensión de tríceps en polea inclinado",eq:"Cable",m:"Tríceps",img:"Cable_Incline_Triceps_Extension/0.jpg"},
+  {n:"Extensión en polea con triángulo (V)",eq:"Cable",m:"Tríceps",img:"Triceps_Pushdown_-_V-Bar_Attachment/0.jpg"},
+  {n:"Press con tablas (board press)",eq:"Barra",m:"Tríceps",img:"Board_Press/0.jpg",m2:["Pecho", "Antebrazo", "Espalda", "Hombros"]},
+  {n:"Press de tríceps tumbado con barra",eq:"Barra",m:"Tríceps",img:"Lying_Triceps_Press/0.jpg"},
+  {n:"Press francés inclinado con barra",eq:"Barra",m:"Tríceps",img:"Incline_Barbell_Triceps_Extension/0.jpg",m2:["Antebrazo"]},
+  {n:"Press francés declinado con mancuernas",eq:"Mancuerna",m:"Tríceps",img:"Decline_Dumbbell_Triceps_Extension/0.jpg"},
+  {n:"Extensión de tríceps a un brazo tumbado",eq:"Mancuerna",m:"Tríceps",img:"Dumbbell_One-Arm_Triceps_Extension/0.jpg"},
+  {n:"Tate press con mancuernas",eq:"Mancuerna",m:"Tríceps",img:"Tate_Press/0.jpg",m2:["Pecho", "Hombros"]},
+  {n:"Fondo de tríceps en suelo (body press)",eq:"Peso corporal",m:"Tríceps",img:"Body_Tricep_Press/0.jpg"},
+  {n:"Fondos en paralelas para tríceps",eq:"Peso corporal",m:"Tríceps",img:"Dips_-_Triceps_Version/0.jpg",m2:["Pecho", "Hombros"]},
+  {n:"Extensión de tríceps en polea baja a un brazo",eq:"Cable",m:"Tríceps",img:"Standing_Low-Pulley_One-Arm_Triceps_Extension/0.jpg",m2:["Pecho", "Hombros"]},
+  {n:"Sentadilla profunda con barra",eq:"Barra",m:"Cuádriceps",img:"Barbell_Full_Squat/0.jpg",m2:["Gemelo", "Glúteo", "Femoral", "Espalda"]},
+  {n:"Sentadilla frontal agarre de cargada",eq:"Barra",m:"Cuádriceps",img:"Front_Squat_Clean_Grip/0.jpg",m2:["Abdomen", "Glúteo", "Femoral"]},
+  {n:"Sentadilla con barra postura estrecha",eq:"Barra",m:"Cuádriceps",img:"Narrow_Stance_Squats/0.jpg",m2:["Gemelo", "Glúteo", "Femoral", "Espalda"]},
+  {n:"Prensa de piernas postura estrecha",eq:"Máquina",m:"Cuádriceps",img:"Narrow_Stance_Leg_Press/0.jpg",m2:["Gemelo", "Glúteo", "Femoral"]},
+  {n:"Hack squat postura estrecha",eq:"Máquina",m:"Cuádriceps",img:"Narrow_Stance_Hack_Squats/0.jpg",m2:["Gemelo", "Glúteo", "Femoral"]},
+  {n:"Sentadilla al cajón con mancuernas",eq:"Mancuerna",m:"Cuádriceps",img:"Dumbbell_Squat_To_A_Bench/0.jpg",m2:["Gemelo", "Glúteo", "Femoral", "Espalda"]},
+  {n:"Sentadilla pistol en multipower",eq:"Máquina",m:"Cuádriceps",img:"Smith_Machine_Pistol_Squat/0.jpg",m2:["Gemelo", "Glúteo", "Femoral"]},
+  {n:"Zancada atrás con pie elevado",eq:"Barra",m:"Cuádriceps",img:"Elevated_Back_Lunge/0.jpg",m2:["Glúteo", "Femoral"]},
+  {n:"Sentadilla con salto lastrada",eq:"Barra",m:"Cuádriceps",img:"Weighted_Jump_Squat/0.jpg",m2:["Gemelo", "Glúteo", "Femoral", "Espalda"]},
+  {n:"Sentadilla Frankenstein",eq:"Barra",m:"Cuádriceps",img:"Frankenstein_Squat/0.jpg",m2:["Abdomen", "Gemelo", "Glúteo", "Femoral"]},
+  {n:"Sentadilla Jefferson",eq:"Barra",m:"Cuádriceps",img:"Jefferson_Squats/0.jpg",m2:["Gemelo", "Glúteo", "Femoral", "Espalda", "Trapecio"]},
+  {n:"Bicicleta reclinada",eq:"Máquina",m:"Cuádriceps",img:"Recumbent_Bike/0.jpg",m2:["Gemelo", "Glúteo", "Femoral"]},
+  {n:"Cargada colgante (hang clean)",eq:"Barra",m:"Cuádriceps",img:"Hang_Clean/0.jpg",m2:["Gemelo", "Antebrazo", "Glúteo", "Femoral", "Espalda", "Hombros", "Trapecio"]},
+  {n:"Tirón de cargada",eq:"Barra",m:"Cuádriceps",img:"Clean_Pull/0.jpg",m2:["Antebrazo", "Glúteo", "Femoral", "Espalda", "Trapecio"]},
+  {n:"Peso muerto rumano con déficit",eq:"Barra",m:"Femoral",img:"Romanian_Deadlift_from_Deficit/0.jpg",m2:["Antebrazo", "Glúteo", "Espalda", "Trapecio"]},
+  {n:"Peso muerto estilo cargada",eq:"Barra",m:"Femoral",img:"Clean_Deadlift/0.jpg",m2:["Antebrazo", "Glúteo", "Espalda", "Cuádriceps", "Trapecio"]},
+  {n:"Buenos días desde pines",eq:"Barra",m:"Femoral",img:"Good_Morning_off_Pins/0.jpg",m2:["Abdomen", "Glúteo", "Espalda"]},
+  {n:"Cargada con mancuernas",eq:"Mancuerna",m:"Femoral",img:"Dumbbell_Clean/0.jpg",m2:["Gemelo", "Antebrazo", "Glúteo", "Espalda", "Cuádriceps", "Hombros", "Trapecio"]},
+  {n:"Gusano (inchworm)",eq:"Peso corporal",m:"Femoral",img:"Inchworm/0.jpg"},
+  {n:"Swing vertical con mancuerna",eq:"Mancuerna",m:"Femoral",img:"Vertical_Swing/0.jpg",m2:["Glúteo", "Cuádriceps", "Hombros"]},
+  {n:"Peso muerto agarre de arrancada",eq:"Barra",m:"Femoral",img:"Snatch_Deadlift/0.jpg",m2:["Antebrazo", "Glúteo", "Espalda", "Cuádriceps", "Trapecio"]},
+  {n:"Elevación de cadera con banda",eq:"Banda",m:"Glúteo",img:"Hip_Lift_with_Band/0.jpg",m2:["Gemelo", "Femoral"]},
+  {n:"Sentadilla de rodillas con barra",eq:"Barra",m:"Glúteo",img:"Kneeling_Squat/0.jpg",m2:["Abdomen", "Femoral", "Espalda"]},
+  {n:"Salto desde rodillas",eq:"Barra",m:"Glúteo",img:"Kneeling_Jump_Squat/0.jpg",m2:["Gemelo", "Femoral", "Cuádriceps"]},
+  {n:"Elevación de pierna en cuadrupedia",eq:"Peso corporal",m:"Glúteo",img:"Leg_Lift/0.jpg",m2:["Femoral"]},
+  {n:"Prensa de gemelos en máquina",eq:"Máquina",m:"Gemelo",img:"Calf_Press/0.jpg"},
+  {n:"Elevación de gemelo sobre disco con mancuerna",eq:"Mancuerna",m:"Gemelo",img:"Calf_Raise_On_A_Dumbbell/0.jpg"},
+  {n:"Balanceo de gemelo de pie con barra",eq:"Barra",m:"Gemelo",img:"Rocking_Standing_Calf_Raise/0.jpg"},
+  {n:"Crunch invertido en polea",eq:"Cable",m:"Abdomen",img:"Cable_Reverse_Crunch/0.jpg"},
+  {n:"Crunch sentado en polea",eq:"Cable",m:"Abdomen",img:"Cable_Seated_Crunch/0.jpg"},
+  {n:"Elevación en L colgado (pike)",eq:"Peso corporal",m:"Abdomen",img:"Hanging_Pike/0.jpg"},
+  {n:"Crunch cruzado",eq:"Peso corporal",m:"Abdomen",img:"Cross-Body_Crunch/0.jpg"},
+  {n:"Crunch invertido declinado",eq:"Peso corporal",m:"Abdomen",img:"Decline_Reverse_Crunch/0.jpg"},
+  {n:"Crunch oblicuo declinado",eq:"Peso corporal",m:"Abdomen",img:"Decline_Oblique_Crunch/0.jpg"},
+  {n:"Encogimiento de piernas en banco",eq:"Peso corporal",m:"Abdomen",img:"Flat_Bench_Leg_Pull-In/0.jpg"},
+  {n:"Tijeras (scissor kick)",eq:"Peso corporal",m:"Abdomen",img:"Scissor_Kick/0.jpg"},
+  {n:"Encogimiento total (cocoon)",eq:"Peso corporal",m:"Abdomen",img:"Cocoons/0.jpg"},
+  {n:"Vacío abdominal",eq:"Peso corporal",m:"Abdomen",img:"Stomach_Vacuum/0.jpg"},
+  {n:"Navaja lateral",eq:"Peso corporal",m:"Abdomen",img:"Side_Jackknife/0.jpg"},
+  {n:"Giro con barra sentado",eq:"Barra",m:"Abdomen",img:"Seated_Barbell_Twist/0.jpg"},
+  {n:"Inclinación lateral con barra",eq:"Barra",m:"Abdomen",img:"Barbell_Side_Bend/0.jpg",m2:["Espalda"]},
+  {n:"Press Pallof con rotación",eq:"Cable",m:"Abdomen",img:"Pallof_Press_With_Rotation/0.jpg",m2:["Pecho", "Hombros", "Tríceps"]},
+  {n:"Toques de puntas",eq:"Peso corporal",m:"Abdomen",img:"Toe_Touchers/0.jpg"},
+  {n:"Araña rastrera (spider crawl)",eq:"Peso corporal",m:"Abdomen",img:"Spider_Crawl/0.jpg",m2:["Pecho", "Hombros", "Tríceps"]},
+  {n:"Encogimientos con barra por detrás",eq:"Barra",m:"Trapecio",img:"Barbell_Shrug_Behind_The_Back/0.jpg",m2:["Antebrazo", "Espalda"]},
+  {n:"Encogimiento de cargada con barra",eq:"Barra",m:"Trapecio",img:"Clean_Shrug/0.jpg",m2:["Antebrazo", "Hombros"]},
+  {n:"Encogimiento de arrancada con barra",eq:"Barra",m:"Trapecio",img:"Snatch_Shrug/0.jpg",m2:["Antebrazo", "Hombros"]},
+  {n:"Encogimientos en máquina de gemelos",eq:"Máquina",m:"Trapecio",img:"Calf-Machine_Shoulder_Shrug/0.jpg"},
+  {n:"Encogimientos por detrás en multipower",eq:"Máquina",m:"Trapecio",img:"Smith_Machine_Behind_the_Back_Shrug/0.jpg",m2:["Hombros"]},
+  {n:"Curl de muñeca en polea",eq:"Cable",m:"Antebrazo",img:"Cable_Wrist_Curl/0.jpg"},
+  {n:"Curl de muñeca invertido en banco con barra",eq:"Barra",m:"Antebrazo",img:"Palms-Down_Wrist_Curl_Over_A_Bench/0.jpg"},
+  {n:"Curl de muñeca en banco con barra",eq:"Barra",m:"Antebrazo",img:"Palms-Up_Barbell_Wrist_Curl_Over_A_Bench/0.jpg"},
+  {n:"Curl de muñeca tras la espalda con barra",eq:"Barra",m:"Antebrazo",img:"Standing_Palms-Up_Barbell_Behind_The_Back_Wrist_Curl/0.jpg"},
+  {n:"Pronación tumbado con mancuerna",eq:"Mancuerna",m:"Antebrazo",img:"Dumbbell_Lying_Pronation/0.jpg"},
+  {n:"Supinación tumbado con mancuerna",eq:"Mancuerna",m:"Antebrazo",img:"Dumbbell_Lying_Supination/0.jpg"},
+  {n:"Curl de muñeca a un brazo con mancuerna",eq:"Mancuerna",m:"Antebrazo",img:"Seated_One-Arm_Dumbbell_Palms-Up_Wrist_Curl/0.jpg"},
+  {n:"Rotaciones de muñeca con barra",eq:"Barra",m:"Antebrazo",img:"Wrist_Rotations_with_Straight_Bar/0.jpg"},
+  {n:"Salto lateral (bound)",eq:"Peso corporal",m:"Aductor",img:"Lateral_Bound/0.jpg",m2:["Gemelo", "Glúteo", "Femoral", "Cuádriceps"]},
+  {n:"Elevación lateral de pierna en suelo",eq:"Peso corporal",m:"Aductor",img:"Side_Leg_Raises/0.jpg"},
+  {n:"Cruce de pierna tumbado",eq:"Peso corporal",m:"Aductor",img:"Lying_Crossover/0.jpg"}
 ];
 let _bibTarget=null;
 function bibInit(){
@@ -6124,7 +6703,7 @@ function render(){
   if(ws.length){
     let h=pesoSpark(ws);
     h+="<table><tr><th>Fecha</th><th>Peso</th></tr>";
-    ws.slice(-8).reverse().forEach(x=>h+=`<tr><td>${x.f}</td><td>${(+x.w).toFixed(1)} kg</td></tr>`);
+    ws.slice(-8).reverse().forEach(x=>{ var b=flexCtxBadges(x.ctx); h+=`<tr><td>${x.f}</td><td>${(+x.w).toFixed(1)} kg${b?` <span class="pesoctx">${b}</span>`:""}</td></tr>`; });
     $("r_tabla").innerHTML=h+"</table>";
   } else $("r_tabla").innerHTML="<div class='empty'><div class='ico'>⚖️</div><div class='et'>Empieza tu tendencia</div><div class='es'>Apunta el peso de hoy. En ~2 semanas la app calcula tu gasto REAL.</div></div>";
 
@@ -6181,6 +6760,7 @@ function render(){
     $("calib_body").innerHTML=nudge+extra;
   }
   renderEntrenos();
+  flexInitUI();   // M · capa FLEX: tarjeta "Jarvis nota…", chips de peso y sincronía del tono
   aplicarTab();
 }
 
