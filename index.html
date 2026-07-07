@@ -136,6 +136,20 @@
   .bib-item:hover,.bib-item:active{border-color:var(--jade);background:var(--ink-3)}
   .bib-item .mus{font-family:var(--mono);font-size:.62rem;color:var(--mute);letter-spacing:.06em}
   .hidden{display:none}
+  /* 🧠 Cerebro v0.13-B · chat de burbujas estilo Jarvis (solo estética; el motor es [CEREBRO-PURE]) */
+  .cb-log{display:flex;flex-direction:column;gap:8px;max-height:340px;overflow-y:auto;padding:4px 2px;margin-top:6px;
+    overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+  .cb-b{max-width:88%;padding:9px 12px;border-radius:14px;font-size:.9rem;line-height:1.45;
+    word-wrap:break-word;overflow-wrap:break-word;white-space:pre-line}
+  .cb-j{align-self:flex-start;background:var(--ink-3);border:1px solid var(--line-soft);color:var(--bone);border-bottom-left-radius:4px}
+  .cb-u{align-self:flex-end;background:var(--ember-soft);border:1px solid rgba(255,106,61,.4);color:#ffd9cd;border-bottom-right-radius:4px}
+  .cb-cita{display:block;margin-top:6px;font-family:var(--mono);font-size:.66rem;color:var(--mute)}
+  .cb-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+  .cb-chip{font-size:.74rem;padding:6px 11px;border-radius:100px;border:1px solid var(--line);background:transparent;
+    color:var(--jade);cursor:pointer;width:auto;margin:0;box-shadow:none;font-family:var(--body);font-weight:500}
+  .cb-chip:hover{border-color:var(--jade);box-shadow:none}
+  .cb-chip:active{transform:translateY(1px)}
+  .cb-send{flex:none;width:auto;margin:0;padding:0 16px}
   /* gate de contraseña (puerta simple compartida) */
   #gate{position:fixed;inset:0;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;
     background:radial-gradient(900px 500px at 50% -10%, #14342c 0%, rgba(20,52,44,0) 60%), var(--ink);padding:24px;text-align:center}
@@ -246,6 +260,31 @@
     font-family:var(--mono);font-size:.74rem;text-align:center}
   .calmes span{padding:7px 0;border-radius:8px;color:var(--soft);border:1px solid transparent}
   .calmes .cab{color:var(--mute);font-size:.6rem;text-transform:uppercase;letter-spacing:.06em}
+
+  /* ============ v0.12.2 · Entrenos estilo Hevy (vistas home/registro/editor) ============ */
+  /* Tarjeta de rutina (mis rutinas + recomendadas): nombre + ejercicios truncados + Empezar full-width */
+  .rutcard{border:1px solid var(--line-soft);border-radius:14px;padding:12px;margin-top:10px;background:var(--ink-3)}
+  .rutcard .rc-nombre{font-weight:700;font-size:.98rem;color:var(--soft)}
+  .rutcard .rc-ejs{color:var(--mute);font-size:.78rem;margin:3px 0 10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .rutcard button.btn-lg{margin:0;min-height:44px;font-size:.92rem;padding:11px 14px}
+  /* Botón «← Entrenos» de las vistas registro/editor */
+  .entback{width:auto;margin:0 0 10px;padding:8px 14px;font-size:.8rem}
+
+  /* ============ 📸 v0.13-C · Fotos de progreso (pestaña Progreso) ============ */
+  .pf-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:10px}
+  .pf-th{position:relative;border:1px solid var(--line-soft);border-radius:10px;overflow:hidden;background:var(--ink-3)}
+  .pf-th img{width:100%;aspect-ratio:3/4;object-fit:cover;display:block}
+  .pf-th .pfx{position:absolute;top:4px;right:4px;width:26px;height:26px;margin:0;padding:0;border-radius:50%;
+    background:rgba(4,11,9,.72);color:var(--soft);border:1px solid var(--line);font-size:.7rem;line-height:1;
+    display:flex;align-items:center;justify-content:center;box-shadow:none;cursor:pointer}
+  .pf-th .pfb{position:absolute;left:0;right:0;bottom:0;background:rgba(4,11,9,.78);font-family:var(--mono);
+    font-size:.58rem;color:var(--soft);padding:3px 5px;display:flex;justify-content:space-between;gap:4px}
+  .pf-comp{display:flex;gap:8px;margin-top:8px}
+  .pf-comp>div{flex:1;min-width:0}
+  .pf-comp img{width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:10px;border:1px solid var(--line-soft);display:block}
+  .pf-fade{position:relative;border-radius:12px;overflow:hidden;border:1px solid var(--line-soft);margin-top:10px}
+  .pf-fade img{width:100%;display:block;aspect-ratio:3/4;object-fit:cover}
+  .pf-fade img.top{position:absolute;inset:0;width:100%;height:100%}
 </style>
 </head>
 <body>
@@ -282,7 +321,7 @@
 
 <header class="brandbar">
   <div class="logo"><span class="dot"></span>JV <b>Fitness</b></div>
-  <span class="tag">MVP v0.12 · motor v0.6 · foto v2</span>
+  <span class="tag">MVP v0.13 · motor v0.7 · foto v2</span>
 </header>
 <div class="statuschip"><span class="pulse"></span> cálculo science-based · ajustable · calibración real</div>
 
@@ -294,6 +333,7 @@
   <button class="tab"        id="tab-entrenos" onclick="abrir('entrenos')">Entrenos</button>
   <button class="tab"        id="tab-calib"    onclick="abrir('calib')">Progreso</button>
   <button class="tab"        id="tab-comida"   onclick="abrir('comida')">Comida</button>
+  <button class="tab"        id="tab-cerebro"  onclick="abrir('cerebro')">🧠 Cerebro</button>
 </nav>
 
 <!-- WIZARD / ONBOARDING (entrevista de bienvenida — voz de Jarvis) -->
@@ -367,6 +407,15 @@
     <input id="w_act_otro" class="hidden" placeholder="Tu actividad: explícaselo a Jarvis…">
     <label>Media de pasos al día (opcional)</label><input id="f_pasos" type="number" placeholder="ej. 12000">
     <p class="hint">Los pasos capturan tu <b style="color:var(--soft)">NEAT</b> (el gasto de moverte fuera del gym). Si andas mucho, te subo las calorías aunque no pises pesas.</p>
+    <label>¿Deporte además del gym? (fútbol, baloncesto, pádel…)</label>
+    <select id="f_deporte">
+      <option value="0">No / casi nunca</option>
+      <option value="0.5">Suave o de vez en cuando</option>
+      <option value="1.5">Intenso, 1-2 días/semana</option>
+      <option value="3.5">Intenso, 3 o más días</option>
+    </select>
+    <input id="w_deporte_nota" placeholder="Cuéntaselo a Jarvis (opcional): ej. baloncesto en la calle, ganas y sigues jugando…">
+    <p class="hint">Si sudas de verdad, tu deporte <b style="color:var(--soft)">cuenta como días de entreno</b>: lo sumo a tu gym y te subo las calorías.</p>
   </div>
 
   <!-- 5 · Tu entrenamiento -->
@@ -480,6 +529,11 @@
   <div id="calib_body"></div>
   <!-- F2 v0.10 · calendario del mes + informe mensual (lo rellena renderInformeMes()) -->
   <div id="prog_mes"></div>
+  <!-- 📸 v0.13-C · FOTOS DE PROGRESO (spec 2026-07-07, validada por Pablo): poses frente/lateral/espalda,
+       checks de ORIGEN [FOTO-CHECK-PURE] (EXIF a mano + anti-screenshot + lista negra de editores),
+       score de comparabilidad por ecuación (luminancia canvas) y almacén en IndexedDB (jvf_fotos).
+       Lo pinta pfRefrescar(); la foto JAMÁS sale del dispositivo. -->
+  <div id="fotos_sec"></div>
 </div>
 
 <!-- COMIDA (Fase 3 — diario de comida con base curada) -->
@@ -487,11 +541,11 @@
   <h2>Diario de comida</h2>
   <div class="row" style="gap:6px;align-items:flex-end"><div style="flex:2"><label>Fecha</label><input id="com_fecha" type="date" onchange="renderComida()"></div><button class="sec" type="button" style="flex:1;width:auto" onclick="comCopiarAyer()">⧉ Copiar ayer</button></div><div id="com_recientes"></div>
   <div class="row" style="gap:6px;align-items:flex-end;margin-top:6px">
-    <div style="flex:2"><label>Alimento</label><input id="com_nombre" list="com-foods" placeholder="Busca: pollo, arroz, huevo…"></div>
-    <div style="flex:1"><label>Gramos</label><input id="com_gramos" type="number" inputmode="numeric" placeholder="g"></div>
+    <div style="flex:2"><label>Alimento</label><input id="com_nombre" list="com-foods" placeholder="Busca: pollo, arroz, huevo…" oninput="comUnidadSync()"></div>
+    <div style="flex:1"><label id="com_g_label">Gramos</label><input id="com_gramos" type="number" inputmode="numeric" placeholder="g"></div>
   </div>
   <datalist id="com-foods"></datalist>
-  <div class="row" style="gap:6px;margin-top:6px">
+  <div class="row" id="com_g_btns" style="gap:6px;margin-top:6px">
     <button class="sec" type="button" style="flex:1;width:auto;padding:5px" onclick="comGr(50)">50g</button>
     <button class="sec" type="button" style="flex:1;width:auto;padding:5px" onclick="comGr(100)">100g</button>
     <button class="sec" type="button" style="flex:1;width:auto;padding:5px" onclick="comGr(150)">150g</button>
@@ -554,36 +608,82 @@
   </div>
 </div>
 
-<!-- ENTRENOS (Fase 3.3 — logging estilo Hevy) -->
+<!-- 🧠 CEREBRO v1 (v0.13-B) — chat determinista SIN IA: motor de intención [CEREBRO-PURE] sobre
+     CEREBRO_KB (destilado del master-file.md). Doctrina: ecuaciones puras tipo bot de ajedrez;
+     la IA llegará DESPUÉS por encima. Si no reconoce el patrón, lo dice y guarda la pregunta. -->
+<div id="cerebro" class="card hidden">
+  <h2>🧠 Cerebro</h2>
+  <p class="hint" style="margin-top:0">Pregúntame de entreno, comida o tu plan — o cuéntame cómo estás (<b style="color:var(--soft)">«he dormido mal»</b>) y lo apunto. Respondo <b style="color:var(--soft)">solo con la ciencia del master</b>; si no sé algo, te lo digo.</p>
+  <div id="cb_log" class="cb-log"></div>
+  <div id="cb_chips" class="cb-chips"></div>
+  <div class="row" style="gap:6px;margin-top:10px">
+    <input id="cb_in" placeholder="Escribe tu pregunta…" autocomplete="off" style="flex:1;min-width:0;width:auto"
+      onkeydown="if(event.key==='Enter'){cbEnviar();}">
+    <button type="button" class="cb-send" onclick="cbEnviar()" aria-label="Enviar">➤</button>
+  </div>
+  <div id="cb_diario"></div>
+  <p class="hint" style="margin-top:12px">⚕️ El Cerebro cita la ciencia del master file de JV Fitness y <b style="color:var(--soft)">NO da consejo médico</b>: para temas de salud, medicación o lesiones, acude a un profesional sanitario. 🔒 Todo lo que hablas aquí se queda <b style="color:var(--soft)">solo en tu dispositivo</b> — nada viaja a ningún servidor.</p>
+</div>
+
+<!-- ENTRENOS (Fase 3.3 — logging estilo Hevy · v0.12.2 máquina de vistas home/registro/editor) -->
 <div id="entrenos" class="card hidden">
-  <!-- F1 v0.10 · chip ⏱ del cronómetro de sesión: late mientras jvf_ent_start exista; ✕ lo descarta -->
-  <h2>Registrar entreno <span id="ent_crono_chip" class="cronochip hidden">⏱ <span id="ent_crono_t">0:00</span><button type="button" title="Descartar cronómetro" aria-label="Descartar cronómetro" onclick="cronoDescartar()">✕</button></span></h2>
-  <!-- F5 v0.10 · hint para el novato sin historial (lo rellena hintNovato()) -->
-  <div id="ent_hint_novato"></div>
-  <!-- F1 v0.10 · "📋 Mis rutinas" (plantillas guardadas por el usuario; lo rellena renderMisRutinas()) -->
-  <div id="ent_mis_rutinas"></div>
-  <label>Fecha</label><input id="ent_fecha" type="date">
-  <div id="ent_form"></div>
-  <div class="row" style="gap:6px">
-    <button class="sec" type="button" style="flex:1;width:auto" onclick="entAddEjercicio()">+ Añadir ejercicio</button>
-    <!-- F1 · visible solo si el form tiene ≥1 ejercicio con nombre (rutBtnSync) -->
-    <button class="sec hidden" id="rut_guardar_btn" type="button" style="flex:1;width:auto" onclick="rutGuardarAbrir()">💾 Guardar como rutina</button>
+
+  <!-- ===== VISTA HOME (v0.12.2 · la pestaña ya no apila todo: empezar + rutinas + recomendadas + historial) ===== -->
+  <div id="ent_v_home">
+    <h2>Entrenos</h2>
+    <!-- F5 v0.10 · hint para el novato sin historial (lo rellena hintNovato()) -->
+    <div id="ent_hint_novato"></div>
+    <!-- v0.12.2 · si hay un entreno en curso (crono o datos tecleados), aquí sale «▶ Continuar» (entHomeCurso) -->
+    <div id="ent_curso"></div>
+    <button class="btn-lg" type="button" style="margin-top:10px" onclick="entEmpezarVacio()">➕ Empezar entreno vacío</button>
+    <!-- F1 v0.10 · "📋 Mis rutinas" como tarjetas estilo Hevy (lo rellena renderMisRutinas()) -->
+    <div id="ent_mis_rutinas"></div>
+    <button class="sec" type="button" style="margin-top:8px" onclick="rutEditorAbrir(null)">➕ Nueva rutina</button>
+    <!-- v0.12.2 · catálogo recomendado (antes CTA encima del form; lo rellena entCtaRutina()) -->
+    <div id="ent_recomendadas"></div>
+    <div class="eyebrow-lbl" style="margin-top:18px">📖 Historial</div>
+    <div id="ent_resumen" class="hidden" style="margin-top:10px"></div>
+    <div id="ent_hist" style="margin-top:10px"></div>
   </div>
-  <!-- F1 · nombre de la rutina en línea (nada de prompt(): input + OK/Cancelar) -->
-  <div id="rut_guardar_form" class="hidden" style="margin-top:8px">
-    <div class="row" style="gap:6px;align-items:center">
-      <input id="rut_nombre" placeholder="Nombre de la rutina (ej. Push A)" style="flex:2">
-      <button type="button" style="flex:0 0 auto;width:auto;margin:0;padding:11px 14px" onclick="rutGuardarOk()">OK</button>
-      <button class="sec" type="button" style="flex:0 0 auto;width:auto;margin:0;padding:11px 14px" onclick="rutGuardarCancelar()">Cancelar</button>
+
+  <!-- ===== VISTA REGISTRO (pantalla de logging a solas — lo que antes era todo el card) ===== -->
+  <div id="ent_v_registro" class="hidden">
+    <button class="sec entback" type="button" onclick="entVolverHome()">← Entrenos</button>
+    <!-- F1 v0.10 · chip ⏱ del cronómetro de sesión: late mientras jvf_ent_start exista; ✕ lo descarta -->
+    <h2>Registrar entreno <span id="ent_crono_chip" class="cronochip hidden">⏱ <span id="ent_crono_t">0:00</span><button type="button" title="Descartar cronómetro" aria-label="Descartar cronómetro" onclick="cronoDescartar()">✕</button></span></h2>
+    <label>Fecha</label><input id="ent_fecha" type="date">
+    <div id="ent_form"></div>
+    <div class="row" style="gap:6px">
+      <button class="sec" type="button" style="flex:1;width:auto" onclick="entAddEjercicio()">+ Añadir ejercicio</button>
+      <!-- F1 · visible solo si el form tiene ≥1 ejercicio con nombre (rutBtnSync) -->
+      <button class="sec hidden" id="rut_guardar_btn" type="button" style="flex:1;width:auto" onclick="rutGuardarAbrir()">💾 Guardar como rutina</button>
     </div>
-    <p class="hint" style="margin-top:6px">Se guarda solo la plantilla: ejercicios y nº de series, <b style="color:var(--soft)">sin pesos</b>. Los pesos van en cada entreno.</p>
+    <!-- F1 · nombre de la rutina en línea (nada de prompt(): input + OK/Cancelar) -->
+    <div id="rut_guardar_form" class="hidden" style="margin-top:8px">
+      <div class="row" style="gap:6px;align-items:center">
+        <input id="rut_nombre" placeholder="Nombre de la rutina (ej. Push A)" style="flex:2">
+        <button type="button" style="flex:0 0 auto;width:auto;margin:0;padding:11px 14px" onclick="rutGuardarOk()">OK</button>
+        <button class="sec" type="button" style="flex:0 0 auto;width:auto;margin:0;padding:11px 14px" onclick="rutGuardarCancelar()">Cancelar</button>
+      </div>
+      <p class="hint" style="margin-top:6px">Se guarda solo la plantilla: ejercicios y nº de series, <b style="color:var(--soft)">sin pesos</b>. Los pesos van en cada entreno.</p>
+    </div>
+    <button class="btn-lg" type="button" onclick="guardarEntreno()">Guardar entreno</button>
+    <p class="hint">Apunta cada serie (kg × reps, y el RIR si quieres). La app te marca si <b style="color:var(--soft)">progresas</b> respecto a la última vez que hiciste cada ejercicio — sobrecarga progresiva, lo que de verdad construye músculo. Leyenda: <b style='color:var(--soft)'>vol</b> = kg totales movidos (peso×reps) · <b style='color:var(--soft)'>1RM≈</b> = tu máximo estimado a 1 repetición (fórmula Epley). Toca el <b style='color:var(--soft)'>nº de serie</b> para marcarla <b style='color:#f4a950'>W</b> calentamiento · <b style='color:#ff5555'>F</b> fallo · <b style='color:#74c7ff'>D</b> dropset.</p>
+    <!-- D v0.12 · toggle Hevy: ¿el calentamiento (W) cuenta en stats? Default NO (el calentamiento no es volumen efectivo); volDeEntreno y el informe lo respetan y recalculan al cambiarlo -->
+    <label class="hint" style="display:flex;gap:8px;align-items:center;cursor:pointer;margin-top:4px"><input type="checkbox" id="warmup_stats_chk" style="width:auto;margin:0" onchange="warmupToggle(this)"> Contar el calentamiento (W) en volumen y estadísticas</label>
   </div>
-  <button class="btn-lg" type="button" onclick="guardarEntreno()">Guardar entreno</button>
-  <p class="hint">Apunta cada serie (kg × reps, y el RIR si quieres). La app te marca si <b style="color:var(--soft)">progresas</b> respecto a la última vez que hiciste cada ejercicio — sobrecarga progresiva, lo que de verdad construye músculo. Leyenda: <b style='color:var(--soft)'>vol</b> = kg totales movidos (peso×reps) · <b style='color:var(--soft)'>1RM≈</b> = tu máximo estimado a 1 repetición (fórmula Epley). Toca el <b style='color:var(--soft)'>nº de serie</b> para marcarla <b style='color:#f4a950'>W</b> calentamiento · <b style='color:#ff5555'>F</b> fallo · <b style='color:#74c7ff'>D</b> dropset.</p>
-  <!-- D v0.12 · toggle Hevy: ¿el calentamiento (W) cuenta en stats? Default NO (el calentamiento no es volumen efectivo); volDeEntreno y el informe lo respetan y recalculan al cambiarlo -->
-  <label class="hint" style="display:flex;gap:8px;align-items:center;cursor:pointer;margin-top:4px"><input type="checkbox" id="warmup_stats_chk" style="width:auto;margin:0" onchange="warmupToggle(this)"> Contar el calentamiento (W) en volumen y estadísticas</label>
-  <div id="ent_resumen" class="hidden" style="margin-top:14px"></div>
-  <div id="ent_hist" style="margin-top:14px"></div>
+
+  <!-- ===== VISTA EDITOR de rutina (v0.12.2 · crear/editar plantilla: nombre + ejercicios + nº de series) ===== -->
+  <div id="ent_v_editor" class="hidden">
+    <button class="sec entback" type="button" onclick="rutEdCancelar()">← Entrenos</button>
+    <h2 id="rut_ed_titulo">➕ Nueva rutina</h2>
+    <label>Nombre de la rutina</label><input id="rut_ed_nombre" placeholder="ej. Push A" oninput="rutEdSync()">
+    <div id="rut_ed_lista"></div>
+    <button class="sec" type="button" style="margin-top:10px" onclick="rutEdAddEj()">+ Añadir ejercicio</button>
+    <button class="btn-lg" type="button" onclick="rutEdGuardar()">💾 Guardar rutina</button>
+    <button class="sec" type="button" onclick="rutEdCancelar()">Cancelar</button>
+    <p class="hint">Se guarda solo la plantilla: ejercicios y nº de series, <b style="color:var(--soft)">sin pesos</b>. Los pesos van en cada entreno.</p>
+  </div>
 </div>
 <!-- Autocompletado del input de ejercicio: se rellena dinámicamente desde EJERCICIOS en bibInit() -->
 <datalist id="ent-ejercicios"></datalist>
@@ -810,6 +910,27 @@ Tus datos se guardan solo en este dispositivo.</p>
   </div>
 </div>
 
+<!-- MODAL: 📸 consentimiento de fotos de progreso (v0.13-C) — RGPD art. 9: la foto corporal es un
+     dato de salud → consentimiento EXPLÍCITO antes de la primera captura. Las fotos viven SOLO en
+     IndexedDB de este dispositivo y se borran por foto, en bloque o con «Empezar de cero».
+     ⚖️ TEXTO REVISABLE POR PABLO: el posicionamiento jurídico exacto es suyo (lección @eriktaveras). -->
+<div id="pfConsentModal" class="modal hidden">
+  <div class="modal-card">
+    <button class="modal-x" type="button" title="Cerrar" aria-label="Cerrar" onclick="show('pfConsentModal',false)">✕</button>
+    <h2>📸 Antes de tu primera foto</h2>
+    <p class="hint" style="margin-top:0">Tus fotos de progreso son un <b style="color:var(--soft)">dato de salud</b>. Así las trato:</p>
+    <div class="hint" style="margin-top:4px">
+      🔒 <b style="color:var(--soft)">Solo en este dispositivo.</b> Se guardan en el almacén local del navegador (IndexedDB). No se suben a ningún servidor, nadie más las ve y <b style="color:var(--soft)">no viajan</b> en la copia de seguridad JSON.<br><br>
+      🗑️ <b style="color:var(--soft)">Borrables cuando quieras:</b> foto a foto, todas de golpe o con «Empezar de cero».<br><br>
+      🔍 <b style="color:var(--soft)">Verifico el origen, no el contenido:</b> compruebo con ecuaciones que la foto sale de una cámara, es de ahora y no pasó por editores. Lo que fotografíes es responsabilidad tuya.<br><br>
+      ⚠️ Si borras los datos del navegador (o usas modo incógnito), las fotos se pierden: no hay copia en ningún sitio.<br><br>
+      <span style="color:var(--mute-2)">⚖️ Al continuar consientes guardar estas fotos en tu dispositivo bajo tu responsabilidad. (Texto legal pendiente de revisión jurídica de Pablo.)</span>
+    </div>
+    <button type="button" onclick="pfConsentOk()">Acepto — solo en mi dispositivo</button>
+    <button class="sec" type="button" onclick="show('pfConsentModal',false)">Ahora no</button>
+  </div>
+</div>
+
 <!-- MODAL: 📷 escáner de código de barras (I5) — motor: Open Food Facts (la misma base que usa
      Yuka en España). Cámara trasera + BarcodeDetector (nativo SOLO si de verdad soporta ean_13;
      si no, polyfill WASM desde jsDelivr). El input manual está SIEMPRE visible: un desktop sin
@@ -819,6 +940,11 @@ Tus datos se guardan solo en este dispositivo.</p>
     <button class="modal-x" type="button" title="Cerrar" aria-label="Cerrar" onclick="bcCerrar()">✕</button>
     <h2>📷 Escanear código</h2>
     <div id="bc_scan">
+      <!-- v0.13 · L1: botón EXPLÍCITO de cámara. La cámara ya arranca sola al abrir el modal, pero
+           se PARA al buscar a mano, al pasar la app a segundo plano o si el permiso se denegó la
+           primera vez: este botón la relanza sin cerrar el modal. En navegadores sin cámara/permiso
+           el mismo flujo de bcIniciarCamara pinta el hint honesto y el input manual sigue vivo. -->
+      <button class="sec" type="button" id="bc_btn_cam" style="width:100%;margin:0 0 8px" onclick="bcIniciarCamara()">📷 Escanear con la cámara</button>
       <video id="bc_video" class="hidden" playsinline muted autoplay style="width:100%;max-height:240px;object-fit:cover;border-radius:12px;background:var(--ink-3)"></video>
       <div id="bc_estado" class="hint" style="margin-top:6px;min-height:1.1em"></div>
       <label>o escribe el código a mano</label>
@@ -921,11 +1047,26 @@ function factorPasos(pasos){
   if(pasos<12500) return 1.60;
   return 1.75;
 }
+// [DEPORTE-PURE-INICIO] — deporte extra (fútbol, baloncesto…): días INTENSOS que se SUMAN al gym
+// como días de entreno. Caso real de Pablo (06/07/2026): baloncesto callejero casi diario que el
+// cálculo ignoraba (~600 kcal/día). ⚠️ Peso exacto pendiente de validar contra el master file al
+// pasarlo a motor-reglas.json / motor_calculo.py.
+function factorDeporte(actividad, depDias){
+  depDias=+depDias||0;                 // blindaje: imports editados a mano pueden traer string → NaN fail-open (hallazgo verificación 07/07)
+  if(depDias<1) return 0;              // «suave o de vez en cuando» (0.5) = nota para el coach, NO mueve calorías (el hint promete: solo si sudas de verdad)
+  depDias=Math.min(3.5, depDias);      // clamp al máximo que ofrece la UI
+  const diasGym={sedentario:0, ligero:1.5, activo:4, muy_activo:6}[actividad]||0;
+  const d=Math.min(7, diasGym+depDias);
+  return d<=2?1.30 : d<=3?1.45 : d<=4?1.60 : 1.75;
+}
+// [DEPORTE-PURE-FIN]
 function plan(p){
-  const fAct=R.factores[p.actividad]||1.30, fPas=factorPasos(p.pasos), fEff=Math.max(fAct,fPas);
+  const fAct=R.factores[p.actividad]||1.30, fPas=factorPasos(p.pasos), fDep=factorDeporte(p.actividad,p.deporte);
+  const fEff=Math.max(fAct,fPas,fDep);
   const b=bmr(p); const t=b.v*fEff;
   const cal=calObjetivo(t,p.objetivo,p.intensidad_pct); const m=macros(cal,p);
-  return {bmr:Math.round(b.v), bmrM:b.m, tdee:Math.round(t), cal:Math.round(cal), m, factorEff:fEff, porPasos: fPas>fAct};
+  return {bmr:Math.round(b.v), bmrM:b.m, tdee:Math.round(t), cal:Math.round(cal), m, factorEff:fEff,
+    porPasos: fPas>fAct && fPas>=fDep, porDeporte: fDep>Math.max(fAct,fPas)};
 }
 function calibrar(calComidas,pAntes,pDespues,dias,obj){
   if(!(dias>=1)||!(pAntes>0)) return null;
@@ -953,6 +1094,7 @@ function porqueHTML(p, rec, pgkg, ggkg){
   L.push(["Calorías · estimación viva", "El día 1 es una estimación (falla ±10-15%). En ~2 semanas tu peso real revela tu gasto verdadero y reajusto: la fórmula propone, el cuerpo manda. — lógica de cálculo, Capa 2"]);
   L.push(["Fibra · ~14 g/1000 kcal", "Para salud y saciedad; no es anabólica. — Tema 33 (Quagliani 2017)"]);
   if(rec && rec.porPasos) L.push(["Tu actividad · por pasos", "Tus pasos diarios capturan el NEAT que el desplegable de gimnasio ignora, así que tu gasto sube. — Tema 37 (Tudor-Locke 2004)"]);
+  if(rec && rec.porDeporte) L.push(["Tu actividad · por tu deporte", "Tu deporte intenso cuenta como días de entreno: lo sumo a tu gym y tu gasto sube. — regla nueva (onboarding v2, caso Pablo); el peso exacto se validará contra el master file"]);
   var rows=L.map(function(x){ return "<div style='margin:8px 0 0'><b style='color:var(--soft)'>"+esc(x[0])+".</b> <span class='hint' style='display:inline'>"+esc(x[1])+"</span></div>"; }).join("");
   return "<details style='margin-top:10px'><summary style='cursor:pointer;color:var(--jade);font-weight:600'>¿Por qué estos números? · Jarvis te lo explica</summary>"
     +"<div class='hint' style='margin:6px 0 0'>Jarvis <b style='color:var(--soft)'>cita la ciencia</b> del master-file, no se la inventa (el coach conversacional llega después).</div>"
@@ -967,7 +1109,7 @@ var FOODS=[
   {n:"Salmón",kcal:208,p:20,c:0,f:13},{n:"Merluza",kcal:90,p:18,c:0,f:2},{n:"Gambas",kcal:99,p:24,c:0,f:0.3},
   {n:"Huevo entero",kcal:155,p:13,c:1.1,f:11},{n:"Clara de huevo",kcal:52,p:11,c:0.7,f:0.2},
   {n:"Jamón serrano",kcal:241,p:31,c:1,f:12},{n:"Jamón cocido (pavo)",kcal:104,p:17,c:1.5,f:3},
-  {n:"Leche entera",kcal:61,p:3.2,c:4.8,f:3.3},{n:"Leche desnatada",kcal:35,p:3.4,c:5,f:0.1},
+  {n:"Leche entera",kcal:61,p:3.2,c:4.8,f:3.3,u:"ml"},{n:"Leche desnatada",kcal:35,p:3.4,c:5,f:0.1,u:"ml"},
   {n:"Yogur natural",kcal:61,p:3.5,c:4.7,f:3.3},{n:"Yogur griego",kcal:97,p:9,c:4,f:5},
   {n:"Queso batido 0%",kcal:47,p:8,c:4,f:0.2},{n:"Requesón",kcal:98,p:11,c:3,f:4},{n:"Queso curado",kcal:380,p:25,c:1.4,f:30},
   {n:"Arroz blanco cocido",kcal:130,p:2.7,c:28,f:0.3},{n:"Pasta cocida",kcal:158,p:5.8,c:31,f:0.9},
@@ -1018,7 +1160,7 @@ var FOODS_BEDCA=[
   {n:"Almendras fritas saladas",kcal:590,p:19,c:4.5,f:56},{n:"Anchoas en aceite (conserva)",kcal:203,p:28.9,c:0,f:9.7},{n:"Arroz con leche",kcal:92,p:3.3,c:16.4,f:1.3},
   {n:"Bacalao salado (remojado)",kcal:109,p:26,c:0,f:0.4},{n:"Berenjena frita",kcal:298,p:1.2,c:2.7,f:31.9},{n:"Bizcocho",kcal:381,p:6.5,c:39.6,f:21.9},
   {n:"Boquerones fritos",kcal:137,p:20.1,c:0.5,f:6},{n:"Butifarra",kcal:240,p:10,c:5.5,f:20},{n:"Calamar asado",kcal:81,p:16.6,c:0.5,f:1.3},
-  {n:"Cecina",kcal:242,p:39,c:0,f:9.5},{n:"Cerveza",kcal:42,p:0.5,c:3.1,f:0},{n:"Chipirón",kcal:81,p:16.2,c:0.7,f:1.4},
+  {n:"Cecina",kcal:242,p:39,c:0,f:9.5},{n:"Cerveza",kcal:42,p:0.5,c:3.1,f:0,u:"ml"},{n:"Chipirón",kcal:81,p:16.2,c:0.7,f:1.4},
   {n:"Chorizo",kcal:322,p:27,c:1.9,f:23.1},{n:"Churro",kcal:358,p:4.6,c:40,f:20},{n:"Croquetas de pollo",kcal:154,p:5.8,c:20.4,f:5.3},
   {n:"Cuajada",kcal:87,p:4.5,c:6.6,f:4.7},{n:"Empanada de carne",kcal:298,p:21.9,c:12,f:18.1},{n:"Empanadilla",kcal:247,p:4.8,c:29.7,f:12},
   {n:"Ensaladilla rusa",kcal:110,p:2.7,c:9.8,f:6.7},{n:"Fabada asturiana",kcal:157,p:6.1,c:13.4,f:8.8},{n:"Flan de huevo",kcal:132,p:4.8,c:20.4,f:3.4},
@@ -1034,19 +1176,87 @@ var FOODS_BEDCA=[
   {n:"Rosquilla",kcal:349,p:7.8,c:49.3,f:13.2},{n:"Salchichón",kcal:420,p:25.8,c:2,f:34.7},{n:"San Jacobo",kcal:237,p:4.1,c:25.2,f:13.3},
   {n:"Sardina asada",kcal:255,p:16.7,c:0,f:21.2},{n:"Sobrasada",kcal:595,p:12.9,c:0,f:61.4},{n:"Sofrito",kcal:209,p:1.1,c:4.7,f:21},
   {n:"Tomate frito",kcal:84,p:1.5,c:5.2,f:6.4},{n:"Tortilla francesa",kcal:170,p:14.6,c:0.4,f:12.3},{n:"Turrón (tipo Alicante)",kcal:484,p:13.1,c:44.9,f:28.1},
-  {n:"Vino tinto",kcal:70,p:0.2,c:0.3,f:0}
+  {n:"Vino tinto",kcal:70,p:0.2,c:0.3,f:0,u:"ml"}
+];
+// v0.13 · L3 — tanda curada (~40): bebidas, kebab/fast-food común en España y básicos que
+// faltaban. Origen del encargo: la Coca-Cola Zero del kebab (dictado Pablo 07/07).
+// Fuentes: OFF = ficha España de Open Food Facts · BEDCA = bedca.net · USDA = FoodData Central
+// (para lo que BEDCA no cubre). "(aprox)" = plato compuesto con valores medios: el del local de
+// abajo puede variar. Los líquidos llevan u:"ml" (valores POR 100 ml) y enganchan con la
+// detección g/ml existente: comAdd propaga la unidad y el diario enseña "330 ml", no "330 g".
+var FOODS_V013=[
+  // — Bebidas · valores por 100 ml —
+  {n:"Coca-Cola",kcal:42,p:0,c:10.6,f:0,u:"ml"},                       // OFF
+  {n:"Coca-Cola Zero",kcal:0,p:0,c:0,f:0,u:"ml"},                      // OFF (0,2 kcal reales → 0 a efectos del diario)
+  {n:"Fanta naranja",kcal:38,p:0,c:9.2,f:0,u:"ml"},                    // OFF España
+  {n:"Aquarius limón",kcal:21,p:0,c:5,f:0,u:"ml"},                     // OFF
+  {n:"Cerveza 0,0",kcal:24,p:0.4,c:5.3,f:0,u:"ml"},                    // OFF (media 0,0 España)
+  {n:"Tinto de verano",kcal:33,p:0,c:4.4,f:0,u:"ml"},                  // OFF
+  {n:"Zumo de naranja (envasado)",kcal:44,p:0.7,c:10,f:0.1,u:"ml"},    // BEDCA/OFF
+  {n:"Café solo",kcal:2,p:0.1,c:0.3,f:0,u:"ml"},                       // BEDCA (café infusión)
+  {n:"Café con leche entera (aprox)",kcal:32,p:1.6,c:2.5,f:1.7,u:"ml"},// aprox mitad café / mitad leche entera
+  {n:"Té frío limón",kcal:30,p:0,c:7.2,f:0,u:"ml"},                    // OFF (tipo Nestea)
+  {n:"Bebida energética (tipo Red Bull)",kcal:45,p:0,c:11,f:0,u:"ml"}, // OFF
+  {n:"Vino blanco",kcal:66,p:0.1,c:0.6,f:0,u:"ml"},                    // BEDCA
+  {n:"Leche semidesnatada",kcal:46,p:3.3,c:4.8,f:1.6,u:"ml"},          // BEDCA (faltaba: había entera y desnatada)
+  // — Kebab / fast-food común · valores por 100 g —
+  {n:"Dürüm de pollo (aprox)",kcal:215,p:11,c:21,f:9.5},               // OFF (media wraps kebab)
+  {n:"Kebab en plato con ensalada (aprox)",kcal:145,p:11,c:7,f:8},     // aprox carne+ensalada+salsa
+  {n:"Carne de kebab (aprox)",kcal:215,p:18,c:3,f:14.5},               // OFF (döner asado)
+  {n:"Pan de pita",kcal:275,p:9,c:55,f:1.2},                           // USDA
+  {n:"Falafel",kcal:333,p:13.3,c:31.8,f:17.8},                         // USDA
+  {n:"Salsa de yogur (kebab, aprox)",kcal:180,p:2.5,c:6,f:16},         // aprox yogur+mayonesa
+  {n:"Patatas fritas (freiduría)",kcal:312,p:3.4,c:41,f:15},           // USDA (fast food)
+  {n:"Patatas chips (bolsa)",kcal:536,p:6.6,c:50,f:34.6},              // USDA
+  {n:"Hamburguesa completa con pan (aprox)",kcal:254,p:13,c:24,f:12},  // USDA (media fast food)
+  {n:"Nuggets de pollo",kcal:296,p:15.5,c:16,f:19.7},                  // USDA
+  {n:"Perrito caliente completo (aprox)",kcal:290,p:10.5,c:24,f:17},   // USDA
+  {n:"Sándwich mixto (aprox)",kcal:260,p:12.5,c:28,f:11},              // aprox pan molde+york+queso
+  {n:"Lasaña de carne (aprox)",kcal:163,p:8.8,c:13.2,f:8.4},           // BEDCA
+  {n:"Ketchup",kcal:112,p:1.2,c:25.8,f:0.2},                           // USDA
+  {n:"Mayonesa",kcal:680,p:1.1,c:2.4,f:74.7},                          // USDA
+  {n:"Alioli (aprox)",kcal:703,p:1.5,c:3,f:76},                        // OFF (media España)
+  {n:"Salchichas Frankfurt",kcal:250,p:11.5,c:3.5,f:21},               // OFF (media España)
+  {n:"Bacon (crudo)",kcal:417,p:12.6,c:0.7,f:39.7},                    // USDA
+  // — Básicos que faltaban · valores por 100 g —
+  {n:"Azúcar blanco",kcal:400,p:0,c:100,f:0},                          // BEDCA
+  {n:"Chocolate con leche",kcal:535,p:7.6,c:58.7,f:29.9},              // USDA (solo había negro 85%)
+  {n:"Mermelada de fresa",kcal:250,p:0.4,c:60,f:0.1},                  // OFF (media)
+  {n:"Helado de vainilla",kcal:207,p:3.5,c:23.6,f:11},                 // USDA
+  {n:"Arroz blanco (crudo)",kcal:354,p:7.2,c:77.6,f:0.9},              // etiqueta típica España/OFF (solo había cocido)
+  {n:"Pasta (cruda)",kcal:359,p:12.5,c:71.7,f:1.5},                    // etiqueta típica/OFF (solo había cocida)
+  {n:"Cacao soluble (tipo ColaCao)",kcal:389,p:4.7,c:84,f:2.4},        // OFF
+  {n:"Pollo asado (con piel)",kcal:239,p:27.3,c:0,f:13.6},             // USDA
+  {n:"Palomitas de maíz (sin mantequilla)",kcal:387,p:12,c:78,f:4.5}   // USDA
 ];
 // Fusión con dedup por nombre (case-insensitive): la base curada MANDA en las colisiones
 // (Aceitunas, Chorizo, Fuet, Jamón serrano, Lomo embuchado ya existían) para no cambiar por
 // sorpresa valores que el usuario lleva tiempo usando; el resto de BEDCA se añade tal cual.
+// v0.13 · la tanda L3 entra por el mismo embudo (por eso "Pizza margarita (aprox)" NO se re-añade).
 (function(){
   var vistos={}; FOODS.forEach(function(x){ vistos[x.n.toLowerCase()]=1; });
-  FOODS_BEDCA.forEach(function(x){ if(!vistos[x.n.toLowerCase()]){ FOODS.push(x); vistos[x.n.toLowerCase()]=1; } });
+  FOODS_BEDCA.concat(FOODS_V013).forEach(function(x){ if(!vistos[x.n.toLowerCase()]){ FOODS.push(x); vistos[x.n.toLowerCase()]=1; } });
 })();
 function comInit(){
   var d=$("com_fecha"); if(d && !d.value) d.value=hoyLocal();
   comFillDatalist();   // I6 · base curada + alimentos propios; se reconstruye por si acabas de crear uno
   renderComida(); comRecientes(); renderAgua(); renderSuples();
+}
+// v0.13a-fix · la ENTRADA también habla ml para líquidos (verificación: «la salida es honesta;
+// la entrada miente»): al teclear/elegir un alimento con u:"ml", el label, el placeholder y los
+// botones rápidos cambian a mililitros — y vuelven a gramos con cualquier otro.
+function comEsMl(nombre){
+  var n=(nombre||"").trim().toLowerCase(); if(!n) return false;
+  var lista=(typeof FOODS!=="undefined")?FOODS:[];
+  for(var i=0;i<lista.length;i++){ if(lista[i].n.toLowerCase()===n) return lista[i].u==="ml"; }
+  return false;
+}
+function comUnidadSync(){
+  var ml=comEsMl((($("com_nombre")||{}).value));
+  var lb=$("com_g_label"); if(lb) lb.textContent= ml?"Mililitros":"Gramos";
+  var inp=$("com_gramos"); if(inp) inp.placeholder= ml?"ml":"g";
+  var bt=$("com_g_btns"); if(bt){ var bs=bt.querySelectorAll("button");
+    for(var i=0;i<bs.length;i++){ bs[i].textContent=bs[i].textContent.replace(/(ml|g)$/, ml?"ml":"g"); } }
 }
 function comAdd(){
   var nombre=($("com_nombre").value||'').trim(), g=+$("com_gramos").value;
@@ -1058,7 +1268,11 @@ function comAdd(){
   if(!fd){ var _cand=_base.filter(function(x){ return x.n.toLowerCase().indexOf(_q)>=0; }); if(_cand.length===1) fd=_cand[0]; else if(_cand.length>1){ toast("Hay "+_cand.length+" que encajan — elige uno de la lista"); return; } }
   if(!fd){ toast("No está en la base — elige de la lista, escanea el código o crea un alimento propio"); return; }
   var k=g/100, arr=get(LS_COMIDA,[]);
-  arr.push({id:Date.now().toString(36)+Math.random().toString(36).slice(2,6), f:($("com_fecha").value||hoyLocal()), n:fd.n, g:g, kcal:Math.round(fd.kcal*k), p:+(fd.p*k).toFixed(1), c:+(fd.c*k).toFixed(1), gr:+(fd.f*k).toFixed(1)});
+  var _item={id:Date.now().toString(36)+Math.random().toString(36).slice(2,6), f:($("com_fecha").value||hoyLocal()), n:fd.n, g:g, kcal:Math.round(fd.kcal*k), p:+(fd.p*k).toFixed(1), c:+(fd.c*k).toFixed(1), gr:+(fd.f*k).toFixed(1)};
+  // v0.13 · L3: las bebidas de la base local van por 100 ml (u:"ml") → la unidad viaja al diario
+  // y comUnidad la pinta bien ("330 ml"). Los sólidos siguen sin u = gramos, como siempre.
+  if(fd.u==="ml") _item.u="ml";
+  arr.push(_item);
   var _obj=window._obj||null, _f=($("com_fecha").value||hoyLocal());
   var _pAntes=get(LS_COMIDA,[]).filter(function(x){return x.f===_f;}).reduce(function(a,x){return a+x.p;},0);
   set(LS_COMIDA,arr);
@@ -1740,6 +1954,55 @@ function bcFactorCantidad(cant, uIn, uProd, dens){
 function comUnidad(x){ return (x && x.u==="ml") ? "ml" : "g"; }
 // [BC-ML-PURE-FIN]
 
+// [BC-FALLBACK-PURE-INICIO] — v0.13 · FIX «no encontrado» (la Coca-Cola Zero del kebab, 07/07).
+// Bloque PURO (sin red ni DOM): los tests de node (_tests/test-barcode-fallback.node.js) lo
+// extraen del HTML real y lo ejecutan tal cual.
+// CAUSA RAÍZ encontrada en el código v0.12: bcBuscar hacía UNA sola petición (world/api/v2) y
+// trataba CUALQUIER respuesta sin status===1 como "no está en la base", SIN mirar el HTTP status:
+// un 429 (límite de peticiones de OFF), un 500 o un cuerpo de error se enseñaban como "producto
+// inexistente" — mentira para un producto ultra-común. Además no había timeout (wifi de kebab =
+// "Buscando…" eterno) y un UPC-A de importación (12 cifras) no se reintentaba con el cero delante.
+// NOTA es. vs world.: es.openfoodfacts.org y world.openfoodfacts.org son la MISMA base de datos
+// (el subdominio solo cambia el idioma de la web), así que el fallback útil NO es "España→mundo":
+// es v2→v0 + variantes del código + distinguir "error del servidor" de "no existe".
+
+// Variantes razonables de un código para reintentar el lookup:
+// - tal cual llegó;
+// - EAN-13 que empieza por 0 → también SIN el cero (UPC-A americano: OFF guarda muchos así);
+// - UPC-A de 12 cifras → también CON cero delante (por si está guardado como EAN-13).
+function bcVariantesEan(ean){
+  ean=String(ean||"").replace(/\D/g,"");
+  var out=[], vistos={};
+  function add(c){ if(c && c.length>=8 && !vistos[c]){ vistos[c]=1; out.push(c); } }
+  add(ean);
+  if(ean.length===13 && ean.charAt(0)==="0") add(ean.slice(1));
+  if(ean.length===12) add("0"+ean);
+  return out;
+}
+// Clasifica una respuesta de OFF (v0 o v2) en un veredicto HONESTO:
+//  "ok" = producto encontrado · "no-esta" = OFF dice que NO existe (404 o status:0) ·
+//  "error-servidor" = 429/5xx o cuerpo ilegible: OFF saturado o caído — eso NO significa que el
+//  producto no exista, y el mensaje al usuario no debe decirlo.
+function bcClasificarOFF(httpStatus, j){
+  if(j && j.status===1 && j.product) return {tipo:"ok", producto:j.product};
+  if(!j) return (httpStatus===404) ? {tipo:"no-esta"} : {tipo:"error-servidor"};
+  if(httpStatus===404 || j.status===0) return {tipo:"no-esta"};
+  if(httpStatus>=400) return {tipo:"error-servidor"};   // 429/5xx y también 403/4xx raros (bloqueo/saturación): el producto PUEDE existir — no mentir con "no está"
+  return {tipo:"no-esta"};   // 200 con JSON raro sin product: para OFF equivale a "no está"
+}
+// URLs del lookup, EN ORDEN: primero api v2 (respuesta ligera con fields) para todas las
+// variantes del código, después api v0 (la clásica, backend distinto: cuando v2 tiene un mal
+// día, v0 suele seguir respondiendo). Máximo 4 URLs (2 variantes × 2 APIs) y se corta en el
+// primer acierto: respeta de sobra el límite de OFF.
+var BC_OFF_FIELDS="product_name,brands,nutriments,serving_size,nutriscore_grade,image_front_url,nutrition_data_per,product_quantity,product_quantity_unit,quantity,serving_quantity,serving_quantity_unit,categories_tags";
+function bcUrlsLookup(ean){
+  var vs=bcVariantesEan(ean), urls=[];
+  vs.forEach(function(c){ urls.push("https://world.openfoodfacts.org/api/v2/product/"+encodeURIComponent(c)+".json?fields="+BC_OFF_FIELDS); });
+  vs.forEach(function(c){ urls.push("https://world.openfoodfacts.org/api/v0/product/"+encodeURIComponent(c)+".json"); });
+  return urls;
+}
+// [BC-FALLBACK-PURE-FIN]
+
 function bcEstado(msg){ var el=$("bc_estado"); if(el) el.textContent=msg||""; }
 function bcAbrir(){
   _bcProducto=null;
@@ -1759,10 +2022,15 @@ function bcPararCamara(){
 function bcIniciarCamara(){
   // La cámara solo existe en contexto seguro (https o localhost). En file:// avisamos claro;
   // el input manual de abajo sigue funcionando igual (el lookup a OFF no necesita cámara).
+  bcPararCamara();   // guard anti doble-arranque (verificación v0.13a): sin esto, un 2º getUserMedia dejaba los tracks del 1º huérfanos y grabando
   if(location.protocol==="file:"){ bcEstado("La cámara necesita HTTPS o localhost — usa el código a mano."); return; }
   if(!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia)){ bcEstado("Este navegador no permite usar la cámara — usa el código a mano."); return; }
   bcEstado("Pidiendo permiso de cámara…");
   navigator.mediaDevices.getUserMedia({video:{facingMode:"environment"}}).then(function(stream){
+    // Carrera permiso/cierre (verificación v0.13a): si el usuario cerró el modal mientras el
+    // navegador enseñaba el prompt, al conceder NO arrancamos una cámara fantasma.
+    var m=$("barcodeModal");
+    if(!m || m.classList.contains("hidden")){ try{ stream.getTracks().forEach(function(t){ t.stop(); }); }catch(e){} return; }
     _bcStream=stream;
     var v=$("bc_video"); if(!v){ bcPararCamara(); return; }
     v.srcObject=stream; v.classList.remove("hidden");
@@ -1801,8 +2069,15 @@ function bcPrepararDetector(){
   bcEstado("Cargando lector de códigos…");
   bcResolverDetector().then(function(D){
     if(!D){ bcEstado("No se pudo cargar el lector de códigos (¿sin internet?) — escribe el código a mano."); return; }
-    try{ _bcDetector=new D({formats:["ean_13","ean_8"]}); }
-    catch(e){ bcEstado("El lector no arranca en este navegador — escribe el código a mano."); return; }
+    // v0.13 · L1: más formatos — upc_a/upc_e (latas y productos de importación, típicos de kebab y
+    // bazar) y code_128 (etiquetas de balanza/charcutería). Si el detector de este navegador no
+    // traga la lista completa (lanzan TypeError con formatos que no soportan), se recae en la
+    // pareja clásica ean_13/ean_8 en vez de romper.
+    try{ _bcDetector=new D({formats:["ean_13","ean_8","upc_a","upc_e","code_128"]}); }
+    catch(e){
+      try{ _bcDetector=new D({formats:["ean_13","ean_8"]}); }
+      catch(e2){ bcEstado("El lector no arranca en este navegador — escribe el código a mano."); return; }
+    }
     if(_bcStream){ bcEstado("Apunta al código de barras…"); bcLoop(); }
   });
 }
@@ -1823,6 +2098,9 @@ function bcLoop(){
 function bcDetectado(ean){
   ean=String(ean).replace(/\D/g,"");
   if(!ean) return;
+  // v0.13 · L1: vibración corta al detectar (feedback físico tipo caja de súper). Solo si el
+  // dispositivo la soporta; en desktop navigator.vibrate no existe y no pasa nada.
+  if(navigator.vibrate){ try{ navigator.vibrate(80); }catch(e){} }
   bcPararCamara();
   bcBuscar(ean);
 }
@@ -1862,12 +2140,11 @@ function bcBuscar(ean){
     return;
   }
   // OJO: sin headers custom (el User-Agent no se puede tocar desde fetch de navegador). Sin API key.
-  // fields ampliado (fix ml): nutrition_data_per + unidades de envase/ración + categories_tags para
-  // detectar si los valores van por 100 g o por 100 ml, y serving_quantity para la guardia per-serving.
-  var url="https://world.openfoodfacts.org/api/v2/product/"+encodeURIComponent(ean)+".json?fields=product_name,brands,nutriments,serving_size,nutriscore_grade,image_front_url,nutrition_data_per,product_quantity,product_quantity_unit,quantity,serving_quantity,serving_quantity_unit,categories_tags";
-  fetch(url).then(function(r){ return r.json(); }).then(function(j){
-    if(!j || j.status!==1 || !j.product){ bcNoEncontrado(ean); return; }
-    var p=j.product;
+  // v0.13 · L2: ya NO es una petición única — bcFetchCadena recorre bcUrlsLookup (v2→v0 + variantes
+  // del código, bloque puro de arriba) y corta en el primer acierto. El "resumen" acumula qué tipo
+  // de fallo hubo para que el mensaje final no mienta (ver bcFalloBusqueda).
+  bcFetchCadena(bcUrlsLookup(ean), 0, {}, function(p, resumen){
+    if(!p){ bcFalloBusqueda(ean, resumen); return; }
     // Toda la lógica por-100/unidad/per-serving vive en bcNormalizarOFF (pura, testeada en node).
     var norm=bcNormalizarOFF(p);
     var marca=p.brands?String(p.brands).split(",")[0].trim():"";
@@ -1878,11 +2155,50 @@ function bcBuscar(ean){
       img:(typeof p.image_front_url==="string" && p.image_front_url.indexOf("https://")===0)?p.image_front_url:null,
       nutriscore:(typeof p.nutriscore_grade==="string" && /^[a-e]$/i.test(p.nutriscore_grade))?p.nutriscore_grade.toUpperCase():null,
       serving:(typeof p.serving_size==="string" && p.serving_size)?p.serving_size:null, porcion:null});
-  }).catch(function(){
-    if(res){ res.innerHTML="<div class='aviso'>No se pudo consultar Open Food Facts (¿sin conexión?). Reintenta, o crea el alimento a mano.</div>"
-      +"<button class='sec' type='button' onclick='bcReintentar()'>↻ Reintentar</button>"
-      +"<button class='sec' type='button' onclick='apAbrir(\""+escAttr(ean)+"\")'>Crear alimento propio</button>"; res.classList.remove("hidden"); }
   });
+}
+// v0.13 · L2: recorre las URLs EN ORDEN y llama a fin(producto|null, resumen). Cada intento tiene
+// 10 s de tope (AbortController): sin esto, el wifi flojo de un kebab dejaba "Buscando…" colgado
+// para siempre. r.json() que falla en un HTTP de error = cuerpo HTML de error → error de servidor.
+function bcFetchCadena(urls, i, resumen, fin){
+  if(i>=urls.length){ fin(null, resumen); return; }
+  if(i>0) bcEstado("Buscando… (probando otra vía, "+(i+1)+"/"+urls.length+")");   // feedback entre reintentos (verificación v0.13a): el peor caso ya no es 40 s de silencio
+  var ctrl=(typeof AbortController!=="undefined")?new AbortController():null;
+  var timer=ctrl?setTimeout(function(){ try{ ctrl.abort(); }catch(e){} }, 10000):null;
+  fetch(urls[i], ctrl?{signal:ctrl.signal}:{}).then(function(r){
+    return r.json().then(function(j){ return {st:r.status, j:j}; })
+      .catch(function(){ return {st:r.status, j:null}; });
+  }).then(function(x){
+    if(timer) clearTimeout(timer);
+    var v=bcClasificarOFF(x.st, x.j);   // pura, testeada en node
+    if(v.tipo==="ok"){ fin(v.producto, resumen); return; }
+    if(v.tipo==="error-servidor") resumen.errServidor=true; else resumen.noEsta=true;
+    bcFetchCadena(urls, i+1, resumen, fin);
+  }).catch(function(err){
+    if(timer) clearTimeout(timer);
+    if(err && err.name==="AbortError") resumen.timeout=true; else resumen.red=true;
+    bcFetchCadena(urls, i+1, resumen, fin);
+  });
+}
+// v0.13 · L2: el mensaje final distingue los TRES fallos que antes se mezclaban en uno:
+// 1) sin internet · 2) OFF caído/saturado o conexión lenta (el producto PUEDE existir) ·
+// 3) de verdad no está en la base. Prioridad: si hubo cualquier fallo de red/servidor, no se
+// afirma "no está" (sería mentir); solo se dice cuando TODAS las respuestas fueron definitivas.
+function bcFalloBusqueda(ean, resumen){
+  resumen=resumen||{};
+  if(resumen.red && navigator.onLine===false){ bcFalloPinta(ean, "Estás sin internet: no puedo consultar la base de productos. El código queda apuntado — reintenta cuando tengas cobertura, o crea el alimento a mano con la etiqueta."); return; }
+  if(resumen.red || resumen.timeout){ bcFalloPinta(ean, "Open Food Facts no responde (conexión lenta o servicio caído). Ojo: esto NO significa que el producto no exista — reintenta en un momento."); return; }
+  if(resumen.errServidor){ bcFalloPinta(ean, "Open Food Facts está saturado o dando error ahora mismo (nos ha respondido con un error del servidor). El producto puede estar perfectamente en la base — reintenta en un minuto."); return; }
+  bcNoEncontrado(ean);   // todas las respuestas fueron un "no existe" de verdad
+}
+// Pinta un fallo temporal con el código conservado en el input (para reintentar sin re-escanear).
+function bcFalloPinta(ean, msg){
+  var res=$("bc_res"); if(!res) return;
+  var man=$("bc_manual"); if(man && !man.value) man.value=ean;
+  res.innerHTML="<div class='aviso'>"+esc(msg)+"</div>"
+    +"<button class='sec' type='button' onclick='bcBuscarManual()'>↻ Reintentar la búsqueda</button>"
+    +"<button class='sec' type='button' onclick='apAbrir(\""+escAttr(ean)+"\")'>Crear alimento propio</button>";
+  res.classList.remove("hidden");
 }
 function bcReintentar(){
   _bcProducto=null;
@@ -1923,7 +2239,11 @@ function bcConfirmar(prod){
     +"<div><label>P (g) *</label><input id='bc_p' type='number' inputmode='decimal' value=\""+val(prod.p100)+"\"></div>"
     +"<div><label>C (g)</label><input id='bc_c' type='number' inputmode='decimal' value=\""+val(prod.c100)+"\"></div>"
     +"<div><label>G (g)</label><input id='bc_g' type='number' inputmode='decimal' value=\""+val(prod.g100)+"\"></div></div>";
-  if(falta) h+="<div class='aviso' style='margin-top:8px'>⚠️ A este producto le faltan kcal o proteína en la base: cópialas de la etiqueta antes de añadir.</div>";
+  // v0.13 · L2: honestidad "está pero incompleto" — el producto SÍ existe en la base, lo que
+  // faltan son datos (ficha colaborativa a medias). Se dice tal cual y se ofrece el alta manual
+  // PREFIJADA con el nombre, en vez del genérico "no encontrado" o de dejarle pelearse a ciegas.
+  if(falta) h+="<div class='aviso' style='margin-top:8px'>⚠️ El producto SÍ está en la base, pero su ficha está incompleta: faltan kcal o proteína. Cópialas de la etiqueta aquí arriba, o guárdalo como alimento propio (ya te lo dejo con el nombre puesto):</div>"
+    +"<button class='sec' type='button' onclick='bcCrearPropioPrefijado()'>🍽 Crear alimento propio con este nombre</button>";
   // Cantidad en LA UNIDAD del producto + toggle manual g↔ml (punto 2 de la spec). El input conserva el
   // id histórico bc_gramos aunque ahora guarda "cantidad en _bcUnidadIn" (renombrarlo rompería hábitos).
   h+="<label>Cantidad que te has "+(prod.u==="ml"?"bebido/comido":"comido")+" (<span id='bc_u_lbl'>"+prod.u+"</span>)</label>";
@@ -2017,6 +2337,29 @@ document.addEventListener("visibilitychange", function(){
   if(document.hidden && _bcStream){ bcPararCamara(); bcEstado("Cámara parada al salir de la app — pulsa ↻ Escanear otro o escribe el código."); }
 });
 
+// v0.13 · L2: alta manual PREFIJADA desde la pantalla de confirmación (caso "está pero sin
+// macros"). apAbrir LIMPIA los campos, así que se rellenan justo DESPUÉS de llamarlo. Se copia
+// el nombre editado (si el usuario lo retocó, su versión manda) y los macros que sí vinieran —
+// pero SOLO si el producto va por 100 g: los alimentos propios se guardan siempre por 100 g y
+// copiar valores por-100 ml tal cual sería colar una mentira silenciosa.
+function bcCrearPropioPrefijado(){
+  var prod=_bcProducto; if(!prod){ toast("Escanea o busca un código primero"); return; }
+  var nombre=((($("bc_nombre")||{}).value)||prod.nombre||"").trim();
+  // Se lee lo que haya EN PANTALLA (si el usuario ya tecleó algo de la etiqueta, eso manda sobre
+  // lo crudo de OFF) ANTES de abrir el otro modal, que limpia campos.
+  function leer(id, fallback){ var v=parseFloat((($(id)||{}).value)); return isFinite(v)?v:fallback; }
+  var kc=leer("bc_kcal", prod.kcal100), pr=leer("bc_p", prod.p100), ca=leer("bc_c", prod.c100), gr=leer("bc_g", prod.g100);
+  apAbrir(prod.ean||null);
+  var el=$("ap_nombre"); if(el) el.value=nombre;
+  if(prod.u!=="ml"){
+    if(kc!=null && $("ap_kcal")) $("ap_kcal").value=kc;
+    if(pr!=null && $("ap_p")) $("ap_p").value=pr;
+    if(ca!=null && $("ap_c")) $("ap_c").value=ca;
+    if(gr!=null && $("ap_g")) $("ap_g").value=gr;
+  } else {
+    toast("Este producto va por 100 ml — los alimentos propios se guardan por 100 g, así que los macros no se copian: rellénalos de la etiqueta");   // decisión honesta EXPLICADA (verificación v0.13a: parecía un fallo)
+  }
+}
 // ---- I6 · alimento propio ----
 function apAbrir(ean){
   _apEan=(typeof ean==="string" && ean)?ean:null;
@@ -2092,7 +2435,12 @@ const show=(id,on)=>$(id).classList.toggle("hidden",!on);
 var I18N={
   es:{
     // pestañas
-    tab_plan:"Plan", tab_ajustar:"Ajustar", tab_peso:"Peso", tab_entrenos:"Entrenos", tab_progreso:"Progreso", tab_comida:"Comida",
+    tab_plan:"Plan", tab_ajustar:"Ajustar", tab_peso:"Peso", tab_entrenos:"Entrenos", tab_progreso:"Progreso", tab_comida:"Comida", tab_cerebro:"🧠 Cerebro",
+    // 🧠 cerebro v0.13-B (textos que pinta el JS del chat)
+    cb_saludo:"Soy el Cerebro de Jarvis 🧠 — respondo con reglas y ciencia del master, sin inventar nada. Pregúntame («¿cuánta proteína al día?») o cuéntame cómo estás («he dormido mal») y lo apunto.",
+    cb_fallback:"Aún no reconozco ese patrón 🤷. Soy un motor de reglas (sin IA) y JAMÁS me invento una respuesta: he guardado tu pregunta para ampliar mi base con ciencia real del master. Prueba a decírmelo de otra forma.",
+    cb_sin_plan:"Todavía no tienes plan generado: completa la entrevista de Jarvis y vuelve — entonces te responderé con TUS números reales.",
+    cb_apuntado:"Apuntado en tu diario del Cerebro (solo en este dispositivo).",
     // wizard
     wiz_empezar:"Empezar", wiz_siguiente:"Siguiente", wiz_atras:"Atrás", wiz_generar:"Generar mi plan", wiz_guardar:"💾 Guardar cambios",
     // plan
@@ -2104,6 +2452,12 @@ var I18N={
     ent_titulo:"Registrar entreno", ent_guardar:"Guardar entreno", ent_add_ej:"+ Añadir ejercicio", ent_add_serie:"+ Serie",
     ent_descanso:"⏱ Descanso", ent_rut_guardar:"💾 Guardar como rutina", ent_mis_rutinas:"📋 Mis rutinas",
     ent_repetir:"↻ Repetir", ent_borrar:"Borrar", ent_historial:"Historial",
+    // v0.12.2 · vistas Entrenos estilo Hevy (home / registro / editor)
+    ent_empezar_vacio:"➕ Empezar entreno vacío", ent_continuar:"▶ Continuar entreno en curso",
+    ent_nueva_rutina:"➕ Nueva rutina", ent_recomendadas:"🎯 Recomendadas para ti", ent_volver:"← Entrenos",
+    ent_descartar_q:"¿Descartar el entreno en curso?",
+    rut_empezar:"▶ Empezar rutina", rut_editar:"✏️ Editar", rut_guardar:"💾 Guardar rutina",
+    rut_nueva_titulo:"➕ Nueva rutina", rut_editar_titulo:"✏️ Editar rutina",
     // comida
     com_titulo:"Diario de comida", com_add:"+ Añadir alimento", com_scan:"📷 Escanear código", com_foto:"📷 Foto (beta)",
     com_rapido:"⚡ Añadir rápido", com_agua:"💧 Agua de hoy", com_suples:"💊 Suplementos · seguimiento diario",
@@ -2121,9 +2475,9 @@ function idiomaCambia(sel){ var v=(sel&&sel.value)||"es"; if(!I18N[v]){ if(sel) 
 
 // ======= PESTAÑAS + TOAST (UX v0.3) =======
 // Orden de las pestañas (única fuente de verdad; antes estaba duplicado en aplicarTab/render y lo usa el swipe).
-const TABS=["plan","ajustes","registro","entrenos","calib","comida"];
+const TABS=["plan","ajustes","registro","entrenos","calib","comida","cerebro"];
 let _tab="plan";
-function abrir(t){ _tab=t; aplicarTab(); if(t==="entrenos" && !$("ent_form").innerHTML.trim()) entInit(); if(t==="comida") comInit(); window.scrollTo(0,0); }
+function abrir(t){ _tab=t; aplicarTab(); if(t==="entrenos" && !$("ent_form").innerHTML.trim()) entInit(); if(t==="comida") comInit(); if(t==="cerebro") cbInit(); if(t==="calib") pfRefrescar(); window.scrollTo(0,0); }   // 📸 v0.13-C · Progreso pinta también la sección de fotos
 function aplicarTab(){
   TABS.forEach(function(s){
     show(s, s===_tab);
@@ -2168,24 +2522,39 @@ document.addEventListener('DOMContentLoaded',function(){
     if(ents.length>20 && _old) setTimeout(function(){ toast("💾 Llevas tiempo sin copia de seguridad — toca Exportar en Ajustes"); }, 3500);
   }catch(e){}
 });
-function resetTodo(){ if(!confirm("⚠️ Esto borra TODO: perfil, pesos, entrenos, rutinas, comidas, alimentos propios, agua y suplementos. ¿Seguro?")) return; try{ localStorage.removeItem(LS_P); localStorage.removeItem(LS_W); localStorage.removeItem(LS_E); localStorage.removeItem("jvf_notas_ej"); localStorage.removeItem("jvf_comida"); localStorage.removeItem("jvf_agua"); localStorage.removeItem("jvf_suples_cfg"); localStorage.removeItem("jvf_suples_log"); localStorage.removeItem("jvf_rutinas"); localStorage.removeItem("jvf_ent_start"); localStorage.removeItem("jvf_meals"); localStorage.removeItem("jvf_alimentos_propios"); localStorage.removeItem("jvf_barcode_cache"); localStorage.removeItem("jvf_foto_ajustes"); localStorage.removeItem("jvf_warmup_stats"); localStorage.removeItem("jvf_plate_barra"); localStorage.removeItem("jvf_rest_seg"); }catch(e){} _mem={}; location.reload(); }
+function resetTodo(){ if(!confirm("⚠️ Esto borra TODO: perfil, pesos, entrenos, rutinas, comidas, alimentos propios, agua, suplementos, lo hablado con el Cerebro y las fotos de progreso. ¿Seguro?")) return; try{ localStorage.removeItem(LS_P); localStorage.removeItem(LS_W); localStorage.removeItem(LS_E); localStorage.removeItem("jvf_notas_ej"); localStorage.removeItem("jvf_comida"); localStorage.removeItem("jvf_agua"); localStorage.removeItem("jvf_suples_cfg"); localStorage.removeItem("jvf_suples_log"); localStorage.removeItem("jvf_rutinas"); localStorage.removeItem("jvf_ent_start"); localStorage.removeItem("jvf_meals"); localStorage.removeItem("jvf_alimentos_propios"); localStorage.removeItem("jvf_barcode_cache"); localStorage.removeItem("jvf_foto_ajustes"); localStorage.removeItem("jvf_warmup_stats"); localStorage.removeItem("jvf_plate_barra"); localStorage.removeItem("jvf_rest_seg"); localStorage.removeItem("jvf_cerebro_diario"); localStorage.removeItem("jvf_cerebro_norec"); localStorage.removeItem("jvf_fotos_consent"); localStorage.removeItem("jvf_fotos_meta"); }catch(e){} _mem={};
+  // 📸 v0.13-C · las fotos viven en IndexedDB: se borra la base entera ANTES de recargar (con
+  // timeout de seguridad — si el borrado se quedara bloqueado, la app no se cuelga: recarga igual
+  // y el intento de borrado sigue en cola del navegador).
+  var _hecho=false; function _fin(){ if(_hecho) return; _hecho=true; location.reload(); }
+  try{
+    if(typeof _pfDB!=="undefined" && _pfDB){ try{ _pfDB.close(); }catch(e2){} _pfDB=null; }
+    if(window.indexedDB){ var rq=indexedDB.deleteDatabase("jvf_fotos"); rq.onsuccess=rq.onerror=rq.onblocked=_fin; setTimeout(_fin,800); return; }
+  }catch(e){}
+  _fin(); }
 
 // ======= EXPORT / IMPORT (red de seguridad: backup + migración entre dispositivos) =======
 // Reemplazo total con confirmación. Reusa get/set, hoyLocal, toast, validar, render. NO toca motor ni gate.
 function exportarJSON(){ try{ set("jvf_last_export",hoyLocal()); }catch(e){}
   try{
-    var data={ app:"jvf", schema:1, app_version:"0.12", exportadoEl:new Date().toISOString(),
+    var data={ app:"jvf", schema:1, app_version:"0.13", exportadoEl:new Date().toISOString(),
       perfil:get(LS_P,null), pesos:get(LS_W,[]), entrenos:get(LS_E,[]), notas_ej:get("jvf_notas_ej",{}), comida:get("jvf_comida",[]), agua:get("jvf_agua",{}), suples_cfg:get("jvf_suples_cfg",null), suples_log:get("jvf_suples_log",{}),
       rutinas:get("jvf_rutinas",[]), meals:get("jvf_meals",[]), ent_start:get("jvf_ent_start",null),   // v0.10 · backup completo
       alimentos_propios:get("jvf_alimentos_propios",[]), barcode_cache:get("jvf_barcode_cache",{}),   // I5/I6 · también viajan en el backup
       foto_ajustes:get("jvf_foto_ajustes",{}),   // F-FOTO-2 · lo aprendido de tus correcciones viaja en el backup
-      warmup_stats:get("jvf_warmup_stats",false), plate_barra:get("jvf_plate_barra",20), rest_seg:get("jvf_rest_seg",120) };   // D v0.12 · ajustes del pack Hevy (+ el descanso global, que faltaba)
+      warmup_stats:get("jvf_warmup_stats",false), plate_barra:get("jvf_plate_barra",20), rest_seg:get("jvf_rest_seg",120),   // D v0.12 · ajustes del pack Hevy (+ el descanso global, que faltaba)
+      cerebro_diario:get("jvf_cerebro_diario",[]), cerebro_norec:get("jvf_cerebro_norec",[]),   // 🧠 v0.13-B · lo capturado por el Cerebro + cola de preguntas sin patrón (el flywheel, visible en el export)
+      // 📸 v0.13-C · SOLO metadatos de las fotos (fecha/pose/score/origen): los blobs viven en
+      // IndexedDB y NO viajan en este JSON a propósito (dispararían el tamaño). Export de fotos
+      // aparte: PENDIENTE (documentado; de momento las fotos no se pueden migrar de dispositivo).
+      fotos_meta:get("jvf_fotos_meta",[]),
+      fotos_aviso:"Las fotos de progreso NO van en este JSON: viven solo en el dispositivo (IndexedDB). Exportarlas aparte esta pendiente." };
     var blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
     var url=URL.createObjectURL(blob);
     var a=document.createElement("a"); a.href=url; a.download="jvf-backup-"+hoyLocal()+".json";
     document.body.appendChild(a); a.click(); document.body.removeChild(a);
     setTimeout(function(){ URL.revokeObjectURL(url); },1000);
-    toast("✓ Copia descargada");
+    toast((get("jvf_fotos_meta",[])||[]).length ? "✓ Copia descargada — ojo: las fotos de progreso NO viajan (solo viven aquí)" : "✓ Copia descargada");
   }catch(e){ toast("No se pudo exportar"); }
 }
 function importarJSON(){ var inp=$("impFile"); if(inp) inp.click(); }
@@ -2201,7 +2570,7 @@ function procesarImport(file){
     var pesos=Array.isArray(data.pesos)?data.pesos:[];
     var entrenos=Array.isArray(data.entrenos)?data.entrenos:[];
     var notas=(data.notas_ej && typeof data.notas_ej==="object")?data.notas_ej:{};
-    if(!confirm("Esto REEMPLAZA todos tus datos actuales (perfil, pesos, entrenos, notas) por los del archivo. ¿Continuar?")) return;
+    if(!confirm("Esto REEMPLAZA todos tus datos actuales (perfil, pesos, entrenos, notas) por los del archivo. Las FOTOS no viajan en los backups: las de este dispositivo se conservan y las del backup no vienen. ¿Continuar?")) return;
     var comida=Array.isArray(data.comida)?data.comida:[];
     pesos=pesos.filter(function(x){ return x&&typeof x.f==='string'&&+x.w>0; }).map(function(x){ return {f:x.f,w:+x.w}; });
     entrenos=entrenos.filter(function(w){ return w&&w.f&&Array.isArray(w.ejercicios); });
@@ -2221,12 +2590,864 @@ function procesarImport(file){
     if(data.warmup_stats!=null) set("jvf_warmup_stats",!!data.warmup_stats);
     if(data.plate_barra!=null) set("jvf_plate_barra",+data.plate_barra||20);
     if(data.rest_seg!=null) set("jvf_rest_seg",+data.rest_seg||120);
+    // 🧠 v0.13-B · diario del Cerebro + cola de preguntas sin patrón (los backups antiguos no los traen: se dejan como están)
+    if(Array.isArray(data.cerebro_diario)) set("jvf_cerebro_diario", data.cerebro_diario.filter(function(x){ return x && x.f; }));
+    if(Array.isArray(data.cerebro_norec)) set("jvf_cerebro_norec", data.cerebro_norec.filter(function(x){ return x && x.q; }));
     render();
     toast("✓ Datos importados");
   };
   fr.onerror=function(){ toast("No se pudo leer el archivo"); };
   fr.readAsText(file);
 }
+
+// ======= 🧠 EL CEREBRO v1 (v0.13-B · spec 2026-07-07, validada por Pablo) =======
+// Chatbot DENTRO de la app SIN IA: motor de intención por ECUACIONES (doctrina bot de ajedrez).
+// TRONCOS -> RAMAS -> respuesta curada del master-file.md (cita incluida). Si no reconoce el
+// patrón: fallback honesto + guarda la pregunta (flywheel). NO toca motor, gate, Entrenos ni wizard.
+var LS_CEREBRO_NOREC="jvf_cerebro_norec";    // [{f, q}] preguntas sin patrón — cola de ampliación (viaja en el export)
+var LS_CEREBRO_DIARIO="jvf_cerebro_diario";  // [{f, tipo, texto, sueno_h?, motivo?, recordar?}] captura sin fricción
+
+// [CEREBRO-PURE-INICIO] — funciones PURAS (sin DOM ni storage): los tests de node extraen este
+// bloque + el [OTRO-PURE] (por otroNorm) y los evalúan tal cual. Normalizar -> puntuar claves por
+// tronco/rama (tolerante a typos y dictado por voz) -> {entrada, score} o null. JAMÁS inventa.
+// CEREBRO_KB: cada entrada sale del master-file.md REAL (Reglas/Temas/Tesis). Nada inventado.
+var CEREBRO_KB=[
+
+  // ─────────────── TRONCO: ALIMENTACIÓN / SUPERÁVIT / DÉFICIT ───────────────
+  {
+    tronco:"alimentacion", rama:"superavit-ganar-musculo",
+    claves:["superavit","super habit","superavit calorico","volumen para ganar musculo","cuanto superavit","hay que comer de mas","bulk","bulk sucio","comer mas para musculo","fase de volumen","etapa de volumen","engordar para ganar musculo","cuanto peso gano por semana","si soy principiante","bulk limpio o sucio"],
+    r:"Para ganar músculo basta un superávit PEQUEÑO: +200-400 kcal/día o ganar 0,25-0,5% del peso a la semana. Más superávit no da más músculo, solo más grasa, y lo de \"músculo sin grasa\" es mentira: siempre hay algo de coste de grasa. Si eres principiante, tienes grasa que perder o retomas tras un parón, puedes crecer incluso en mantenimiento o déficit ligero. (— Tema 1, Slater 2019 / Helms 2023)",
+    chips:["¿cuánto peso gano por semana?","¿y si soy principiante?","¿bulk limpio o sucio?","¿cuánta proteína?"]
+  },
+  {
+    tronco:"alimentacion", rama:"deficit-perder-grasa-reparto",
+    claves:["definicion","deficit","perder grasa","adelgazar","secar","cut","estoy en cut","como reparto en definicion","dieta para marcar","bajar de peso","bajar peso","perder peso","cuanto deficit","dieta de definicion","quiero definir"],
+    r:"En definición: déficit moderado (15-25%), proteína ~1,5-2,0 g/kg, carbos ALTOS para rendir en el gym y la grasa en su suelo (~0,5-0,8 g/kg). Lo que protege el músculo es entrenar duro (tensión + sobrecarga progresiva), y para eso necesitas los carbos; se recorta GRASA, no carbos. Cuanto más magro estés, más suave el déficit. (— Tema 3, Helms 2014 / cierre proteína 2026)",
+    chips:["¿cuántos carbos en cut?","¿bajo la proteína?","¿cuánto déficit?","¿puedo ganar músculo a la vez?"]
+  },
+  {
+    tronco:"recomposicion", rama:"ganar-musculo-perder-grasa",
+    claves:["recomposicion","recomp","ganar musculo y perder grasa a la vez","las dos cosas a la vez","musculo y grasa al mismo tiempo","recomposicion corporal","ganar musculo y perder grasa","puedo ganar musculo a la vez","funciona si soy avanzado"],
+    r:"La recomposición (subir músculo y bajar grasa a la vez) SÍ es posible, sobre todo si eres principiante, tienes grasa que perder o vuelves tras un parón. En avanzados ya magros suele tocar alternar fases. La palanca es proteína ~1,6 g/kg + fuerza + no pasarte de déficit. (— Tema 28, Havers 2025 / Tema 3)",
+    chips:["¿funciona si soy avanzado?","¿cuánta proteína?","¿el músculo quema grasa?","¿cuánto déficit uso?"]
+  },
+  {
+    tronco:"recomposicion", rama:"musculo-motor-metabolico",
+    claves:["el musculo quema grasa","ganar musculo quema grasa","musculo motor metabolico","mas musculo mas quemo","el musculo acelera el metabolismo","cuanto quema el musculo"],
+    r:"El músculo ayuda a la composición (mejor sensibilidad a la insulina, mioquinas), pero el efecto es MODESTO: 1 kg de músculo gasta solo ~13 kcal/día extra, no es magia quemagrasa. Un análisis de 99 estudios vio +1,9-3,3% de masa muscular → −4,1% de grasa. Real y útil, pero no anula el balance calórico: con superávit grande engordas igual. (— Tema 28, Havers 2025)",
+    chips:["¿entonces cuánto quema de verdad?","¿es posible la recomposición?","¿y las calorías siguen mandando?"]
+  },
+
+  // ─────────────── TRONCO: CALORÍAS / TDEE ───────────────
+  {
+    tronco:"calorias", rama:"cuantas-calorias-mantenimiento",
+    claves:["cuantas calorias","calorias al dia","mantenimiento","tdee","cuanto como","calorias que necesito","mi gasto calorico","cuantas kcal","las calorias mandan","calorias para volumen","calorias siguen mandando"],
+    r:"Tu mantenimiento se estima con fórmula (Mifflin-St Jeor/Harris-Benedict) × factor de actividad, y luego se AJUSTA con tu peso real semana a semana (la báscula es el juez, no la fórmula). Ojo: no uses las calorías que te da el reloj en el gym, se inflan más del 100%. Para volumen sumas ~200-400 kcal; para definición restas un 15-25%. (— Tema 29, Lee 2026 / Tema 6)",
+    chips:["¿por qué no uso el reloj?","¿cómo ajusto con el peso?","¿por qué esas calorías?","¿cuánto para definición?"]
+  },
+  {
+    tronco:"calorias", rama:"estancado-no-bajo",
+    claves:["no bajo de peso","estancado","estancamiento","no adelgazo","modo supervivencia","metabolismo parado","no pierdo peso","me he estancado","y si me estanco","metabolismo lento","no bajo peso","subo actividad o bajo calorias"],
+    r:"El \"modo supervivencia que te para\" NO existe: con déficit real siempre pierdes. Lo que sí es real es que el gasto baja un poco al adelgazar (adaptación: ralentiza, no detiene). Antes de recortar más calorías: audita lo que comes de verdad 1 semana (salsas, aceites, picoteo), revisa tus pasos/NEAT y confirma con la media semanal de peso. El subregistro es casi universal, no es culpa tuya. (— Tema 6, Lichtman 1992 / Levine 1999)",
+    chips:["¿subo actividad o bajo calorías?","¿cómo mido el peso bien?","¿reviso mis pasos?"]
+  },
+
+  // ─────────────── TRONCO: CARBOHIDRATOS ───────────────
+  {
+    tronco:"carbohidratos", rama:"cuantos-al-dia",
+    claves:["cuantos carbos","carbohidratos al dia","cuanto carbo","hidratos","cuantos hidratos","carbos que necesito","cuanto de carbos","carbohidratos","carbos","los carbos son anabolicos","carbos engordan"],
+    r:"Los carbos no tienen un \"suelo\" para el músculo: son el RESTO de tus calorías una vez fijas la proteína y la grasa. No son anabólicos por sí solos, pero son la energía que te deja entrenar duro, y eso sí construye músculo. Cuanto más alto puedas ponerlos (sobre todo en definición), mejor rindes. (— Tema 34, Henselmans 2022 / Tesis #3)",
+    chips:["¿y en definición?","¿bajo carbos el día de descanso?","¿hay un mínimo?","¿carbos antes de entrenar?"]
+  },
+  {
+    tronco:"carbohidratos", rama:"carbos-en-cut-altos",
+    claves:["carbos en definicion","carbos en cut","carbos altos secando","muchos carbos en deficit","hidratos en definicion","carbos para marcar","por que no bajo los carbos","carbos altos en cut","cuantos carbos en cut"],
+    r:"En definición los carbos GANAN importancia: sostienen el rendimiento del entreno, y mantener intensidad y sobrecarga es lo que de verdad protege el músculo en déficit. La regla de la casa: proteína ~1,5-1,6 g/kg, grasa en su suelo y todo el margen calórico restante a CARBOS. No protegen el músculo por sí solos, sino a través de que entrenes mejor. (— Tema 3, cierre proteína 2026 / Tesis #3)",
+    chips:["¿cuánta proteína en cut?","¿por qué no bajo los carbos?","¿hay un mínimo de carbos?","¿y la grasa?"]
+  },
+  {
+    tronco:"carbohidratos", rama:"carbos-dia-descanso",
+    claves:["carbos dia de descanso","bajar carbos descanso","carbos dia sin entrenar","hidratos dia de descanso","carb cycling","ciclado de carbos","bajo carbos el dia de descanso"],
+    r:"NO hace falta bajar carbos los días de descanso. El glucógeno se repone de forma continua (no de un día para otro) y recortarlos no mejora \"mágicamente\" la sensibilidad a la insulina. Si necesitas recortar calorías ese día, baja proteína o grasa, no carbos, para no tocar el rendimiento del día siguiente. (— Tema 5, @izansimon / refuerzos tanda-5)",
+    chips:["¿y el ciclado de carbos?","¿cuántos carbos entonces?","¿carbos antes de entrenar?"]
+  },
+  {
+    tronco:"carbohidratos", rama:"carbos-peri-entreno-chuches",
+    claves:["carbos antes de entrenar","carbos intra entreno","chuches en el gym","gominolas gym","azucar antes de entrenar","carbos pre entreno","necesito comer antes de entrenar","platano antes del gym","fruta o azucar rapido","cuanto antes como"],
+    r:"Para la sesión típica de gym (<45-60 min) de alguien que YA ha comido, los carbos intra-entreno son casi irrelevantes: las chuches no \"desbloquean\" rendimiento. Solo importan de verdad en sesiones largas (>45-60 min), de mucho volumen, en ayunas o con el glucógeno bajo. Lo que manda es tu total de carbos DIARIO, no una toma mágica pre-entreno. (— Tema 5, King/Helms 2022 / Henselmans 2022)",
+    chips:["¿y si entreno en ayunas?","¿la ventana anabólica existe?","¿cuánto antes como?","¿fruta o azúcar rápido?"]
+  },
+  {
+    tronco:"carbohidratos", rama:"suelo-minimo-tiroides",
+    claves:["minimo de carbos","suelo de carbos","carbos muy bajos","keto para musculo","cetogenica","bajar mucho los carbos","cuanto es lo minimo de carbos","keto","dieta keto","la keto pierde musculo","hay un minimo"],
+    r:"Para fuerza e hipertrofia NO hay un suelo de carbos (incluso keto mantiene el 1RM). El único matiz es en DÉFICIT: no bajar de ~50 g/día protege la tiroides (la T3 cae con déficit sin carbos). Pero esos datos vienen de dietas muy bajas de los años 70-80, así que es un suelo blando, marcado para revisar. (— Tema 34, Spaulding 1976 / MDPI Nutrients 2024)",
+    chips:["¿los carbos son anabólicos?","¿carbos altos en cut?","¿la keto pierde músculo?"]
+  },
+
+  // ─────────────── TRONCO: PROTEÍNA ───────────────
+  {
+    tronco:"proteina", rama:"cuanta-al-dia",
+    claves:["cuanta proteina","proteina al dia","proteina que necesito","gramos de proteina","cuanto de proteina","proteina por kilo","cuanta proteina como","proteina","proteinas","cuanta proteina tengo que comer","cuanta al dia"],
+    r:"~1,5-1,6 g/kg de peso al día es SUFICIENTE para el caso general: por encima de ahí no se ha demostrado más síntesis ni más músculo (meseta). Doblarla a 3,2 g/kg da lo mismo. Lo importante es entrenar cerca del fallo y progresar; el margen calórico extra mételo en carbos, no en más proteína. (— Tema 3, Morton 2018 / Bagheri 2024)",
+    chips:["¿y en definición?","¿de golpe o repartida?","¿el batido cuenta?","¿cambia con la edad?"]
+  },
+  {
+    tronco:"proteina", rama:"proteina-en-cut",
+    claves:["proteina en definicion","proteina en cut","proteina secando","bajo la proteina en deficit","proteina en deficit","mas proteina para no perder musculo","bajo la proteina","por que no bajarla","cuanta proteina en cut"],
+    r:"En definición la proteína SUBE, nunca baja (bajarla es un mito rojo). Déficit suave con grasa que perder → 1,6 basta; moderado → 1,8-2,2; agresivo o ya muy magro → hasta 2,2-2,7 g/kg. Pero el usuario normal NO hace cuts agresivos: con 1,6-2,0 g/kg y carbos altos vas sobrado. El ajuste se hace recortando grasa, no proteína ni carbos. (— Tema 3, Longland 2016 / cierre proteína 2026)",
+    chips:["¿por qué no bajarla?","¿cuánto déficit uso?","¿y los carbos?","¿cuánta grasa mínima?"]
+  },
+  {
+    tronco:"proteina", rama:"repartida-o-de-golpe",
+    claves:["proteina de golpe o repartida","cuantas veces proteina","reparto proteina","proteina por comida","cuanta proteina por comida","reparto de proteina al dia","distribucion proteina","de golpe o repartida","el total importa mas","cuanto por comida"],
+    r:"Reparte la proteína en 3-4 comidas de ~30-40 g cada una (unos 2-3 g de leucina por toma para activar bien la síntesis). No pasa nada por concentrarla, pero repartida optimiza un poco. En mayores de 65 el reparto importa más: ~40 g por comida. Aun así, lo que de verdad manda es el TOTAL del día. (— Tema 3, Manescu 2025 / Kristiansen 2026)",
+    chips:["¿el total importa más?","¿cuánta al día?","¿y si soy mayor?","¿el batido cuenta como comida?"]
+  },
+  {
+    tronco:"proteina", rama:"batido-timing-ventana",
+    claves:["el batido cuenta","proteina en polvo","batido de proteina","ventana anabolica","proteina despues de entrenar","batido post entreno","hay que tomar proteina justo despues","batido","whey","la ventana anabolica existe","importa el timing"],
+    r:"Sí, el batido cuenta igual que la proteína de la comida: es comida, no magia. Y la \"ventana anabólica\" post-entreno es mucho más amplia de lo que se vende: no hay prisa por meter el batido en 30 minutos. Lo que manda es llegar a tu total diario de proteína, no el minuto exacto. (— Refuerzos tanda-6, Aragon & Schoenfeld 2013)",
+    chips:["¿cuánta proteína al día?","¿de golpe o repartida?","¿importa el timing?"]
+  },
+  {
+    tronco:"proteina", rama:"proteina-por-edad",
+    claves:["proteina mayores","proteina con la edad","proteina si soy mayor","proteina en la tercera edad","mas proteina de viejo","proteina personas mayores","cambia con la edad","y si soy mayor"],
+    r:"El 1,6 g/kg diario AGUANTA también en mayores que entrenan fuerza (los consensos geriátricos van incluso por debajo). Lo que cambia no es el diario, es la DISTRIBUCIÓN: los mayores de 65 necesitan ~0,4 g/kg (~40 g) por comida para activar bien la síntesis, frente a ~0,24 g/kg en jóvenes. Sin entrenar, la proteína extra no hace gran cosa en mayores. (— Tema 36, PROT-AGE 2013 / Kristiansen 2026)",
+    chips:["¿cuánto por comida?","¿cuánta al día?"]
+  },
+
+  // ─────────────── TRONCO: GRASA ───────────────
+  {
+    tronco:"grasa", rama:"cuanta-grasa-suelo",
+    claves:["cuanta grasa","grasa al dia","grasas dieta","cuanta grasa como","gramos de grasa","grasa por kilo","cuanto de grasa","grasas","cuanta grasa minima","grasa minima","y la grasa"],
+    r:"La grasa es un SUELO, no un objetivo: no bajes de ~0,5-0,8 g/kg (o ~20% de las calorías); un reparto típico es 20-30%. Subir a 30-40% no aporta nada extra y te quita margen para carbos y proteína, que son más útiles. En definición se recorta hacia el suelo para dejar sitio a los carbos. (— Tema 15, Whittaker 2021 / cierre proteína 2026)",
+    chips:["¿poca grasa baja la testosterona?","¿qué grasas elijo?","¿y en definición?","¿omega-3?"]
+  },
+  {
+    tronco:"grasa", rama:"grasa-baja-testosterona",
+    claves:["poca grasa baja testosterona","grasa y testosterona","bajar grasa baja hormonas","grasa baja pierdo musculo","testosterona por comer poca grasa","dieta baja en grasa hormonas","testosterona","poca grasa baja la testosterona"],
+    r:"Comer poca grasa puede bajar algo la testosterona (~10-15%), pero se queda DENTRO del rango normal, y en un hombre natural esa fluctuación NO predice cuánto músculo ganas: manda la tensión mecánica y el receptor local, no la testosterona en sangre. Así que \"poca grasa → menos T → menos músculo\" no se sostiene. Respeta el suelo (~0,5 g/kg) por salud, no por hormonas mágicas. (— Tema 15, Morton 2016 / Jeff Nippard 2025)",
+    chips:["¿cuánta grasa mínima?","¿y si tengo la testosterona baja de verdad?","¿subo la grasa entonces?"]
+  },
+
+  // ─────────────── TRONCO: SUEÑO ───────────────
+  {
+    tronco:"sueno", rama:"cuantas-horas",
+    claves:["cuanto dormir","horas de sueño","cuantas horas dormir","sueño musculo","dormir para ganar musculo","cuanto hay que dormir","sueño optimo","dormir","sueño","cuantas horas hay que dormir","higiene de sueño","cuantas horas necesito"],
+    r:"El objetivo son 7-9 horas. Dormir es una variable anabólica crítica: por debajo de 6h crónicas el anabolismo se resiente aunque entrenes y comas perfecto. Higiene básica: horarios consistentes, cuarto oscuro/fresco/silencioso, sin pantallas 1h antes y cortar cafeína ~8h antes. Ningún suplemento compensa la falta de sueño. (— Tema 27, Hirshkowitz 2015 / Lamon 2021)",
+    chips:["¿qué pasa si duermo mal una noche?","¿entreno igual si no dormí?","¿la creatina compensa dormir mal?"]
+  },
+  {
+    tronco:"sueno", rama:"dormir-mal-pierdo-musculo",
+    claves:["dormir poco pierdo musculo","dormir mal pierdo musculo","falta de sueño musculo","privacion de sueño","una noche sin dormir","no dormir afecta al musculo","que pasa si duermo mal una noche","una racha mala","entreno igual si no dormi","duermo mal"],
+    r:"Una sola noche mala ya baja la síntesis de proteína ~18%, sube el cortisol ~21% y baja la testosterona ~24% (Lamon 2021). Pero una noche puntual NO te destruye músculo: el bajón agudo es sobre todo neuromuscular y recuperable. El problema real es la RACHA: 3+ noches de <6h ya es bandera roja para bajar volumen y priorizar dormir. (— Tema 27, Lamon 2021 / He 2024)",
+    chips:["¿entreno igual si dormí mal?","¿cuántas horas necesito?","¿una racha mala qué hago?"]
+  },
+  {
+    tronco:"sueno", rama:"ESTADO-dormi-mal",
+    claves:["he dormido mal","dormi mal","he dormido poco","dormi fatal","no he pegado ojo","casi no dormi","he dormido regular","dormi pocas horas","estoy sin dormir","dormido fatal","dormido mal","dormido poco","dormido regular","entreno igual si dormi mal","hoy no dormi"],
+    r:"Anotado. Una noche mala no arruina nada: SÍ puedes entrenar. Mantén las compuestas pesadas pero baja 1-2 series accesorias y sube el RIR objetivo +1 (hoy no busques PRs ni fallo técnico). Ojo: el RIR \"miente\" hacia arriba cuando duermes mal, así que guíate por reps reales en recámara. Si quieres, un café (3-6 mg/kg) 45-60 min antes te devuelve fuerza. (— Tema 27, refuerzos ciencia 2026-07-05)",
+    chips:["¿cuántas horas dormiste?","¿por qué dormiste mal?","¿me lo apunto?","¿tomo cafeína?"]
+  },
+
+  // ─────────────── TRONCO: CREATINA ───────────────
+  {
+    tronco:"creatina", rama:"sirve-calvicie",
+    claves:["creatina sirve","creatina calvicie","creatina pelo","creatina deja calvo","la creatina funciona","creatina caida de pelo","creatina alopecia","creatina","la creatina compensa dormir mal"],
+    r:"La creatina NO te deja calvo: ese miedo viene de un solo estudio de 2009 que midió DHT (no pelo) y nunca se replicó; un RCT de 2025 midió el folículo directamente y no vio efecto. Es segura, barata y de lo más respaldado que existe. Eso sí, su valor real es rendimiento/fuerza; el plus de músculo es pequeño (~1 kg, buena parte agua). (— Tema 10, RCT 2025 / Burke 2023)",
+    chips:["¿cuánta tomo?","¿hace falta fase de carga?","¿qué marca compro?","¿cuándo la tomo?"]
+  },
+  {
+    tronco:"creatina", rama:"dosis",
+    claves:["cuanta creatina","dosis creatina","gramos de creatina","cuanto de creatina","creatina al dia","cuanta creatina tomar","dosis de creatina diaria","cuanta tomo","cuanta dosis"],
+    r:"La regla es ~1 g por cada 10 kg de peso al día (0,1 g/kg), con suelo eficaz de 3-5 g. Si eres muy grande (>90-100 kg) o no respondes bien, puedes ir al extremo alto (5-10 g). El exceso no perjudica (se excreta), pero tampoco da más resultado por megadosear. (— Tema 10, Kreider 2017 / Antonio 2025)",
+    chips:["¿necesito fase de carga?","¿qué forma/marca?","¿cuándo tomarla?","¿sube la creatinina en análisis?"]
+  },
+  {
+    tronco:"creatina", rama:"fase-de-carga",
+    claves:["fase de carga creatina","carga de creatina","hay que cargar creatina","cargar creatina","creatina carga necesaria","empezar creatina cargando","fase de carga","necesito fase de carga","carga si o no","en cuanto noto efecto","carga necesaria"],
+    r:"No hace falta fase de carga. Cargar (20 g/día una semana) solo ACELERA la saturación (~1 semana vs ~4), pero NO da más resultado final y añade molestias digestivas e hinchazón. Toma tu dosis normal y sáltate la carga. (— Tema 10, Hultman 1996 / ISSN Kreider 2017)",
+    chips:["¿cuánta dosis diaria?","¿en cuánto noto efecto?","¿qué marca?"]
+  },
+  {
+    tronco:"creatina", rama:"forma-marca",
+    claves:["que creatina comprar","marca de creatina","monohidrato","creapure","creatina hcl","mejor creatina","tipo de creatina","creatina buena","que marca","que marca compro","que forma marca"],
+    r:"Monohidrato, siempre. El sello Creapure garantiza pureza frente a marcas baratas (certifica pureza, no más efecto). Las formas \"HCl\", tamponada o éster son marketing: misma eficacia o peor y más caras (la única posible ventaja del HCl es menos molestia digestiva en quien la sufre, no más rendimiento). (— Tema 10, Antonio 2021)",
+    chips:["¿cuánta dosis?","¿carga sí o no?","¿cuándo la tomo?"]
+  },
+  {
+    tronco:"creatina", rama:"timing",
+    claves:["cuando tomar creatina","creatina antes o despues","creatina timing","momento creatina","creatina en ayunas","a que hora la creatina","cuando la tomo","cuando tomarla"],
+    r:"Cuando te acuerdes cada día: manda la constancia, no la hora. No existe una \"ventana anabólica\" de la creatina; lo importante es tomarla a diario para mantener los depósitos llenos. (— Tema 10, ✅ Reglas Creatina)",
+    chips:["¿cuánta dosis?","¿carga necesaria?","¿qué marca?"]
+  },
+  {
+    tronco:"creatina", rama:"creatinina-analitica",
+    claves:["creatina creatinina","creatina analisis","creatina riñon","creatina daño renal","creatina analitica","creatina sube creatinina","creatina es mala para el riñon","creatinina","sube la creatinina","es segura para el riñon"],
+    r:"La creatina puede SUBIR la creatinina en sangre sin que sea daño renal (es un efecto normal del suplemento): avisa a tu médico de que la tomas antes de interpretar la analítica. Con riñón sano es segura; si tienes enfermedad renal previa o embarazo, consúltalo. (— Tema 10, ✅ Reglas Creatina)",
+    chips:["¿es segura para el riñón?","¿cuánta tomo?","¿qué marca?"]
+  },
+
+  // ─────────────── TRONCO: SUPLEMENTACIÓN ───────────────
+  {
+    tronco:"suplementacion", rama:"cuales-valen",
+    claves:["que suplementos valen","suplementos que funcionan","suplementos utiles","vale la pena suplementos","mejores suplementos","suplementacion basica","que me tomo","suplementos","que suplementos si valen","suplementos merecen la pena"],
+    r:"La base real es corta: creatina + proteína (si no llegas con comida) + cafeína. La mayoría de suplementos no tienen respaldo. Solo unos pocos mejoran RENDIMIENTO (cafeína, beta-alanina, bicarbonato, nitratos), pero ninguno de ellos construye músculo por sí solo. (— Tema 26, consenso ISSN/IOC 2018)",
+    chips:["¿la beta-alanina sirve?","¿el HMB funciona?","¿cuánta cafeína?","¿la creatina?"]
+  },
+  {
+    tronco:"suplementacion", rama:"ergogenicos-betaalanina-hmb",
+    claves:["beta alanina","bicarbonato","hmb","citrulina","pre entreno","suplemento para rendir","beta alanina musculo","hmb sirve","la beta alanina sirve","el hmb funciona"],
+    r:"Separa RENDIMIENTO de MÚSCULO: la beta-alanina y el bicarbonato mejoran esfuerzos intensos de 1-4 min (buffer), pero NO construyen músculo. El HMB es flojo en gente entrenada (su estudio estrella, +7 kg en 12 sem, es implausible y no se replicó). Decir \"menos fatiga → más volumen → más músculo\" es un salto no demostrado. (— Tema 26, Saunders 2017 / Wilson 2014)",
+    chips:["¿qué suplementos sí valen?","¿la creatina?","¿cafeína cuánta?"]
+  },
+  {
+    tronco:"suplementacion", rama:"cafeina",
+    claves:["cafeina","cafe antes de entrenar","cuanta cafeina","pre workout","cafeina pre entreno","cafe para entrenar","cafeina rendimiento","cafe","tomo cafeina","cafe o pre workout","cafeina cuanta","ayuda si dormi mal"],
+    r:"La cafeína mejora el foco y baja la percepción del esfuerzo: 3-6 mg/kg unos 40-60 min antes (un café doble para ~70 kg). Un café basta, el pre-workout de marca no es necesario. Córtala ~8h antes de dormir para no cargarte el sueño. (— Tema 26, Grgic 2018 / refuerzos tanda-4)",
+    chips:["¿café o pre-workout?","¿afecta al sueño?","¿ayuda si dormí mal?"]
+  },
+
+  // ─────────────── TRONCO: ESTEROIDES (política, NO ciencia del master) ───────────────
+  {
+    tronco:"esteroides", rama:"politica-adapta-no-prescribe",
+    claves:["esteroides","ciclo","anabolicos","testosterona inyectada","sarms","me pincho","estoy en ciclo","uso anabolicos","esteroide","juice","chutarme","trembolona","winstrol","por que no me lo recomienda","esto es consejo medico"],
+    r:"⚖️ JV Fitness NO recomienda ni pauta esteroides: son ilegales en España sin prescripción médica y conllevan riesgos serios de salud. Esto no es consejo médico. Si YA los usas por tu cuenta, la app no te juzga ni te asesora sobre sustancias, pero sí puede adaptar tu plan de entreno y recuperación (tu capacidad de volumen y recuperación cambian). Para cualquier tema de sustancias, un médico. (— Política de producto, revisable por Pablo)",
+    chips:["¿cómo adapto el volumen?","¿por qué no me lo recomienda?","¿esto es consejo médico?"]
+  },
+
+  // ─────────────── TRONCO: MELATONINA (HUECO — no inventar) ───────────────
+  {
+    tronco:"melatonina", rama:"sin-cobertura-master",
+    claves:["melatonina","melatonina para dormir","suplemento para dormir","pastilla para dormir","melatonina dosis","tomo melatonina"],
+    r:"Todavía no tengo ciencia específica de melatonina cargada en mi base (es un hueco que Pablo tiene que rellenar). Lo que SÍ está validado es lo que de verdad mueve la aguja del sueño: objetivo de 7-9h e higiene (horarios fijos, oscuridad, sin pantallas 1h antes, cortar cafeína ~8h antes). Ningún suplemento compensa dormir poco. (— Tema 27, higiene de sueño)",
+    chips:["¿cuántas horas dormir?","¿higiene de sueño?","guardar la pregunta para ampliar"]
+  },
+
+  // ─────────────── TRONCO: CHICLE ───────────────
+  {
+    tronco:"chicle", rama:"mejora-rendimiento",
+    claves:["chicle","mascar chicle","chicle entrenar","chicle gym","chicle rendimiento","apretar la mandibula","masticar chicle entrenando","y apretar la mandibula"],
+    r:"Masticar chicle o apretar la mandíbula da un micro-efecto de alerta/explosividad (sube la velocidad de fuerza en gestos como saltos), pero NO sube tu pico de fuerza ni construye músculo. La evidencia del chicle es limitada y el propio divulgador admite que \"no multiplica resultados\". Micro-truco de activación, no palanca de hipertrofia. (— Tema 12, Ebben 2008 / Allen & Smith 2015)",
+    chips:["¿y apretar la mandíbula?","¿otros trucos de rendimiento?","¿la cafeína sí ayuda?"]
+  },
+
+  // ─────────────── TRONCO: CANSANCIO / FATIGA ───────────────
+  {
+    tronco:"fatiga", rama:"ESTADO-estoy-reventado",
+    claves:["estoy reventado","estoy cansado","estoy agotado","no puedo mas","muy cansado","estoy hecho polvo","sin energia","estoy fundido","reventado","petado de cansancio","cansado","agotado","hecho polvo"],
+    r:"Anotado. La fatiga suele venir de sueño, estrés o de acumular demasiado (volumen, series al fallo, excéntricas muy lentas). Antes de nada: ¿cómo has dormido y qué tal de estrés? Si es un día puntual, entrena pero baja 1-2 series accesorias y sube el RIR; si es una racha, toca recortar volumen esta semana. La fatiga que te frena se arregla quitando lo que más la infla, no apretando más. (— Tema 16, factores de fatiga / Tema 27)",
+    chips:["¿cuántas horas dormiste?","¿es estrés?","¿entreno igual hoy?","¿bajo el volumen?"]
+  },
+  {
+    tronco:"fatiga", rama:"minimizar-fatiga-entreno",
+    claves:["minimizar fatiga","reducir fatiga entreno","acumulo fatiga","fatiga entrenamiento","como recuperar mejor","como recupero mejor","estoy muy fatigado del gym","gestionar la fatiga","fatiga","como minimizo la fatiga","bajo el volumen","otros trucos de rendimiento"],
+    r:"Los factores que más inflan la fatiga son: demasiado volumen, muchas series al fallo, excéntricas muy lentas y exceso de trabajo en rango estirado. Si la fatiga te frena, recorta primero esos. Ojo: eso es fatiga LOCAL (periférica), no \"fatiga del sistema nervioso central\", concepto que está muy sobrevendido. (— Tema 16, Beardsley / Tema 22)",
+    chips:["¿qué es un deload?","¿cuántas series hago?","¿tengo que ir al fallo?","¿y el sueño?"]
+  },
+  {
+    tronco:"fatiga", rama:"deload",
+    claves:["deload","semana de descarga","descarga","necesito deload","bajar carga una semana","semana ligera","descargar","que es un deload","cada cuanto deload","como se que lo necesito"],
+    r:"El deload es gestión de fatiga, NO un dogma obligatorio (un RCT no vio beneficio en ganancias por descargar). Principiante: no lo necesita. Intermedio/avanzado: gatillado por señales (estancamiento, molestias, mal sueño/ánimo), cada ~4-8 semanas → bajar volumen 40-50% durante 5-7 días. Si vienes descansado de un parón, tampoco. (— Tema 4, Coleman 2024)",
+    chips:["¿cómo sé que lo necesito?","¿cómo minimizo la fatiga?"]
+  },
+
+  // ─────────────── TRONCO: VOLUMEN ───────────────
+  {
+    tronco:"volumen", rama:"cuantas-series-por-musculo",
+    claves:["cuantas series","series por musculo","volumen de entrenamiento","cuanto volumen","series a la semana","cuantas series por musculo","volumen semanal","volumen","cuantas series hago","cuanto volumen de pecho","como adapto el volumen"],
+    r:"Punto de partida por nivel: principiante ~8-12 series/músculo/semana, intermedio ~12-18, avanzado ~16-20+. Es una curva de dosis-respuesta con rendimientos decrecientes (más no es siempre mejor), con techo práctico ~20. Registra y autorregula: si progresas, mantén o +1 serie; si te estancas con buena recuperación, −1 serie en ese ejercicio. (— Tema 19/25, Pelland 2025 / Baz-Valle 2022)",
+    chips:["¿qué es volumen basura?","¿más series = más músculo?","¿bajo volumen en cut?","¿cuántas veces por semana?"]
+  },
+  {
+    tronco:"volumen", rama:"volumen-basura-mas-es-mejor",
+    claves:["volumen basura","junk volume","mas series mas musculo","volumen efectivo","hacer muchas series","series de mas","cuanto volumen es demasiado","que es volumen basura","mas series = mas musculo","mas series igual mas musculo"],
+    r:"Más series NO es siempre más músculo: es una curva con rendimientos decrecientes, no una recta. El \"volumen basura\" son series sin estímulo real (lejos del fallo, con fatiga acumulada o por acumular por acumular). En gente ya entrenada con volumen suficiente, subir un 30-60% más de series no dio más músculo. Dosis mínima efectiva > acumular. (— Tema 25, Barsuhn 2025 / Pelland 2026)",
+    chips:["¿cuántas series entonces?","¿cómo sé si progreso?","¿y en definición?"]
+  },
+  {
+    tronco:"volumen", rama:"volumen-en-cut",
+    claves:["volumen en definicion","volumen en cut","cuantas series secando","bajar volumen en deficit","volumen en deficit","series en definicion","bajo volumen en cut","cuanta intensidad en cut"],
+    r:"En definición NO persigas 15-20 series: en déficit recuperas peor, así que 6-10 series duras cerca del fallo por músculo bastan para MANTENER (mantener cuesta mucho menos volumen que construir). El alto volumen guárdalo para las fases de volumen, rotándolo por músculo. (— Tema 25, Jeff Nippard / Bickel 2011)",
+    chips:["¿cuánta intensidad en cut?","¿voy al fallo?","¿cuánta proteína?"]
+  },
+
+  // ─────────────── TRONCO: INTENSIDAD / RIR / FALLO ───────────────
+  {
+    tronco:"fallo", rama:"hay-que-llegar-al-fallo",
+    claves:["ir al fallo","hay que llegar al fallo","entrenar al fallo","fallo muscular","fallo en cada serie","tengo que fallar","hasta el fallo","fallar la serie","fallo","tengo que ir al fallo","voy al fallo"],
+    r:"No hace falta llegar al fallo en cada serie: a 1-2 reps del fallo (RIR 1-2) consigues la misma hipertrofia con MUCHA menos fatiga. El fallo, resérvalo para las series finales o aislamientos. Principiante: 1-3 RIR y prioriza técnica; avanzado: 0-2 RIR. Lo que importa es acercarte lo suficiente, no destruirte. (— Tema 13, Refalo 2024 / Tema 4)",
+    chips:["¿qué es el RIR?","¿y en definición?","¿cuántas series?","¿qué rango de reps?"]
+  },
+  {
+    tronco:"fallo", rama:"rir-que-es",
+    claves:["que es el rir","rir","reps en recamara","reps en reserva","cuanto rir","rir objetivo","repeticiones en reserva"],
+    r:"El RIR son las repeticiones que te quedan \"en recámara\" al parar la serie (RIR 2 = podrías haber hecho 2 más). La ventana para hipertrofia es 0-3 RIR. Ojo: el RIR del principiante falla (suele creer que le quedan menos de las que le quedan), y cuando duermes mal \"miente\" hacia arriba: el mismo RIR se siente más duro. (— Tema 4, Helms 2016 / Tema 27)",
+    chips:["¿hay que ir al fallo?","¿cómo progreso?","¿qué rango de reps?"]
+  },
+
+  // ─────────────── TRONCO: ORDEN DE EJERCICIOS / FRECUENCIA ───────────────
+  {
+    tronco:"orden", rama:"importa-el-orden",
+    claves:["orden de ejercicios","importa el orden","que ejercicio primero","orden entreno","por donde empiezo","primero el musculo debil","orden del entrenamiento","que hago primero","empiezo por compuestos"],
+    r:"El orden es CLAVE: la primera serie/ejercicio, con el sistema nervioso fresco, recluta más fibras y da el mejor estímulo. Pon PRIMERO el músculo que más quieras mejorar (ej.: en push, si buscas tríceps, empieza por tríceps). Y si priorizar un músculo fatiga a otro que va después, haz ese otro AISLADO para que no sea el eslabón débil. (— Tema 24, Simão 2012 / Principio #6)",
+    chips:["¿cuántas veces por semana?","¿y si me fatiga otro músculo?","¿empiezo por compuestos?"]
+  },
+  {
+    tronco:"orden", rama:"frecuencia-veces-por-semana",
+    claves:["cuantas veces por semana","frecuencia","frecuencia por musculo","cuantas veces entrenar musculo","ppl o fullbody","cuantos dias entrenar","frecuencia entrenamiento","veces por semana musculo","ppl o full body","cuantos dias voy al gym"],
+    r:"A igual volumen, la frecuencia por sí sola casi no cambia la hipertrofia: es logística. Su ventaja es indirecta: repartir el volumen en 2-4 sesiones/músculo da más \"primeras series frescas\". Default: ~2x por músculo. Pero manda la ADHERENCIA: el mejor plan es el que cumples (un PPL que te hace entrenar duro y constante gana a un upper/lower \"óptimo\" que abandonas). (— Tema 24, Schoenfeld 2019 / Tesis #10)",
+    chips:["¿PPL o full body?","¿importa el orden?","¿cuánto volumen?"]
+  },
+
+  // ─────────────── TRONCO: REPETICIONES / RANGOS ───────────────
+  {
+    tronco:"repeticiones", rama:"que-rango-de-reps",
+    claves:["cuantas repeticiones","rango de reps","cuantas reps","repeticiones para musculo","que rango de repeticiones","reps para hipertrofia","numero de repeticiones","cuantas reps hago","repeticiones","reps","y en aislamientos"],
+    r:"Manda acercarse al fallo, no el rango exacto: de ~5 a ~30 reps dan crecimiento similar. El ideal de la casa es ~5-8 reps PESADO con técnica estandarizada y RIR 0-2: misma hipertrofia, menos fatiga y el fallo se juzga mejor. En aislamientos pequeños (laterales, abdominales, gemelo) sube a 8-15, donde cargar fino es impracticable. (— Tema 23, Schoenfeld 2021 / regla v2 2026)",
+    chips:["¿10-15 si soy principiante?","¿cómo progreso las reps?","¿tengo que ir al fallo?","¿y en aislamientos?"]
+  },
+  {
+    tronco:"repeticiones", rama:"principiante-reps-altas",
+    claves:["10-15 para principiante","reps altas principiante","principiante muchas reps","empezar con reps altas","reps para novato","cuantas reps de principiante","10-15 si soy principiante","que rango uso ya"],
+    r:"El clásico \"10-15 reps por ser principiante\" NO como regla general. El rango medio-alto solo se justifica MIENTRAS aprendes el patrón (más seguro y controlable con menos carga); en cuanto la técnica está estandarizada, el principiante también progresa mejor en 5-8 pesado cerca del fallo. Excepción: aislamientos pequeños, donde sí vale 8-15. (— Tema 23, C-P3 / doctrina de la casa)",
+    chips:["¿qué rango uso ya?","¿cómo estandarizo la técnica?","¿cómo progreso?"]
+  },
+  {
+    tronco:"repeticiones", rama:"progresion-doble-progresion",
+    claves:["doble progresion","como progreso","subir peso o reps","sobrecarga progresiva","progresar reps","cuando subo peso","progresion de peso","como subir de peso en el gym","como progreso las reps","como se si progreso","por que reps bajas progresan mejor"],
+    r:"Doble progresión: elige un rango (ej. 5-9), empieza con un peso para 5, suma reps sesión a sesión hasta llegar a 9 y SOLO ENTONCES subes peso y vuelves abajo. Anti-ego: subir peso a las 6-7 rompe la técnica y mata el estímulo. Además, progresar de 5→6 vale más que de 12→15: en series cortas cada rep extra es una señal limpia y medible; en las largas es ruido que el cansancio del día enmascara. (— Tema 4/23, @izansimon / C-P1)",
+    chips:["¿por qué reps bajas progresan mejor?","¿y si me estanco?","¿cuándo cambio de ejercicio?"]
+  },
+
+  // ─────────────── TRONCO: TÉCNICA / ESTANDARIZACIÓN ───────────────
+  {
+    tronco:"tecnica", rama:"ejercicio-nuevo-estandarizar",
+    claves:["ejercicio nuevo","estandarizar tecnica","cambio de gimnasio","maquina nueva","empezar ejercicio nuevo","tecnica nueva","cambiar de maquina","primer dia ejercicio","como estandarizo la tecnica","cuando cambio de ejercicio","la tecnica importa tanto","tecnica"],
+    r:"Ejercicio nuevo o cambio de gym/orden/máquina: baja un poco el peso, ESTANDARIZA la técnica y progresa sobre ella; nunca meterle muy pesado de primeras. Sin técnica estable no hay medida válida de progresión (comparas peras con manzanas) y la tensión se va de donde debe. Corolario: para comparar sesiones tienes que abrir siempre con el MISMO ejercicio. (— Tema 23, C-P2 / @izansimon)",
+    chips:["¿cómo progreso luego?","¿cuándo cambio de ejercicio?","¿la técnica importa tanto?"]
+  },
+  {
+    tronco:"tecnica", rama:"tempo-velocidad",
+    claves:["tempo","velocidad de la rep","hacer lento","concentrica lenta","excentrica lenta","cuanto tardo en cada rep","tempo de ejecucion","hacer las reps despacio","que tempo uso"],
+    r:"No frenes a propósito por miedo a \"perder fibra\": cerca del fallo el tempo importa poco (de 0,5 a 8 s dan hipertrofia similar). Regla simple: baja controlado 1-3 s SIN dejar caer y sube con INTENCIÓN de mover rápido. Solo un tempo súper-lento a propósito (≥10 s/rep) es claramente subóptimo. Nada de cronometrar tempos. (— Tema 14/31, Schoenfeld 2015 / da Silva 2025)",
+    chips:["¿la negativa es más importante?","¿mente-músculo?"]
+  },
+  {
+    tronco:"tecnica", rama:"mente-musculo",
+    claves:["conexion mente musculo","sentir el musculo","mente musculo","foco interno","notar el musculo","conexion mental musculo","pensar en el musculo","sirve sentir el musculo","y en compuestos"],
+    r:"Depende del objetivo, no es ni mito ni verdad absoluta. Para HIPERTROFIA/aislamientos, el foco interno (\"aprieta el músculo\") aumenta el crecimiento (bíceps +12,4% vs +6,9%). Para FUERZA/compuestos pesados gana el foco externo (\"empuja el suelo, mueve la barra\"). Úsalo según lo que busques. (— Tema 14, Schoenfeld 2018 / Grgic 2021)",
+    chips:["¿y en compuestos?","¿el ardor indica buen estímulo?","¿cómo elijo ejercicio?"]
+  },
+  {
+    tronco:"tecnica", rama:"excentrica-negativa",
+    claves:["excentrica","negativa","la negativa es mejor","bajar despacio","enfatizar la negativa","excentrica acentuada","fase negativa","hacer la negativa lenta","la negativa es mas importante","hago excentrica acentuada"],
+    r:"Controla la bajada, pero la idea de que \"la negativa es drásticamente más hipertrófica\" NO se sostiene: un meta-análisis de 26 estudios da hipertrofia SIMILAR entre enfatizar la negativa o la positiva. Solo en tren superior hay una ventaja pequeña por enfatizar algo la excéntrica (opcional). Lo que manda: volumen + proximidad al fallo + progresión. (— Tema 31, da Silva 2025 / Jeff Nippard)",
+    chips:["¿hago excéntrica acentuada?","¿qué tempo uso?"]
+  },
+  {
+    tronco:"tecnica", rama:"seleccion-ejercicio-estabilidad",
+    claves:["que ejercicio elijo","seleccion de ejercicios","ejercicio estable","sentado o de pie","maquina o peso libre","elegir ejercicio","mejor ejercicio para un musculo","banco vs de pie","como elijo ejercicio","como elijo el ejercicio","como maximizo un musculo","rango completo importa"],
+    r:"Elige el ejercicio por biomecánica antes que retorcer la técnica: variantes más ESTABLES y menos técnicas (sentado/apoyado) concentran la tensión en el músculo objetivo, sin que se fugue a estabilizadores. Peso libre y máquina crecen igual: no hay mito que valga. Prioriza donde puedas progresar carga/reps con buena técnica y, si puedes, cargar el músculo en posición estirada. (— Tema 21/14, Maeo 2022 / Hernández-Belmonte 2023)",
+    chips:["¿máquina o peso libre?","¿rango completo importa?","¿cómo maximizo un músculo?"]
+  },
+
+  // ─────────────── TRONCO: AGUA / SAL / SODIO ───────────────
+  {
+    tronco:"sodio", rama:"miedo-a-la-sal",
+    claves:["sal","sodio","le tengo miedo a la sal","cuanta sal","la sal es mala","sal para el pump","necesito sal","echar sal","sodio en el gym","y el sodio","mejora el pump"],
+    r:"Si estás sano, activo y sudas, no le tengas miedo a la sal: repones el sodio que pierdes y restringirlo en exceso no tiene sentido. PERO esto NO aplica a hipertensos, sal-sensibles, enfermedad renal/cardíaca o mayores → ahí toca moderar. Y lo del \"pump\" con sal en pesas no está demostrado (es marketing); el sodio importa sobre todo en resistencia/calor. (— Tema 32, JAMA 2023)",
+    chips:["¿la sal marina es mejor?","¿cuánta agua bebo?","¿mejora el pump?"]
+  },
+  {
+    tronco:"sodio", rama:"sal-marina",
+    claves:["sal marina","sal del himalaya","sal rosa","sal marina mejor","sal marina o de mesa","que sal es mejor","sal premium","la sal marina es mejor","y el yodo","yodo"],
+    r:"La sal marina y la de mesa son ~97-99% lo mismo (NaCl); los \"minerales\" de la marina son nutricionalmente despreciables. Encima, la sal de mesa YODADA aporta yodo (clave para el tiroides) y la marina normalmente no → recomendar marina puede empeorar tu yodo. La \"sal marina premium\" es humo. (— Tema 32, deficiencia de yodo)",
+    chips:["¿le tengo miedo a la sal?","¿cuánta sal?","¿y el yodo?"]
+  },
+  {
+    tronco:"agua", rama:"cuanta-agua",
+    claves:["cuanta agua","hidratacion","agua al dia","beber agua","cuanto agua bebo","hidratarme","litros de agua","agua","cuanta agua bebo","bebo mas en verano"],
+    r:"Como orientación, ~35 ml/kg/día. La deshidratación afecta al rendimiento de verdad a partir de ~3% de pérdida de peso (fuerza −5,5%), y ese nivel es más de atletas que del usuario medio, así que sin dramatizar: bebe con normalidad y algo más si sudas mucho. (— objetivo orientativo de la app, no de un Tema verificado; la ciencia verificada es el umbral ≥3 % — Savoie 2015)",
+    chips:["¿y el sodio?","¿bebo más en verano?"]
+  },
+
+  // ─────────────── TRONCO: FIBRA ───────────────
+  {
+    tronco:"fibra", rama:"cuanta-fibra",
+    claves:["cuanta fibra","fibra al dia","fibra dieta","gramos de fibra","cuanta fibra como","fibra necesaria","fibra diaria","fibra","ayuda a adelgazar la fibra","fibra ayuda a adelgazar"],
+    r:"Diana: 25-35 g/día (≈14 g por cada 1000 kcal) de comida real (verdura, fruta con piel, legumbre, avena, integral); no hace falta suplementar si la dieta es decente. Importa sobre todo por SALUD (menos mortalidad, mejor colesterol y glucosa: de lo más respaldado que existe) y por saciedad en déficit. NO es anabólica: nunca la vendas como \"construye músculo\". (— Tema 33, Reynolds 2019 / Quagliani 2017)",
+    chips:["¿la fibra hincha?","¿fibra antes de entrenar?","¿ayuda a adelgazar?"]
+  },
+  {
+    tronco:"fibra", rama:"fibra-hincha-entreno",
+    claves:["fibra hincha","fibra antes de entrenar","fibra me hincha","mucha fibra molestias","fibra estomago","fibra cerca del entreno","fibra y gases","la fibra hincha","ayuda con el hambre"],
+    r:"En definición con muchos carbos, baja la fibra CERCA del entreno (y 24-48h antes de sesiones largas) para no hincharte; concentra la fibra lejos del gym. Comer mucha fibra + comida voluminosa puede ser estrategia deliberada en un cut profundo (máxima saciedad por caloría), pero el trade-off son las molestias digestivas: depende de tu tolerancia. (— Tema 33, Mlinaric 2025 / @leoonpham)",
+    chips:["¿cuánta fibra al día?","¿ayuda con el hambre?","¿y los carbos pre-entreno?"]
+  },
+
+  // ─────────────── TRONCO: CARDIO ───────────────
+  {
+    tronco:"cardio", rama:"cardio-interfiere-musculo",
+    claves:["cardio","cardio pierde musculo","cardio interfiere","hago cardio","correr pierde musculo","cardio y musculo","cardio para definir","el cardio quita musculo","correr","interfiere con el musculo","el cardio sube el cortisol"],
+    r:"Caminar es el cardio de MENOR interferencia con el músculo (no te roba ganancias) y encima mejora recuperación, NEAT y sensibilidad a la insulina. El cardio intenso y con mucho volumen sí puede interferir algo si compite por tu recuperación. Para la mayoría, andar es la mejor herramienta de gasto sin castigar el gym. (— Tema 11, interferencia concurrente SBS)",
+    chips:["¿cuántos pasos al día?","¿cardio en volumen?","¿el cardio sube el cortisol?"]
+  },
+
+  // ─────────────── TRONCO: PASOS / NEAT ───────────────
+  {
+    tronco:"pasos", rama:"cuantos-pasos",
+    claves:["cuantos pasos","pasos al dia","caminar cuanto","neat","10000 pasos","cuantos pasos hago","pasos diarios","andar cuanto","pasos","cuantos pasos al dia","reviso mis pasos","cuentan para las calorias","reducen el cortisol"],
+    r:"Objetivo ~7.000-10.000 pasos/día, sin obsesión: el grueso del beneficio ya llega hacia los 7.000. Los pasos pesan mucho en tu gasto (NEAT) y son más fiables que las \"calorías\" que te da el reloj. De hecho, si andas 14-15k sin pisar el gym, eres \"muy activo\", no sedentario. (— Tema 11/37, Ding 2025 / Tudor-Locke 2004)",
+    chips:["¿pasos en volumen también?","¿reducen el cortisol?","¿cuentan para las calorías?"]
+  },
+  {
+    tronco:"pasos", rama:"pasos-en-volumen",
+    claves:["pasos en volumen","caminar en volumen","pasos ganando musculo","andar en volumen","cardio en volumen","pasos en etapa de volumen","pasos en volumen tambien"],
+    r:"Sí, camina también en volumen: mejora la partición de nutrientes (comes más, con menos grasa), la recuperación y la sensibilidad a la insulina, y no interfiere con el músculo. Caminar (baja intensidad) además reduce el cortisol, con el matiz de que el cardio intenso puede subirlo. (— Tema 11, Hill 2008)",
+    chips:["¿cuántos pasos?","¿interfiere con el músculo?","¿y en definición?"]
+  },
+
+  // ─────────────── TRONCO: PESO / BÁSCULA ───────────────
+  {
+    tronco:"bascula", rama:"subi-de-un-dia-para-otro",
+    claves:["subi de peso de un dia para otro","subi 2 kilos","engorde de un dia para otro","peso subio","subi peso rapido","peso de golpe","sube el peso al dia siguiente","he engordado en un dia","por que subo de un dia para otro","por que subo de peso al dia siguiente","he subido de peso de golpe","es normal tras una comida libre"],
+    r:"Tranquilo, no es grasa: puedes subir 1-2 kg en un día por agua y glucógeno, no por engordar. Cada gramo de glucógeno retiene ~3 g de agua, así que más carbos (o una comida libre) = más báscula al día siguiente, y se va solo. Por eso no reacciones al peso diario: mira la MEDIA semanal. (— Capa 2, @izansimon / Tema 7)",
+    chips:["¿cómo me peso bien?","¿es normal tras una comida libre?","¿cada cuánto me peso?"]
+  },
+  {
+    tronco:"bascula", rama:"como-pesarse",
+    claves:["como pesarme","cuando pesarme","media semanal peso","pesarme cada dia","como me peso","cada cuanto peso","pesarse bien","peso diario","bascula","como me peso bien","cada cuanto me peso","como mido el peso bien","como ajusto con el peso","como ajusto calorias"],
+    r:"Pésate a diario en las mismas condiciones (al levantarte, en ayunas, tras el baño) y quédate con la MEDIA semanal, no con el número de un día. El peso fluctúa por agua, glucógeno, sal, digestión y sueño; la tendencia de la semana es lo que dice si progresas. Con eso ajustas calorías. (— Capa 2, @izansimon / @elgomasss)",
+    chips:["¿por qué subo de un día para otro?","¿cómo ajusto calorías?","¿estoy estancado?"]
+  },
+
+  // ─────────────── TRONCO: RELOJES / CALORÍAS QUEMADAS ───────────────
+  {
+    tronco:"calorias", rama:"reloj-calorias-quemadas",
+    claves:["reloj calorias","calorias del reloj","cuantas calorias quemo","smartwatch calorias","garmin calorias","apple watch calorias","el reloj miente calorias","calorias que marca el reloj","por que no uso el reloj","para que si sirve el reloj","como calculo mi gasto"],
+    r:"No uses las calorías del reloj para calcular tu déficit/superávit en pesas: se inflan muchísimo (Garmin +116%, Apple Watch +112% sobre lo real). El reloj mide bien la frecuencia cardíaca, pero en fuerza las calorías son prácticamente inventadas. Calcula el balance con fórmula (Mifflin-St Jeor) + registro de comida + tu peso real. (— Tema 29, Lee 2026)",
+    chips:["¿cómo calculo mi gasto?","¿para qué sí sirve el reloj?","¿y los pasos?"]
+  },
+
+  // ─────────────── TRONCO: AYUNO / COMIDAS ───────────────
+  {
+    tronco:"ayuno", rama:"entrenar-en-ayunas",
+    claves:["entrenar en ayunas","ayunas gym","entrenar sin comer","ayuno intermitente","gym en ayunas","entrenar por la mañana sin comer","ayuno y musculo","hago ayuno","ayuno","y si entreno en ayunas","rindo peor en ayunas"],
+    r:"Entrenar en ayunas o comido da las MISMAS adaptaciones de hipertrofia y rendimiento a largo plazo (RCT 12 sem): no pierdes músculo por hacerlo en ayunas. El único caso donde comer antes ayuda es en sesiones muy largas, de mucho volumen o si te falta energía. Lo que manda es tu total de comida DIARIO, no el ayuno en sí. (— Tema 5, Vieira 2025 / Henselmans 2022)",
+    chips:["¿rindo peor en ayunas?","¿carbos antes de entrenar?","¿cuántas comidas al día?"]
+  },
+  {
+    tronco:"comidas", rama:"cuantas-comidas-al-dia",
+    claves:["cuantas comidas","comidas al dia","cuantas veces comer","numero de comidas","comer 5 veces","frecuencia de comidas","cuantas comidas hago","cuantas comidas al dia","importa el desayuno"],
+    r:"Para el músculo, el número de comidas importa poco: manda el TOTAL diario de proteína y calorías. Un reparto práctico es 3-4 comidas de ~30-40 g de proteína cada una para optimizar la síntesis, pero es un ajuste fino, no una regla rígida. Elige las comidas que mejor encajen con tu adherencia. (— Tema 3, Manescu 2025)",
+    chips:["¿cuánta proteína por comida?","¿de golpe o repartida?","¿importa el desayuno?"]
+  },
+  {
+    tronco:"comidas", rama:"cheat-meal-comida-libre",
+    claves:["cheat meal","comida libre","comida trampa","me pase comiendo","atracon","comida basura","salirme de la dieta","comer mal un dia","cheat","me he saltado la dieta","cuenta la semana","cada cuanto comida libre"],
+    r:"Una comida libre cada 7-10 días es compatible con definición SI el déficit de la semana sigue intacto: la grasa la decide el balance semanal, no una comida. Subirás algo de peso al día siguiente (agua + glucógeno, no grasa). Si te pasas, mejor carbos que grasa, pero nunca creas que \"los carbos no engordan\". Si tienes mala relación con la comida, mejor dieta flexible que el marco \"cheat\". (— Tema 7, Westenhoefer 1999)",
+    chips:["¿por qué subo de peso al día siguiente?","¿cuenta la semana?"]
+  },
+
+  // ─────────────── ESTADO: CAPTURA SIN FRICCIÓN ───────────────
+  {
+    tronco:"estado", rama:"ESTADO-no-puedo-ir-gym",
+    claves:["no puedo ir al gym","no puedo entrenar","me salto el gym hoy","hoy no voy al gym","no me da tiempo de entrenar","no puedo ir a entrenar","me toca saltarme el gym","no voy a poder entrenar","hoy no entreno","no ire al gym","muevo el dia","pierdo musculo por un dia"],
+    r:"Anotado. Saltarte un día no arruina nada: NO compenses doblando volumen mañana (eso solo suma fatiga). Simplemente mueve el día si puedes, o retoma tu plan en la siguiente sesión como si nada. La constancia es la media de las semanas, no un día suelto. (— Tema 4/24, adherencia / Tesis #10)",
+    chips:["¿recuérdamelo mañana?","¿muevo el día?","¿pierdo músculo por un día?"]
+  },
+  {
+    tronco:"estado", rama:"ESTADO-me-salte-entreno",
+    claves:["me salte el entreno","falte al gym","no entrene ayer","perdi un entreno","no fui al gym","me salte un dia","falte a entrenar","ayer no entrene","me perdi el entreno","lo recupero","ajusto la semana","como lo hago mas sostenible"],
+    r:"Anotado, sin dramas: un entreno perdido no borra tu progreso. Retoma tu rutina donde tocaba (no metas todo el volumen perdido de golpe). Si empieza a ser un patrón, ahí sí revisamos el plan para que sea más sostenible. El mejor plan es el que cumples. (— Tema 4, adherencia / Tesis #10)",
+    chips:["¿lo recupero?","¿ajusto la semana?","¿cómo lo hago más sostenible?"]
+  },
+
+  // ─────────────── EXTRAS ÚTILES (Temas del master) ───────────────
+  {
+    tronco:"estimulo", rama:"agujetas-crecimiento",
+    claves:["agujetas","agujetas significan crecimiento","sin agujetas no crece","dolor muscular crecimiento","agujetas buen entreno","me duele significa que crece","doms","tengo agujetas","las agujetas cuentan"],
+    r:"Las agujetas (DOMS) NO son señal de buen entreno ni de crecimiento: el daño muscular es un producto, no la causa de la hipertrofia. Puedes crecer perfectamente sin apenas agujetas. Lo que hace crecer es la tensión mecánica (contraer fuerte cerca del fallo) + sobrecarga progresiva, no el dolor del día siguiente. (— Tema 13/17, Damas 2016)",
+    chips:["¿entonces qué hace crecer?","¿el ardor sí cuenta?","¿cómo minimizo la fatiga?"]
+  },
+  {
+    tronco:"estimulo", rama:"pump-ardor-crecimiento",
+    claves:["pump","el pump crece","ardor musculo","quemazon","el pump significa crecimiento","buscar el pump","congestion muscular","que arda el musculo","el ardor si cuenta","el ardor indica buen estimulo","que hace crecer","entonces que hace crecer","que hace crecer de verdad"],
+    r:"El pump (hinchazón) es edema agudo, NO hipertrofia, y la quemazón tampoco mide un buen estímulo: actividades muy \"ardientes\" como el sprint hipertrofian poco. El pump incluso engaña midiendo \"crecimiento\" las primeras semanas, sobre todo en novatos. El motor es la tensión mecánica + sobrecarga progresiva. (— Tema 20/14, Dankel 2017 / Damas 2016)",
+    chips:["¿qué hace crecer de verdad?","¿las agujetas cuentan?","¿mente-músculo?"]
+  },
+  {
+    tronco:"pecho", rama:"entrenar-pecho-regiones",
+    claves:["entrenar pecho","pecho superior","pecho inferior","press inclinado","pecho por partes","como entreno el pecho","pecho clavicular","trabajar el pecho","pecho","codos metidos o abiertos","estirar ayuda"],
+    r:"El pecho tiene 3 regiones y la hipertrofia regional es real. Base: press plano (medio) + trabajo INCLINADO dedicado para el superior (único caso con RCT directo); el inferior es opcional. Para enfatizar pectoral, codos algo ABIERTOS (metidos mandan carga al tríceps). Y el rango estirado (buen ROM) ayuda; los estiramientos pasivos no. (— Tema 8, Chaves 2020)",
+    chips:["¿codos metidos o abiertos?","¿cuánto volumen de pecho?","¿estirar ayuda?"]
+  },
+  {
+    tronco:"abdomen", rama:"abs-vs-core",
+    claves:["abdominales","core","abs","entrenar abdomen","six pack","planchas","como saco abdominales","abdomen vs core","marcar abdomen","abdomen","planchas o crunch cargado","el core previene lesiones","como bajo la grasa"],
+    r:"Abs y core no son lo mismo. Para el SIX-PACK (hipertrofia del recto): flexión CARGADA y progresiva (crunch en polea/máquina), no solo planchas. Para el CORE (estabilidad): anti-movimiento (plancha, rueda, Pallof), útil para transferir fuerza pero NO \"blinda\" contra lesiones. Y ojo: los abdominales se ven con el porcentaje de grasa bajo, no a base de crunches. (— Tema 9, Escamilla)",
+    chips:["¿planchas o crunch cargado?","¿el core previene lesiones?","¿cómo bajo la grasa?"]
+  },
+  {
+    tronco:"biceps", rama:"aislar-cabeza-biceps",
+    claves:["aislar biceps","cabeza del biceps","pico del biceps","biceps por partes","curl inclinado","enfatizar biceps","biceps largo o corto","trabajar el pico","biceps","curl bayesian"],
+    r:"No puedes \"aislar una cabeza del bíceps con la mente\": el EMG no predice el crecimiento. Pero SÍ puedes sesgar REGIONES por biomecánica: curl inclinado o Bayesian (bíceps estirado) tira más del pico/zona proximal; el predicador o concentrado, de la distal. El efecto es modesto; la base sigue siendo volumen + sobrecarga progresiva. (— Tema 18, Kassiano 2025)",
+    chips:["¿cómo elijo el ejercicio?","¿sirve sentir el músculo?","¿cuánto volumen?"]
+  },
+  {
+    tronco:"tecnica", rama:"estiramiento-parciales-rango",
+    claves:["parciales en estiramiento","rango completo","rom completo","entrenar estirado","media repeticion","estiramiento hipertrofia","reps parciales","trabajar en estirado","rango completo o parcial","estirar entre series sirve","parciales"],
+    r:"Entrenar con buen ROM y carga en posición ESTIRADA ayuda a la hipertrofia. Las parciales en estiramiento son una alternativa VÁLIDA (≈ igual que el rango completo), no mágicamente superiores, y la evidencia directa fuerte está en codo (bíceps/tríceps). No son \"trampa\": la ventaja del rango completo es pequeña. Ojo con no confundir esto con estiramientos pasivos, que no hacen crecer. (— Tema 13/8, Wolf 2025)",
+    chips:["¿rango completo o parcial?","¿estirar entre series sirve?","¿cómo elijo ejercicio?"]
+  },
+  {
+    tronco:"entreno", rama:"vuelta-tras-paron-muscle-memory",
+    claves:["volver al gym","vuelta tras paron","recuperar musculo perdido","muscle memory","memoria muscular","retomar el gym","vuelvo despues de meses","empezar despues de parar","cuanto peso empiezo","cuanto tardo en recuperar","vuelvo de un paron"],
+    r:"Buena noticia: recuperas el músculo perdido ~2x más rápido por la memoria muscular (lo de 1-2 meses vuelve en 4-8 semanas). El riesgo NO es no ganar, es LESIONARte, porque el tendón readapta más lento que el músculo. Protocolo: arranca al ~50-70% de tu carga previa, RIR alto (3-4), la mitad de volumen y sube ≤10%/semana. Sin deload (vienes descansado). (— Tema 4, Rahmati 2022)",
+    chips:["¿cuánto peso empiezo?","¿cuánto tardo en recuperar?","¿necesito deload?"]
+  },
+  {
+    tronco:"grasa", rama:"aceites-de-semilla",
+    claves:["aceites de semilla","aceite de girasol","omega 6","aceite vegetal","seed oils","aceite de semillas malo","aceite de girasol malo","que aceite uso para cocinar","omega 3","omega-3","que grasas elijo"],
+    r:"El alarmismo de que los aceites de semilla son \"el mayor error nutricional\" NO está respaldado por evidencia humana directa: los mecanismos (oxidación del omega-6) son plausibles pero no probados a dosis dietéticas normales. Consejo práctico: para cocinar a fuego vivo, mejor oliva o aguacate; y en vez de demonizar el omega-6, AÑADE omega-3 (pescado graso, lino, chía). (— Tema 30, @santirpardo honesto)",
+    chips:["¿qué aceite uso para cocinar?","¿cuánta grasa al día?","¿omega-3?"]
+  }
+
+];
+
+// huecosMaster — ramas ESPERABLES que el master NO cubre (NO inventadas aquí). Pendientes de que
+// Pablo alimente el master antes de escribir respuesta. El Cerebro las declina con honestidad.
+var CEREBRO_HUECOS=[
+  { tronco:"melatonina", falta:"El master no tiene NADA de melatonina (dosis, timing, seguridad, si sirve). T27 solo cubre horas de sueño e higiene." },
+  { tronco:"suplementacion", falta:"Sin cobertura de: multivitamínico, vitamina D, omega-3 (dosis concreta), ashwagandha, ZMA, colágeno, glutamina." },
+  { tronco:"alcohol", falta:"Rama esperable ('¿el alcohol corta las ganancias?') sin ningún Tema. No responder hasta ingerirlo." },
+  { tronco:"comidas", falta:"'¿Importa el desayuno?' y ayuno intermitente como protocolo de adelgazamiento no están tratados directamente." },
+  { tronco:"cardio", falta:"No hay HIIT vs LISS, ni dosis de cardio, ni cardio para salud cardiovascular. Solo caminar/NEAT e interferencia genérica." },
+  { tronco:"sueno", falta:"Falta jet lag, turnos de noche, apnea, corte de cafeína detallado como Tema propio." },
+  { tronco:"agua", falta:"El objetivo ~35 ml/kg viene de la app, no de un Tema verificado con caja ✅; la única ciencia es el umbral ≥3%." },
+  { tronco:"lesiones", falta:"Nada sobre dolor articular, tendinitis, calentamiento/movilidad, o entrenar con molestias." },
+  { tronco:"mujer", falta:"Perfil mujer disperso (RED-S en T35, recomp Radfar 2026). Falta rama 'entreno/dieta en ciclo menstrual'." },
+  { tronco:"estres", falta:"Captura 'estoy estresado' sin consejo del master propio; solo cortisol/caminar (T11). Falta protocolo." }
+];
+
+// --- normalización (reusa otroNorm: minúsculas y sin tildes) + limpieza de signos de chat/dictado ---
+function cerebroNorm(s){
+  return otroNorm(s)
+    .replace(/[¿?¡!.,;:()\[\]{}"'«»´`’~*+=<>|\/\\]/g," ")
+    .replace(/(\d)-(\d)/g,"$1\u0001$2")   // conserva rangos numéricos (4-5, 10-15)…
+    .replace(/-/g," ")                     // …pero parte palabras con guion (beta-alanina, dead-stop)
+    .replace(/\u0001/g,"-")
+    .replace(/\s+/g," ")
+    .trim();
+}
+// Levenshtein con tope (para typos y dictado por voz): devuelve max+1 si se pasa del tope.
+function cerebroLev(a,b,max){
+  if(a===b) return 0;
+  var la=a.length, lb=b.length;
+  if(Math.abs(la-lb)>max) return max+1;
+  var prev=[], cur=[], i, j, tmp;
+  for(j=0;j<=lb;j++) prev[j]=j;
+  for(i=1;i<=la;i++){
+    cur[0]=i; var best=cur[0];
+    for(j=1;j<=lb;j++){
+      cur[j]=Math.min(prev[j]+1, cur[j-1]+1, prev[j-1]+(a.charAt(i-1)===b.charAt(j-1)?0:1));
+      if(cur[j]<best) best=cur[j];
+    }
+    if(best>max) return max+1;
+    tmp=prev; prev=cur; cur=tmp;
+  }
+  return prev[lb];
+}
+// ¿El token del usuario "es" la palabra de la clave? exacto · raíz común (dormi~dormido,
+// proteina~proteinas) · o typo (1 error; 2 si la palabra es larga). Palabras cortas: solo exacto.
+function cerebroTokEq(tok,w){
+  if(tok===w) return true;
+  var lo=Math.min(tok.length,w.length), hi=Math.max(tok.length,w.length);
+  if(hi<5||lo<3) return false;
+  if(hi-lo<=3 && lo>=5 && tok.slice(0,lo)===w.slice(0,lo)) return true;
+  // 1 solo error tolerado: con 2, palabras distintas pero parecidas se confunden
+  // (creatina ≈ creatinina) y el motor respondería a OTRA pregunta. Mejor corto que equivocado.
+  return cerebroLev(tok,w,1)<=1;
+}
+// Palabras vacías: no puntúan por sí solas en el match difuso (sí dentro de la frase exacta).
+// Incluye las palabras-pregunta («cuánta», «cómo»…): solas no dicen el TEMA, solo la forma.
+var CEREBRO_STOP=["el","la","los","las","de","del","que","y","o","u","a","en","un","una","unos","unas","al","me","mi","mis","tu","tus","te","es","si","se","lo","le","por","para","con","sin","he","ha","has","hay","muy","mas","ya","no","hoy","cuanto","cuanta","cuantos","cuantas","como","cual","cuales","cuando","donde","quien","porque","deberia","debo"];
+var CEREBRO_UMBRAL=10;
+// Puntúa un texto (ya normalizado + tokens) contra las claves de una entrada:
+//  · frase exacta contenida (límites de palabra) → 10 + 4·palabras con contenido (la clave rica gana)
+//  · difuso: TODAS las palabras con contenido aparecen (typo/raíz tolerado) → 7 + 4·palabras.
+//    Guardia anti-secuestro: el difuso exige ≥2 palabras con contenido o una sola de ≥6 letras.
+//  · desempate determinista: + longitud de la clave / 100 (la clave más específica gana el empate).
+function cerebroScore(t, toks, claves){
+  var best=0, i, s;
+  for(i=0;i<claves.length;i++){
+    var c=cerebroNorm(claves[i]); if(!c) continue;
+    var cw=c.split(" ");
+    var cont=cw.filter(function(w){ return CEREBRO_STOP.indexOf(w)<0; });
+    s=0;
+    if((" "+t+" ").indexOf(" "+c+" ")>=0){ s=10+cont.length*4+c.length/100; }
+    else if(cont.length>=2 || (cont.length===1 && cont[0].length>=6)){
+      if(cont.every(function(w){ return toks.some(function(tok){ return cerebroTokEq(tok,w); }); })) s=7+cont.length*4+c.length/100;
+    }
+    if(s>best) best=s;
+  }
+  return best;
+}
+// Motor de intención: texto libre → {entrada, score} o null (fallback honesto; JAMÁS inventa).
+function cerebroMatch(texto, kb){
+  kb=kb||CEREBRO_KB;
+  var t=cerebroNorm(texto); if(!t) return null;
+  var toks=t.split(" ");
+  var best=null, bestScore=0, i;
+  for(i=0;i<kb.length;i++){
+    var s=cerebroScore(t, toks, kb[i].claves);
+    if(s>bestScore){ bestScore=s; best=kb[i]; }
+  }
+  return (best && bestScore>=CEREBRO_UMBRAL) ? {entrada:best, score:bestScore} : null;
+}
+// Acciones sobre la app (capacidad 3): preguntas de MI día/plan y meta-peticiones. Se comprueban
+// ANTES que la KB («¿cuánta proteína llevo?» debe responder con TUS números, no con teoría).
+function cerebroAccion(texto){
+  var n=cerebroNorm(texto);
+  if(!n) return null;
+  if(/por ?que (llevo |son |sale |salen |me (das|pones|tocan) )?\d/.test(n)
+   || /por ?que (esas?|estas?|tantas) (kcal|calorias)/.test(n)
+   || /de donde salen? (las |mis |esas )?(kcal|calorias)/.test(n)
+   || /como (has |lo )?calculas/.test(n)
+   || /por ?que (ese|este) (numero|plan|objetivo)/.test(n)) return "porque_kcal";
+  var pide=/(me |te |cuanto |cuanta |cuantas |cuantos )?(queda|quedan|falta|faltan|resta|restan)\b/.test(n) || /\bllevo\b|\bllevas\b|voy (bien )?de\b|he comido ya/.test(n);
+  if(pide && /(kcal|caloria)/.test(n)) return "dia_kcal";
+  if(pide && /prote/.test(n)) return "dia_prot";
+  if(pide && /(carbo|hidrato)/.test(n)) return "dia_carb";
+  if(pide && /grasa/.test(n)) return "dia_grasa";
+  if(/resumen (completo )?(de |del )?(mi |el )?dia|como voy hoy|que llevo hoy/.test(n)) return "dia_resumen";
+  if(/(sube|subir|baja|bajar|cambia|cambiar|modifica|ajusta)(me)? (las? |los? |el |la )?(reps|repeticiones|series|rutina|peso de)/.test(n)) return "cambiar_plan";
+  if(/guarda(r|me|la)? (la |esta |mi )?pregunta|pregunta para ampliar/.test(n)) return "guardar_pregunta";
+  if(/recuerdame|me lo recuerdas|recordatorio|recuerda me/.test(n)) return "recordatorio";
+  if(/me lo apunto|apuntalo|apuntamelo|apuntame\b/.test(n)) return "apuntar";
+  return null;
+}
+// [CEREBRO-PURE-FIN]
+
+// --- capa impura del Cerebro: chat (DOM) + captura sin fricción (storage) + números reales ---
+var _cbCap=null, _cbUltimaQ=null, _cbIniciado=false;
+function cbInit(){
+  cbDiarioRender();
+  if(_cbIniciado) return;
+  _cbIniciado=true;
+  cbMsg("j", esc(t("cb_saludo")));
+  cbChips(["¿Cuánta proteína al día?","¿Cuántas calorías me quedan hoy?","He dormido mal","¿La creatina funciona?"]);
+}
+function cbMsg(quien, html){
+  var log=$("cb_log"); if(!log) return;
+  var d=document.createElement("div");
+  d.className="cb-b "+(quien==="u"?"cb-u":"cb-j");
+  d.innerHTML=html;
+  log.appendChild(d);
+  log.scrollTop=log.scrollHeight;
+}
+function cbChips(arr){
+  var box=$("cb_chips"); if(!box) return;
+  box.innerHTML=(arr||[]).map(function(c){ return "<button type='button' class='cb-chip' onclick='cbChip(this)'>"+esc(c)+"</button>"; }).join("");
+}
+function cbChip(btn){ cbEnviarTexto(btn.textContent); }
+function cbEnviar(){ var el=$("cb_in"), v=el?el.value:""; if(!String(v).trim()) return; if(el) el.value=""; cbEnviarTexto(v); }
+// La cita del master «(— Tema X, …)» se pinta pequeña y en mono, como sello de fuente.
+function cbHtmlRespuesta(r){
+  var m=/^([\s\S]*?)\s*(\(—[^)]*\))\s*$/.exec(r);
+  if(m) return esc(m[1])+"<span class='cb-cita'>"+esc(m[2])+"</span>";
+  return esc(r);
+}
+function cbEnviarTexto(txt){
+  txt=String(txt||"").trim(); if(!txt) return;
+  cbMsg("u", esc(txt));
+  cbChips([]);
+  if(_cbCap && cbCapturaChip(txt)) return;   // los chips de captura (horas/motivo) consumen la respuesta
+  _cbCap=null;
+  var acc=cerebroAccion(txt);
+  if(acc){ if(acc!=="guardar_pregunta") _cbUltimaQ=txt; cbAccion(acc); return; }
+  _cbUltimaQ=txt;
+  cbResponder(txt);
+}
+function cbResponder(txt){
+  var m=cerebroMatch(txt);
+  if(m){
+    var e=m.entrada;
+    if(e.rama.indexOf("ESTADO-")===0){ cbCaptura(e, txt); return; }
+    cbMsg("j", cbHtmlRespuesta(e.r));
+    cbChips(e.chips||[]);
+    return;
+  }
+  // Fallback honesto (doctrina): lo digo y guardo la pregunta — cola de ampliación del flywheel.
+  var arr=get(LS_CEREBRO_NOREC,[]); arr.push({f:hoyLocal(), q:txt}); set(LS_CEREBRO_NOREC,arr);
+  cbMsg("j", esc(t("cb_fallback")));
+  cbChips(["¿Cuánta proteína al día?","¿Cuántos carbos?","¿Cuánto hay que dormir?"]);
+}
+// Captura sin fricción: «he dormido mal» / «estoy reventado» / «no puedo ir al gym» → se registra
+// solo en LS_CEREBRO_DIARIO + chips de seguimiento. Todo local, visible y borrable (privacidad).
+function cbCaptura(e, txt){
+  var tipo = e.rama==="ESTADO-dormi-mal" ? "sueno_mal" : e.rama==="ESTADO-estoy-reventado" ? "fatiga" : "gym_skip";
+  var d=get(LS_CEREBRO_DIARIO,[]);
+  // sin duplicados: si HOY ya hay un registro del mismo tipo (p. ej. vía chips de seguimiento), se reusa
+  var last=d.length?d[d.length-1]:null;
+  if(!(last && last.f===hoyLocal() && last.tipo===tipo)){
+    d.push({f:hoyLocal(), tipo:tipo, texto:txt});
+    set(LS_CEREBRO_DIARIO,d);
+  }
+  cbMsg("j", cbHtmlRespuesta(e.r));
+  if(tipo==="sueno_mal"){ _cbCap={tipo:"sueno_h", i:d.length-1}; cbChips(["Dormí 4-5 h","Dormí ~6 h","Dormí 7 h o más","No sé / da igual"]); }
+  else if(tipo==="fatiga"){ _cbCap={tipo:"fatiga_motivo", i:d.length-1}; cbChips(["He dormido mal","Ando estresado","Solo es hoy, puntual","¿Bajo el volumen?"]); }
+  else { _cbCap={tipo:"gym", i:d.length-1}; cbChips(e.chips||[]); }
+  cbDiarioRender();
+}
+// Devuelve true si el texto era un chip de seguimiento de la captura en curso (y lo registra).
+function cbCapturaChip(txt){
+  var n=cerebroNorm(txt), cap=_cbCap, d=get(LS_CEREBRO_DIARIO,[]), rec=d[cap.i];
+  if(!rec){ _cbCap=null; return false; }
+  if(cap.tipo==="sueno_h"){
+    var h, hit=true;
+    if(/4-5|4 5|cuatro|cinco/.test(n)) h="4-5h";
+    else if(/\b6\b|seis/.test(n)) h="~6h";
+    else if(/\b7\b|siete|o mas/.test(n)) h="7h+";
+    else if(/no se|da igual|paso/.test(n)) h=null;
+    else hit=false;
+    if(!hit) return false;
+    if(h) rec.sueno_h=h;
+    set(LS_CEREBRO_DIARIO,d);
+    _cbCap={tipo:"sueno_motivo", i:cap.i};
+    cbMsg("j", esc((h?"Apuntado: "+h+". ":"Vale, sin dato. ")+"¿Sabes por qué dormiste mal?"));
+    cbChips(["Estrés","Ruido / entorno","Me acosté tarde","Ni idea"]);
+    cbDiarioRender();
+    return true;
+  }
+  if(cap.tipo==="sueno_motivo"){
+    var mv, hit2=true;
+    if(/estres|ansiedad|agobi/.test(n)) mv="estrés";
+    else if(/ruido|entorno|calor|luz/.test(n)) mv="ruido/entorno";
+    else if(/tarde|movil|pantalla/.test(n)) mv="me acosté tarde";
+    else if(/ni idea|no se/.test(n)) mv=null;
+    else hit2=false;
+    if(!hit2) return false;
+    if(mv) rec.motivo=mv;
+    set(LS_CEREBRO_DIARIO,d);
+    _cbCap=null;
+    cbMsg("j", esc((mv?"Apuntado: "+mv+". ":"Apuntado. ")+"Para hoy: entrena igual pero baja 1-2 series accesorias y sube el RIR +1 (nada de PRs). Un café 45-60 min antes te devuelve fuerza. Si encadenas 3+ noches de menos de 6 h, recorta volumen y prioriza dormir.")+"<span class='cb-cita'>(— Tema 27, refuerzos ciencia 2026-07-05)</span>");
+    cbChips(["¿Cuántas horas hay que dormir?","¿Tomo cafeína?","¿Bajo el volumen?"]);
+    cbDiarioRender();
+    return true;
+  }
+  if(cap.tipo==="fatiga_motivo"){
+    if(/dormido mal|dormi|sueño/.test(n)){
+      rec.motivo="sueño"; set(LS_CEREBRO_DIARIO,d);
+      _cbCap={tipo:"sueno_h", i:cap.i};
+      cbMsg("j", esc("Eso explica mucho: el sueño es la primera palanca de la fatiga. ¿Cuántas horas dormiste?"));
+      cbChips(["Dormí 4-5 h","Dormí ~6 h","Dormí 7 h o más","No sé / da igual"]);
+      cbDiarioRender();
+      return true;
+    }
+    if(/estres|estresado|ansiedad|agobi/.test(n)){
+      rec.motivo="estrés"; set(LS_CEREBRO_DIARIO,d); _cbCap=null;
+      cbMsg("j", esc("Apuntado: estrés. Honesto: aún no tengo protocolo de estrés del master (hueco pendiente de ciencia). Lo que SÍ está validado: caminar suave baja el cortisol (Tema 11) y dormir 7-9 h manda (Tema 27). Hoy entrena, pero baja 1-2 series accesorias y sube el RIR +1."));
+      cbChips(["¿Cuántos pasos al día?","¿Cuánto hay que dormir?","¿Bajo el volumen?"]);
+      cbDiarioRender();
+      return true;
+    }
+    if(/puntual|solo es hoy|un dia/.test(n)){
+      rec.motivo="puntual"; set(LS_CEREBRO_DIARIO,d); _cbCap=null;
+      cbMsg("j", esc("Apuntado como día puntual: entrena, baja 1-2 series accesorias y sube el RIR +1. La fatiga puntual no toca el plan; la RACHA sí.")+"<span class='cb-cita'>(— Tema 16 / Tema 27)</span>");
+      cbChips(["¿Qué es un deload?","¿Cómo minimizo la fatiga?"]);
+      cbDiarioRender();
+      return true;
+    }
+    return false;   // p.ej. «¿bajo el volumen?» sigue al motor normal
+  }
+  return false;   // captura tipo gym: sus chips van al motor / acciones (recuérdamelo → acción)
+}
+// Acciones (capacidad 3): responde con números REALES del diario + plan (transparencia doctrina).
+function cbAccion(acc){
+  if(acc==="porque_kcal"){ cbPorque(); return; }
+  if(acc==="cambiar_plan"){
+    cbMsg("j", esc("En v1 no toco tu plan desde el chat (eso llegará con la capa de IA por encima), pero te doy la regla para hacerlo TÚ bien: doble progresión — elige un rango (ej. 5-9), suma reps sesión a sesión y solo al llegar arriba subes peso y vuelves abajo. Subir peso antes de tiempo rompe la técnica y mata el estímulo. Tócalo en la pestaña Entrenos (tu rutina → ✏️ Editar).")+"<span class='cb-cita'>(— Tema 4/23, doble progresión)</span>");
+    cbChips(["¿Cómo progreso?","¿Qué rango de reps?","¿Cuántas series?"]);
+    return;
+  }
+  if(acc==="guardar_pregunta"){
+    if(_cbUltimaQ){
+      var arr=get(LS_CEREBRO_NOREC,[]); arr.push({f:hoyLocal(), q:_cbUltimaQ, via:"chip"}); set(LS_CEREBRO_NOREC,arr);
+      cbMsg("j", esc("Guardada ✓ — tu pregunta entra en la cola para ampliar mi base con ciencia real del master. Viaja también en tu copia de seguridad (Exportar)."));
+    } else {
+      cbMsg("j", esc("No tengo una pregunta previa que guardar — escríbela y te digo si la reconozco."));
+    }
+    cbChips([]);
+    return;
+  }
+  if(acc==="recordatorio"){
+    var d=get(LS_CEREBRO_DIARIO,[]); if(d.length){ d[d.length-1].recordar=true; set(LS_CEREBRO_DIARIO,d); }
+    cbMsg("j", esc("Honesto: en v1 no puedo mandarte notificaciones (todo vive en tu dispositivo, sin servidor). Lo dejo marcado en tu diario del Cerebro — pregúntame mañana y lo retomamos."));
+    cbChips([]);
+    cbDiarioRender();
+    return;
+  }
+  if(acc==="apuntar"){ cbMsg("j", esc(t("cb_apuntado"))); cbChips([]); cbDiarioRender(); return; }
+  cbRespDia(acc);
+}
+// «¿cuántas calorías/proteína me quedan?» → lee el diario de comida de HOY y el plan del perfil
+// y responde con números REALES (transparencia: se dice de dónde salen).
+function cbRespDia(acc){
+  var o=window._obj||null;
+  if(!o){ cbMsg("j", esc(t("cb_sin_plan"))); cbChips([]); return; }
+  var f=hoyLocal(), arr=get(LS_COMIDA,[]).filter(function(x){ return x.f===f; });
+  var tot={kcal:0,p:0,c:0,gr:0};
+  arr.forEach(function(x){ tot.kcal+=(+x.kcal||0); tot.p+=(+x.p||0); tot.c+=(+x.c||0); tot.gr+=(+x.gr||0); });
+  function linea(nombre, lleva, obj, u){
+    var q=Math.round(obj-lleva);
+    return nombre+": llevas "+Math.round(lleva)+" de "+obj+" "+u+(q>=0?" — te quedan "+q+" "+u:" — te has pasado "+Math.abs(q)+" "+u);
+  }
+  var L=[];
+  if(acc==="dia_kcal"||acc==="dia_resumen") L.push(linea("Calorías", tot.kcal, o.cal, "kcal"));
+  if(acc==="dia_prot"||acc==="dia_resumen") L.push(linea("Proteína", tot.p, o.prot, "g"));
+  if(acc==="dia_carb"||acc==="dia_resumen") L.push(linea("Carbohidratos", tot.c, o.carb, "g"));
+  if(acc==="dia_grasa"||acc==="dia_resumen") L.push(linea("Grasa", tot.gr, o.grasa, "g"));
+  var pie=arr.length
+    ? "Números REALES: tu diario de hoy ("+arr.length+" apunte"+(arr.length===1?"":"s")+" en Comida) contra tu plan."
+    : "Ojo: hoy no has apuntado nada en la pestaña Comida — esto es tu objetivo entero.";
+  cbMsg("j", esc(L.join("\n"))+"<span class='cb-cita'>"+esc(pie)+"</span>");
+  cbChips(["Resumen completo del día","¿Por qué esas calorías?","¿Cuánta proteína al día?"]);
+}
+// «¿por qué X kcal?» → desglose del motor EXISTENTE (plan(p), solo lectura): transparencia total.
+function cbPorque(){
+  var p=get(LS_P,null);
+  if(!p){ cbMsg("j", esc(t("cb_sin_plan"))); cbChips([]); return; }
+  var rec=plan(p), o=window._obj||{cal:rec.cal, prot:rec.m.prot, grasa:rec.m.gr, carb:rec.m.carb};
+  var fSrc = rec.porDeporte ? "tu deporte extra manda sobre el desplegable" : rec.porPasos ? "tus pasos diarios capturan el NEAT" : "tu actividad declarada";
+  var objTxt = p.objetivo==="perder_grasa" ? ("perder grasa → −"+p.intensidad_pct+"%")
+    : p.objetivo==="ganar_musculo" ? ("ganar músculo → +"+p.intensidad_pct+"%")
+    : "recomposición → mantenimiento";
+  var L=[
+    "1) Reposo (BMR): "+rec.bmr+" kcal — fórmula "+rec.bmrM+".",
+    "2) × factor de actividad "+rec.factorEff+" ("+fSrc+") → gasto total (TDEE): "+rec.tdee+" kcal.",
+    "3) Objetivo "+objTxt+" → "+rec.cal+" kcal."
+  ];
+  if(o.cal!==rec.cal) L.push("4) Tu ajuste manual en «Ajustar» lo deja en "+o.cal+" kcal (la app vigila si progresas con él).");
+  L.push((o.cal!==rec.cal?"5)":"4)")+" Macros: proteína "+o.prot+" g · grasa "+o.grasa+" g · el RESTO a carbos: "+o.carb+" g — "+rec.m.nota+".");
+  cbMsg("j", esc(L.join("\n"))+"<span class='cb-cita'>(— lógica de cálculo Capa 1-2 · el día 1 es estimación: en ~2 semanas tu peso real manda)</span>");
+  cbChips(["¿Cómo ajusto con el peso?","¿Cuánta proteína al día?","¿Y si me estanco?"]);
+}
+// Lo capturado es VISIBLE y BORRABLE (privacidad: todo local, política clara).
+function cbDiarioRender(){
+  var box=$("cb_diario"); if(!box) return;
+  var d=get(LS_CEREBRO_DIARIO,[]);
+  if(!d.length){ box.innerHTML=""; return; }
+  var TIPO={sueno_mal:"😴 dormiste mal", fatiga:"🪫 cansancio", gym_skip:"🏃 gym saltado"};
+  box.innerHTML="<details style='margin-top:12px'><summary style='cursor:pointer;color:var(--jade);font-weight:600'>🗂 Lo que me has contado ("+d.length+") · solo en tu dispositivo</summary>"+
+    d.map(function(x,i){
+      var extra=[x.sueno_h?("sueño "+x.sueno_h):null, x.motivo?("motivo: "+x.motivo):null, x.recordar?"⏰ recordar":null].filter(Boolean).join(" · ");
+      return "<div class='kv'><span>"+esc(x.f)+" · "+(TIPO[x.tipo]||esc(x.tipo))+(extra?" · "+esc(extra):"")+"</span><span><button class='sec' type='button' style='width:auto;margin:0;padding:3px 9px' onclick='cbDiarioDel("+i+")'>✕</button></span></div>";
+    }).join("")+"</details>";
+}
+function cbDiarioDel(i){ var d=get(LS_CEREBRO_DIARIO,[]); d.splice(i,1); set(LS_CEREBRO_DIARIO,d); _cbCap=null; cbDiarioRender(); }
 
 // ======= CAPA DOPAMINA (feedback visual; NO toca datos ni cálculo) =======
 // Animación "pop" puntual en un elemento (botón al pulsar, número que cambia).
@@ -2657,8 +3878,10 @@ function guardarPerfil(){ _wizEdit=false;
     altura_cm:+$("f_altura").value, grasa_pct: grasaRaw===""?null:+grasaRaw,
     actividad: ($("f_act").value==="Otro" ? ((_actInt&&_actInt.valor)||"activo") : $("f_act").value), objetivo:$("f_obj").value, intensidad_pct:+$("f_int").value,
     pasos: +$("f_pasos").value||null,
+    deporte: +$("f_deporte").value||0,
     coach:{
       actividad_nota: _actTxt,
+      deporte_nota: $("w_deporte_nota").value.trim()||null,
       nivel:_niv.v, nivel_txt:_niv.txt, anios:$("w_anios").value.trim()||null, dias_sem:_dias.v, dias_sem_txt:_dias.txt,
       material:_mat.v, material_txt:_mat.txt, prioridad:$("w_prioridad").value.trim()||null, lesiones:$("w_lesiones").value.trim()||null,
       sueno_h: $("w_sueno").value.trim()||null, estres:_est.v, estres_txt:_est.txt, trabajo:_tra.v, trabajo_txt:_tra.txt,
@@ -2681,7 +3904,9 @@ function editarPerfil(){ const p=get(LS_P); if(p){
   $("f_peso").value=p.peso_kg; $("f_altura").value=p.altura_cm; $("f_grasa").value=(p.grasa_pct==null?"":p.grasa_pct);
   $("f_obj").value=p.objetivo; $("f_int").value=p.intensidad_pct;
   $("f_pasos").value=p.pasos||"";
+  $("f_deporte").value=(p.deporte!=null?p.deporte:0);
   var c=p.coach||{};
+  $("w_deporte_nota").value=c.deporte_nota||"";
   if(c.actividad_nota){ $("f_act").value="Otro"; $("w_act_otro").value=c.actividad_nota; $("w_act_otro").classList.remove("hidden"); try{ ecoPinta("w_act_otro"); }catch(e){} }
   else { $("f_act").value=p.actividad; $("w_act_otro").value=""; $("w_act_otro").classList.add("hidden"); var _ae=$("w_act_otro_eco"); if(_ae) _ae.remove(); }
   // C v0.12 · si hay texto original guardado (X_txt), se restaura CON su eco interpretado
@@ -2735,7 +3960,7 @@ function mediaSemana(ws,offsetDias){
 // ======= ENTRENOS (Fase 3.3 — logging estilo Hevy) =======
 let _ent={ejercicios:[]};
 function esc(t){ var d=document.createElement('div'); d.textContent=(t==null?'':t); return d.innerHTML; }
-function escAttr(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;'); }
+function escAttr(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/'/g,'&#39;'); }
 function hoyLocal(){ var d=new Date(); return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); }
 // Formatea el RIR para mostrar: 0 = "al límite" (última rep completa, SIN fallar la siguiente);
 // negativo = "fallo +1"/"fallo +2" (trabajo más allá del fallo: parciales/ayuda); positivo = "RIR n".
@@ -2885,6 +4110,8 @@ function entInit(){
   // F5 v0.10 · hint para el novato sin historial. D v0.12 · estado del toggle de calentamiento.
   try{ var wch=$("warmup_stats_chk"); if(wch) wch.checked=warmupCuenta(); }catch(e){}
   try{ renderMisRutinas(); cronoRender(); rutBtnSync(); hintNovato(); }catch(e){}
+  // v0.12.2 · pinta la vista activa de la máquina home/registro/editor (por defecto, home)
+  try{ entVistaRender(); }catch(e){}
 }
 // ----- "Última vez" (referencia estilo Hevy/Strong): qué hiciste la última sesión de ESTE ejercicio.
 // Solo lectura, no rellena nada automáticamente: ayuda a apuntar a la sobrecarga progresiva sin adivinar.
@@ -3488,17 +4715,26 @@ function entFormVacio(){
     return (ej.nombre||"").trim() || (ej.series||[]).some(function(s){ return (s.peso!==""&&s.peso!=null)||(s.reps!==""&&s.reps!=null); });
   });
 }
+// v0.12.2 · el CTA del catálogo se muda a la HOME como sección «🎯 Recomendadas para ti»:
+// tarjetas colapsadas del mismo estilo que "Mis rutinas" (nombre + porQué en details + ▶ Empezar).
 function entCtaRutina(){
-  var prev=$("ent_cta_rut"); if(prev) prev.remove();
-  var hist=get(LS_E,[]); if(hist.length||!entFormVacio()) return;
-  var sug=rutinaSugerida(); var d=document.createElement("div"); d.id="ent_cta_rut";
-  d.innerHTML="<div class='eyebrow-lbl'>¿No sabes por dónde empezar? Rutina sugerida según tu perfil</div>"+sug.map(function(r){
-    var key=Object.keys(RUTINAS).filter(function(k){return RUTINAS[k]===r;})[0];
-    // B v0.12 · el porqué science-based (campo porQue del catálogo) colapsable bajo cada opción
-    return "<button class='btn-lg' type='button' style='margin:0 0 4px' onclick='cargarRutina(\""+key+"\")'>📋 "+esc(r.nombre)+"</button>"
-      +(r.porQue?"<details style='margin:0 0 8px'><summary style='cursor:pointer;color:var(--mute);font-size:.72rem'>¿por qué esta rutina?</summary><div class='hint' style='margin:4px 0 0'>"+esc(r.porQue)+"</div></details>":"");
-  }).join("");
-  var f=$("ent_form"); if(f) f.parentNode.insertBefore(d,f);
+  var el=$("ent_recomendadas"); if(!el) return;
+  var sug=[]; try{ sug=rutinaSugerida()||[]; }catch(e){}
+  if(!sug.length){ el.innerHTML=""; return; }
+  el.innerHTML="<div class='eyebrow-lbl' style='margin-top:18px'>"+t("ent_recomendadas")+"</div>"
+    +"<p class='hint' style='margin:2px 0 0'>Según tu perfil (días, material y prioridad del onboarding).</p>"
+    +sug.map(function(r){
+      var key=Object.keys(RUTINAS).filter(function(k){return RUTINAS[k]===r;})[0];
+      var noms=(r.ej||[]).map(function(e){ return e.n; }).filter(Boolean);
+      var linea=noms.slice(0,3).join(", ")+(noms.length>3?"…":"");
+      // B v0.12 · el porqué science-based (campo porQue del catálogo) colapsable en cada tarjeta
+      return "<div class='rutcard'>"
+        +"<div class='rc-nombre'>📋 "+esc(r.nombre)+"</div>"
+        +"<div class='rc-ejs'>"+esc(linea)+"</div>"
+        +(r.porQue?"<details style='margin:0 0 8px'><summary style='cursor:pointer;color:var(--mute);font-size:.72rem'>¿por qué esta rutina?</summary><div class='hint' style='margin:4px 0 0'>"+esc(r.porQue)+"</div></details>":"")
+        +"<button class='btn-lg' type='button' onclick='entRutCatEmpezar(\""+key+"\")'>"+t("rut_empezar")+"</button>"
+        +"</div>";
+    }).join("");
 }
 function entCtaRepetir(){
   var hist=get(LS_E,[]); var prev=$("ent_cta_rep"); if(prev) prev.remove();
@@ -3513,6 +4749,13 @@ function repetirEntreno(id){
   var arr=get(LS_E,[]); var w=null;
   for(var k=0;k<arr.length;k++){ if(arr[k].id===id){ w=arr[k]; break; } }
   if(!w){ toast("No encontrado"); return; }
+  // Guard anti-pisotón (verificación 07/07): no machacar un entreno en curso sin preguntar,
+  // y descartar su crono para no atribuirle al repetido una hora de inicio falsa.
+  try{ entSync(); }catch(e){}
+  if(entEnCurso()){
+    if(!confirm(t("ent_descartar_q")+" Repetirás este entreno.")) return;
+    entDescartarCurso();
+  }
   _entMeta={}; var _pq=$("ent_rut_porque"); if(_pq) _pq.remove();   // B v0.12 · repetir entreno no arrastra la guía de otra rutina
   _ent={ejercicios:(w.ejercicios||[]).map(function(ej){
     // D v0.12 · tipo de serie, descanso propio y superserie también se repiten
@@ -3523,7 +4766,9 @@ function repetirEntreno(id){
   if(!_ent.ejercicios.length) _ent.ejercicios=[{nombre:'',series:[{peso:'',reps:'',rir:''}]}];
   var f=$("ent_fecha"); if(f) f.value=hoyLocal();
   renderEntForm();
-  _tab="entrenos"; aplicarTab(); window.scrollTo(0,0);
+  _tab="entrenos"; aplicarTab();
+  entVista("registro");   // v0.12.2 · repetir un entreno del historial abre la vista de logging
+  window.scrollTo(0,0);
   toast("↻ Entreno cargado — edítalo y guarda");
 }
 // ======= F1 · MIS RUTINAS (plantillas sin peso) + CRONÓMETRO DE SESIÓN (v0.10) =======
@@ -3555,19 +4800,28 @@ function cronoRender(){
   if(!_cronoTimer) _cronoTimer=setInterval(_cronoTick, 1000);
 }
 function cronoDescartar(){ set(LS_ENT_START,null); cronoRender(); toast("⏱ Cronómetro descartado"); }
-// Lista "📋 Mis rutinas" encima del formulario (solo si hay guardadas).
+// v0.12.2 · "📋 Mis rutinas" en la HOME de Entrenos como TARJETAS estilo Hevy: nombre + primeros
+// 3 ejercicios truncados + «▶ Empezar rutina» full-width + acciones ✏️ Editar / 🗑 Borrar.
 function renderMisRutinas(){
   var el=$("ent_mis_rutinas"); if(!el) return;
   var rs=get(LS_RUTINAS,[]);
-  if(!rs.length){ el.innerHTML=""; return; }
-  el.innerHTML="<div class='eyebrow-lbl'>📋 Mis rutinas</div>"+rs.map(function(r){
-    var n=(r.ejercicios||[]).length;
-    return "<div class='kv'><span>"+esc(r.nombre)+" <span class='hint' style='display:inline'>· "+n+" ejercicio"+(n===1?"":"s")+"</span></span>"
-      +"<span style='display:flex;gap:6px'>"
-      +"<button class='sec' type='button' style='width:auto;margin:0;padding:6px 10px;font-size:.72rem;color:var(--jade);border-color:var(--jade)' onclick=\"rutIniciar('"+r.id+"')\">▶ Iniciar entreno</button>"
-      +"<button class='sec' type='button' style='width:auto;margin:0;padding:6px 10px' title='Borrar rutina' onclick=\"rutBorrar('"+r.id+"')\">🗑</button>"
-      +"</span></div>";
+  var h="<div class='eyebrow-lbl'>"+t("ent_mis_rutinas")+" ("+rs.length+")</div>";
+  if(!rs.length){
+    h+="<p class='hint' style='margin:4px 0 0'>Aún no tienes rutinas. Crea una con «➕ Nueva rutina» o guarda un entreno como rutina.</p>";
+  }
+  h+=rs.map(function(r){
+    var noms=(r.ejercicios||[]).map(function(e){ return e.nombre; }).filter(Boolean);
+    var linea=noms.slice(0,3).join(", ")+(noms.length>3?"…":"");
+    return "<div class='rutcard'>"
+      +"<div class='rc-nombre'>"+esc(r.nombre)+"</div>"
+      +"<div class='rc-ejs'>"+esc(linea||"(sin ejercicios)")+"</div>"
+      +"<button class='btn-lg' type='button' onclick=\"entRutEmpezar('"+r.id+"')\">"+t("rut_empezar")+"</button>"
+      +"<div class='row' style='gap:6px;margin-top:6px'>"
+      +"<button class='sec' type='button' style='flex:1;width:auto;margin:0;padding:8px 10px' onclick=\"rutEditorAbrir('"+r.id+"')\">"+t("rut_editar")+"</button>"
+      +"<button class='sec' type='button' style='flex:1;width:auto;margin:0;padding:8px 10px' title='Borrar rutina' onclick=\"rutBorrar('"+r.id+"')\">🗑 "+t("ent_borrar")+"</button>"
+      +"</div></div>";
   }).join("");
+  el.innerHTML=h;
 }
 // El botón "💾 Guardar como rutina" solo aparece si el form tiene ≥1 ejercicio con nombre.
 function rutBtnSync(){
@@ -3595,6 +4849,9 @@ function rutGuardarOk(){
   set(LS_RUTINAS,rs);
   show("rut_guardar_form", false);
   renderMisRutinas();
+  // v0.12.2 · fix UX: que el guardado SE VEA — vuelta a la HOME con la tarjeta nueva visible.
+  // El form sigue en _ent (y el crono corre): la home ofrece «▶ Continuar entreno en curso».
+  entVista("home");
   toast("💾 Rutina guardada");
 }
 function rutBorrar(id){
@@ -3622,6 +4879,192 @@ function rutIniciar(id){
   set(LS_ENT_START, Date.now()); cronoRender();
   window.scrollTo(0,0);
   toast("▶ Entreno iniciado — el crono ya corre");
+}
+// ======= v0.12.2 · MÁQUINA DE VISTAS de la pestaña Entrenos (estilo Hevy) =======
+// 'home' (empezar vacío + mis rutinas + recomendadas + historial) | 'registro' (el form de logging
+// a solas) | 'editor' (crear/editar plantilla). El card #entrenos ya no apila todo.
+var _entVista="home";
+var _rutEd=null, _rutEdOrig=null;   // rutina en edición (copia de trabajo) + snapshot para detectar cambios
+function entVista(v){ _entVista=v; entVistaRender(); window.scrollTo(0,0); }
+function entVistaRender(){
+  show("ent_v_home", _entVista==="home");
+  show("ent_v_registro", _entVista==="registro");
+  show("ent_v_editor", _entVista==="editor");
+  if(_entVista==="home"){ try{ renderMisRutinas(); entCtaRutina(); entHomeCurso(); hintNovato(); }catch(e){} }
+}
+// ¿Hay un entreno "en curso"? = crono corriendo O datos ya tecleados en el form.
+function entEnCurso(){ return (+get(LS_ENT_START,0)>0) || !entFormVacio(); }
+// En la home: botón «▶ Continuar entreno en curso» si lo hay (el crono sigue vivo por debajo).
+function entHomeCurso(){
+  var el=$("ent_curso"); if(!el) return;
+  if(window._entCursoTick){ clearInterval(window._entCursoTick); window._entCursoTick=null; }
+  if(!entEnCurso()){ el.innerHTML=""; return; }
+  var st=+get(LS_ENT_START,0);
+  var extra = st>0 ? " · ⏱ <span id='ent_curso_t'>"+esc(cronoFmt(Date.now()-st))+"</span>" : "";
+  el.innerHTML="<button class='btn-lg' type='button' style='margin-top:10px;border-color:var(--jade)' onclick=\"entVista('registro')\">"+t("ent_continuar")+extra+"</button>";
+  // El ⏱ del botón tica cada segundo mientras la home esté a la vista (verificación 07/07: antes
+  // era una foto estática y el crono parecía parado).
+  if(st>0) window._entCursoTick=setInterval(function(){
+    var sp=$("ent_curso_t");
+    if(!sp || _entVista!=="home"){ clearInterval(window._entCursoTick); window._entCursoTick=null; return; }
+    sp.textContent=cronoFmt(Date.now()-(+get(LS_ENT_START,0)||Date.now()));
+  },1000);
+}
+// «➕ Empezar entreno vacío»: form limpio → vista registro. El crono arranca como hoy (al primer
+// tecleo, vía el listener de input). Si había un entreno en curso, pregunta antes de descartarlo.
+function entEmpezarVacio(){
+  if(entEnCurso()){
+    if(!confirm(t("ent_descartar_q")+" Empezarás uno vacío.")){ entVista("registro"); return; }
+    entDescartarCurso();
+  }
+  // Limpieza SIEMPRE (verificación 07/07): sin entreno en curso no se pasa por entDescartarCurso
+  // y la nota de principiante / guía de la rutina anterior se quedaban pegadas al form "vacío".
+  _entMeta={};
+  var _pq=$("ent_rut_porque"); if(_pq) _pq.remove();
+  var _np=$("ent_nota_princ"); if(_np) _np.remove();
+  _ent={ejercicios:[{nombre:'',series:[{peso:'',reps:'',rir:''}]}]};
+  var f=$("ent_fecha"); if(f) f.value=hoyLocal();
+  renderEntForm();
+  entVista("registro");
+}
+// Limpia crono + draft + guía de rutina (NO toca entrenos guardados en LS_E).
+function entDescartarCurso(){
+  set(LS_ENT_START,null); set("jvf_ent_draft",null); cronoRender();
+  _entMeta={};
+  var _pq=$("ent_rut_porque"); if(_pq) _pq.remove();
+  var _np=$("ent_nota_princ"); if(_np) _np.remove();
+  _ent={ejercicios:[{nombre:'',series:[{peso:'',reps:'',rir:''}]}]};
+  renderEntForm();
+}
+// «← Entrenos» desde la vista registro: confirm estilo Hevy si hay crono o datos tecleados
+// (Aceptar = descartar y volver · Cancelar = seguir con el entreno).
+function entVolverHome(){
+  try{ entSync(); }catch(e){}
+  if(entEnCurso()){
+    if(!confirm(t("ent_descartar_q"))) return;
+    entDescartarCurso();
+  }
+  entVista("home");
+}
+// ▶ desde las tarjetas: reusa rutIniciar / cargarRutina EXISTENTES y cambia a la vista registro.
+// Guard anti-pisotón (hallazgo bloqueante verificación 07/07): con un entreno en curso, confirmar
+// antes de machacar _ent y el crono — mismo trato que entEmpezarVacio/entVolverHome.
+function entRutEmpezar(id){
+  try{ entSync(); }catch(e){}
+  if(entEnCurso()){
+    if(!confirm(t("ent_descartar_q")+" Empezarás esta rutina.")) return;
+    entDescartarCurso();
+  }
+  rutIniciar(id); entVista("registro");
+}
+function entRutCatEmpezar(key){
+  try{ entSync(); }catch(e){}
+  if(entEnCurso()){
+    if(!confirm(t("ent_descartar_q")+" Empezarás esta rutina.")) return;
+    entDescartarCurso();
+  }
+  cargarRutina(key); entVista("registro");
+}
+// «Guardar entreno» vuelve a HOME solo, SIN tocar guardarEntreno (regla dura): se detecta el alta
+// en LS_E con un par de listeners en document — capture corre ANTES del onclick inline del botón,
+// bubble en document corre DESPUÉS (con su okFlash/popEl ya disparados).
+var _entLenAntes=null;
+document.addEventListener("click", function(e){
+  var b=e.target && e.target.closest && e.target.closest('#entrenos button[onclick="guardarEntreno()"]');
+  if(b){ try{ _entLenAntes=get(LS_E,[]).length; }catch(err){ _entLenAntes=null; } }
+}, true);
+document.addEventListener("click", function(e){
+  var b=e.target && e.target.closest && e.target.closest('#entrenos button[onclick="guardarEntreno()"]');
+  if(!b || _entLenAntes==null) return;
+  var creado=false; try{ creado=get(LS_E,[]).length>_entLenAntes; }catch(err){}
+  _entLenAntes=null;
+  if(creado){
+    entVista("home");
+    // que el resumen de sesión recién guardado SE VEA (está al fondo de la home, bajo Historial)
+    try{ var r=$("ent_resumen"); if(r && !r.classList.contains("hidden")) r.scrollIntoView({behavior:"smooth",block:"start"}); }catch(err){}
+  }
+});
+// ======= v0.12.2 · EDITOR de rutina (plantillas: nombre + ejercicios + nº de series) =======
+function rutEditorAbrir(id){
+  var r=null;
+  if(id){ var rs=get(LS_RUTINAS,[]); for(var k=0;k<rs.length;k++){ if(rs[k].id===id){ r=rs[k]; break; } } }
+  _rutEd = r
+    ? {id:r.id, nombre:(r.nombre||""), ejercicios:(r.ejercicios||[]).map(function(e){ return {nombre:(e.nombre||""), series:Math.max(1,+e.series||1)}; })}
+    : {id:null, nombre:"", ejercicios:[{nombre:"",series:3}]};
+  if(!_rutEd.ejercicios.length) _rutEd.ejercicios=[{nombre:"",series:3}];
+  _rutEdOrig=JSON.stringify(_rutEd);
+  var tt=$("rut_ed_titulo"); if(tt) tt.textContent = r ? t("rut_editar_titulo") : t("rut_nueva_titulo");
+  var ni=$("rut_ed_nombre"); if(ni) ni.value=_rutEd.nombre;
+  rutEdRender();
+  entVista("editor");
+}
+function rutEdRender(){
+  var el=$("rut_ed_lista"); if(!el || !_rutEd) return;
+  el.innerHTML=_rutEd.ejercicios.map(function(e,i){
+    return '<div class="rut-ed-row" style="border:1px solid var(--line-soft);border-radius:12px;padding:10px;margin-top:8px">'
+      +'<div class="row" style="gap:6px;align-items:center">'
+      +'<input class="rut-ed-nombre" list="ent-ejercicios" placeholder="Ejercicio (ej. Press banca)" value="'+escAttr(e.nombre)+'" oninput="rutEdSync()">'
+      +'<button class="sec" type="button" title="Biblioteca" style="width:auto;margin:0;padding:8px 11px" onclick="abrirBiblio(this)">📚</button>'
+      +'<button class="sec" type="button" title="Quitar ejercicio" style="width:auto;margin:0;padding:8px 11px" onclick="rutEdDelEj('+i+')">🗑</button>'
+      +'</div>'
+      +'<div class="row" style="gap:8px;align-items:center;margin-top:8px">'
+      +'<span class="hint" style="margin:0">Series</span>'
+      +'<button class="sec" type="button" style="width:auto;margin:0;padding:6px 14px" onclick="rutEdSeries('+i+',-1)">−</button>'
+      +'<b style="min-width:22px;text-align:center;font-family:var(--mono)">'+(Math.max(1,+e.series||1))+'</b>'
+      +'<button class="sec" type="button" style="width:auto;margin:0;padding:6px 14px" onclick="rutEdSeries('+i+',1)">+</button>'
+      +'</div></div>';
+  }).join("");
+}
+// Lee los nombres del DOM a _rutEd (el nº de series vive solo en _rutEd, lo mueven los botones ±).
+function rutEdSync(){
+  if(!_rutEd) return;
+  var ni=$("rut_ed_nombre"); if(ni) _rutEd.nombre=ni.value;
+  var rows=document.querySelectorAll("#rut_ed_lista .rut-ed-row");
+  [].forEach.call(rows,function(row,i){
+    var inp=row.querySelector(".rut-ed-nombre");
+    if(inp && _rutEd.ejercicios[i]) _rutEd.ejercicios[i].nombre=inp.value;
+  });
+}
+function rutEdAddEj(){ if(!_rutEd) return; rutEdSync(); _rutEd.ejercicios.push({nombre:"",series:3}); rutEdRender(); }
+function rutEdDelEj(i){
+  if(!_rutEd) return; rutEdSync();
+  _rutEd.ejercicios.splice(i,1);
+  if(!_rutEd.ejercicios.length) _rutEd.ejercicios=[{nombre:"",series:3}];
+  rutEdRender();
+}
+function rutEdSeries(i,d){
+  if(!_rutEd) return; rutEdSync();
+  var e=_rutEd.ejercicios[i]; if(!e) return;
+  e.series=Math.max(1,Math.min(20,(Math.max(1,+e.series||1))+d));
+  rutEdRender();
+}
+// 💾 Guardar rutina: alta o update por id en LS_RUTINAS (misma clave y forma que rutGuardarOk).
+function rutEdGuardar(){
+  if(!_rutEd) return;
+  rutEdSync();
+  var nombre=(_rutEd.nombre||"").trim();
+  if(!nombre){ toast("Ponle un nombre a la rutina"); return; }
+  var ejs=_rutEd.ejercicios.filter(function(e){ return (e.nombre||"").trim(); })
+    .map(function(e){ return {nombre:(e.nombre||"").trim(), series:Math.max(1,Math.min(20,+e.series||1))}; });
+  if(!ejs.length){ toast("Añade al menos un ejercicio con nombre"); return; }
+  var rs=get(LS_RUTINAS,[]), idx=-1;
+  if(_rutEd.id){ for(var k=0;k<rs.length;k++){ if(rs[k].id===_rutEd.id){ idx=k; break; } } }
+  if(idx>=0){ rs[idx]={id:_rutEd.id, nombre:nombre, ejercicios:ejs}; }
+  else { rs.push({id:Date.now().toString(36)+Math.random().toString(36).slice(2,6), nombre:nombre, ejercicios:ejs}); }
+  set(LS_RUTINAS,rs);
+  _rutEd=null; _rutEdOrig=null;
+  renderMisRutinas();
+  entVista("home");
+  toast("💾 Rutina guardada");
+}
+// «← Entrenos» / Cancelar del editor: solo pregunta si hay cambios sin guardar.
+function rutEdCancelar(){
+  rutEdSync();
+  if(_rutEd && _rutEdOrig && JSON.stringify(_rutEd)!==_rutEdOrig){
+    if(!confirm("¿Salir sin guardar los cambios de la rutina?")) return;
+  }
+  _rutEd=null; _rutEdOrig=null;
+  entVista("home");
 }
 // Si el usuario entra directo (sin pulsar ▶) y empieza a teclear en el form, el primer tecleo
 // también fija el inicio de la sesión. De paso refresca el botón "Guardar como rutina".
@@ -3839,6 +5282,468 @@ function renderInformeMes(){
       +"</div>";
   }
   el.innerHTML=h;
+}
+
+// ======= 📸 FOTOS DE PROGRESO (v0.13-C · spec 2026-07-07, validada por Pablo) =======
+// Doctrina: el software filtra el ORIGEN de la foto con ECUACIONES (parser EXIF a mano, sin
+// librerías) — el CONTENIDO lo cubre el descargo del consentimiento (⚖️ revisable por Pablo).
+// La foto JAMÁS sale del dispositivo: vive en IndexedDB (localStorage no da el tamaño) comprimida
+// a ≤1280 px JPEG q0.8, y se borra por foto, en bloque o con «Empezar de cero».
+// Límite honesto v1 (anotado en la spec): detectar un FILTRO de belleza por píxeles sin IA no es
+// fiable → NO se promete. v1 = origen (EXIF) + comparabilidad (luminancia). Capa IA: futura.
+
+// [FOTO-CHECK-PURE-INICIO] — ecuaciones puras (sin DOM, sin storage, sin red): los tests de node
+// (_tests/test-fotos.node.js) extraen y evalúan este bloque tal cual, con fixtures EXIF en bytes.
+
+// Lista negra de editores (campo EXIF "Software", subcadena en minúsculas). Un firmware de cámara
+// ("G973FXXU9...", "Apple iOS 17") NO está aquí: solo software de EDICIÓN conocido.
+var PF_EDITORES=["photoshop","lightroom","snapseed","facetune","meitu","picsart","vsco","gimp",
+  "pixlr","polarr","remini","airbrush","photoroom","canva","luminar","befunky","fotor","photopea",
+  "affinity photo","capture one","photo editor"];
+var PF_RECIENTE_MIN=15;   // DateTimeOriginal a ≤15 min del reloj = «hecha ahora» (tolera desfase leve)
+var PF_MIN_LADO=480;      // lado corto mínimo (px) para que la comparación visual tenga sentido
+var PF_TOL=0.20;          // ±20% de brillo/contraste = comparable (spec)
+
+// --- Parser EXIF/TIFF a mano (~100 líneas, cero librerías) ---
+// bytes: Uint8Array del JPEG. Devuelve SIEMPRE objeto, jamás lanza:
+// {hasExif, make, model, software, dateTimeOriginal, orientation}
+function pfLeerExif(bytes){
+  var out={hasExif:false, make:null, model:null, software:null, dateTimeOriginal:null, orientation:null};
+  try{
+    if(!bytes || bytes.length<4 || bytes[0]!==0xFF || bytes[1]!==0xD8) return out;   // sin SOI: no es JPEG
+    // 1 · recorrer segmentos JPEG hasta el APP1 "Exif\0\0" (o rendirse en SOS/EOI)
+    var i=2, tiff=-1;
+    while(i+3<bytes.length){
+      if(bytes[i]!==0xFF) break;                                   // stream corrupto: nos rendimos con calma
+      var marker=bytes[i+1];
+      if(marker===0xDA || marker===0xD9) break;                    // SOS/EOI: ya no habrá APP1
+      var len=(bytes[i+2]<<8)|bytes[i+3];
+      if(len<2 || i+2+len>bytes.length) break;                     // longitud imposible: archivo truncado
+      if(marker===0xE1 && len>=10
+        && bytes[i+4]===0x45 && bytes[i+5]===0x78 && bytes[i+6]===0x69 && bytes[i+7]===0x66
+        && bytes[i+8]===0 && bytes[i+9]===0){ tiff=i+10; break; }  // "Exif\0\0" → base TIFF
+      i+=2+len;
+    }
+    if(tiff<0) return out;
+    // 2 · cabecera TIFF: orden de bytes (II little / MM big) + magic 42 + offset del IFD0
+    var T=tiff, little;
+    if(bytes[T]===0x49 && bytes[T+1]===0x49) little=true;
+    else if(bytes[T]===0x4D && bytes[T+1]===0x4D) little=false;
+    else return out;
+    function u16(o){ if(o<0||o+1>=bytes.length) return 0; return little?(bytes[o]|(bytes[o+1]<<8)):((bytes[o]<<8)|bytes[o+1]); }
+    function u32(o){ if(o<0||o+3>=bytes.length) return 0;
+      return little?(bytes[o]+bytes[o+1]*256+bytes[o+2]*65536+bytes[o+3]*16777216)
+                   :(bytes[o]*16777216+bytes[o+1]*65536+bytes[o+2]*256+bytes[o+3]); }
+    if(u16(T+2)!==42) return out;
+    out.hasExif=true;                                              // TIFF válido = hay EXIF (aunque venga vacío)
+    function ascii(off,cnt){
+      var s="", end=Math.min(off+cnt,bytes.length);
+      for(var k=off;k<end;k++){ var c=bytes[k]; if(c===0) break; s+=String.fromCharCode(c); }
+      s=s.replace(/^\s+|\s+$/g,""); return s||null;
+    }
+    // 3 · leer un IFD: n entradas de 12 bytes {tag(2), tipo(2), count(4), valor-o-offset(4)}.
+    //     Devuelve el puntero al sub-IFD EXIF (tag 0x8769) si aparece.
+    function leerIFD(off,tags,dest){
+      if(off<=0 || T+off+2>bytes.length) return 0;
+      var n=u16(T+off), sub=0;
+      for(var e2=0;e2<n;e2++){
+        var p=T+off+2+e2*12; if(p+12>bytes.length) break;
+        var tag=u16(p), tipo=u16(p+2), cnt=u32(p+4);
+        if(tag===0x8769){ sub=u32(p+8); continue; }
+        if(!(tag in tags)) continue;
+        if(tipo===2 && cnt>0 && cnt<4096){                          // ASCII (≤4 chars va inline; si no, offset)
+          dest[tags[tag]]=ascii(cnt<=4 ? p+8 : T+u32(p+8), cnt);
+        } else if(tipo===3 && cnt===1){                             // SHORT (Orientation)
+          dest[tags[tag]]=u16(p+8);
+        }
+      }
+      return sub;
+    }
+    var sub=leerIFD(u32(T+4), {0x010F:"make",0x0110:"model",0x0131:"software",0x0112:"orientation"}, out);
+    if(sub) leerIFD(sub, {0x9003:"dateTimeOriginal"}, out);
+  }catch(e){ /* EXIF corrupto → como si no lo hubiera: decide la política de honestidad */ }
+  return out;
+}
+
+// "YYYY:MM:DD HH:MM:SS" (formato EXIF, sin zona horaria: se asume hora local del dispositivo,
+// que en la práctica es el mismo reloj que puso la fecha) → ms epoch, o null si no parsea.
+function pfFechaExifMs(s){
+  if(!s) return null;
+  var m=/^(\d{4}):(\d{2}):(\d{2})[ T](\d{2}):(\d{2}):(\d{2})/.exec(String(s).replace(/^\s+|\s+$/g,""));
+  if(!m) return null;
+  var t=new Date(+m[1],+m[2]-1,+m[3],+m[4],+m[5],+m[6]).getTime();
+  return isNaN(t)?null:t;
+}
+
+function pfEditorEnLista(software){
+  if(!software) return null;
+  var s=String(software).toLowerCase();
+  for(var i=0;i<PF_EDITORES.length;i++) if(s.indexOf(PF_EDITORES[i])>=0) return PF_EDITORES[i];
+  return null;
+}
+
+// ¿Las dimensiones de la imagen son EXACTAMENTE las de alguna pantalla candidata (en cualquier
+// orientación)? Una foto de cámara casi nunca mide justo la pantalla; una captura, siempre.
+function pfDimsDePantalla(w,h,pantallas){
+  for(var i=0;i<(pantallas||[]).length;i++){
+    var p=pantallas[i];
+    if((w===p[0]&&h===p[1])||(w===p[1]&&h===p[0])) return true;
+  }
+  return false;
+}
+
+// --- Check de ORIGEN (la ecuación central) ---
+// exif: salida de pfLeerExif · ctx: {ahoraMs, imgW, imgH, pantallas:[[w,h],…], desdeCapture, esMovil}
+// → {veredicto:"ok"|"no_verificable"|"rechazo", codigo, txt}
+// REGLA DE HONESTIDAD TÉCNICA (spec): si el navegador limpió el EXIF pero la foto viene del flujo
+// capture en móvil, se ACEPTA marcada «origen no verificable». JAMÁS se finge certeza.
+function pfCheckOrigen(exif,ctx){
+  exif=exif||{}; ctx=ctx||{};
+  var camara=!!(exif.make||exif.model);
+  // 1 · editor conocido en Software → rechazo directo, da igual lo demás
+  var ed=pfEditorEnLista(exif.software);
+  if(ed) return {veredicto:"rechazo", codigo:"editada",
+    txt:"La foto pasó por un editor ("+ed+"). Para que el progreso sea real vale solo la foto tal cual sale de la cámara: sin filtros ni retoques."};
+  // 2 · anti-screenshot: mide EXACTAMENTE la pantalla Y sin rastro de cámara
+  if(pfDimsDePantalla(ctx.imgW,ctx.imgH,ctx.pantallas) && !camara)
+    return {veredicto:"rechazo", codigo:"screenshot",
+      txt:"Parece una captura de pantalla o una imagen descargada (mide exactamente lo que tu pantalla y no trae datos de cámara). Hazla con la cámara."};
+  // 3 · sin EXIF de cámara
+  if(!exif.hasExif || !camara){
+    if(ctx.desdeCapture && ctx.esMovil)
+      return {veredicto:"no_verificable", codigo:"capture_sin_exif",
+        txt:"Tu navegador no me deja leer los datos de la cámara, así que NO puedo verificar el origen. La guardo marcada como «origen no verificable» — es lo honesto."};
+    return {veredicto:"rechazo", codigo:"sin_exif",
+      txt:"El archivo no trae datos de cámara (EXIF): parece una descarga, una captura o una imagen procesada. Hazla con la cámara del móvil."};
+  }
+  // 4 · cámara real: ¿es de AHORA?
+  var ms=pfFechaExifMs(exif.dateTimeOriginal);
+  if(ms==null)
+    return {veredicto:"no_verificable", codigo:"sin_fecha",
+      txt:"La foto viene de una cámara ("+(exif.make||exif.model)+") pero sin fecha de captura: no puedo verificar CUÁNDO se hizo. La guardo marcada como «origen no verificable»."};
+  if(Math.abs((ctx.ahoraMs||0)-ms)/60000<=PF_RECIENTE_MIN)
+    return {veredicto:"ok", codigo:"verificada",
+      txt:"Origen verificado: hecha ahora con "+(((exif.make||"")+" "+(exif.model||"")).replace(/^\s+|\s+$/g,""))+" ✓"};
+  return {veredicto:"rechazo", codigo:"vieja",
+    txt:"Esta foto no es de ahora (la cámara dice "+exif.dateTimeOriginal+"). Para comparar semana a semana vale solo la foto hecha en el momento."};
+}
+
+// --- Comparabilidad por ecuación (luminancia, no IA) ---
+// Histograma de luminancia Rec.601 de un buffer RGBA (data) con n píxeles → array[256].
+function pfHistLuma(data,n){
+  var h=new Array(256), i; for(i=0;i<256;i++) h[i]=0;
+  for(i=0;i<n;i++){
+    var y=(0.299*data[i*4]+0.587*data[i*4+1]+0.114*data[i*4+2])|0;
+    h[y>255?255:y]++;
+  }
+  return h;
+}
+// brillo = media del histograma · contraste = desviación típica. Ecuaciones de libro.
+function pfBrilloContraste(hist){
+  var n=0,s=0,i; for(i=0;i<256;i++){ n+=hist[i]; s+=i*hist[i]; }
+  if(!n) return {brillo:0, contraste:0};
+  var m=s/n, v=0; for(i=0;i<256;i++) v+=hist[i]*(i-m)*(i-m);
+  return {brillo:m, contraste:Math.sqrt(v/n)};
+}
+// Score de comparabilidad vs la foto ANTERIOR de esa pose. Principio de la Deducción Visible:
+// el score SE ENSEÑA con su desglose («comparabilidad 🟢 84%»), factor a factor con sus puntos.
+// act/prev: {brillo, contraste, w, h} · prev==null → primera foto (referencia, sin score).
+// Pesos: brillo 40 + contraste 30 + orientación 20 + resolución 10 = 100. Los puntos de brillo y
+// contraste caen linealmente hasta 0 al DOBLE de la tolerancia (±40%). 🟢 solo si TODO está en
+// rango (±20%, misma orientación, resolución mínima); si algo se sale → ⚠️ con el motivo.
+function pfComparabilidad(act,prev){
+  function orient(f){ return f.h>=f.w ? "vertical" : "horizontal"; }
+  var resOk=Math.min(act.w,act.h)>=PF_MIN_LADO;
+  if(!prev){
+    return {score:null, semaforo:resOk?"🟢":"⚠️",
+      txt:resOk?"Primera foto de esta pose: queda como referencia para comparar las siguientes."
+        :"Primera foto de esta pose (queda como referencia), pero viene pequeña ("+act.w+"×"+act.h+"): por debajo de "+PF_MIN_LADO+" px de lado corto la comparación pierde detalle.",
+      factores:[{n:"Resolución", ok:resOk, pts:resOk?10:0, max:10,
+        txt:act.w+"×"+act.h+(resOk?" ✓":" — por debajo del mínimo ("+PF_MIN_LADO+" px de lado corto)")}]};
+  }
+  function rel(a,b){ return Math.abs(a-b)/Math.max(Math.abs(b),1); }
+  var db=rel(act.brillo,prev.brillo), dc=rel(act.contraste,prev.contraste);
+  var bOk=db<=PF_TOL, cOk=dc<=PF_TOL, oOk=orient(act)===orient(prev);
+  var pB=Math.round(40*Math.max(0,1-db/(PF_TOL*2)));
+  var pC=Math.round(30*Math.max(0,1-dc/(PF_TOL*2)));
+  var pO=oOk?20:0, pR=resOk?10:0, score=pB+pC+pO+pR;
+  var factores=[
+    {n:"Brillo (luz)", ok:bOk, pts:pB, max:40,
+      txt:Math.round(act.brillo)+" vs "+Math.round(prev.brillo)+" de la anterior ("+Math.round(db*100)+"% de diferencia"+(bOk?" · dentro del ±20%) ✓":") — la luz no es comparable: misma hora y sitio que la anterior")},
+    {n:"Contraste", ok:cOk, pts:pC, max:30,
+      txt:Math.round(act.contraste)+" vs "+Math.round(prev.contraste)+" ("+Math.round(dc*100)+"%"+(cOk?" · dentro del ±20%) ✓":") — sombras/iluminación distintas")},
+    {n:"Orientación", ok:oOk, pts:pO, max:20,
+      txt:orient(act)+" vs "+orient(prev)+(oOk?" ✓":" — usa siempre la misma orientación")},
+    {n:"Resolución", ok:resOk, pts:pR, max:10,
+      txt:act.w+"×"+act.h+(resOk?" ✓":" — por debajo de "+PF_MIN_LADO+" px de lado corto")}];
+  var todoOk=bOk&&cOk&&oOk&&resOk;
+  return {score:score, semaforo:todoOk?"🟢":"⚠️",
+    txt:todoOk?"Comparabilidad 🟢 "+score+"% — condiciones equivalentes a la foto anterior."
+      :"Comparabilidad ⚠️ "+score+"% — fuera de rango: "+factores.filter(function(f){return !f.ok;}).map(function(f){return f.n.toLowerCase();}).join(" + ")+".",
+    factores:factores};
+}
+// [FOTO-CHECK-PURE-FIN]
+
+// --- Capa impura: IndexedDB "jvf_fotos" (store "fotos") + UI de la sección ---
+// Registro: {id, ts, fecha, pose, blob(JPEG≤1280px q0.8), w, h, brillo, contraste,
+//            origen:{veredicto,codigo,txt,make,model,software,dto}, score, semaforo}
+var PF_POSES=[["frente","🧍 Frente"],["lateral","🚶 Lateral"],["espalda","🔙 Espalda"]];
+var _pfPose="frente", _pfFotos=null, _pfURLs=[], _pfDB=null, _pfUltimoRes=null, _pfCompSel=null;
+
+function pfIDBDisponible(){ try{ return !!window.indexedDB; }catch(e){ return false; } }
+function pfOpen(cb){
+  if(_pfDB) return cb(_pfDB);
+  if(!pfIDBDisponible()) return cb(null);
+  try{
+    var rq=indexedDB.open("jvf_fotos",1);
+    rq.onupgradeneeded=function(){ var db=rq.result; if(!db.objectStoreNames.contains("fotos")) db.createObjectStore("fotos",{keyPath:"id"}); };
+    rq.onsuccess=function(){ _pfDB=rq.result; _pfDB.onversionchange=function(){ try{ _pfDB.close(); }catch(e){} _pfDB=null; }; cb(_pfDB); };
+    rq.onerror=function(){ cb(null); };
+    rq.onblocked=function(){ cb(null); };
+  }catch(e){ cb(null); }
+}
+function pfTodas(cb){
+  pfOpen(function(db){
+    if(!db) return cb(null);
+    try{
+      var rq=db.transaction("fotos","readonly").objectStore("fotos").getAll();
+      rq.onsuccess=function(){ var a=rq.result||[]; a.sort(function(x,y){ return x.ts-y.ts; }); cb(a); };
+      rq.onerror=function(){ cb(null); };
+    }catch(e){ cb(null); }
+  });
+}
+function pfGuardarRec(rec,cb){
+  pfOpen(function(db){
+    if(!db) return cb(false);
+    try{
+      var tx=db.transaction("fotos","readwrite");
+      tx.objectStore("fotos").put(rec);
+      tx.oncomplete=function(){ cb(true); };
+      tx.onerror=tx.onabort=function(){ cb(false); };   // p. ej. QuotaExceeded: fallo honesto, sin crash
+    }catch(e){ cb(false); }
+  });
+}
+// Espejo de METADATOS en localStorage (sin blobs): es lo que viaja en el export JSON.
+function pfSyncMeta(arr){
+  try{ set("jvf_fotos_meta",(arr||[]).map(function(r){ return {id:r.id, fecha:r.fecha, pose:r.pose, score:r.score, semaforo:r.semaforo, origen:(r.origen&&r.origen.veredicto)||null}; })); }catch(e){}
+}
+function pfBorrarFoto(id){
+  if(!confirm("¿Borrar esta foto? No hay papelera: se elimina del dispositivo.")) return;
+  pfOpen(function(db){
+    if(!db) return toast("No pude abrir el almacén de fotos");
+    try{
+      var tx=db.transaction("fotos","readwrite");
+      tx.objectStore("fotos")["delete"](id);
+      tx.oncomplete=function(){ _pfUltimoRes=null; toast("Foto borrada"); pfRefrescar(); };
+      tx.onerror=function(){ toast("No pude borrar la foto"); };
+    }catch(e){ toast("No pude borrar la foto"); }
+  });
+}
+function pfBorrarTodas(){
+  if(!confirm("¿Borrar TODAS las fotos de progreso de este dispositivo?")) return;
+  pfOpen(function(db){
+    if(!db) return toast("No pude abrir el almacén de fotos");
+    try{
+      var tx=db.transaction("fotos","readwrite");
+      tx.objectStore("fotos").clear();
+      tx.oncomplete=function(){ _pfUltimoRes=null; toast("Fotos borradas"); pfRefrescar(); };
+      tx.onerror=function(){ toast("No pude borrar las fotos"); };
+    }catch(e){ toast("No pude borrar las fotos"); }
+  });
+}
+
+// Refresca la sección: lee TODO de IDB y pinta. Fallback honesto si IndexedDB no existe (mensaje,
+// no crash — misma filosofía que el aviso de localStorage bloqueado).
+function pfRefrescar(){
+  var el=$("fotos_sec"); if(!el) return;
+  if(!pfIDBDisponible()){
+    el.innerHTML="<div class='card' style='margin:14px 0;padding:16px'><div class='eyebrow-lbl' style='margin-top:0'>📸 Fotos de progreso</div>"
+      +"<div class='aviso'>Este navegador no tiene el almacén necesario (IndexedDB) — puede pasar en modo incógnito o en navegadores dentro de apps. Abre la app en Chrome/Safari normales para usar las fotos. El resto de la app funciona igual.</div></div>";
+    return;
+  }
+  pfTodas(function(arr){
+    if(arr===null){
+      el.innerHTML="<div class='card' style='margin:14px 0;padding:16px'><div class='eyebrow-lbl' style='margin-top:0'>📸 Fotos de progreso</div>"
+        +"<div class='aviso'>No pude abrir el almacén de fotos (¿almacenamiento bloqueado o lleno?). El resto de la app funciona igual.</div></div>";
+      return;
+    }
+    _pfFotos=arr; pfSyncMeta(arr); pfPintar();
+  });
+}
+
+function pfPoseNombre(p){ for(var i=0;i<PF_POSES.length;i++) if(PF_POSES[i][0]===p) return PF_POSES[i][1]; return p; }
+function pfSelPose(p){ _pfPose=p; _pfUltimoRes=null; _pfCompSel=null; pfPintar(); }
+function pfURL(blob){ var u=URL.createObjectURL(blob); _pfURLs.push(u); return u; }
+function pfFechaCorta(f){ return (f||"").split("-").reverse().join("/"); }
+// Peso medio (kg) de los pesajes a ±3 días de una fecha — conecta la foto con el NÚMERO
+// («la fuerza engaña, el músculo se mide», Murphy & Koehler 2022, master-file).
+function pfPesoMedioCerca(fecha){
+  var t=Date.parse(fecha+"T12:00:00"); if(isNaN(t)) return null;
+  var vals=get(LS_W,[]).map(function(x){ var tx=Date.parse((x.f||"")+"T12:00:00"); return (!isNaN(tx)&&Math.abs(tx-t)<=3*864e5)?+x.w:null; }).filter(function(v){ return v>0; });
+  if(!vals.length) return null;
+  return vals.reduce(function(a,b){ return a+b; },0)/vals.length;
+}
+
+// Caja de resultado de la última captura (rechazo o guardada): el veredicto y el score SE ENSEÑAN.
+function pfResHTML(){
+  if(!_pfUltimoRes) return "";
+  var r=_pfUltimoRes, h="";
+  if(r.origen.veredicto==="rechazo")
+    return "<div class='aviso' style='margin-top:10px'>✋ <b>Foto rechazada.</b> "+esc(r.origen.txt)+"</div>";
+  var okReal=r.origen.veredicto==="ok";
+  h+="<div style='border:1px solid "+(okReal?"var(--line)":"rgba(244,169,80,.45)")+";border-radius:11px;padding:10px;margin-top:10px'>";
+  h+="<div class='hint' style='margin:0;color:"+(okReal?"var(--jade)":"#f4a950")+"'>"+(okReal?"✅ ":"❓ ")+esc(r.origen.txt)+"</div>";
+  if(r.comp){
+    h+="<div class='hint' style='margin:8px 0 0;color:var(--soft)'><b>"+esc(r.comp.txt)+"</b></div>";
+    (r.comp.factores||[]).forEach(function(f){
+      h+="<div class='kv'><span>"+esc(f.n)+"</span><span style='color:"+(f.ok?"var(--jade)":"#f4a950")+"'>"+f.pts+"/"+f.max+" · "+esc(f.txt)+"</span></div>";
+    });
+    if(r.comp.score!=null) h+="<div class='hint' style='margin:6px 0 0'>El score es una ecuación (brillo 40 + contraste 30 + orientación 20 + resolución 10), no una opinión: cada punto de arriba explica de dónde sale.</div>";
+  }
+  return h+"</div>";
+}
+
+function pfPintar(){
+  var el=$("fotos_sec"); if(!el) return;
+  _pfURLs.forEach(function(u){ try{ URL.revokeObjectURL(u); }catch(e){} }); _pfURLs=[];
+  var arr=_pfFotos||[], dePose=arr.filter(function(r){ return r.pose===_pfPose; });
+  var h="<div class='card' style='margin:14px 0;padding:16px'>"
+    +"<div class='eyebrow-lbl' style='margin-top:0'>📸 Fotos de progreso</div>"
+    +"<div class='hint' style='margin:4px 0 10px'>La báscula engaña y el espejo tiene memoria corta: la foto con la <b style='color:var(--soft)'>misma pose, luz y hora</b> es tu mejor testigo. Verifico el <b style='color:var(--soft)'>origen</b> con ecuaciones (cámara real, de ahora, sin editores) — y nada sale de este dispositivo.</div>"
+    +"<div class='wizchips' style='margin:0 0 2px'>"+PF_POSES.map(function(p){
+      var n=arr.filter(function(r){ return r.pose===p[0]; }).length;
+      return "<span class='wchip done"+(p[0]===_pfPose?" cur":"")+"' onclick=\"pfSelPose('"+p[0]+"')\">"+p[1]+(n?" · "+n:"")+"</span>";
+    }).join("")+"</div>"
+    // input file OCULTO: en móvil capture=environment fuerza la cámara; en desktop abre el picker
+    // pero el archivo pasa EXACTAMENTE los mismos checks de origen (si no los pasa → rechazo).
+    +"<input type='file' id='pf_file' class='hidden' accept='image/*' capture='environment' onchange='pfArchivo(this)'>"
+    +"<button type='button' style='margin-top:10px' onclick='pfCapturar()'>📸 Hacer foto ahora · "+esc(pfPoseNombre(_pfPose))+"</button>"
+    +"<div id='pf_res'>"+pfResHTML()+"</div>";
+  // --- galería de la pose elegida (más recientes primero) ---
+  if(!dePose.length){
+    h+="<div class='hint' style='margin-top:10px'>Sin fotos de esta pose todavía. La primera queda como <b style='color:var(--soft)'>referencia</b>; a partir de la segunda te digo si son comparables y te enseño el antes/después.</div>";
+  } else {
+    h+="<div class='pf-grid'>"+dePose.slice().reverse().map(function(r){
+      var v=(r.origen&&r.origen.veredicto)||"";
+      var mark=v==="ok"?"✓":(v==="no_verificable"?"❓":"");
+      return "<div class='pf-th'><img src='"+pfURL(r.blob)+"' alt='"+escAttr(r.pose+" "+r.fecha)+"'>"
+        +"<button type='button' class='pfx' title='Borrar foto' onclick=\"pfBorrarFoto('"+r.id+"')\">✕</button>"
+        +"<div class='pfb'><span>"+esc(pfFechaCorta(r.fecha))+"</span><span>"+(r.score!=null?((v==="no_verificable"?"❓ ":"")+r.semaforo+" "+r.score+"%"):mark)+"</span></div></div>";
+    }).join("")+"</div>";
+    h+="<div class='hint' style='margin-top:6px'>✓ origen verificado · ❓ origen no verificable (aceptada por honestidad: el navegador limpió los datos de cámara) · % = comparabilidad con la anterior.</div>";
+  }
+  // --- comparador lado a lado (≥2 fotos de la pose): anterior ↔ hoy + slider de transición ---
+  if(dePose.length>=2){
+    var hoyR=dePose[dePose.length-1];
+    var antCand=dePose.slice(0,-1);
+    var antR=antCand.filter(function(r){ return r.id===_pfCompSel; })[0]||antCand[antCand.length-1];
+    var uA=pfURL(antR.blob), uH=pfURL(hoyR.blob);
+    var dias=Math.round((hoyR.ts-antR.ts)/864e5);
+    var pA=pfPesoMedioCerca(antR.fecha), pH=pfPesoMedioCerca(hoyR.fecha);
+    var pesoTxt=(pA!=null&&pH!=null)?(pA.toFixed(1)+" → "+pH.toFixed(1)+" kg ("+(pH-pA>=0?"+":"")+(pH-pA).toFixed(1)+")"):"— (sin pesajes a ±3 días de ambas fotos)";
+    h+="<div class='eyebrow-lbl'>Antes ↔ después · "+esc(pfPoseNombre(_pfPose))+"</div>";
+    if(antCand.length>1){
+      h+="<label>Comparar hoy contra…</label><select onchange='pfCompElegir(this.value)'>"+antCand.slice().reverse().map(function(r){
+        return "<option value='"+r.id+"'"+(r.id===antR.id?" selected":"")+">"+pfFechaCorta(r.fecha)+(r.score!=null?" · "+r.semaforo+" "+r.score+"%":"")+"</option>";
+      }).join("")+"</select>";
+    }
+    h+="<div class='pf-comp'><div><img src='"+uA+"' alt='anterior'><div class='hint' style='margin-top:4px;text-align:center'>"+esc(pfFechaCorta(antR.fecha))+"</div></div>"
+      +"<div><img src='"+uH+"' alt='hoy'><div class='hint' style='margin-top:4px;text-align:center'>"+esc(pfFechaCorta(hoyR.fecha))+"</div></div></div>"
+      +"<div class='kv'><span>Δ tiempo</span><span>"+dias+" día"+(dias===1?"":"s")+"</span></div>"
+      +"<div class='kv'><span>Peso medio (±3 días)</span><span>"+esc(pesoTxt)+"</span></div>"
+      +(hoyR.score!=null?"<div class='kv'><span>Comparabilidad de la foto de hoy</span><span>"+hoyR.semaforo+" "+hoyR.score+"%</span></div>":"")
+      +"<div class='pf-fade'><img src='"+uA+"' alt=''><img src='"+uH+"' alt='' class='top' id='pf_fade_top' style='opacity:.5'></div>"
+      +"<input type='range' min='0' max='100' value='50' style='padding:0;margin-top:8px' oninput='pfFade(this.value)'>"
+      +"<div class='hint' style='margin-top:2px'>Desliza: izquierda = anterior · derecha = hoy. La foto acompaña al número: <b style='color:var(--soft)'>la fuerza engaña, el músculo se mide</b> (Murphy &amp; Koehler 2022).</div>";
+  }
+  if(arr.length){
+    h+="<p class='foot' style='margin-top:14px'><a href='#' onclick='pfBorrarTodas();return false;' style='color:var(--mute-2);text-decoration:underline'>Borrar todas las fotos</a></p>";
+  }
+  h+="<div class='hint' style='margin-top:10px;color:var(--mute-2)'>🔒 Tus fotos viven SOLO en este dispositivo (IndexedDB del navegador) y no viajan en la copia JSON. ⚖️ Verifico origen, no contenido: lo que fotografíes es responsabilidad tuya. <span style='opacity:.8'>(Textos legales pendientes de revisión de Pablo.)</span></div>";
+  h+="</div>";
+  el.innerHTML=h;
+}
+function pfCompElegir(id){ _pfCompSel=id; pfPintar(); }
+function pfFade(v){ var im=$("pf_fade_top"); if(im) im.style.opacity=String((+v||0)/100); }
+
+// --- Captura ---
+function pfEsMovil(){ try{ return /Android|iPhone|iPad|Mobile/i.test(navigator.userAgent)||(navigator.maxTouchPoints||0)>1; }catch(e){ return false; } }
+// Dimensiones candidatas de pantalla para el anti-screenshot: CSS px y px físicos (devicePixelRatio).
+function pfPantallas(){
+  var out=[];
+  try{
+    var w=screen.width||0, h=screen.height||0, dpr=window.devicePixelRatio||1;
+    if(w&&h){ out.push([w,h]); if(dpr!==1) out.push([Math.round(w*dpr),Math.round(h*dpr)]); }
+  }catch(e){}
+  return out;
+}
+function pfCapturar(){
+  if(!pfIDBDisponible()){ toast("Este navegador no puede guardar fotos (sin IndexedDB)"); return; }
+  if(!get("jvf_fotos_consent",null)){ show("pfConsentModal",true); return; }   // consentimiento explícito la 1ª vez (dato de salud)
+  var inp=$("pf_file"); if(inp){ inp.value=""; inp.click(); }
+}
+function pfConsentOk(){
+  set("jvf_fotos_consent",{fecha:new Date().toISOString(), version:1});   // v1 = texto pre-revisión jurídica; si Pablo lo cambia, subir versión re-pide consentimiento
+  show("pfConsentModal",false);
+  var inp=$("pf_file"); if(inp){ inp.value=""; inp.click(); }
+}
+function pfArchivo(inp){
+  var f=inp.files&&inp.files[0]; if(!f) return;
+  var pose=_pfPose;
+  var fr=new FileReader();
+  fr.onerror=function(){ toast("No pude leer el archivo"); };
+  fr.onload=function(){
+    var exif=pfLeerExif(new Uint8Array(fr.result));
+    var url=URL.createObjectURL(f), img=new Image();
+    img.onerror=function(){ URL.revokeObjectURL(url); toast("No pude leer la imagen"); };
+    img.onload=function(){
+      var movil=pfEsMovil();
+      // desdeCapture: en móvil el input lleva capture=environment (flujo cámara). Es un
+      // best-effort DOCUMENTADO: algún Android deja elegir galería igual — por eso la marca dice
+      // «no verificable», nunca «verificada».
+      var origen=pfCheckOrigen(exif,{ ahoraMs:Date.now(), imgW:img.naturalWidth, imgH:img.naturalHeight,
+        pantallas:pfPantallas(), desdeCapture:movil, esMovil:movil });
+      if(origen.veredicto==="rechazo"){
+        URL.revokeObjectURL(url);
+        _pfUltimoRes={origen:origen, comp:null};
+        var res=$("pf_res"); if(res) res.innerHTML=pfResHTML();
+        return;                                                    // NO se guarda nada
+      }
+      try{
+        // comprimir a ≤1280 px de lado mayor, JPEG q0.8 (~100-200 KB) — canvas local, nada sale
+        var k=Math.min(1,1280/Math.max(img.naturalWidth,img.naturalHeight));
+        var W=Math.max(1,Math.round(img.naturalWidth*k)), H=Math.max(1,Math.round(img.naturalHeight*k));
+        var cv=document.createElement("canvas"); cv.width=W; cv.height=H;
+        cv.getContext("2d").drawImage(img,0,0,W,H);
+        URL.revokeObjectURL(url);
+        // histograma de luminancia sobre miniatura 160 px (suficiente para brillo/contraste, y rápido)
+        var mw=Math.min(160,W), mh=Math.max(1,Math.round(H*mw/W));
+        var mv=document.createElement("canvas"); mv.width=mw; mv.height=mh;
+        mv.getContext("2d").drawImage(cv,0,0,mw,mh);
+        var bc=null;   // null = píxeles ilegibles → sin score (jamás un 🟢 falso de 0 vs 0 — nota de la verificación)
+        try{ bc=pfBrilloContraste(pfHistLuma(mv.getContext("2d").getImageData(0,0,mw,mh).data,mw*mh)); }catch(e2){}
+        var prevRec=(_pfFotos||[]).filter(function(r){ return r.pose===pose && r.brillo!=null; }).pop()||null;   // sin brillo guardado no sirve de vara de medir
+        var comp = bc ? pfComparabilidad({brillo:bc.brillo,contraste:bc.contraste,w:W,h:H},
+          prevRec?{brillo:prevRec.brillo,contraste:prevRec.contraste,w:prevRec.w,h:prevRec.h}:null)
+          : {score:null, semaforo:"", factores:null};
+        cv.toBlob(function(blob){
+          if(!blob){ toast("No pude procesar la imagen"); return; }
+          var rec={ id:Date.now()+"-"+Math.random().toString(36).slice(2,7), ts:Date.now(), fecha:hoyLocal(),
+            pose:pose, blob:blob, w:W, h:H, brillo:(bc?bc.brillo:null), contraste:(bc?bc.contraste:null),
+            origen:{veredicto:origen.veredicto,codigo:origen.codigo,txt:origen.txt,make:exif.make,model:exif.model,software:exif.software,dto:exif.dateTimeOriginal},
+            score:comp.score, semaforo:comp.semaforo };
+          pfGuardarRec(rec,function(ok){
+            if(!ok){ toast("No pude guardar la foto (¿almacenamiento lleno?)"); return; }
+            _pfUltimoRes={origen:origen, comp:comp}; _pfCompSel=null;
+            toast("📸 Guardada — solo en este dispositivo");
+            pfRefrescar();
+          });
+        },"image/jpeg",0.8);
+      }catch(e){ try{ URL.revokeObjectURL(url); }catch(e3){} toast("No pude procesar la imagen"); }
+    };
+    img.src=url;
+  };
+  fr.readAsArrayBuffer(f);
 }
 
 // ======= BIBLIOTECA DE EJERCICIOS =======
@@ -4121,7 +6026,8 @@ function entVerFicha(nombre){
   bibVer(nombre);
 }
 function abrirBiblio(btn){
-  var ej=btn.closest(".ent-ej"); _bibTarget = ej? ej.querySelector(".ent-nombre") : null;
+  // v0.12.2 · la biblioteca también sirve al editor de rutinas (.rut-ed-row / .rut-ed-nombre)
+  var ej=btn.closest(".ent-ej,.rut-ed-row"); _bibTarget = ej? ej.querySelector(".ent-nombre,.rut-ed-nombre") : null;
   $("bib_buscar").value=""; $("bib_eq").value=""; $("bib_mus").value="";
   show("bibModal", true);
   try{ var _mat=((get(LS_P,{})||{}).coach||{}).material||""; var _sel=$("bib_eq");
@@ -4164,7 +6070,15 @@ function bibVer(nombre){
     +'<button class="btn-lg" type="button" onclick="bibElegir('+arg+')">Usar este ejercicio</button>'
     +'<p class="hint" style="margin-top:8px">🎬 Vídeo para principiantes: llegará en una versión futura.</p>';
 }
-function bibElegir(nombre){ if(_bibTarget){ _bibTarget.value=nombre; entSync(); renderEntForm(); } bibCerrar(); }
+function bibElegir(nombre){
+  if(_bibTarget){
+    _bibTarget.value=nombre;
+    // v0.12.2 · si el destino es el editor de rutinas, sincroniza _rutEd; si no, el form de registro
+    if(_bibTarget.classList && _bibTarget.classList.contains("rut-ed-nombre")){ rutEdSync(); }
+    else { entSync(); renderEntForm(); }
+  }
+  bibCerrar();
+}
 function bibCerrar(){ show("bibModal", false); _bibTarget=null; }
 
 function render(){
@@ -4190,7 +6104,7 @@ function render(){
   const ajustado = ov.prot_gkg!=null || ov.grasa_gkg!=null || ov.carb_gkg!=null || (ov.cal_off||0)!==0;
   window._obj={cal:cal, prot:prot, grasa:gr, carb:carb, fibra:fibra};   // objetivo del día (lo usa el diario de comida #10)
 
-  $("plan_perfil").textContent=`${p.nombre} · ${p.sexo}, ${p.edad} a · ${p.peso_kg} kg · ${p.altura_cm} cm`+(p.grasa_pct!=null?` · ~${p.grasa_pct}% grasa`:"")+(p.pasos?` · ${p.pasos} pasos/día (media)`:"")+` · ${p.objetivo.replace("_"," ")} (${p.intensidad_pct}%)`+(rec.porPasos?" · ⚡ actividad por pasos":"");
+  $("plan_perfil").textContent=`${p.nombre} · ${p.sexo}, ${p.edad} a · ${p.peso_kg} kg · ${p.altura_cm} cm`+(p.grasa_pct!=null?` · ~${p.grasa_pct}% grasa`:"")+(p.pasos?` · ${p.pasos} pasos/día (media)`:"")+(p.deporte>=1.5?" · 🏀 deporte extra":"")+` · ${p.objetivo.replace("_"," ")} (${p.intensidad_pct}%)`+(rec.porPasos?" · ⚡ actividad por pasos":"")+(rec.porDeporte?" · ⚡ actividad por tu deporte":"");
   countUp($("o_bmr"), rec.bmr, " kcal"); countUp($("o_tdee"), rec.tdee, " kcal");
   countUp($("o_cal"), cal, "");
   countUp($("o_p"), prot, "g"); countUp($("o_g"), gr, "g"); countUp($("o_c"), carb, "g");
