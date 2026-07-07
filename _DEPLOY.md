@@ -1,4 +1,16 @@
-# Cómo publicar JV Fitness (repo PRIVADO + hosting externo)
+# Cómo publicar JV Fitness
+
+## ✅ ESTADO ACTUAL (2026-07-07, decisión de Pablo revertida): repo PÚBLICO + GitHub Pages
+- **URL VIVA:** https://pablolietor22.github.io/jv-fitness/ · contraseña del gate: `lietor`
+- El repo `jv-fitness` (SOLO el escaparate) se volvió a poner **público** para que Pages gratis lo sirva. El TALLER `jvfitness-dev` (master-file, motor, todo lo gordo) sigue PRIVADO. Escaneo de secretos previo: 0.
+- **Deploy = un push a `main`**: el flujo copia `app/jv-fitness-mvp.html` del taller → `index.html` aquí → `git push` → Pages reconstruye solo en ~1-2 min.
+- Lleva `manifest.json` + `icon.svg` (PWA): "Añadir a pantalla de inicio" en el móvil = icono como app nativa (pantalla completa).
+- La opción Netlify/privado de abajo queda como alternativa histórica (si algún día se quiere ocultar el historial).
+
+---
+
+# (Histórico) Cómo publicar con repo PRIVADO + hosting externo
+
 
 > Decisión de Pablo (05/07): el repo `pablolietor22/jv-fitness` es **PRIVADO a propósito**.
 > GitHub Pages gratis no sirve repos privados, así que la web pública se sirve desde **Netlify**
