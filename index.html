@@ -421,7 +421,7 @@
 
 <header class="brandbar">
   <div class="logo"><span class="dot"></span>JV <b>Fitness</b></div>
-  <span class="tag">MVP v0.13.4 · motor v0.7 · foto v2 · flex</span>
+  <span class="tag">MVP v0.13.5 · motor v0.7</span>
 </header>
 <div class="statuschip"><span class="pulse"></span> cálculo science-based · ajustable · calibración real</div>
 
@@ -2641,6 +2641,7 @@ var I18N={
     cb_fallback:"Aún no reconozco ese patrón 🤷. Soy un motor de reglas (sin IA) y JAMÁS me invento una respuesta: he guardado tu pregunta para ampliar mi base con ciencia real del master. Prueba a decírmelo de otra forma.",
     cb_sin_plan:"Todavía no tienes plan generado: completa la entrevista de Jarvis y vuelve — entonces te responderé con TUS números reales.",
     cb_apuntado:"Apuntado en tu diario del Cerebro (solo en este dispositivo).",
+    cb_desambigua:"Veo que me preguntas por dos cosas a la vez. Para no darte solo media respuesta, dime: ¿cuál miramos primero?",
     // wizard
     wiz_empezar:"Empezar", wiz_siguiente:"Siguiente", wiz_atras:"Atrás", wiz_generar:"Generar mi plan", wiz_guardar:"💾 Guardar cambios",
     // plan
@@ -2737,7 +2738,7 @@ function resetTodo(){ if(!confirm("⚠️ Esto borra TODO: perfil, pesos, entren
 // Reemplazo total con confirmación. Reusa get/set, hoyLocal, toast, validar, render. NO toca motor ni gate.
 function exportarJSON(){ try{ set("jvf_last_export",hoyLocal()); }catch(e){}
   try{
-    var data={ app:"jvf", schema:1, app_version:"0.13.4", exportadoEl:new Date().toISOString(),
+    var data={ app:"jvf", schema:1, app_version:"0.13.5", exportadoEl:new Date().toISOString(),
       perfil:get(LS_P,null), pesos:get(LS_W,[]), entrenos:get(LS_E,[]), notas_ej:get("jvf_notas_ej",{}), comida:get("jvf_comida",[]), agua:get("jvf_agua",{}), suples_cfg:get("jvf_suples_cfg",null), suples_log:get("jvf_suples_log",{}),
       rutinas:get("jvf_rutinas",[]), meals:get("jvf_meals",[]), ent_start:get("jvf_ent_start",null),   // v0.10 · backup completo
       alimentos_propios:get("jvf_alimentos_propios",[]), barcode_cache:get("jvf_barcode_cache",{}),   // I5/I6 · también viajan en el backup
@@ -2846,7 +2847,7 @@ var CEREBRO_KB=[
   // ─────────────── TRONCO: CALORÍAS / TDEE ───────────────
   {
     tronco:"calorias", rama:"cuantas-calorias-mantenimiento",
-    claves:["cuantas calorias","calorias al dia","mantenimiento","tdee","cuanto como","calorias que necesito","mi gasto calorico","cuantas kcal","las calorias mandan","calorias para volumen","calorias siguen mandando"],
+    claves:["cuantas calorias","calorias al dia","mantenimiento","tdee","cuanto como","calorias que necesito","mi gasto calorico","cuantas kcal","kcal","kcals","subir calorias","subir las calorias","las calorias mandan","calorias para volumen","calorias siguen mandando"],
     r:"Tu mantenimiento se estima con fórmula (Mifflin-St Jeor/Harris-Benedict) × factor de actividad, y luego se AJUSTA con tu peso real semana a semana (la báscula es el juez, no la fórmula). Ojo: no uses las calorías que te da el reloj en el gym, se inflan más del 100%. Para volumen sumas ~200-400 kcal; para definición restas un 15-25%. (— Tema 29, Lee 2026 / Tema 6)",
     chips:["¿por qué no uso el reloj?","¿cómo ajusto con el peso?","¿por qué esas calorías?","¿cuánto para definición?"]
   },
@@ -3128,7 +3129,7 @@ var CEREBRO_KB=[
   // ─────────────── TRONCO: TÉCNICA / ESTANDARIZACIÓN ───────────────
   {
     tronco:"tecnica", rama:"ejercicio-nuevo-estandarizar",
-    claves:["ejercicio nuevo","estandarizar tecnica","cambio de gimnasio","maquina nueva","empezar ejercicio nuevo","tecnica nueva","cambiar de maquina","primer dia ejercicio","como estandarizo la tecnica","cuando cambio de ejercicio","la tecnica importa tanto","tecnica"],
+    claves:["ejercicio nuevo","estandarizar tecnica","cambio de gimnasio","maquina nueva","empezar ejercicio nuevo","tecnica nueva","cambiar de maquina","primer dia ejercicio","como estandarizo la tecnica","cuando cambio de ejercicio","la tecnica importa tanto","tecnica","mismo peso","el mismo peso","hago el mismo peso","que peso hago","subo el peso","mantengo el peso"],
     r:"Ejercicio nuevo o cambio de gym/orden/máquina: baja un poco el peso, ESTANDARIZA la técnica y progresa sobre ella; nunca meterle muy pesado de primeras. Sin técnica estable no hay medida válida de progresión (comparas peras con manzanas) y la tensión se va de donde debe. Corolario: para comparar sesiones tienes que abrir siempre con el MISMO ejercicio. (— Tema 23, C-P2 / @izansimon)",
     chips:["¿cómo progreso luego?","¿cuándo cambio de ejercicio?","¿la técnica importa tanto?"]
   },
@@ -3321,6 +3322,36 @@ var CEREBRO_KB=[
 
 ];
 
+// ─────────────── O4 · CEREBRO COMBINATORIO (v0.13-D) ───────────────
+// CEREBRO_COMBOS: respuestas que exigen ≥2 TRONCOS a la vez (concepto×concepto). Es la capa que
+// arregla el fallo estructural: cerebroMatch devuelve UN solo concepto y es CIEGO a las combinaciones
+// (p.ej. «¿subo calorías por dormir mal?» soltaba el texto de sueño e ignoraba «calorías»). Cada `r`
+// cita un Tema REAL del master; donde el master NO tiene regla (el lado CALÓRICO de sueño×calorías está
+// marcado INCÓGNITA ABIERTA en _INCOGNITAS-MOTOR.md) la respuesta DICE que no hay regla y NO inventa kcal.
+// Un combo dispara solo si TODOS sus troncos están entre los detectados (cada uno ≥ CEREBRO_UMBRAL).
+var CEREBRO_COMBOS=[
+  {
+    troncos:["sueno","calorias"],
+    r:"Una mala noche NO cambia tus calorías: no hay una regla para subirlas por haber dormido mal. Lo que baja es la técnica y la potencia, no tu gasto. Si el poco sueño se hace CRÓNICO (varias noches <6 h) sí sube el hambre (ghrelina↑/leptina↓) → prioriza PROTEÍNA y saciedad, pero no metas kcal a lo loco. (— Tema 27, Lamon 2021)",
+    chips:["¿Entreno igual si dormí mal?","¿Cuánta proteína al día?","Registrar que dormí mal"]
+  },
+  {
+    troncos:["creatina","sueno"],
+    r:"No. La creatina amortigua el bajón COGNITIVO de una mala noche, pero solo a DOSIS ÚNICA ALTA (~0,35 g/kg), no con los 3-5 g diarios de mantenimiento, y no revierte el golpe muscular (−18% síntesis, Lamon 2021). No es excusa para dormir menos. (— Tema 27, Lamon 2021)",
+    chips:["¿Cuánta creatina al día?","¿Entreno igual si dormí mal?","¿Cuántas horas hay que dormir?"]
+  },
+  {
+    troncos:["sueno","tecnica"],
+    r:"Mantén las compuestas pesadas, pero ojo: el RIR \"miente hacia arriba\" tras dormir mal, así que el mismo peso se siente más duro. Guíate por las reps REALES que te quedan en recámara, baja 1-2 accesorias y sube el RIR +1: hoy nada de PRs ni fallo. (— Tema 27, refuerzos ciencia 2026-07-05)",
+    chips:["¿Cuántas horas hay que dormir?","¿Qué es el RIR?","Registrar que dormí mal"]
+  },
+  {
+    troncos:["proteina","alimentacion"],
+    r:"~1,5-2,0 g/kg. En déficit la proteína GANA importancia (nunca baja): protege el músculo mientras entrenas duro. El ajuste de la definición se hace recortando GRASA hacia su suelo y dejando los carbos altos para rendir, no tocando la proteína. (— Tema 3, Longland 2016 / cierre proteína 2026)",
+    chips:["¿Por qué no bajarla?","¿Cuántos carbos en cut?","¿Cuánta grasa mínima?"]
+  }
+];
+
 // huecosMaster — ramas ESPERABLES que el master NO cubre (NO inventadas aquí). Pendientes de que
 // Pablo alimente el master antes de escribir respuesta. El Cerebro las declina con honestidad.
 var CEREBRO_HUECOS=[
@@ -3410,6 +3441,84 @@ function cerebroMatch(texto, kb){
     if(s>bestScore){ bestScore=s; best=kb[i]; }
   }
   return (best && bestScore>=CEREBRO_UMBRAL) ? {entrada:best, score:bestScore} : null;
+}
+// ─────────────── O4 · motor multi-concepto (v0.13-D) ───────────────
+// cerebroScoreDetalle: idéntico a cerebroScore pero devuelve TAMBIÉN la clave ganadora (para saber por
+// qué palabra casó un tronco → subsunción en la desambiguación). Se mantiene aparte de cerebroScore
+// (que sigue byte-idéntico) para NO tocar el motor de intención existente; la lógica de puntos es la
+// MISMA (si algún día cambia una, el test 'cerebroScoreDetalle.score === cerebroScore' lo caza).
+function cerebroScoreDetalle(t, toks, claves){
+  var best=0, bc="", bex=false, i;
+  for(i=0;i<claves.length;i++){
+    var c=cerebroNorm(claves[i]); if(!c) continue;
+    var cw=c.split(" ");
+    var cont=cw.filter(function(w){ return CEREBRO_STOP.indexOf(w)<0; });
+    var s=0, ex=false;
+    if((" "+t+" ").indexOf(" "+c+" ")>=0){ s=10+cont.length*4+c.length/100; ex=true; }
+    else if(cont.length>=2 || (cont.length===1 && cont[0].length>=6)){
+      if(cont.every(function(w){ return toks.some(function(tok){ return cerebroTokEq(tok,w); }); })) s=7+cont.length*4+c.length/100;
+    }
+    if(s>best){ best=s; bc=c; bex=ex; }
+  }
+  return {score:best, clave:bc, exacto:bex};   // exacto = la clave apareció como FRASE literal (no difuso)
+}
+// cerebroTroncosDetectados: puntúa toda la KB pero guarda el MEJOR score POR TRONCO (no por rama) y
+// devuelve el conjunto de troncos con best ≥ CEREBRO_UMBRAL, ordenado por score desc (desempate: clave
+// más larga). Es la base de la detección MULTI-concepto: un texto puede activar varios troncos a la vez.
+function cerebroTroncosDetectados(texto, kb){
+  kb=kb||CEREBRO_KB;
+  var t=cerebroNorm(texto); if(!t) return [];
+  var toks=t.split(" ");
+  var by={}, i;
+  for(i=0;i<kb.length;i++){
+    var d=cerebroScoreDetalle(t, toks, kb[i].claves);
+    if(d.score<CEREBRO_UMBRAL) continue;
+    var tr=kb[i].tronco;
+    if(!by[tr] || d.score>by[tr].score){ by[tr]={tronco:tr, score:d.score, clave:d.clave, exacto:d.exacto, entrada:kb[i]}; }
+  }
+  var out=[], k;
+  for(k in by){ if(by.hasOwnProperty(k)) out.push(by[k]); }
+  out.sort(function(a,b){ return (b.score-a.score) || (String(b.clave).length-String(a.clave).length); });
+  return out;
+}
+// cerebroComboMatch: busca en CEREBRO_COMBOS la entrada cuyos troncos sean TODOS subconjunto de los
+// detectados (≥2 troncos distintos). Si varias casan, gana la de MÁS troncos (más específica) y desempata
+// por longitud de respuesta. Devuelve el combo o null. NUNCA dispara con 0-1 tronco (cae a cerebroMatch).
+function cerebroComboMatch(texto, kb, combos){
+  combos=combos||CEREBRO_COMBOS;
+  var det=cerebroTroncosDetectados(texto, kb);
+  if(det.length<2) return null;
+  var set={}; det.forEach(function(d){ set[d.tronco]=1; });
+  var best=null, i;
+  for(i=0;i<combos.length;i++){
+    var c=combos[i];
+    if(!c.troncos.every(function(tr){ return set[tr]===1; })) continue;
+    if(!best || c.troncos.length>best.troncos.length ||
+       (c.troncos.length===best.troncos.length && String(c.r).length>String(best.r).length)){ best=c; }
+  }
+  return best;
+}
+// cerebroDesambiguacion: si hay ≥2 troncos comparables pero NINGÚN combo definido, propone preguntar
+// «¿cuál miramos?» en vez de adivinar (la frustración de Pablo). Devuelve {troncos, chips} o null.
+// GUARDA anti-regresión (subsunción): si la clave de un tronco CONTIENE todas las palabras-contenido de
+// la del otro (p.ej. «proteina en definicion» ⊃ «definicion»), el 2º es un MODIFICADOR que cerebroMatch
+// ya resuelve en una rama específica (carbos-en-cut, proteina-en-cut…) → se deja pasar, NO se desambigua.
+function cerebroDesambiguacion(texto, kb, combos){
+  if(cerebroComboMatch(texto, kb, combos)) return null;   // hay combo → no se desambigua
+  var det=cerebroTroncosDetectados(texto, kb);
+  if(det.length<2) return null;                            // 0-1 tronco → flujo simple intacto
+  var a=det[0], b=det[1];
+  // GUARDA 1 (indecisión real): si el tronco DOMINANTE casó por frase EXACTA, cerebroMatch ya tiene una
+  // rama específica y CORRECTA (p.ej. «entrenar al fallo», «cheat meal», «bajo el volumen en definición»)
+  // → NO se desambigua, se deja pasar al match simple. Solo se pregunta cuando el motor está indeciso.
+  if(a.exacto) return null;
+  // GUARDA 2 (subsunción): si la clave más corta está contenida en la más larga («definicion» ⊂ «proteina
+  // en definicion»), el 2º concepto es un MODIFICADOR, no un tema independiente → tampoco se desambigua.
+  function cont(s){ return cerebroNorm(s).split(" ").filter(function(w){ return CEREBRO_STOP.indexOf(w)<0; }); }
+  var wa=cont(a.clave), wb=cont(b.clave);
+  var corta=wa.length<=wb.length?wa:wb, larga=wa.length<=wb.length?wb:wa;
+  if(corta.length && corta.every(function(w){ return larga.indexOf(w)>=0; })) return null;
+  return { troncos:[a.tronco, b.tronco], chips:[a.entrada.claves[0], b.entrada.claves[0]] };
 }
 // Acciones sobre la app (capacidad 3): preguntas de MI día/plan y meta-peticiones. Se comprueban
 // ANTES que la KB («¿cuánta proteína llevo?» debe responder con TUS números, no con teoría).
@@ -3558,6 +3667,17 @@ function cbEnviarTexto(txt){
   cbResponder(txt);
 }
 function cbResponder(txt){
+  // O4 · CAPA COMBINATORIA (v0.13-D) — corre ANTES del match simple. Multi-concepto > un solo concepto.
+  var cmb=cerebroComboMatch(txt);
+  if(cmb){ cbMsg("j", cbHtmlRespuesta(cmb.r)); cbChips(cmb.chips||[]); return; }
+  // ≥2 troncos pero sin combo definido → desambiguar (no adivinar) y alimentar el flywheel (combo-hueco).
+  var des=cerebroDesambiguacion(txt);
+  if(des){
+    var arrH=get(LS_CEREBRO_NOREC,[]); arrH.push({f:hoyLocal(), q:txt, tipo:"combo-hueco", troncos:des.troncos}); set(LS_CEREBRO_NOREC,arrH);
+    cbMsg("j", esc(t("cb_desambigua")));
+    cbChips(des.chips||[]);
+    return;
+  }
   var m=cerebroMatch(txt);
   if(m){
     var e=m.entrada;
