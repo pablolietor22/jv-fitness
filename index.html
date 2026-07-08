@@ -433,7 +433,7 @@
 
 <header class="brandbar">
   <div class="logo"><span class="dot"></span>JV <b>Fitness</b></div>
-  <span class="tag">MVP v0.13.8 · motor v0.7</span>
+  <span class="tag">MVP v0.13.9 · motor v0.7</span>
 </header>
 <div class="statuschip"><span class="pulse"></span> cálculo science-based · ajustable · calibración real</div>
 
@@ -599,7 +599,6 @@
   <div class="kv"><span>TDEE · gasto total</span><span id="o_tdee"></span></div>
   <div class="eyebrow-lbl">Calorías objetivo / día</div>
   <div class="big"><span id="o_cal"></span> <small>kcal</small></div>
-  <p class="hint" style="margin-top:4px;color:var(--jade)">Orientativo (±10%); lo afino con tu peso real cada semana.</p>
   <div class="macros">
     <div class="macro"><div class="n p" id="o_p"></div><small>Proteínas</small></div>
     <div class="macro"><div class="n g" id="o_g"></div><small>Grasas</small></div>
@@ -677,10 +676,11 @@
     </div>
     <p class="hint" style="margin-top:8px">Bebe antes, durante y después de entrenar: llegar deshidratado resta rendimiento (Savoie 2015). El objetivo es orientativo (~35 ml/kg/día); con calor o mucho entreno, más.</p>
   </div>
-  <div class="row" style="gap:6px;align-items:flex-end"><div style="flex:2"><label>Fecha</label><input id="com_fecha" type="date" onchange="renderComida()"></div><button class="sec" type="button" style="flex:1;width:auto" onclick="comCopiarAyer()">⧉ Copiar ayer</button></div><div id="com_recientes"></div>
+  <div class="row" style="gap:6px;align-items:flex-end"><div style="flex:2"><label>Fecha</label><input id="com_fecha" type="date" onchange="renderComida()"></div><button class="sec" type="button" style="flex:1;width:auto" onclick="comCopiarAyer()">⧉ Copiar ayer</button></div><div id="com_favoritos"></div><div id="com_recientes"></div><div id="com_fav_sug"></div>
   <div class="row" style="gap:6px;align-items:flex-end;margin-top:6px">
-    <div style="flex:2"><label>Alimento</label><input id="com_nombre" list="com-foods" placeholder="Busca: pollo, arroz, huevo…" oninput="comUnidadSync()"></div>
+    <div style="flex:2"><label>Alimento</label><input id="com_nombre" list="com-foods" placeholder="Busca: pollo, arroz, huevo…" oninput="comUnidadSync();favSyncBtn()"></div>
     <div style="flex:1"><label id="com_g_label">Gramos</label><input id="com_gramos" type="number" inputmode="numeric" placeholder="g"></div>
+    <button id="com_fav_btn" class="sec" type="button" title="Marcar como favorito" style="flex:0 0 auto;width:auto;padding:8px 12px;margin:0" onclick="favToggleActual()">☆</button>
   </div>
   <datalist id="com-foods"></datalist>
   <div class="row" id="com_g_btns" style="gap:6px;margin-top:6px">
@@ -1272,6 +1272,28 @@ function porqueHTML(p, rec, pgkg, ggkg){
 }
 // ======= DIARIO DE COMIDA (#10) — base de alimentos curada (valores por 100 g) =======
 var LS_COMIDA="jvf_comida";
+// ======= ⭐ FAVORITOS + USO (v0.13.9) — UI + localStorage, NO toca el motor de cálculo =======
+// Dos claves nuevas: jvf_favoritos (lista de {n,g,u}) y jvf_uso_alim (contador {nombre:veces}).
+// La lógica de decisión es PURA y está testeada en _tests/test-favoritos.node.js (sin DOM/storage).
+// [FAV-PURE-INICIO] · bloque puro extraído tal cual por el test (no meter aquí get/DOM/localStorage)
+var FAV_UMBRAL=4;   // usos a partir de los cuales la app sugiere marcar el alimento como favorito
+function favNombre(f){ return (typeof f==="string"?f:(f&&f.n)||"")||""; }
+function favEsFav(nombre, favoritos){
+  var n=(nombre||"").toLowerCase(); if(!n) return false;
+  return (favoritos||[]).some(function(f){ return favNombre(f).toLowerCase()===n; });
+}
+// Dado el mapa de usos {nombre:veces} y la lista de favoritos, devuelve el nombre a SUGERIR
+// (usos >= FAV_UMBRAL y NO favorito; el más usado si hay varios, alfabético al empatar) o null.
+function sugerirFavorito(usos, favoritos){
+  if(!usos || typeof usos!=="object") return null;
+  var cand=Object.keys(usos).filter(function(k){ return usos[k]>=FAV_UMBRAL && !favEsFav(k, favoritos); });
+  if(!cand.length) return null;
+  cand.sort(function(a,b){ return (usos[b]-usos[a]) || (a<b?-1:a>b?1:0); });
+  return cand[0];
+}
+// [FAV-PURE-FIN]
+var LS_FAV="jvf_favoritos", LS_USO="jvf_uso_alim";
+var _favSugDismiss={};   // descartes de la sugerencia (solo en memoria; no se persiste a propósito)
 var FOODS=[
   {n:"Pechuga de pollo",kcal:165,p:31,c:0,f:3.6},{n:"Muslo de pollo",kcal:209,p:26,c:0,f:11},
   {n:"Ternera magra",kcal:175,p:26,c:0,f:8},{n:"Lomo de cerdo",kcal:145,p:21,c:0,f:6},
@@ -1482,7 +1504,7 @@ var FOODS_V013=[
 function comInit(){
   var d=$("com_fecha"); if(d && !d.value) d.value=hoyLocal();
   comFillDatalist();   // I6 · base curada + alimentos propios; se reconstruye por si acabas de crear uno
-  renderComida(); comRecientes(); renderAgua(); renderSuples();
+  renderComida(); comRecientes(); renderFavoritos(); favSyncBtn(); favSugCerrar(); renderAgua(); renderSuples();
 }
 // v0.13a-fix · la ENTRADA también habla ml para líquidos (verificación: «la salida es honesta;
 // la entrada miente»): al teclear/elegir un alimento con u:"ml", el label, el placeholder y los
@@ -1518,7 +1540,13 @@ function comAdd(){
   var _obj=window._obj||null, _f=($("com_fecha").value||hoyLocal());
   var _pAntes=get(LS_COMIDA,[]).filter(function(x){return x.f===_f;}).reduce(function(a,x){return a+x.p;},0);
   set(LS_COMIDA,arr);
+  // ⭐ favoritos · cuenta el uso del alimento (por nombre canónico) y sugiere si lo usas mucho
+  try{
+    var _usos=get(LS_USO,{}); _usos[fd.n]=(_usos[fd.n]||0)+1; set(LS_USO,_usos);
+    if(_usos[fd.n]>=FAV_UMBRAL && !favEsFav(fd.n, get(LS_FAV,[])) && !_favSugDismiss[fd.n.toLowerCase()]) favMostrarSugerencia(fd.n);
+  }catch(e){}
   $("com_nombre").value=""; $("com_gramos").value="";
+  try{ favSyncBtn(); }catch(e){}
   renderComida();
   var _pAhora=arr.filter(function(x){return x.f===_f;}).reduce(function(a,x){return a+x.p;},0);
   if(_obj&&_obj.prot>0&&_pAntes<_obj.prot&&_pAhora>=_obj.prot){ try{ if(typeof confetti==='function') confetti(18); }catch(e){} toast("💪 ¡Proteína del día conseguida!"); }
@@ -1546,6 +1574,79 @@ function comRecientes(){
     return '<span class="wchip done" onclick="comQuick('+JSON.stringify(n).replace(/"/g,"&quot;")+','+g+')">'+esc(n)+' '+g+freq[n].u+'</span>';
   }).join("")+'</div>':"";
 }
+// ======= ⭐ FAVORITOS · UI (fila de acceso rápido + toggle en el buscador + sugerencia) =======
+// Resuelve el texto tecleado al nombre canónico de la base (MISMA regla que comAdd).
+function favResolverNombre(nombre){
+  var _q=(nombre||"").trim().toLowerCase(); if(!_q) return null;
+  var _base=(typeof apComoFoods==="function"?apComoFoods():[]).concat(typeof FOODS!=="undefined"?FOODS:[]);
+  var fd=_base.filter(function(x){ return x.n.toLowerCase()===_q; })[0];
+  if(!fd){ var c=_base.filter(function(x){ return x.n.toLowerCase().indexOf(_q)>=0; }); if(c.length===1) fd=c[0]; }
+  return fd?fd.n:null;
+}
+// Lista de favoritos normalizada a {n,g,u} (tolera formatos viejos: string suelto).
+function favLista(){
+  return get(LS_FAV,[]).map(function(f){
+    if(typeof f==="string") return {n:f,g:100,u:"g"};
+    return {n:(f&&f.n)||"", g:(+f.g>0?+f.g:100), u:(f&&f.u==="ml")?"ml":"g"};
+  }).filter(function(f){ return f.n; });
+}
+// Último gramaje real usado con ese alimento en el diario (o 100 por defecto).
+function favUltimoGramaje(nombre){
+  var full=get(LS_COMIDA,[]);
+  for(var i=full.length-1;i>=0;i--){ if(full[i] && full[i].n===nombre && +full[i].g>0) return +full[i].g; }
+  return 100;
+}
+function renderFavoritos(){
+  var el=$("com_favoritos"); if(!el) return;
+  var favs=favLista();
+  if(!favs.length){ el.innerHTML=""; return; }
+  el.innerHTML='<div class="eyebrow-lbl" style="margin:8px 0 0">⭐ Favoritos · toca para añadir</div>'
+    +'<div class="wizchips" style="margin:4px 0 0">'+favs.map(function(f){
+      var nJ=JSON.stringify(f.n).replace(/"/g,"&quot;");
+      return '<span class="wchip done" onclick="comQuick('+nJ+','+f.g+')" title="Añadir '+escAttr(f.n)+'">⭐ '+esc(f.n)+' '+f.g+f.u+'</span>';
+    }).join("")+'</div>';
+}
+// Refleja en el botón ☆/⭐ si el alimento tecleado ya es favorito.
+function favSyncBtn(){
+  var b=$("com_fav_btn"); if(!b) return;
+  var canon=favResolverNombre((($("com_nombre")||{}).value)||"");
+  var isFav=!!(canon && favEsFav(canon, get(LS_FAV,[])));
+  b.textContent=isFav?"⭐":"☆";
+  b.title=isFav?"Quitar de favoritos":"Marcar como favorito";
+}
+// Marca/desmarca como favorito el alimento del buscador (1 toque).
+function favToggleActual(){
+  var nombre=(($("com_nombre")||{}).value||"").trim();
+  if(!nombre){ toast("Escribe un alimento primero"); return; }
+  var canon=favResolverNombre(nombre);
+  if(!canon){ toast("No está en la base — elige uno de la lista"); return; }
+  var favs=get(LS_FAV,[]);
+  var i=favs.map(function(f){ return favNombre(f).toLowerCase(); }).indexOf(canon.toLowerCase());
+  if(i>=0){ favs.splice(i,1); set(LS_FAV,favs); toast("☆ Quitado de favoritos"); }
+  else {
+    var g=+(($("com_gramos")||{}).value); if(!(g>0)) g=favUltimoGramaje(canon);
+    favs.push({n:canon, g:g, u:comEsMl(canon)?"ml":"g"}); set(LS_FAV,favs); toast("⭐ "+canon+" en favoritos");
+  }
+  renderFavoritos(); favSyncBtn();
+}
+// Sugerencia discreta (inline, no bloquea): "¿Añadir X a favoritos?".
+function favMostrarSugerencia(nombre){
+  var el=$("com_fav_sug"); if(!el) return;
+  if(!nombre){ el.innerHTML=""; return; }
+  var nJ=JSON.stringify(nombre).replace(/"/g,"&quot;");
+  el.innerHTML='<div class="hint" style="display:flex;align-items:center;gap:8px;color:var(--soft);border:1px solid var(--line-soft);border-radius:11px;padding:8px 10px;margin:8px 0 0">'
+    +'<span style="flex:1">⭐ Usas <b>'+esc(nombre)+'</b> a menudo. ¿Añadirlo a favoritos?</span>'
+    +'<button class="sec" type="button" style="width:auto;padding:4px 11px;margin:0" onclick="favSugAceptar('+nJ+')">Sí</button>'
+    +'<button class="sec" type="button" title="ahora no" style="width:auto;padding:4px 9px;margin:0" onclick="favSugDescartar('+nJ+')">✕</button>'
+    +'</div>';
+}
+function favSugAceptar(nombre){
+  var favs=get(LS_FAV,[]);
+  if(!favEsFav(nombre,favs)){ favs.push({n:nombre, g:favUltimoGramaje(nombre), u:comEsMl(nombre)?"ml":"g"}); set(LS_FAV,favs); }
+  favSugCerrar(); renderFavoritos(); favSyncBtn(); toast("⭐ "+nombre+" en favoritos");
+}
+function favSugDescartar(nombre){ _favSugDismiss[(nombre||"").toLowerCase()]=1; favSugCerrar(); }
+function favSugCerrar(){ var el=$("com_fav_sug"); if(el) el.innerHTML=""; }
 function comGr(g){ var el=$("com_gramos"); if(el) el.value=g; if((($("com_nombre")||{}).value||'').trim()) comAdd(); }
 function comDel(i){ var arr=get(LS_COMIDA,[]); if(typeof i==='string'){ i=arr.map(function(x){return x.id;}).indexOf(i); } if(i<0||i>=arr.length) return; arr.splice(i,1); set(LS_COMIDA,arr); renderComida(); }
 // Media diaria REAL del diario para la Capa 2. Solo cuenta días "completos" (>=800 kcal
@@ -1622,6 +1723,29 @@ function renderSuples(){
   }).join("");
   el.innerHTML=shopBanner+h;
 }
+
+// ======= 🏀 PRESUPUESTO DE HOY (deporte por sesión → objetivo del día · diseño de Pablo "las dos") =======
+// El objetivo BASE (media/factor de actividad) NO se toca: se calcula igual en render() y vive en window._obj.
+// ADEMÁS, las sesiones de deporte registradas ESE día (jvf_deporte_sesiones) suman encima, para días bestia
+// (p.ej. 4 h de baloncesto). Es ADITIVO: no reescribe la fórmula, solo dice "hoy puedes comer un poco más".
+// El peso semanal (Capa 2) corrige el residual: si tu nivel de actividad ya contaba el deporte, esto suma de
+// más y la báscula lo ajusta. La fórmula pura vive en [PRESUPUESTO-HOY-PURE-*] (los tests la extraen del HTML).
+// [PRESUPUESTO-HOY-PURE-INICIO] — presupuesto del día = objetivo base + kcal de las sesiones de deporte de ese
+// día. Puro y determinista (sin DOM ni storage). Entrada basura → objetivo base intacto (nunca resta ni inventa).
+function presupuestoHoy(objetivoBase, sesionesHoy){
+  var base=+objetivoBase; if(!(base>0)) base=0; base=Math.round(base);
+  var extra=0;
+  if(Array.isArray(sesionesHoy)){
+    for(var i=0;i<sesionesHoy.length;i++){
+      var k=sesionesHoy[i]&&+sesionesHoy[i].kcal;
+      if(k>0) extra+=k;
+    }
+  }
+  extra=Math.round(extra);
+  return { objetivo:base, extra:extra, total:base+extra };
+}
+// [PRESUPUESTO-HOY-PURE-FIN]
+
 function renderComida(){
   var fecha=($("com_fecha")&&$("com_fecha").value)||hoyLocal();
   var full=get(LS_COMIDA,[]), arr=full.filter(function(x){ return x.f===fecha; });
@@ -1635,6 +1759,16 @@ function renderComida(){
      +"<div class='kv' style='margin-top:6px'><span>Proteínas</span><span>"+Math.round(tot.p)+" / "+obj.prot+" g</span></div>"+bar(tot.p,obj.prot,'var(--jade)')
      +"<div class='kv' style='margin-top:6px'><span>Carbohidratos</span><span>"+Math.round(tot.c)+" / "+obj.carb+" g</span></div>"+bar(tot.c,obj.carb,'#74c7ff')
      +"<div class='kv' style='margin-top:6px'><span>Grasas</span><span>"+Math.round(tot.gr)+" / "+obj.grasa+" g</span></div>"+bar(tot.gr,obj.grasa,'#f4c04e');
+    // 🏀 Presupuesto del día: el deporte registrado ESE día suma encima del objetivo base (aditivo, no toca la fórmula).
+    var _sesDia=get(LS_DEP_SES,[]).filter(function(s){ return s && s.f===fecha && +s.kcal>0; });
+    var _pre=presupuestoHoy(obj.cal, _sesDia);
+    if(_pre.extra>0){
+      var _esHoy=(fecha===hoyLocal());
+      h+="<div style='margin-top:10px;padding-top:10px;border-top:1px solid var(--line)'>"
+        +"<div class='kv' style='border-bottom:none'><span>🏀 "+(_esHoy?"Hoy puedes comer":"Ese día podías comer")+"</span><span><b style='color:var(--jade)'>~"+_pre.total+" kcal</b></span></div>"
+        +"<p class='hint' style='margin-top:4px'>Tu objetivo "+_pre.objetivo+" + "+_pre.extra+" kcal de deporte"+(_esHoy?" de hoy":" de ese día")+". Tu peso semanal ajusta esto; si tu nivel de actividad ya contaba el deporte, esto puede sumar de más — la báscula lo corrige.</p>"
+        +"</div>";
+    }
   } else {
     h+="<div class='kv'><span>Calorías</span><span>"+Math.round(tot.kcal)+" kcal</span></div><div class='kv'><span>P / C / G</span><span>"+Math.round(tot.p)+" / "+Math.round(tot.c)+" / "+Math.round(tot.gr)+" g</span></div>";
   }
@@ -2776,7 +2910,7 @@ document.addEventListener('DOMContentLoaded',function(){
     if(ents.length>20 && _old) setTimeout(function(){ toast("💾 Llevas tiempo sin copia de seguridad — toca Exportar en Ajustes"); }, 3500);
   }catch(e){}
 });
-function resetTodo(){ if(!confirm("⚠️ Esto borra TODO: perfil, pesos, entrenos, rutinas, comidas, alimentos propios, agua, suplementos, lo hablado con el Cerebro y las fotos de progreso. ¿Seguro?")) return; try{ localStorage.removeItem(LS_P); localStorage.removeItem(LS_W); localStorage.removeItem(LS_E); localStorage.removeItem("jvf_notas_ej"); localStorage.removeItem("jvf_comida"); localStorage.removeItem("jvf_agua"); localStorage.removeItem("jvf_suples_cfg"); localStorage.removeItem("jvf_suples_log"); localStorage.removeItem("jvf_rutinas"); localStorage.removeItem("jvf_ent_start"); localStorage.removeItem("jvf_meals"); localStorage.removeItem("jvf_alimentos_propios"); localStorage.removeItem("jvf_barcode_cache"); localStorage.removeItem("jvf_foto_ajustes"); localStorage.removeItem("jvf_warmup_stats"); localStorage.removeItem("jvf_plate_barra"); localStorage.removeItem("jvf_rest_seg"); localStorage.removeItem("jvf_cerebro_diario"); localStorage.removeItem("jvf_cerebro_norec"); localStorage.removeItem("jvf_fotos_consent"); localStorage.removeItem("jvf_fotos_meta"); localStorage.removeItem("jvf_flex_cfg"); localStorage.removeItem("jvf_flex_visto"); localStorage.removeItem("jvf_deporte_sesiones"); }catch(e){} _mem={};
+function resetTodo(){ if(!confirm("⚠️ Esto borra TODO: perfil, pesos, entrenos, rutinas, comidas, alimentos propios, agua, suplementos, lo hablado con el Cerebro y las fotos de progreso. ¿Seguro?")) return; try{ localStorage.removeItem(LS_P); localStorage.removeItem(LS_W); localStorage.removeItem(LS_E); localStorage.removeItem("jvf_notas_ej"); localStorage.removeItem("jvf_comida"); localStorage.removeItem("jvf_agua"); localStorage.removeItem("jvf_suples_cfg"); localStorage.removeItem("jvf_suples_log"); localStorage.removeItem("jvf_rutinas"); localStorage.removeItem("jvf_ent_start"); localStorage.removeItem("jvf_meals"); localStorage.removeItem("jvf_alimentos_propios"); localStorage.removeItem("jvf_barcode_cache"); localStorage.removeItem("jvf_foto_ajustes"); localStorage.removeItem("jvf_warmup_stats"); localStorage.removeItem("jvf_plate_barra"); localStorage.removeItem("jvf_rest_seg"); localStorage.removeItem("jvf_cerebro_diario"); localStorage.removeItem("jvf_cerebro_norec"); localStorage.removeItem("jvf_fotos_consent"); localStorage.removeItem("jvf_fotos_meta"); localStorage.removeItem("jvf_flex_cfg"); localStorage.removeItem("jvf_flex_visto"); localStorage.removeItem("jvf_deporte_sesiones"); localStorage.removeItem("jvf_favoritos"); localStorage.removeItem("jvf_uso_alim"); }catch(e){} _mem={};
   // 📸 v0.13-C · las fotos viven en IndexedDB: se borra la base entera ANTES de recargar (con
   // timeout de seguridad — si el borrado se quedara bloqueado, la app no se cuelga: recarga igual
   // y el intento de borrado sigue en cola del navegador).
@@ -2791,7 +2925,7 @@ function resetTodo(){ if(!confirm("⚠️ Esto borra TODO: perfil, pesos, entren
 // Reemplazo total con confirmación. Reusa get/set, hoyLocal, toast, validar, render. NO toca motor ni gate.
 function exportarJSON(){ try{ set("jvf_last_export",hoyLocal()); }catch(e){}
   try{
-    var data={ app:"jvf", schema:1, app_version:"0.13.8", exportadoEl:new Date().toISOString(),
+    var data={ app:"jvf", schema:1, app_version:"0.13.9", exportadoEl:new Date().toISOString(),
       perfil:get(LS_P,null), pesos:get(LS_W,[]), entrenos:get(LS_E,[]), notas_ej:get("jvf_notas_ej",{}), comida:get("jvf_comida",[]), agua:get("jvf_agua",{}), suples_cfg:get("jvf_suples_cfg",null), suples_log:get("jvf_suples_log",{}),
       rutinas:get("jvf_rutinas",[]), meals:get("jvf_meals",[]), ent_start:get("jvf_ent_start",null),   // v0.10 · backup completo
       alimentos_propios:get("jvf_alimentos_propios",[]), barcode_cache:get("jvf_barcode_cache",{}),   // I5/I6 · también viajan en el backup
@@ -2804,6 +2938,7 @@ function exportarJSON(){ try{ set("jvf_last_export",hoyLocal()); }catch(e){}
       fotos_meta:get("jvf_fotos_meta",[]),
       flex_cfg:get("jvf_flex_cfg",null), flex_visto:get("jvf_flex_visto",null),   // M · capa FLEX: tono elegido + descartes del día
       deporte_sesiones:get("jvf_deporte_sesiones",[]),   // 🏀 v0.13.7 · sesiones de deporte estimadas (MET) — viajan en el backup
+      favoritos:get("jvf_favoritos",[]), uso_alim:get("jvf_uso_alim",{}),   // ⭐ v0.13.9 · favoritos + contador de uso por alimento
       fotos_aviso:"Las fotos de progreso NO van en este JSON: viven solo en el dispositivo (IndexedDB). Exportarlas aparte esta pendiente." };
     var blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
     var url=URL.createObjectURL(blob);
@@ -2854,6 +2989,9 @@ function procesarImport(file){
     if(data.flex_visto && typeof data.flex_visto==="object") set("jvf_flex_visto", data.flex_visto);
     // 🏀 v0.13.7 · sesiones de deporte (los backups antiguos no las traen: se dejan como están)
     if(Array.isArray(data.deporte_sesiones)) set("jvf_deporte_sesiones", data.deporte_sesiones.filter(function(s){ return s && s.f && +s.kcal>=0; }));
+    // ⭐ v0.13.9 · favoritos + contador de uso (los backups antiguos no los traen: se dejan como están)
+    if(Array.isArray(data.favoritos)) set("jvf_favoritos", data.favoritos.filter(function(f){ return f && (typeof f==="string"?f:f.n); }));
+    if(data.uso_alim && typeof data.uso_alim==="object" && !Array.isArray(data.uso_alim)) set("jvf_uso_alim", data.uso_alim);
     render();
     toast("✓ Datos importados");
   };
@@ -5674,7 +5812,7 @@ var MET_DEPORTES=[
   {id:"baloncesto_partido", nombre:"Baloncesto (partido)", emoji:"🏀", met:8},
   {id:"correr",             nombre:"Correr",               emoji:"🏃", met:9},
   {id:"bici",               nombre:"Bici",                 emoji:"🚴", met:7},
-  {id:"padel",              nombre:"Pádel",                emoji:"🎾", met:7},
+  {id:"padel",              nombre:"Pádel",                emoji:"🎾", met:6.5},
   {id:"futbol",             nombre:"Fútbol",               emoji:"⚽", met:7},
   {id:"futbol_partido",     nombre:"Fútbol (partido)",     emoji:"⚽", met:10},
   {id:"natacion",           nombre:"Natación",             emoji:"🏊", met:6},
