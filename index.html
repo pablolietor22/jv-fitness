@@ -433,7 +433,7 @@
 
 <header class="brandbar">
   <div class="logo"><span class="dot"></span>JV <b>Fitness</b></div>
-  <span class="tag">MVP v0.14.0 · motor v0.7</span>
+  <span class="tag">MVP v0.14.1 · motor v0.7</span>
 </header>
 <div class="statuschip"><span class="pulse"></span> cálculo science-based · ajustable · calibración real</div>
 
@@ -686,6 +686,15 @@
       <button class="sec" type="button" style="flex:1;width:auto" onclick="aguaAdd(250)">+ Vaso 250</button>
       <button class="sec" type="button" style="flex:1;width:auto" onclick="aguaAdd(500)">+ Botella 500</button>
       <button class="sec" type="button" style="flex:1;width:auto" onclick="aguaAdd(750)">+ Grande 750</button>
+    </div>
+    <!-- Agua v2 · cantidad personalizada + corregir (quitar / deshacer). El total nunca baja de 0. -->
+    <div class="row" style="gap:6px;margin-top:6px;align-items:flex-end">
+      <div style="flex:1"><label style="font-size:.72rem">Otra cantidad (ml)</label><input id="agua_manual" type="number" inputmode="numeric" min="0" step="50" placeholder="ml a mano" onkeydown="if(event.key==='Enter'){event.preventDefault();aguaAddManual();}"></div>
+      <button class="sec" type="button" style="flex:0 0 auto;width:auto;margin:0" onclick="aguaAddManual()">＋ Añadir</button>
+      <button class="sec" type="button" style="flex:0 0 auto;width:auto;margin:0" onclick="aguaQuitarManual()">− Quitar</button>
+    </div>
+    <div class="row" style="gap:6px;margin-top:6px">
+      <button class="sec" type="button" style="flex:0 0 auto;width:auto;margin:0;padding:5px 12px" title="Deshace lo último que añadiste o quitaste hoy" onclick="aguaDeshacer()">↶ Deshacer último</button>
     </div>
     <p class="hint" style="margin-top:8px">Bebe antes, durante y después de entrenar: llegar deshidratado resta rendimiento (Savoie 2015). El objetivo es orientativo (~35 ml/kg/día); con calor o mucho entreno, más.</p>
   </div>
@@ -1784,21 +1793,97 @@ function mediaKcalDiario(dias){
   return {kcal:Math.round(vals.reduce(function(a,b){ return a+b; },0)/vals.length), ndias:vals.length};
 }
 // ======= AGUA + SUPLEMENTOS (04/07) — autocontenido; conocimiento del coach aplicado =======
-var LS_AGUA="jvf_agua", LS_SUP_CFG="jvf_suples_cfg", LS_SUP_LOG="jvf_suples_log";
-function aguaObjetivo(){ var p=get(LS_P,null); var kg=p&&p.peso_kg>0?p.peso_kg:70; return Math.round(kg*35/100)*100; }
+var LS_AGUA="jvf_agua", LS_SUP_CFG="jvf_suples_cfg", LS_SUP_LOG="jvf_suples_log", LS_AGUA_LOG="jvf_agua_log";
+// [AGUA-OBJETIVO-PURE-INICIO] — objetivo de agua ORIENTATIVO y dinámico. Puro y determinista (sin DOM ni
+// storage): los tests extraen este bloque y lo evalúan tal cual. Base = peso×35 ml/día (redondeada a 100).
+// Ajustes ADITIVOS: 🌡️ verano/calor (mes jun–sep) +750 ml · 🏀 deporte de hoy +500 ml por sesión (ACSM
+// ~0,5–1 L/h de sudor) · 💊 creatina activa +500 ml (retiene agua intramuscular). Entrada basura → base
+// sensata (fallback 70 kg), nunca NaN ni negativo. Es una ESTIMACIÓN: informa, no manda.
+var AGUA_ML_POR_KG=35, AGUA_VERANO_ML=750, AGUA_DEPORTE_ML=500, AGUA_CREATINA_ML=500;
+function aguaEsVerano(mes){ mes=Math.round(+mes); return mes>=6 && mes<=9; }   // jun(6)–sep(9); mes 1–12
+function aguaObjetivoDinamico(pesoKg, mes, deporteHoy, creatina){
+  var kg=+pesoKg; if(!(kg>0)) kg=70;                          // fallback visible, como en el resto de la app
+  var base=Math.round(kg*AGUA_ML_POR_KG/100)*100;             // redondeo a 100 ml (número limpio, orientativo)
+  var nSes=Array.isArray(deporteHoy) ? deporteHoy.length : Math.max(0, Math.floor(+deporteHoy||0));
+  var verano  = aguaEsVerano(mes) ? AGUA_VERANO_ML : 0;
+  var deporte = nSes>0 ? nSes*AGUA_DEPORTE_ML : 0;
+  var crea    = creatina ? AGUA_CREATINA_ML : 0;
+  var ajustes=[];
+  if(verano)  ajustes.push({id:"verano",   emoji:"🌡️", label:"verano/calor", ml:verano});
+  if(deporte) ajustes.push({id:"deporte",  emoji:"🏀", label:"deporte de hoy"+(nSes>1?" (×"+nSes+")":""), ml:deporte});
+  if(crea)    ajustes.push({id:"creatina", emoji:"💊", label:"creatina", ml:crea});
+  var extra=verano+deporte+crea;
+  return { base:base, verano:verano, deporte:deporte, creatina:crea, nSesiones:nSes,
+           extra:extra, total:base+extra, ajustes:ajustes };
+}
+// [AGUA-OBJETIVO-PURE-FIN]
+// Envoltura DOM/storage: reúne los datos reales (peso, mes actual, sesiones de deporte de hoy, creatina
+// activa) y llama a la función pura. aguaObjetivo() sigue devolviendo un número (contrato intacto para el
+// resto de la app: celebración, recordatorios, barra); aguaObjetivoInfo() da además el desglose.
+function aguaObjetivoInfo(){
+  var p=get(LS_P,null), kg=p&&p.peso_kg>0?p.peso_kg:70;
+  var mes=new Date().getMonth()+1;
+  var hoy=hoyLocal();
+  var nSes=get("jvf_deporte_sesiones",[]).filter(function(s){ return s && s.f===hoy; }).length;
+  var crea=!!get(LS_SUP_CFG,{}).creatina;
+  return aguaObjetivoDinamico(kg, mes, nSes, crea);
+}
+function aguaObjetivo(){ return aguaObjetivoInfo().total; }
+// Aplica un delta (±) al total de HOY, nunca por debajo de 0; devuelve el delta REAL aplicado (para el log).
+function _aguaAplicar(delta){
+  var d=hoyLocal(), m=get(LS_AGUA,{}), antes=m[d]||0, despues=Math.max(0, antes+Math.round(delta));
+  m[d]=despues; set(LS_AGUA,m); return despues-antes;
+}
+// Historial de deltas de HOY para "deshacer último" (añadir o quitar). Ephemeral: se limpia en reset; no viaja
+// en el backup (corrección inmediata, no dato de salud). Guardamos el delta REAL aplicado, así deshacer es exacto.
+function _aguaLogPush(delta){
+  if(!delta) return;
+  var d=hoyLocal(), log=get(LS_AGUA_LOG,{}); (log[d]=log[d]||[]).push(delta);
+  if(log[d].length>50) log[d]=log[d].slice(-50);
+  set(LS_AGUA_LOG,log);
+}
 function aguaAdd(ml){
-  var d=hoyLocal(), m=get(LS_AGUA,{}); m[d]=(m[d]||0)+ml; set(LS_AGUA,m); renderAgua();
+  ml=Math.round(+ml); if(!(ml>0)) return;
+  var antes=get(LS_AGUA,{})[hoyLocal()]||0;
+  var real=_aguaAplicar(ml); _aguaLogPush(real); renderAgua();
   var obj=aguaObjetivo();
   _aguaPulse(); // presentación pura: pulso suave al añadir
-  if(m[d]>=obj && (m[d]-ml)<obj){ toast("💧 ¡Objetivo de agua del día! 🎉"); _aguaBurst(); } // celebración al alcanzar el objetivo
-  else toast("+"+ml+" ml");
+  if((antes+real)>=obj && antes<obj){ toast("💧 ¡Objetivo de agua del día! 🎉"); _aguaBurst(); } // celebración al alcanzarlo
+  else toast("+"+real+" ml");
+}
+function aguaQuitar(ml){   // resta manual (corrección); nunca deja el total en negativo
+  ml=Math.round(+ml); if(!(ml>0)) return;
+  var real=_aguaAplicar(-ml); _aguaLogPush(real); renderAgua();   // real será negativo (0 si ya estabas a 0)
+  toast(real<0 ? real+" ml" : "Ya estás a 0 ml");
+}
+function aguaDeshacer(){    // deshace la ÚLTIMA acción de hoy (añadir o quitar)
+  var d=hoyLocal(), log=get(LS_AGUA_LOG,{}), lst=log[d]||[];
+  if(!lst.length){ toast("Nada que deshacer hoy"); return; }
+  var last=lst.pop(); set(LS_AGUA_LOG,log);
+  _aguaAplicar(-last); renderAgua();   // inverso del delta guardado
+  toast("↶ Deshecho");
+}
+function aguaAddManual(){
+  var inp=$("agua_manual"); if(!inp) return;
+  var ml=Math.round(+String(inp.value||"").replace(",",".")||0);
+  if(!(ml>0)){ toast("Escribe cuántos ml"); return; }
+  if(ml>5000){ toast("¿"+ml+" ml de una vez? Revisa el número"); return; }   // sanidad: evita un 0 de más
+  aguaAdd(ml); inp.value="";
+}
+function aguaQuitarManual(){
+  var inp=$("agua_manual"); if(!inp) return;
+  var ml=Math.round(+String(inp.value||"").replace(",",".")||0);
+  if(!(ml>0)){ toast("Escribe cuántos ml quitar"); return; }
+  aguaQuitar(ml); inp.value="";
 }
 function renderAgua(){
   var el=$("agua_resumen"); if(!el) return;
-  var hoy=get(LS_AGUA,{})[hoyLocal()]||0, obj=aguaObjetivo();
-  var pct=Math.round(Math.min(1,hoy/obj)*100), falta=Math.max(0,obj-hoy);
+  var hoy=get(LS_AGUA,{})[hoyLocal()]||0, info=aguaObjetivoInfo(), obj=info.total;
+  var pct=Math.round(Math.min(1, obj>0?hoy/obj:1)*100), falta=Math.max(0,obj-hoy);
+  var comp="base "+info.base+" ml"+info.ajustes.map(function(a){ return " · "+a.emoji+" "+a.label+" +"+a.ml; }).join("");
   el.innerHTML="<div class='kv'><span>"+hoy+" / "+obj+" ml</span><span>"+(falta>0?("te quedan "+falta+" ml"):"✓ objetivo cumplido")+"</span></div>"
-    +"<div class='pbar'><i style='width:"+pct+"%;background:#74c7ff'></i></div>";
+    +"<div class='pbar'><i style='width:"+pct+"%;background:#74c7ff'></i></div>"
+    +"<div class='hint' style='margin-top:6px'>🎯 Objetivo (estimación): "+comp+"</div>";
 }
 var SUPLES=[
   {id:"creatina", n:"Creatina · ~1 g por 10 kg/día (monohidrato Creapure)", ev:"ALTA", diario:true},
@@ -1898,7 +1983,11 @@ function menuClasificar(food){
   if(kcal<=0) return "otro";
   var kp=p*4, kc=c*4, kf=f*9;                                  // kcal que aporta cada macro
   if(kcal<60 && f<3 && p<5 && c<12) return "verdura";          // baja densidad y sin proteína/grasa reseñable
-  if(p>=10 && kp>=kc && kp>=kf*0.8)  return "prot";            // la proteína manda (magra: no la eclipsa la grasa)
+  if(p>=10 && kp>=kc && kp>=kf)      return "prot";            // la proteína manda en kcal (magra, tipo pollo/atún)
+  // Proteína GRASA legítima: mucha proteína en absoluto (≥18 g) que además aporta buena parte de las
+  // kcal (≥30%). Así el salmón (20 p / 13 f), la ternera o el jamón NO se caen a "grasa" ni a "otro".
+  // Las almendras (21 p pero solo ~15% de sus kcal es proteína) o el huevo entero (13 p) quedan fuera.
+  if(p>=18 && kp>=0.30*kcal && kp>=kc) return "prot";
   if(f>=15 && kf>=0.45*kcal)         return "grasa";           // la grasa manda
   if(c>=15 && kc>=kp && kc>=kf)      return "carb";            // el carbohidrato manda
   return "otro";
@@ -1929,16 +2018,18 @@ function menuOrdenar(cands, favSet){
 }
 // Redondeo de ración a múltiplos de 5 g, con topes sensatos (nada de "137,4 g de pollo").
 function menuRedondear(g){ g=Math.round(g/5)*5; if(g<5) g=5; if(g>500) g=500; return g; }
-// PORCIONADO GREEDY. La PROTEÍNA es la protagonista (la anclamos primero y la enseñamos la primera),
-// pero para cubrirla SIN pasarnos de kcal la sizamos al FINAL sobre el hueco de proteína que dejan los
-// demás alimentos: si sumáramos la ración entera de proteína encima de un carbo/grasa ya proteicos
-// (avena, almendras) el total se dispararía > +15%. Orden de cálculo: verdura de volumen (fija) →
-// carbo cubre los carbos que faltan → grasa cubre la grasa que falta → proteína cubre la proteína que
-// falta para llegar al objetivo (con un suelo del 35% para que SIEMPRE haya una fuente clara). Así cada
-// macro llega a su objetivo y el total cae dentro de ±10-15%. picks = {prot,carb,grasa,verdura}.
+// PORCIONADO GREEDY. La PROTEÍNA es la protagonista (la anclamos y la enseñamos la primera). Orden de
+// CÁLCULO: verdura de volumen (fija) → carbo cubre los carbos que faltan → PROTEÍNA cubre la proteína
+// que falta (suelo del 35% para que SIEMPRE haya una fuente clara) → GRASA cubre la grasa que falta.
+// La grasa se dimensiona la ÚLTIMA a propósito: antes iba antes que la proteína, así que la grasa
+// incidental de la proteína (p. ej. pollo 3,6 g/100 g) caía ENCIMA del objetivo ya cubierto y el total
+// de grasa se pasaba +17-21%. Poniendo la grasa al final, ningún alimento posterior le suma grasa y el
+// total ya no se dispara. Cada macro llega a su objetivo y el total cae dentro de tolerancia.
+// picks = {prot,carb,grasa,verdura}. Devuelve además `avisos`: si con tu base no se puede cubrir un
+// macro (p. ej. no hay ninguna proteína), se DICE — nada muere en silencio.
 function menuPorcionar(meal, picks){
   meal=meal||{}; picks=picks||{};
-  var tot={kcal:0,p:0,c:0,f:0};
+  var tot={kcal:0,p:0,c:0,f:0}, avisos=[];
   function mk(food,g){
     if(!food || !(+g>0)) return null;
     g=menuRedondear(g); var k=g/100;
@@ -1948,21 +2039,29 @@ function menuPorcionar(meal, picks){
   }
   // 1 · VERDURA de volumen (solo comida/cena): ración fija de 150 g (poco kcal, mucho plato)
   var vItem = picks.verdura ? mk(picks.verdura, 150) : null;
-  // 2 · CARBO — cubre los carbos que faltan tras la verdura
+  // 2 · CARBO — cubre los carbos que faltan tras la verdura (su proteína/grasa incidental se descuenta
+  //     luego, porque proteína y grasa se dimensionan DESPUÉS que el carbo)
   var cItem = null;
   if(picks.carb && +picks.carb.c>0){ var needC=(+meal.c||0)-tot.c; if(needC>0) cItem=mk(picks.carb, needC/(picks.carb.c/100)); }
-  // 3 · GRASA — cubre la grasa que falta tras verdura+carbo
-  var fItem = null;
-  if(picks.grasa && +picks.grasa.f>0){ var needF=(+meal.f||0)-tot.f; if(needF>0) fItem=mk(picks.grasa, needF/(picks.grasa.f/100)); }
-  // 4 · PROTEÍNA — cubre la proteína que FALTA para el objetivo de la comida (suelo del 35%)
+  // 3 · PROTEÍNA — cubre la proteína que FALTA para el objetivo (suelo del 35%). Va ANTES que la grasa:
+  //     así su grasa incidental se resta al calcular la grasa que falta y no se acumula por arriba.
   var pItem = null;
   if(picks.prot && +picks.prot.p>0){
     var objP=(+meal.p||0), needP=objP-tot.p; if(needP<objP*0.35) needP=objP*0.35;
     if(needP>0) pItem=mk(picks.prot, needP/(picks.prot.p/100));
   }
+  // 4 · GRASA — cubre la grasa que falta tras verdura+carbo+proteína (la ÚLTIMA: nadie le añade grasa después)
+  var fItem = null;
+  if(picks.grasa && +picks.grasa.f>0){ var needF=(+meal.f||0)-tot.f; if(needF>0) fItem=mk(picks.grasa, needF/(picks.grasa.f/100)); }
+  // AVISOS · si la base no da para cubrir un macro, se avisa (no se infra-cubre en silencio)
+  var objP2=(+meal.p||0), objK=(+meal.kcal||0), objF=(+meal.f||0);
+  if(!picks.prot)                              avisos.push("sin fuente de proteína en tu base para esta comida");
+  else if(objP2>0 && tot.p < objP2*0.85)       avisos.push("proteína corta: ~"+Math.round(tot.p)+" de ~"+Math.round(objP2)+" g");
+  if(!picks.grasa && objF>0 && tot.f<objF*0.6) avisos.push("sin fuente de grasa: la comida queda baja en grasa");
+  if(objK>0 && tot.kcal < objK*0.80)           avisos.push("solo se llega a ~"+Math.round(tot.kcal)+" de ~"+Math.round(objK)+" kcal con tu base");
   // Presentación: la proteína la PRIMERA (es la protagonista), luego carbo, verdura y grasa.
   var items=[pItem,cItem,vItem,fItem].filter(function(it){ return it; });
-  return {items:items, total:{kcal:Math.round(tot.kcal), p:Math.round(tot.p), c:Math.round(tot.c), f:Math.round(tot.f)}};
+  return {items:items, total:{kcal:Math.round(tot.kcal), p:Math.round(tot.p), c:Math.round(tot.c), f:Math.round(tot.f)}, avisos:avisos};
 }
 // Arma UN ejemplo de comida para la variante v (0,1,2…): rota por cada pool para dar variedad.
 function menuComida(meal, cat, favSet, variante){
@@ -1985,16 +2084,17 @@ function generarMenu(obj, foods, favoritos){
   return {
     objetivo:{cal:Math.round(+obj.cal||0), prot:Math.round(+obj.prot||0), carb:Math.round(+obj.carb||0), grasa:Math.round(+obj.grasa||0)},
     comidas: reparto.map(function(m){
-      var ejemplos=[], visto={};
+      var ejemplos=[], visto={}, avisos=[], vistoAv={};
       for(var v=0; v<8 && ejemplos.length<3; v++){
         var e=menuComida(m, cat, favSet, v);
         if(!e.items.length) continue;
         var sig=e.items.map(function(it){ return it.alimento+":"+it.gramos; }).join("|");
         if(visto[sig]) continue; visto[sig]=1; ejemplos.push(e);
+        (e.avisos||[]).forEach(function(a){ if(!vistoAv[a]){ vistoAv[a]=1; avisos.push(a); } });
       }
       return {key:m.key, label:m.label, emoji:m.emoji, pct:m.pct,
         objetivo:{kcal:Math.round(m.kcal), p:Math.round(m.p), c:Math.round(m.c), f:Math.round(m.f)},
-        ejemplos:ejemplos};
+        ejemplos:ejemplos, avisos:avisos};
     })
   };
 }
@@ -2065,6 +2165,10 @@ function menuRender(menu){
     h+="<div style='margin-top:10px;padding-top:10px;border-top:1px solid var(--line)'>"
       +"<div class='kv' style='border-bottom:none'><span><b>"+m.emoji+" "+esc(m.label)+"</b> <span style='color:var(--mute)'>· "+Math.round(m.pct*100)+"%</span></span>"
       +"<span style='color:var(--mute);font-variant-numeric:tabular-nums'>objetivo ~"+m.objetivo.kcal+" kcal · P"+m.objetivo.p+" C"+m.objetivo.c+" G"+m.objetivo.f+"</span></div>";
+    // Avisos honestos: si con la base actual no se puede cubrir un macro, se dice (no se calla).
+    if(m.avisos && m.avisos.length){
+      h+="<p class='hint' style='margin:6px 0 0;color:#f4c04e'>⚠️ "+m.avisos.map(esc).join(" · ")+"</p>";
+    }
     if(!m.ejemplos.length){
       h+="<p class='hint' style='margin:6px 0 0'>No hay alimentos suficientes en la base para armar esta comida.</p>";
     } else {
@@ -2078,7 +2182,7 @@ function menuRender(menu){
     }
     h+="</div>";
   });
-  h+="<p class='hint' style='margin-top:10px'>Los gramos son orientativos (redondeados a 5 g). El total de cada comida cae dentro de ±10-15% del objetivo: fija la proteína primero y ajusta el resto.</p></div>";
+  h+="<p class='hint' style='margin-top:10px'>Los gramos son orientativos (redondeados a 5 g). Se prioriza clavar <b>proteína</b> y <b>kcal</b> (± ~15%); <b>grasa</b> e <b>hidratos</b> se cubren con lo que hay en tu base, así que pueden desviarse más (± ~25-30%). Si algún macro no se puede cubrir, se avisa arriba con ⚠️.</p></div>";
   box.innerHTML=h;
 }
 // Vuelca un ejemplo concreto al diario del día mostrado (usa comQuick → misma alta que el buscador).
@@ -2638,6 +2742,27 @@ function bcFactorCantidad(cant, uIn, uProd, dens){
 }
 // Unidad de un item del diario: los antiguos no llevan u → gramos (compatibilidad, punto 4 de la spec).
 function comUnidad(x){ return (x && x.u==="ml") ? "ml" : "g"; }
+
+// [AGUA] Detección PURA y CONSERVADORA de agua para el autorrelleno 0 kcal (Aquabona y cía, que en OFF
+// llegan sin nutrición). prod acepta las dos formas: {nombre,cats} de la app o {product_name,
+// categories_tags} crudos de OFF. Devuelve true SOLO si es CLARAMENTE agua sin calorías:
+//  1) primero se descartan las TRAMPAS con azúcar/calorías (tónica, coco, saborizada, aromatizada,
+//     energética, vitaminada, con zumo, cola): si aparece cualquiera → NO es "agua 0";
+//  2) si la categoría de OFF es de aguas (waters/eaux/aguas, con o sin gas) → true;
+//  3) si el NOMBRE dice agua/water/aigua como palabra entera → true ("aguacate" NO cuenta: \bagua\b
+//     exige límite de palabra). Ante la duda devuelve false: mejor pedir los datos que colar un 0 falso.
+var AGUA_TRAMPA=/t[oó]nic|\bcoco\b|coconut|saboriz|con sabor|sabor a|flavou?r|aromat|energ|vitamin|\bzumo\b|\bjuice\b|\bcola\b/i;
+var AGUA_CAT=/\b(waters?|eaux|aguas?)\b/i;
+var AGUA_NOMBRE=/\bagua\b|\bwater\b|\baigua\b/i;
+function esAgua(prod){
+  prod=prod||{};
+  var nombre=String(prod.nombre||prod.product_name||"");
+  var cats=(prod.cats!=null?prod.cats:prod.categories_tags)||[];
+  var tags=Array.isArray(cats)?cats.join(" "):String(cats||"");
+  if(AGUA_TRAMPA.test(nombre) || AGUA_TRAMPA.test(tags)) return false;   // bebida con calorías disfrazada de "agua"
+  if(AGUA_CAT.test(tags)) return true;                                    // categoría de aguas de OFF (con/sin gas)
+  return AGUA_NOMBRE.test(nombre);                                        // el nombre lo dice claramente
+}
 // [BC-ML-PURE-FIN]
 
 // [BC-FALLBACK-PURE-INICIO] — v0.13 · FIX «no encontrado» (la Coca-Cola Zero del kebab, 07/07).
@@ -2835,7 +2960,7 @@ function bcBuscar(ean){
     var norm=bcNormalizarOFF(p);
     var marca=p.brands?String(p.brands).split(",")[0].trim():"";
     var nombre=((p.product_name||"").trim()+(marca?" ("+marca+")":"")).trim()||("Producto "+ean);
-    bcConfirmar({ean:ean, fuente:"off", nombre:nombre,
+    bcConfirmar({ean:ean, fuente:"off", nombre:nombre, esAgua:esAgua({nombre:nombre, cats:p.categories_tags||[]}),
       kcal100:norm.kcal100, p100:norm.p100, c100:norm.c100, g100:norm.g100,
       u:norm.u, uMotivo:norm.uMotivo, dens:norm.dens, servingAviso:norm.servingAviso,
       img:(typeof p.image_front_url==="string" && p.image_front_url.indexOf("https://")===0)?p.image_front_url:null,
@@ -2896,6 +3021,16 @@ function nsColor(g){ return (g==="A"||g==="B") ? "var(--jade)" : (g==="C" ? "#f4
 // y sin kcal+proteína no se deja añadir. Todo contenido de OFF pasa por esc/escAttr.
 function bcConfirmar(prod){
   _bcProducto=prod;
+  // [AGUA] Autorrelleno conservador: si el escaneo identificó AGUA claramente (esAgua puro), se ponen
+  // kcal/macros a 0, la unidad a ml y una ración propuesta de 500 ml. Como kcal/p dejan de ser null,
+  // el aviso de "ficha incompleta" ya no aparece. El usuario sigue validando y puede editarlo todo.
+  if(prod.esAgua){
+    prod.esAgua=false;                             // aplicar una sola vez (no re-forzar en re-render de bcUnidadBase)
+    prod.kcal100=0; prod.p100=0; prod.c100=0; prod.g100=0;
+    prod.u="ml";
+    if(!(+prod._cant>0)) prod.porcion=500;         // propone 500 ml en el input de cantidad
+    prod.uMotivo="es agua: 0 kcal y por ml (corrígelo si tu etiqueta dice otra cosa)";
+  }
   if(prod.u!=="ml") prod.u="g";                    // saneo: cualquier camino sin unidad clara = gramos
   _bcUnidadIn=prod.u;                              // la cantidad se pregunta en LA UNIDAD del producto
   var res=$("bc_res"); if(!res) return;
@@ -2928,8 +3063,7 @@ function bcConfirmar(prod){
   // v0.13 · L2: honestidad "está pero incompleto" — el producto SÍ existe en la base, lo que
   // faltan son datos (ficha colaborativa a medias). Se dice tal cual y se ofrece el alta manual
   // PREFIJADA con el nombre, en vez del genérico "no encontrado" o de dejarle pelearse a ciegas.
-  if(falta) h+="<div class='aviso' style='margin-top:8px'>⚠️ El producto SÍ está en la base, pero su ficha está incompleta: faltan kcal o proteína. ¿Es agua o una bebida 0 kcal? Ponlo a cero de un toque. Si no, cópialas de la etiqueta aquí arriba, o guárdalo como alimento propio (ya te lo dejo con el nombre puesto):</div>"
-    +"<button class='sec' type='button' onclick='bcEsAgua()'>💧 Es agua / 0 kcal</button>"
+  if(falta) h+="<div class='aviso' style='margin-top:8px'>⚠️ El producto SÍ está en la base, pero su ficha está incompleta: faltan kcal o proteína. Cópialas de la etiqueta aquí arriba, o guárdalo como alimento propio (ya te lo dejo con el nombre puesto):</div>"
     +"<button class='sec' type='button' onclick='bcCrearPropioPrefijado()'>🍽 Crear alimento propio con este nombre</button>";
   // Cantidad en LA UNIDAD del producto + toggle manual g↔ml (punto 2 de la spec). El input conserva el
   // id histórico bc_gramos aunque ahora guarda "cantidad en _bcUnidadIn" (renombrarlo rompería hábitos).
@@ -2944,13 +3078,6 @@ function bcConfirmar(prod){
   res.innerHTML=h; res.classList.remove("hidden");
   bcPintarChipsUnidad();
   bcEstado("");
-}
-// Agua/bebida 0 kcal: relleno de un toque para el caso "ficha incompleta" de aguas y bebidas sin
-// valores (Aquabona y cía). SOLO escribe 0 en los 4 inputs existentes (kcal/P/C/G); no toca ninguna
-// cuenta — el usuario sigue validando y bcAddDiario recalcula igual que siempre.
-function bcEsAgua(){
-  ["bc_kcal","bc_p","bc_c","bc_g"].forEach(function(id){ var el=$(id); if(el) el.value="0"; });
-  toast("Puesto a 0 kcal · revisa y añade");
 }
 // Chips g/ml de la cantidad: marca el activo (borde/verde) y actualiza la etiqueta del label.
 function bcPintarChipsUnidad(){
@@ -3217,7 +3344,7 @@ document.addEventListener('DOMContentLoaded',function(){
     if(ents.length>20 && _old) setTimeout(function(){ toast("💾 Llevas tiempo sin copia de seguridad — toca Exportar en Ajustes"); }, 3500);
   }catch(e){}
 });
-function resetTodo(){ if(!confirm("⚠️ Esto borra TODO: perfil, pesos, entrenos, rutinas, comidas, alimentos propios, agua, suplementos, lo hablado con el Cerebro y las fotos de progreso. ¿Seguro?")) return; try{ localStorage.removeItem(LS_P); localStorage.removeItem(LS_W); localStorage.removeItem(LS_E); localStorage.removeItem("jvf_notas_ej"); localStorage.removeItem("jvf_comida"); localStorage.removeItem("jvf_agua"); localStorage.removeItem("jvf_suples_cfg"); localStorage.removeItem("jvf_suples_log"); localStorage.removeItem("jvf_rutinas"); localStorage.removeItem("jvf_ent_start"); localStorage.removeItem("jvf_meals"); localStorage.removeItem("jvf_alimentos_propios"); localStorage.removeItem("jvf_barcode_cache"); localStorage.removeItem("jvf_foto_ajustes"); localStorage.removeItem("jvf_warmup_stats"); localStorage.removeItem("jvf_plate_barra"); localStorage.removeItem("jvf_rest_seg"); localStorage.removeItem("jvf_cerebro_diario"); localStorage.removeItem("jvf_cerebro_norec"); localStorage.removeItem("jvf_fotos_consent"); localStorage.removeItem("jvf_fotos_meta"); localStorage.removeItem("jvf_flex_cfg"); localStorage.removeItem("jvf_flex_visto"); localStorage.removeItem("jvf_deporte_sesiones"); localStorage.removeItem("jvf_favoritos"); localStorage.removeItem("jvf_uso_alim"); }catch(e){} _mem={};
+function resetTodo(){ if(!confirm("⚠️ Esto borra TODO: perfil, pesos, entrenos, rutinas, comidas, alimentos propios, agua, suplementos, lo hablado con el Cerebro y las fotos de progreso. ¿Seguro?")) return; try{ localStorage.removeItem(LS_P); localStorage.removeItem(LS_W); localStorage.removeItem(LS_E); localStorage.removeItem("jvf_notas_ej"); localStorage.removeItem("jvf_comida"); localStorage.removeItem("jvf_agua"); localStorage.removeItem("jvf_agua_log"); localStorage.removeItem("jvf_suples_cfg"); localStorage.removeItem("jvf_suples_log"); localStorage.removeItem("jvf_rutinas"); localStorage.removeItem("jvf_ent_start"); localStorage.removeItem("jvf_meals"); localStorage.removeItem("jvf_alimentos_propios"); localStorage.removeItem("jvf_barcode_cache"); localStorage.removeItem("jvf_foto_ajustes"); localStorage.removeItem("jvf_warmup_stats"); localStorage.removeItem("jvf_plate_barra"); localStorage.removeItem("jvf_rest_seg"); localStorage.removeItem("jvf_cerebro_diario"); localStorage.removeItem("jvf_cerebro_norec"); localStorage.removeItem("jvf_fotos_consent"); localStorage.removeItem("jvf_fotos_meta"); localStorage.removeItem("jvf_flex_cfg"); localStorage.removeItem("jvf_flex_visto"); localStorage.removeItem("jvf_deporte_sesiones"); localStorage.removeItem("jvf_favoritos"); localStorage.removeItem("jvf_uso_alim"); }catch(e){} _mem={};
   // 📸 v0.13-C · las fotos viven en IndexedDB: se borra la base entera ANTES de recargar (con
   // timeout de seguridad — si el borrado se quedara bloqueado, la app no se cuelga: recarga igual
   // y el intento de borrado sigue en cola del navegador).
@@ -3232,7 +3359,7 @@ function resetTodo(){ if(!confirm("⚠️ Esto borra TODO: perfil, pesos, entren
 // Reemplazo total con confirmación. Reusa get/set, hoyLocal, toast, validar, render. NO toca motor ni gate.
 function exportarJSON(){ try{ set("jvf_last_export",hoyLocal()); }catch(e){}
   try{
-    var data={ app:"jvf", schema:1, app_version:"0.14.0", exportadoEl:new Date().toISOString(),
+    var data={ app:"jvf", schema:1, app_version:"0.14.1", exportadoEl:new Date().toISOString(),
       perfil:get(LS_P,null), pesos:get(LS_W,[]), entrenos:get(LS_E,[]), notas_ej:get("jvf_notas_ej",{}), comida:get("jvf_comida",[]), agua:get("jvf_agua",{}), suples_cfg:get("jvf_suples_cfg",null), suples_log:get("jvf_suples_log",{}),
       rutinas:get("jvf_rutinas",[]), meals:get("jvf_meals",[]), ent_start:get("jvf_ent_start",null),   // v0.10 · backup completo
       alimentos_propios:get("jvf_alimentos_propios",[]), barcode_cache:get("jvf_barcode_cache",{}),   // I5/I6 · también viajan en el backup
