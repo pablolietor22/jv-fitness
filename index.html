@@ -277,6 +277,18 @@
   .pbar{height:9px;background:var(--ink-3);border-radius:100px;overflow:hidden;margin:6px 0}
   .pbar>i{display:block;height:100%;background:linear-gradient(90deg,var(--jade),var(--ember));border-radius:100px;width:0;transition:width .9s cubic-bezier(.2,.8,.3,1)}
 
+  /* D-AGUA · capa de dopamina del contador de agua (presentación pura; conteo/objetivo intactos).
+     El relleno ya "fluye" solo por la transición de .pbar>i; aquí sumamos el pulso al añadir y el
+     burst al alcanzar el objetivo. La regla global de arriba (@prefers-reduced-motion) las neutraliza,
+     y en JS además hay guard con _reducedMotion() → si piden menos movimiento, solo el cambio de estado. */
+  #agua_card{position:relative}
+  @keyframes aguapulse{0%{transform:scale(1)}42%{transform:scale(1.035)}100%{transform:scale(1)}}
+  @keyframes aguaglow{0%{box-shadow:0 0 0 0 rgba(116,199,255,0)}42%{box-shadow:0 0 12px 2px rgba(116,199,255,.5)}100%{box-shadow:0 0 0 0 rgba(116,199,255,0)}}
+  #agua_resumen.aguabump{animation:aguapulse .55s cubic-bezier(.2,.8,.3,1.2)}
+  #agua_resumen.aguabump .pbar{animation:aguaglow .7s ease-out}
+  @keyframes aguaburst{0%{transform:translateY(6px) scale(.5);opacity:0}22%{opacity:1}100%{transform:translateY(-64px) scale(1.15);opacity:0}}
+  .agua-spark{position:absolute;pointer-events:none;z-index:30;line-height:1;filter:drop-shadow(0 0 6px rgba(116,199,255,.45));animation:aguaburst 1.05s ease-out forwards;will-change:transform,opacity}
+
   /* D6 · tarjeta de resumen de sesión (vistosa, "compartible") */
   .sessioncard{background:linear-gradient(155deg,var(--ink-3),var(--ink-1));border:1px solid var(--line);
     border-radius:16px;padding:16px;box-shadow:0 12px 30px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.04)}
@@ -421,7 +433,7 @@
 
 <header class="brandbar">
   <div class="logo"><span class="dot"></span>JV <b>Fitness</b></div>
-  <span class="tag">MVP v0.13.7 · motor v0.7</span>
+  <span class="tag">MVP v0.13.8 · motor v0.7</span>
 </header>
 <div class="statuschip"><span class="pulse"></span> cálculo science-based · ajustable · calibración real</div>
 
@@ -587,6 +599,7 @@
   <div class="kv"><span>TDEE · gasto total</span><span id="o_tdee"></span></div>
   <div class="eyebrow-lbl">Calorías objetivo / día</div>
   <div class="big"><span id="o_cal"></span> <small>kcal</small></div>
+  <p class="hint" style="margin-top:4px;color:var(--jade)">Orientativo (±10%); lo afino con tu peso real cada semana.</p>
   <div class="macros">
     <div class="macro"><div class="n p" id="o_p"></div><small>Proteínas</small></div>
     <div class="macro"><div class="n g" id="o_g"></div><small>Grasas</small></div>
@@ -1556,7 +1569,9 @@ function aguaObjetivo(){ var p=get(LS_P,null); var kg=p&&p.peso_kg>0?p.peso_kg:7
 function aguaAdd(ml){
   var d=hoyLocal(), m=get(LS_AGUA,{}); m[d]=(m[d]||0)+ml; set(LS_AGUA,m); renderAgua();
   var obj=aguaObjetivo();
-  if(m[d]>=obj && (m[d]-ml)<obj) toast("💧 ¡Objetivo de agua del día! 🎉"); else toast("+"+ml+" ml");
+  _aguaPulse(); // presentación pura: pulso suave al añadir
+  if(m[d]>=obj && (m[d]-ml)<obj){ toast("💧 ¡Objetivo de agua del día! 🎉"); _aguaBurst(); } // celebración al alcanzar el objetivo
+  else toast("+"+ml+" ml");
 }
 function renderAgua(){
   var el=$("agua_resumen"); if(!el) return;
@@ -1958,6 +1973,7 @@ function fotoEstimar(){
   // Desglose POR DECISIÓN visible: el usuario VE cada ecuación y corrige la que falle (perfeccionismo = transparencia)
   var dl=est.desglose.map(function(x){ return "<div class='hint' style='margin:3px 0'>· "+esc(x)+"</div>"; }).join("");
   res.innerHTML="<div class='kv'><span>Estimación</span><span>≈ <b style='color:var(--ember);font-size:1.05rem'>"+est.min+"-"+est.max+" kcal</b></span></div>"
+    +"<div class='hint' style='margin:4px 0 0;color:var(--jade)'>Estimación ±20% — promedia varios días, tu peso manda.</div>"
     +"<div class='kv'><span>Apunto</span><span><input id='foto_kcal_edit' type='number' inputmode='numeric' min='0' step='5' value='"+est.kcal+"' style='width:86px;display:inline-block;margin:0;padding:6px 8px;text-align:right'> kcal</span></div>"
     +"<div class='kv'><span>Proteína estimada</span><span>~"+est.prot+" g</span></div>"
     +"<details open style='margin-top:8px'><summary style='cursor:pointer;color:var(--jade);font-weight:600'>Cómo lo he calculado (ecuaciones, no IA)</summary>"+dl+"</details>"
@@ -2775,7 +2791,7 @@ function resetTodo(){ if(!confirm("⚠️ Esto borra TODO: perfil, pesos, entren
 // Reemplazo total con confirmación. Reusa get/set, hoyLocal, toast, validar, render. NO toca motor ni gate.
 function exportarJSON(){ try{ set("jvf_last_export",hoyLocal()); }catch(e){}
   try{
-    var data={ app:"jvf", schema:1, app_version:"0.13.7", exportadoEl:new Date().toISOString(),
+    var data={ app:"jvf", schema:1, app_version:"0.13.8", exportadoEl:new Date().toISOString(),
       perfil:get(LS_P,null), pesos:get(LS_W,[]), entrenos:get(LS_E,[]), notas_ej:get("jvf_notas_ej",{}), comida:get("jvf_comida",[]), agua:get("jvf_agua",{}), suples_cfg:get("jvf_suples_cfg",null), suples_log:get("jvf_suples_log",{}),
       rutinas:get("jvf_rutinas",[]), meals:get("jvf_meals",[]), ent_start:get("jvf_ent_start",null),   // v0.10 · backup completo
       alimentos_propios:get("jvf_alimentos_propios",[]), barcode_cache:get("jvf_barcode_cache",{}),   // I5/I6 · también viajan en el backup
@@ -3921,6 +3937,33 @@ function confetti(n){
       document.body.appendChild(c);
       setTimeout(function(){ if(c.parentNode) c.parentNode.removeChild(c); }, (dur+.4)*1000);
     })();
+  }
+}
+// D-AGUA · capa de dopamina del contador de agua. PRESENTACIÓN PURA: no toca conteo ni objetivo.
+// Guard con _reducedMotion() → si el usuario pide menos movimiento, no hay animación ni burst (solo el
+// cambio de estado que ya hace renderAgua). Autocontenido, sin librerías; se autolimpia.
+function _aguaPulse(){
+  if(_reducedMotion()) return;
+  var el=$("agua_resumen"); if(!el) return;
+  el.classList.remove("aguabump"); void el.offsetWidth; el.classList.add("aguabump");
+  setTimeout(function(){ if(el) el.classList.remove("aguabump"); }, 800);
+}
+function _aguaBurst(){
+  if(_reducedMotion()) return;
+  var host=$("agua_card"); if(!host) return;
+  var em=["💧","✨","💧","💙","✨"];
+  for(var i=0;i<12;i++){
+    (function(k){
+      var s=document.createElement("span"); s.className="agua-spark";
+      s.textContent=em[k%em.length];
+      s.style.left=(8+Math.random()*84)+"%";
+      s.style.top=(34+Math.random()*46)+"%";
+      s.style.fontSize=(.8+Math.random()*.7)+"rem";
+      s.style.animationDelay=(Math.random()*.22)+"s";
+      s.style.animationDuration=(.9+Math.random()*.45)+"s";
+      host.appendChild(s);
+      setTimeout(function(){ if(s.parentNode) s.parentNode.removeChild(s); }, 1700);
+    })(i);
   }
 }
 // Celebración a pantalla completa de un récord (D3). Cierra al tocar o sola a los 3,6 s.
