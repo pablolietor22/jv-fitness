@@ -433,7 +433,7 @@
 
 <header class="brandbar">
   <div class="logo"><span class="dot"></span>JV <b>Fitness</b></div>
-  <span class="tag">MVP v0.13.9 · motor v0.7</span>
+  <span class="tag">MVP v0.14.0 · motor v0.7</span>
 </header>
 <div class="statuschip"><span class="pulse"></span> cálculo science-based · ajustable · calibración real</div>
 
@@ -609,6 +609,19 @@
   <div id="o_aviso" class="aviso hidden"></div>
   <div id="o_notas" class="hint"></div>
   <div id="o_porque"></div>
+  <!-- 🎯 PLANIFICADOR DE OBJETIVO con PROBABILIDAD (feat/planificador-probabilidad). Cálculo APARTE e
+       INFORMATIVO: NO toca las calorías objetivo de arriba. Lógica pura en el bloque [PLANI-PURE-*]. -->
+  <details id="plani_box" style="margin-top:16px;border:1px solid var(--line);border-radius:12px;padding:12px 14px">
+    <summary style="cursor:pointer;color:var(--jade);font-weight:600">🎯 ¿Tienes una meta? Comprueba si es realista</summary>
+    <p class="hint" style="margin-top:8px">Dime cuánto quieres cambiar y en cuánto tiempo. Te digo si es <b style="color:var(--soft)">realista</b>, con qué <b style="color:var(--soft)">probabilidad</b> y el déficit que exige. No cambia tus calorías de arriba: es una comprobación aparte.</p>
+    <div class="row" style="gap:6px;align-items:flex-end">
+      <div style="flex:1.2"><label>Quiero</label><select id="plani_dir"><option value="perder">Perder peso</option><option value="ganar">Ganar peso</option></select></div>
+      <div style="flex:1"><label>Kilos</label><input id="plani_kg" type="number" step="0.1" inputmode="decimal" placeholder="ej. 4"></div>
+      <div style="flex:1"><label>Semanas</label><input id="plani_sem" type="number" step="1" inputmode="numeric" placeholder="ej. 8"></div>
+    </div>
+    <button class="btn-lg" style="margin-top:10px" onclick="planiCalc()">Ver si es realista</button>
+    <div id="plani_out" style="margin-top:6px"></div>
+  </details>
   <button class="sec" onclick="editarPerfil()">Editar perfil</button>
 </div>
 
@@ -714,6 +727,11 @@
       <button type="button" style="flex:2;width:auto;margin:0" onclick="qaAdd()">⚡ Añadir</button>
     </div>
   </div>
+  <!-- 🍽️ Generador de menú (v0.14) · el nº1 de Laura — propone comidas concretas con gramos desde tu objetivo -->
+  <div class="row" style="gap:6px;margin-top:8px">
+    <button class="sec" type="button" style="flex:1;width:auto;margin:0" onclick="menuGenerarHoy()">🍽️ Generar menú de hoy</button>
+  </div>
+  <div id="menu_box" style="margin-top:8px"></div>
   <div id="com_tot" style="margin-top:12px"></div>
   <div id="com_list" style="margin-top:10px"></div>
   <!-- F4 v0.10 · "Guardar día como comida" + lista "Mis comidas" (lo rellena renderMeals()) -->
@@ -1230,6 +1248,107 @@ function factorDeporte(actividad, depDias){
   return d<=2?1.30 : d<=3?1.45 : d<=4?1.60 : 1.75;
 }
 // [DEPORTE-PURE-FIN]
+// [PLANI-PURE-INICIO] — Planificador de objetivo con PROBABILIDAD (anti-humo). Función PURA (sin DOM ni
+// storage): los tests de node la extraen y ejecutan tal cual. "Quiero cambiar X kg en N semanas" → la app
+// dice si es realista, el plan y la PROBABILIDAD. Ritmos sanos = tu ciencia (Garthe 2011 + master file):
+// PÉRDIDA 0.5–1.0 %/sem preserva músculo, 1.0–1.5 % agresivo (riesgo muscular), >1.5 % irreal/insano.
+// GANANCIA 0.25–0.5 %/sem realista, 0.5–0.75 % mucha grasa, >0.75 % irreal. cambioKg NEGATIVO = perder,
+// POSITIVO = ganar. NO toca calObjetivo — es un cálculo APARTE, informativo.
+var PLANI_KCAL_POR_KG = 7700;   // kcal por kg de tejido (mismo 7700 que R.kcal_por_kg del motor)
+var PLANI_DEFICIT_MAX = 1000;   // kcal/día — techo DURO de déficit que NO proponemos superar (sostenibilidad)
+var PLANI_RANGOS = {
+  perder: { sanoMin: 0.5,  sanoMax: 1.0, agresivoMax: 1.5 },   // %/sem sobre el peso corporal
+  ganar:  { sanoMin: 0.25, sanoMax: 0.5, agresivoMax: 0.75 }
+};
+function _planiRedondea(x, d){ var f = Math.pow(10, d || 0); return Math.round(x * f) / f; }
+function _planiError(msg){
+  return { ritmoSemPct: null, deficitDiaKcal: null, probabilidad: null,
+    veredicto: null, alternativaSemanas: null, aviso: msg, direccion: null, error: msg };
+}
+// Probabilidad DENTRO del rango sano: campana → 95 % en el centro del rango, 85 % en los bordes.
+function _planiProbSano(mag, min, max){
+  var centro = (min + max) / 2, semi = (max - min) / 2;
+  var dist = semi > 0 ? Math.abs(mag - centro) / semi : 0;   // 0 en el centro, 1 en el borde
+  if(dist > 1) dist = 1;
+  return Math.round(95 - 10 * dist);
+}
+// Interpolación lineal de probabilidad entre dos magnitudes (probLo en magLo → probHi en magHi).
+function _planiProbLineal(mag, magLo, magHi, probLo, probHi){
+  if(magHi <= magLo) return probHi;
+  var t = (mag - magLo) / (magHi - magLo);
+  if(t < 0) t = 0;
+  if(t > 1) t = 1;
+  return Math.round(probLo + (probHi - probLo) * t);
+}
+// Semanas mínimas para que el MISMO cambio caiga en ritmo sano (al ritmo sano más rápido) y, en pérdida,
+// respete el techo de déficit. Redondeo hacia ARRIBA para caer holgadamente dentro del rango.
+function _planiAlternativa(pesoKg, cambioKg, direccion, R){
+  var C = Math.abs(cambioKg);
+  var w = (C / pesoKg * 100) / R.sanoMax;                          // semanas para tocar el techo del rango sano
+  if(direccion === "perder"){
+    var wDef = C * PLANI_KCAL_POR_KG / (7 * PLANI_DEFICIT_MAX);    // semanas para no pasar el techo de déficit
+    if(wDef > w) w = wDef;
+  }
+  return Math.ceil(w);
+}
+function planificar(pesoKg, cambioKg, semanas){
+  pesoKg = +pesoKg; cambioKg = +cambioKg; semanas = +semanas;
+  if(!isFinite(pesoKg)  || pesoKg  <= 0) return _planiError("El peso debe ser un número mayor que 0.");
+  if(!isFinite(semanas) || semanas <= 0) return _planiError("Las semanas deben ser un número mayor que 0.");
+  if(!isFinite(cambioKg))                return _planiError("El cambio de peso debe ser un número.");
+
+  var direccion = cambioKg > 0 ? "ganar" : cambioKg < 0 ? "perder" : "mantener";
+  var ritmoRaw = (cambioKg / pesoKg) / semanas * 100;             // firmado (negativo = perder)
+  var mag = Math.abs(ritmoRaw);
+  var ritmoSemPct = _planiRedondea(ritmoRaw, 2);
+  var deficitDiaKcal = Math.round(Math.abs(cambioKg) * PLANI_KCAL_POR_KG / (semanas * 7));   // déficit o superávit
+
+  if(direccion === "mantener"){
+    return { ritmoSemPct: 0, deficitDiaKcal: 0, probabilidad: 95, veredicto: "REALISTA",
+      alternativaSemanas: null, aviso: "No has pedido cambio de peso: mantener es siempre realista.",
+      direccion: "mantener", error: null };
+  }
+
+  var R = PLANI_RANGOS[direccion];
+  var pierde = direccion === "perder";
+  var veredicto, probabilidad, aviso = null, alternativaSemanas = null;
+
+  if(mag < R.sanoMin){
+    veredicto = "REALISTA"; probabilidad = 92;
+    aviso = "Ritmo muy suave: fácil de lograr. Si quieres, podrías ir algo más rápido sin salirte de lo sano.";
+  } else if(mag <= R.sanoMax){
+    veredicto = "REALISTA"; probabilidad = _planiProbSano(mag, R.sanoMin, R.sanoMax);
+  } else if(mag <= R.agresivoMax){
+    veredicto = "AGRESIVO"; probabilidad = _planiProbLineal(mag, R.sanoMax, R.agresivoMax, 70, 40);
+    aviso = pierde
+      ? "Ritmo agresivo: riesgo de perder músculo. Prioriza proteína alta y entrenamiento de fuerza; date algo más de tiempo si puedes."
+      : "Ritmo agresivo: ganarás bastante grasa junto al músculo. Un ritmo más lento da una ganancia más limpia.";
+  } else {
+    veredicto = "IRREAL"; probabilidad = _planiProbLineal(mag, R.agresivoMax, R.agresivoMax * 2, 28, 5);
+    aviso = pierde
+      ? "Irreal y poco saludable a este ritmo. Reparte el objetivo en más semanas para hacerlo bien."
+      : "Irreal: por encima de este ritmo casi todo lo extra sería grasa. Reparte la ganancia en más semanas.";
+  }
+
+  // Guardia del déficit (solo pérdida): un recorte por encima del techo NO se propone, aunque el % parezca
+  // asumible. Caso real: una persona pesada a 0.9 %/sem (sano en %) puede exigir >1000 kcal/día de déficit.
+  if(pierde && deficitDiaKcal > PLANI_DEFICIT_MAX){
+    if(veredicto === "REALISTA"){ veredicto = "AGRESIVO"; if(probabilidad > 55) probabilidad = 55; }
+    else if(veredicto === "AGRESIVO"){ veredicto = "IRREAL"; if(probabilidad > 28) probabilidad = 28; }
+    else { if(probabilidad > 20) probabilidad = 20; }
+    aviso = "El déficit diario (" + deficitDiaKcal + " kcal) supera el techo seguro de ~" + PLANI_DEFICIT_MAX +
+      " kcal/día. Aunque el ritmo en % parezca asumible, un recorte así no es sostenible: dale más semanas.";
+  }
+
+  if(veredicto !== "REALISTA"){
+    alternativaSemanas = _planiAlternativa(pesoKg, cambioKg, direccion, R);
+    if(alternativaSemanas <= semanas) alternativaSemanas = null;   // ya lo cumpliría; no sugerir un plazo menor
+  }
+
+  return { ritmoSemPct: ritmoSemPct, deficitDiaKcal: deficitDiaKcal, probabilidad: probabilidad,
+    veredicto: veredicto, alternativaSemanas: alternativaSemanas, aviso: aviso, direccion: direccion, error: null };
+}
+// [PLANI-PURE-FIN]
 function plan(p){
   const fAct=R.factores[p.actividad]||1.30, fPas=factorPasos(p.pasos), fDep=factorDeporte(p.actividad,p.deporte);
   const fEff=Math.max(fAct,fPas,fDep);
@@ -1746,6 +1865,141 @@ function presupuestoHoy(objetivoBase, sesionesHoy){
 }
 // [PRESUPUESTO-HOY-PURE-FIN]
 
+// ======= 🍽️ GENERADOR DE MENÚ (v0.14) — DETERMINISTA, SIN IA — el nº1 de Laura =======
+// Dado el objetivo del día (kcal + macros p/c/g del Plan, window._obj) reparte en comidas y por
+// cada una propone alimentos CONCRETOS con GRAMOS que cuadren esa comida. NO toca el motor de
+// cálculo (bmr/calObjetivo/macros/plan): solo LEE el objetivo ya calculado y reparte.
+// Lógica 100% pura (misma entrada → misma salida, sin DOM/red/localStorage) y testeada en
+// _tests/test-menu.node.js extrayendo este bloque tal cual. La base de alimentos y los favoritos
+// entran como PARÁMETROS (inyección) para que el test controle qué hay.
+// [MENU-PURE-INICIO] · bloque puro extraído tal cual por el test (no meter aquí get/DOM/localStorage)
+// Reparto por comidas (dictado): desayuno 25% / comida 35% / merienda 15% / cena 25% (de kcal Y macros).
+var MENU_SPLIT=[
+  {key:"desayuno",label:"Desayuno",emoji:"🌅",pct:0.25,verdura:false},
+  {key:"comida",  label:"Comida",  emoji:"🍽️",pct:0.35,verdura:true },
+  {key:"merienda",label:"Merienda",emoji:"🍎",pct:0.15,verdura:false},
+  {key:"cena",    label:"Cena",    emoji:"🌙",pct:0.25,verdura:true }
+];
+// Reparte el objetivo del día en las 4 comidas. obj = {cal, prot, carb, grasa} (mismas claves que window._obj).
+function menuReparto(obj){
+  obj=obj||{};
+  var cal=+obj.cal||0, P=+obj.prot||0, C=+obj.carb||0, G=+obj.grasa||0;
+  return MENU_SPLIT.map(function(m){
+    return {key:m.key, label:m.label, emoji:m.emoji, pct:m.pct, verdura:m.verdura,
+      kcal:cal*m.pct, p:P*m.pct, c:C*m.pct, f:G*m.pct};
+  });
+}
+// Clasifica un alimento (valores por 100 g) en su ROL de menú a partir de qué macro domina sus kcal.
+// 'prot' = fuente de proteína magra · 'carb' = fuente de carbohidrato · 'grasa' = fuente de grasa ·
+// 'verdura' = verdura/hortaliza (poca densidad, volumen) · 'otro' = ni fu ni fa (no se usa para armar).
+function menuClasificar(food){
+  if(!food) return "otro";
+  var kcal=+food.kcal||0, p=+food.p||0, c=+food.c||0, f=+food.f||0;
+  if(kcal<=0) return "otro";
+  var kp=p*4, kc=c*4, kf=f*9;                                  // kcal que aporta cada macro
+  if(kcal<60 && f<3 && p<5 && c<12) return "verdura";          // baja densidad y sin proteína/grasa reseñable
+  if(p>=10 && kp>=kc && kp>=kf*0.8)  return "prot";            // la proteína manda (magra: no la eclipsa la grasa)
+  if(f>=15 && kf>=0.45*kcal)         return "grasa";           // la grasa manda
+  if(c>=15 && kc>=kp && kc>=kf)      return "carb";            // el carbohidrato manda
+  return "otro";
+}
+// Conjunto de nombres favoritos (en minúsculas). Tolera lista de strings o de objetos {n,...}.
+function menuFavSet(favoritos){
+  var s={};
+  (favoritos||[]).forEach(function(f){ var n=(typeof f==="string"?f:(f&&f.n)||"").toLowerCase(); if(n) s[n]=1; });
+  return s;
+}
+// Parte la base de alimentos en pools por rol UNA vez. Excluye bebidas (u:"ml") — el menú es de platos.
+function menuCandidatos(foods){
+  var cat={prot:[],carb:[],grasa:[],verdura:[]};
+  (foods||[]).forEach(function(f){
+    if(!f || !(+f.kcal>0) || f.u==="ml") return;
+    var r=menuClasificar(f); if(cat[r]) cat[r].push(f);
+  });
+  return cat;
+}
+// Ordena candidatos: FAVORITOS primero, luego alfabético (estable y determinista).
+function menuOrdenar(cands, favSet){
+  favSet=favSet||{};
+  return (cands||[]).slice().sort(function(a,b){
+    var fa=favSet[(a.n||"").toLowerCase()]?0:1, fb=favSet[(b.n||"").toLowerCase()]?0:1;
+    if(fa!==fb) return fa-fb;
+    return a.n<b.n?-1:a.n>b.n?1:0;
+  });
+}
+// Redondeo de ración a múltiplos de 5 g, con topes sensatos (nada de "137,4 g de pollo").
+function menuRedondear(g){ g=Math.round(g/5)*5; if(g<5) g=5; if(g>500) g=500; return g; }
+// PORCIONADO GREEDY. La PROTEÍNA es la protagonista (la anclamos primero y la enseñamos la primera),
+// pero para cubrirla SIN pasarnos de kcal la sizamos al FINAL sobre el hueco de proteína que dejan los
+// demás alimentos: si sumáramos la ración entera de proteína encima de un carbo/grasa ya proteicos
+// (avena, almendras) el total se dispararía > +15%. Orden de cálculo: verdura de volumen (fija) →
+// carbo cubre los carbos que faltan → grasa cubre la grasa que falta → proteína cubre la proteína que
+// falta para llegar al objetivo (con un suelo del 35% para que SIEMPRE haya una fuente clara). Así cada
+// macro llega a su objetivo y el total cae dentro de ±10-15%. picks = {prot,carb,grasa,verdura}.
+function menuPorcionar(meal, picks){
+  meal=meal||{}; picks=picks||{};
+  var tot={kcal:0,p:0,c:0,f:0};
+  function mk(food,g){
+    if(!food || !(+g>0)) return null;
+    g=menuRedondear(g); var k=g/100;
+    var kc=(+food.kcal||0)*k, pp=(+food.p||0)*k, cc=(+food.c||0)*k, ff=(+food.f||0)*k;
+    tot.kcal+=kc; tot.p+=pp; tot.c+=cc; tot.f+=ff;
+    return {alimento:food.n, gramos:g, u:food.u==="ml"?"ml":"g"};
+  }
+  // 1 · VERDURA de volumen (solo comida/cena): ración fija de 150 g (poco kcal, mucho plato)
+  var vItem = picks.verdura ? mk(picks.verdura, 150) : null;
+  // 2 · CARBO — cubre los carbos que faltan tras la verdura
+  var cItem = null;
+  if(picks.carb && +picks.carb.c>0){ var needC=(+meal.c||0)-tot.c; if(needC>0) cItem=mk(picks.carb, needC/(picks.carb.c/100)); }
+  // 3 · GRASA — cubre la grasa que falta tras verdura+carbo
+  var fItem = null;
+  if(picks.grasa && +picks.grasa.f>0){ var needF=(+meal.f||0)-tot.f; if(needF>0) fItem=mk(picks.grasa, needF/(picks.grasa.f/100)); }
+  // 4 · PROTEÍNA — cubre la proteína que FALTA para el objetivo de la comida (suelo del 35%)
+  var pItem = null;
+  if(picks.prot && +picks.prot.p>0){
+    var objP=(+meal.p||0), needP=objP-tot.p; if(needP<objP*0.35) needP=objP*0.35;
+    if(needP>0) pItem=mk(picks.prot, needP/(picks.prot.p/100));
+  }
+  // Presentación: la proteína la PRIMERA (es la protagonista), luego carbo, verdura y grasa.
+  var items=[pItem,cItem,vItem,fItem].filter(function(it){ return it; });
+  return {items:items, total:{kcal:Math.round(tot.kcal), p:Math.round(tot.p), c:Math.round(tot.c), f:Math.round(tot.f)}};
+}
+// Arma UN ejemplo de comida para la variante v (0,1,2…): rota por cada pool para dar variedad.
+function menuComida(meal, cat, favSet, variante){
+  var v=variante||0;
+  var prots=menuOrdenar(cat.prot, favSet), carbs=menuOrdenar(cat.carb, favSet),
+      gras =menuOrdenar(cat.grasa,favSet), verd =menuOrdenar(cat.verdura,favSet);
+  var picks={
+    prot:    prots.length ? prots[v%prots.length] : null,
+    carb:    carbs.length ? carbs[v%carbs.length] : null,
+    grasa:   gras.length  ? gras[v%gras.length]   : null,
+    verdura: (meal.verdura && verd.length) ? verd[v%verd.length] : null
+  };
+  return menuPorcionar(meal, picks);
+}
+// GENERA EL MENÚ COMPLETO del día: objetivo → 4 comidas, cada una con 2-3 ejemplos {alimento,gramos}
+// y el total kcal/macros de la comida. Determinista. Devuelve null si no hay objetivo válido.
+function generarMenu(obj, foods, favoritos){
+  if(!obj || !(+obj.cal>0)) return null;
+  var reparto=menuReparto(obj), cat=menuCandidatos(foods), favSet=menuFavSet(favoritos);
+  return {
+    objetivo:{cal:Math.round(+obj.cal||0), prot:Math.round(+obj.prot||0), carb:Math.round(+obj.carb||0), grasa:Math.round(+obj.grasa||0)},
+    comidas: reparto.map(function(m){
+      var ejemplos=[], visto={};
+      for(var v=0; v<8 && ejemplos.length<3; v++){
+        var e=menuComida(m, cat, favSet, v);
+        if(!e.items.length) continue;
+        var sig=e.items.map(function(it){ return it.alimento+":"+it.gramos; }).join("|");
+        if(visto[sig]) continue; visto[sig]=1; ejemplos.push(e);
+      }
+      return {key:m.key, label:m.label, emoji:m.emoji, pct:m.pct,
+        objetivo:{kcal:Math.round(m.kcal), p:Math.round(m.p), c:Math.round(m.c), f:Math.round(m.f)},
+        ejemplos:ejemplos};
+    })
+  };
+}
+// [MENU-PURE-FIN]
+
 function renderComida(){
   var fecha=($("com_fecha")&&$("com_fecha").value)||hoyLocal();
   var full=get(LS_COMIDA,[]), arr=full.filter(function(x){ return x.f===fecha; });
@@ -1781,6 +2035,59 @@ function renderComida(){
     return "<div class='kv'><span>"+esc(x.n)+(x.g>0?" · "+x.g+" "+comUnidad(x):"")+"</span><span style='font-variant-numeric:tabular-nums'>"+x.kcal+" kcal · P"+Math.round(x.p)+" C"+Math.round(x.c)+" G"+Math.round(x.gr)+" <button class='sec' type='button' style='width:auto;margin:0 0 0 6px;padding:4px 9px' onclick='comDel("+(x.id?JSON.stringify(x.id):idx)+")'>✕</button></span></div>";
   }).join("");
   try{ renderMeals(); }catch(e){}   // F4 · el botón "guardar día" y "Mis comidas" dependen del día mostrado
+}
+
+// ======= 🍽️ GENERADOR DE MENÚ · CAPA UI (DOM/storage — la lógica pura vive en [MENU-PURE-*]) =======
+// Botón "🍽️ Generar menú de hoy" → lee el objetivo YA calculado (window._obj), la base de alimentos
+// (tus propios + la curada) y tus favoritos, y pinta el menú por comidas con gramos. No recalcula nada.
+function menuGenerarHoy(){
+  var box=$("menu_box"); if(!box) return;
+  var obj=window._obj||null;
+  if(!obj || !(+obj.cal>0)){
+    box.innerHTML="<div class='card' style='padding:12px;margin-top:4px'><div class='eyebrow-lbl'>🍽️ Menú del día</div>"
+      +"<p class='hint' style='margin:6px 0 0'>Primero calcula tu objetivo en <b>Plan</b> (rellena tu perfil). El menú se arma a partir de tus kcal y macros del día.</p></div>";
+    return;
+  }
+  var foods=(typeof apComoFoods==="function"?apComoFoods():[]).concat(typeof FOODS!=="undefined"?FOODS:[]);
+  var menu=generarMenu(obj, foods, get(LS_FAV,[]));
+  window._menuActual=menu;
+  menuRender(menu);
+}
+// Pinta el menú generado. Cada comida enseña su objetivo y 2-3 ejemplos con gramos + total y un
+// botón para volcar ese ejemplo al diario (reutiliza comQuick, la misma alta que el buscador).
+function menuRender(menu){
+  var box=$("menu_box"); if(!box) return;
+  if(!menu || !menu.comidas){ box.innerHTML=""; return; }
+  var h="<div class='card' style='padding:12px;margin-top:4px'>"
+    +"<div class='eyebrow-lbl'>🍽️ Menú de hoy · "+menu.objetivo.cal+" kcal · P"+menu.objetivo.prot+" C"+menu.objetivo.carb+" G"+menu.objetivo.grasa+"</div>"
+    +"<p class='hint' style='margin:4px 0 10px'>Repartido en 4 comidas a partir de tu objetivo del Plan. Sin IA: solo la base de alimentos + el reparto. Toca <b>“añadir al diario”</b> si te encaja.</p>";
+  menu.comidas.forEach(function(m, ci){
+    h+="<div style='margin-top:10px;padding-top:10px;border-top:1px solid var(--line)'>"
+      +"<div class='kv' style='border-bottom:none'><span><b>"+m.emoji+" "+esc(m.label)+"</b> <span style='color:var(--mute)'>· "+Math.round(m.pct*100)+"%</span></span>"
+      +"<span style='color:var(--mute);font-variant-numeric:tabular-nums'>objetivo ~"+m.objetivo.kcal+" kcal · P"+m.objetivo.p+" C"+m.objetivo.c+" G"+m.objetivo.f+"</span></div>";
+    if(!m.ejemplos.length){
+      h+="<p class='hint' style='margin:6px 0 0'>No hay alimentos suficientes en la base para armar esta comida.</p>";
+    } else {
+      m.ejemplos.forEach(function(e, ei){
+        var lista=e.items.map(function(it){ return esc(it.alimento)+" "+it.gramos+it.u; }).join(", ");
+        h+="<div style='display:flex;align-items:center;gap:8px;margin-top:6px'>"
+          +"<div style='flex:1'><span style='color:var(--soft)'>"+lista+"</span> <span style='color:var(--mute);font-variant-numeric:tabular-nums'>≈ "+e.total.kcal+" kcal · P"+e.total.p+" C"+e.total.c+" G"+e.total.f+"</span></div>"
+          +"<button class='sec' type='button' style='width:auto;padding:4px 10px;margin:0;flex:0 0 auto' onclick='menuAddEjemplo("+ci+","+ei+")' title='Añadir estos alimentos al diario'>+ diario</button>"
+          +"</div>";
+      });
+    }
+    h+="</div>";
+  });
+  h+="<p class='hint' style='margin-top:10px'>Los gramos son orientativos (redondeados a 5 g). El total de cada comida cae dentro de ±10-15% del objetivo: fija la proteína primero y ajusta el resto.</p></div>";
+  box.innerHTML=h;
+}
+// Vuelca un ejemplo concreto al diario del día mostrado (usa comQuick → misma alta que el buscador).
+function menuAddEjemplo(ci, ei){
+  var menu=window._menuActual; if(!menu) return;
+  var com=menu.comidas[ci]; if(!com) return;
+  var ej=com.ejemplos[ei]; if(!ej) return;
+  ej.items.forEach(function(it){ try{ comQuick(it.alimento, it.gramos); }catch(e){} });
+  try{ toast("🍽️ "+com.label+" añadida al diario"); }catch(e){}
 }
 
 // ======= F3 · 📷 FOTO-COMIDA v2 — MOTOR DE ECUACIONES, NO IA (spec dictada 2026-07-06) =======
@@ -2925,7 +3232,7 @@ function resetTodo(){ if(!confirm("⚠️ Esto borra TODO: perfil, pesos, entren
 // Reemplazo total con confirmación. Reusa get/set, hoyLocal, toast, validar, render. NO toca motor ni gate.
 function exportarJSON(){ try{ set("jvf_last_export",hoyLocal()); }catch(e){}
   try{
-    var data={ app:"jvf", schema:1, app_version:"0.13.9", exportadoEl:new Date().toISOString(),
+    var data={ app:"jvf", schema:1, app_version:"0.14.0", exportadoEl:new Date().toISOString(),
       perfil:get(LS_P,null), pesos:get(LS_W,[]), entrenos:get(LS_E,[]), notas_ej:get("jvf_notas_ej",{}), comida:get("jvf_comida",[]), agua:get("jvf_agua",{}), suples_cfg:get("jvf_suples_cfg",null), suples_log:get("jvf_suples_log",{}),
       rutinas:get("jvf_rutinas",[]), meals:get("jvf_meals",[]), ent_start:get("jvf_ent_start",null),   // v0.10 · backup completo
       alimentos_propios:get("jvf_alimentos_propios",[]), barcode_cache:get("jvf_barcode_cache",{}),   // I5/I6 · también viajan en el backup
@@ -7316,6 +7623,46 @@ function render(){
   renderEntrenos();
   flexInitUI();   // M · capa FLEX: tarjeta "Jarvis nota…", chips de peso y sincronía del tono
   aplicarTab();
+}
+
+// 🎯 UI del PLANIFICADOR DE OBJETIVO. Lee el peso del PERFIL (no lo re-pregunta), llama a la función PURA
+// planificar() y pinta veredicto + probabilidad + déficit + alternativa. INFORMATIVO: no toca calObjetivo.
+function planiCalc(){
+  var out = $("plani_out");
+  var p = get(LS_P);
+  if(!p || !(p.peso_kg > 0)){ out.innerHTML = "<div class='aviso'>Completa tu perfil primero (necesito tu peso).</div>"; return; }
+  var dir = $("plani_dir").value === "ganar" ? "ganar" : "perder";
+  var kg  = parseFloat(String($("plani_kg").value  || "").replace(",", "."));
+  var sem = parseFloat(String($("plani_sem").value || "").replace(",", "."));
+  if(!(kg > 0)){  out.innerHTML = "<div class='aviso'>Escribe cuántos kilos quieres cambiar (un número mayor que 0).</div>"; return; }
+  if(!(sem > 0)){ out.innerHTML = "<div class='aviso'>Escribe en cuántas semanas (un número mayor que 0).</div>"; return; }
+  var cambioKg = (dir === "perder" ? -1 : 1) * kg;
+  var r = planificar(p.peso_kg, cambioKg, sem);
+  if(r.error){ out.innerHTML = "<div class='aviso'>" + esc(r.error) + "</div>"; return; }
+
+  var col = r.veredicto === "REALISTA" ? "var(--jade)" : r.veredicto === "AGRESIVO" ? "var(--ember)" : "#ff6b6b";
+  var ritmoAbs = Math.abs(r.ritmoSemPct).toFixed(2).replace(".", ",");
+  var dirTxt   = dir === "perder" ? "perder" : "ganar";
+  var balLbl   = dir === "perder" ? "Déficit diario" : "Superávit diario";
+  var semTxt   = (Math.round(sem * 10) / 10).toString().replace(".", ",");
+
+  var h = "";
+  h += "<div class='kv' style='border:0;margin-top:8px'><span>Veredicto</span>"
+     + "<span style='color:" + col + ";font-weight:700;letter-spacing:.04em'>" + esc(r.veredicto) + "</span></div>";
+  h += "<div class='eyebrow-lbl'>Probabilidad de lograrlo bien</div>";
+  h += "<div class='big' style='color:" + col + "'>" + r.probabilidad + " <small>%</small></div>";
+  h += "<div style='height:8px;border-radius:6px;background:var(--ink-3);border:1px solid var(--line);overflow:hidden;margin:6px 0 4px'>"
+     + "<i style='display:block;height:100%;width:" + r.probabilidad + "%;background:" + col + "'></i></div>";
+  h += "<div class='kv'><span>Ritmo</span><span>" + ritmoAbs + " %/sem (" + dirTxt + ")</span></div>";
+  h += "<div class='kv'><span>" + balLbl + "</span><span>" + r.deficitDiaKcal + " kcal/día</span></div>";
+  if(r.aviso) h += "<div class='aviso'>" + esc(r.aviso) + "</div>";
+  if(r.alternativaSemanas){
+    h += "<div class='hint' style='color:var(--jade);margin-top:10px'>💡 Para hacerlo bien (ritmo sano), repártelo en <b style='color:var(--soft)'>~"
+       + r.alternativaSemanas + " semanas</b> en vez de " + semTxt + ".</div>";
+  }
+  h += "<p class='hint' style='margin-top:10px'>Comprobación <b style='color:var(--soft)'>informativa</b>: no cambia tus calorías objetivo de arriba. Sobre tu peso actual ("
+     + esc(p.peso_kg) + " kg) y ritmos sanos (Garthe 2011 + master file).</p>";
+  out.innerHTML = h;
 }
 
 try{ $("r_fecha").value=hoyLocal(); }catch(e){}
