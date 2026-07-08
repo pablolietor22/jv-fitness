@@ -433,7 +433,7 @@
 
 <header class="brandbar">
   <div class="logo"><span class="dot"></span>JV <b>Fitness</b></div>
-  <span class="tag">MVP v0.14.1 · motor v0.7</span>
+  <span class="tag">MVP v0.14.2 · motor v0.7</span>
 </header>
 <div class="statuschip"><span class="pulse"></span> cálculo science-based · ajustable · calibración real</div>
 
@@ -698,7 +698,7 @@
     </div>
     <p class="hint" style="margin-top:8px">Bebe antes, durante y después de entrenar: llegar deshidratado resta rendimiento (Savoie 2015). El objetivo es orientativo (~35 ml/kg/día); con calor o mucho entreno, más.</p>
   </div>
-  <div class="row" style="gap:6px;align-items:flex-end"><div style="flex:2"><label>Fecha</label><input id="com_fecha" type="date" onchange="renderComida()"></div><button class="sec" type="button" style="flex:1;width:auto" onclick="comCopiarAyer()">⧉ Copiar ayer</button></div><div id="com_favoritos"></div><div id="com_recientes"></div><div id="com_fav_sug"></div>
+  <div class="row" style="gap:6px;align-items:flex-end"><div style="flex:2"><label>Fecha</label><input id="com_fecha" type="date" onchange="renderComida()"></div><button class="sec" type="button" style="flex:1;width:auto" onclick="comCopiarAyer()">⧉ Copiar ayer</button></div><div id="com_favoritos"></div><div id="com_recientes"></div><div id="com_fav_sug"></div><div id="com_historial"></div>
   <div class="row" style="gap:6px;align-items:flex-end;margin-top:6px">
     <div style="flex:2"><label>Alimento</label><input id="com_nombre" list="com-foods" placeholder="Busca: pollo, arroz, huevo…" oninput="comUnidadSync();favSyncBtn()"></div>
     <div style="flex:1"><label id="com_g_label">Gramos</label><input id="com_gramos" type="number" inputmode="numeric" placeholder="g"></div>
@@ -1422,6 +1422,12 @@ function sugerirFavorito(usos, favoritos){
 // [FAV-PURE-FIN]
 var LS_FAV="jvf_favoritos", LS_USO="jvf_uso_alim";
 var _favSugDismiss={};   // descartes de la sugerencia (solo en memoria; no se persiste a propósito)
+// 🕑 HISTORIAL de alimentos (v0.14.2) — clave propia jvf_hist_alim = [{n,g,u,fecha}]. Se DERIVA del
+// diario en cada renderComida (merge, no reemplaza) → capta TODAS las puertas de entrada (manual,
+// escáner, foto→se ignora por no tener gramos, menú, copiar-ayer) sin tocar cada función y PERSISTE
+// aunque borres el día. Complementa a "recientes" (frecuencia) con un archivo completo + buscador.
+var LS_HIST_ALIM="jvf_hist_alim";
+var _histQuery="";   // último texto del buscador (solo en memoria; para sobrevivir a un renderComida)
 var FOODS=[
   {n:"Pechuga de pollo",kcal:165,p:31,c:0,f:3.6},{n:"Muslo de pollo",kcal:209,p:26,c:0,f:11},
   {n:"Ternera magra",kcal:175,p:26,c:0,f:8},{n:"Lomo de cerdo",kcal:145,p:21,c:0,f:6},
@@ -1701,6 +1707,81 @@ function comRecientes(){
     var g=Object.keys(freq[n].gs).sort(function(a,b){ return freq[n].gs[b]-freq[n].gs[a]; })[0];
     return '<span class="wchip done" onclick="comQuick('+JSON.stringify(n).replace(/"/g,"&quot;")+','+g+')">'+esc(n)+' '+g+freq[n].u+'</span>';
   }).join("")+'</div>':"";
+}
+// ======= 🕑 HISTORIAL DE ALIMENTOS + BUSCADOR (v0.14.2) =======
+// [HIST-PURE-INICIO] — filtro PURO del historial (sin DOM ni storage): dado el array de historial
+// [{n,g,u,fecha}] y un texto, devuelve las coincidencias por nombre (case-insensitive) CONSERVANDO
+// el orden original. Los tests extraen este bloque y lo evalúan tal cual (test-historial.node.js).
+function filtrarHistorial(hist, query){
+  if(!Array.isArray(hist)) return [];
+  var q=(query==null?"":String(query)).trim().toLowerCase();
+  if(!q) return hist.slice();
+  return hist.filter(function(h){
+    return h && typeof h.n==="string" && h.n.toLowerCase().indexOf(q)>=0;
+  });
+}
+// [HIST-PURE-FIN]
+// Deriva/actualiza el historial DESDE el diario. Merge (NO reemplaza): conserva los alimentos de
+// días ya borrados y, para cada alimento visto en el diario, guarda su ÚLTIMO gramaje/unidad/fecha.
+// Dedup por nombre (case-insensitive). Ignora items sin gramos (📷 foto / ⚡ rápido, g=0): no se
+// pueden re-añadir con un gramaje. Orden ESTABLE: los ya conocidos no saltan; los nuevos van al final.
+function histSync(){
+  var full=get(LS_COMIDA,[]); if(!Array.isArray(full)) full=[];
+  var prev=get(LS_HIST_ALIM,[]); if(!Array.isArray(prev)) prev=[];
+  // último uso por nombre en el diario (recuerda la posición para ordenar los nuevos por aparición)
+  var ult={};
+  full.forEach(function(x,i){
+    if(!x || typeof x.n!=="string" || !x.n || !(+x.g>0)) return;
+    ult[x.n.toLowerCase()]={ n:x.n, g:+x.g, u:comUnidad(x), fecha:x.f||"", rank:i };
+  });
+  var out=[], seen={};
+  // 1) arrastra el historial anterior en su orden; si el alimento reaparece en el diario, se refresca
+  prev.forEach(function(h){
+    if(!h || typeof h.n!=="string" || !h.n) return;
+    var key=h.n.toLowerCase(); if(seen[key]) return; seen[key]=1;
+    if(ult[key]) out.push({ n:ult[key].n, g:ult[key].g, u:ult[key].u, fecha:ult[key].fecha });
+    else out.push({ n:h.n, g:(+h.g>0?+h.g:100), u:(h.u==="ml"?"ml":"g"), fecha:h.fecha||"" });
+  });
+  // 2) añade al final los alimentos nuevos del diario (por orden de aparición)
+  Object.keys(ult).sort(function(a,b){ return ult[a].rank-ult[b].rank; }).forEach(function(key){
+    if(seen[key]) return; seen[key]=1;
+    out.push({ n:ult[key].n, g:ult[key].g, u:ult[key].u, fecha:ult[key].fecha });
+  });
+  set(LS_HIST_ALIM,out);
+  return out;
+}
+// Pinta el acordeón "Historial". El SHELL (summary + buscador + lista) se construye una sola vez;
+// las siguientes llamadas solo repintan la lista → el input de búsqueda conserva foco y su texto.
+function renderHistorial(){
+  var host=$("com_historial"); if(!host) return;
+  var hist=histSync();
+  if(!hist.length){ host.innerHTML=""; return; }
+  if(!$("hist_lista")){
+    host.innerHTML="<details class='hist-acc' style='margin-top:10px;border:1px solid var(--line);border-radius:12px;padding:10px 12px'>"
+      +"<summary style='cursor:pointer;color:var(--jade);font-weight:600'>🕑 Historial · <span id='hist_count'></span> alimentos <span style='color:var(--mute);font-weight:400'>· toca para re-añadir</span></summary>"
+      +"<input id='hist_buscar' type='search' autocomplete='off' oninput='histFiltrar()' placeholder='Buscar en tu historial…' style='width:100%;margin:10px 0 0'>"
+      +"<div id='hist_lista'></div>"
+      +"</details>";
+    var ib=$("hist_buscar"); if(ib) ib.value=_histQuery||"";
+  }
+  histFiltrar();
+}
+// Repinta SOLO la lista de chips a partir del texto del buscador (usa el filtro puro). Cada chip
+// re-añade en 1 toque vía comQuick (que resuelve nombre y g/ml exactamente como el alta manual).
+function histFiltrar(){
+  var lista=$("hist_lista"); if(!lista) return;
+  var q=(($("hist_buscar")||{}).value)||""; _histQuery=q;
+  var hist=get(LS_HIST_ALIM,[]);
+  var cnt=$("hist_count"); if(cnt) cnt.textContent=hist.length;
+  var res=filtrarHistorial(hist,q);
+  if(!res.length){
+    lista.innerHTML="<p class='hint' style='margin:8px 0 0'>"+(q?"Nada en tu historial coincide con «"+esc(q)+"»":"Aún no hay alimentos en el historial")+"</p>";
+    return;
+  }
+  lista.innerHTML="<div class='wizchips' style='margin:8px 0 0'>"+res.map(function(h){
+    var nJ=JSON.stringify(h.n).replace(/"/g,"&quot;");
+    return "<span class='wchip done' onclick='comQuick("+nJ+","+h.g+")' title='Añadir "+escAttr(h.n)+"'>🕑 "+esc(h.n)+" "+h.g+(h.u==="ml"?"ml":"g")+"</span>";
+  }).join("")+"</div>";
 }
 // ======= ⭐ FAVORITOS · UI (fila de acceso rápido + toggle en el buscador + sugerencia) =======
 // Resuelve el texto tecleado al nombre canónico de la base (MISMA regla que comAdd).
@@ -2127,6 +2208,7 @@ function renderComida(){
     h+="<div class='kv'><span>Calorías</span><span>"+Math.round(tot.kcal)+" kcal</span></div><div class='kv'><span>P / C / G</span><span>"+Math.round(tot.p)+" / "+Math.round(tot.c)+" / "+Math.round(tot.gr)+" g</span></div>";
   }
   h+="</div>"; $("com_tot").innerHTML=h;
+  try{ renderHistorial(); }catch(e){}   // 🕑 historial + buscador (deriva del diario; abarca todos los días)
   if(!arr.length){ $("com_list").innerHTML="<div class='empty'><div class='ico'>🍽️</div><div class='et'>Sin comidas este día</div><div class='es'>Busca un alimento y los gramos para empezar.</div></div>"; try{ renderMeals(); }catch(e){} return; }
   $("com_list").innerHTML="<div class='eyebrow-lbl'>Lo que llevas</div>"+arr.map(function(x){
     var idx=full.indexOf(x);
@@ -3344,7 +3426,7 @@ document.addEventListener('DOMContentLoaded',function(){
     if(ents.length>20 && _old) setTimeout(function(){ toast("💾 Llevas tiempo sin copia de seguridad — toca Exportar en Ajustes"); }, 3500);
   }catch(e){}
 });
-function resetTodo(){ if(!confirm("⚠️ Esto borra TODO: perfil, pesos, entrenos, rutinas, comidas, alimentos propios, agua, suplementos, lo hablado con el Cerebro y las fotos de progreso. ¿Seguro?")) return; try{ localStorage.removeItem(LS_P); localStorage.removeItem(LS_W); localStorage.removeItem(LS_E); localStorage.removeItem("jvf_notas_ej"); localStorage.removeItem("jvf_comida"); localStorage.removeItem("jvf_agua"); localStorage.removeItem("jvf_agua_log"); localStorage.removeItem("jvf_suples_cfg"); localStorage.removeItem("jvf_suples_log"); localStorage.removeItem("jvf_rutinas"); localStorage.removeItem("jvf_ent_start"); localStorage.removeItem("jvf_meals"); localStorage.removeItem("jvf_alimentos_propios"); localStorage.removeItem("jvf_barcode_cache"); localStorage.removeItem("jvf_foto_ajustes"); localStorage.removeItem("jvf_warmup_stats"); localStorage.removeItem("jvf_plate_barra"); localStorage.removeItem("jvf_rest_seg"); localStorage.removeItem("jvf_cerebro_diario"); localStorage.removeItem("jvf_cerebro_norec"); localStorage.removeItem("jvf_fotos_consent"); localStorage.removeItem("jvf_fotos_meta"); localStorage.removeItem("jvf_flex_cfg"); localStorage.removeItem("jvf_flex_visto"); localStorage.removeItem("jvf_deporte_sesiones"); localStorage.removeItem("jvf_favoritos"); localStorage.removeItem("jvf_uso_alim"); }catch(e){} _mem={};
+function resetTodo(){ if(!confirm("⚠️ Esto borra TODO: perfil, pesos, entrenos, rutinas, comidas, alimentos propios, agua, suplementos, lo hablado con el Cerebro y las fotos de progreso. ¿Seguro?")) return; try{ localStorage.removeItem(LS_P); localStorage.removeItem(LS_W); localStorage.removeItem(LS_E); localStorage.removeItem("jvf_notas_ej"); localStorage.removeItem("jvf_comida"); localStorage.removeItem("jvf_agua"); localStorage.removeItem("jvf_agua_log"); localStorage.removeItem("jvf_suples_cfg"); localStorage.removeItem("jvf_suples_log"); localStorage.removeItem("jvf_rutinas"); localStorage.removeItem("jvf_ent_start"); localStorage.removeItem("jvf_meals"); localStorage.removeItem("jvf_alimentos_propios"); localStorage.removeItem("jvf_barcode_cache"); localStorage.removeItem("jvf_foto_ajustes"); localStorage.removeItem("jvf_warmup_stats"); localStorage.removeItem("jvf_plate_barra"); localStorage.removeItem("jvf_rest_seg"); localStorage.removeItem("jvf_cerebro_diario"); localStorage.removeItem("jvf_cerebro_norec"); localStorage.removeItem("jvf_fotos_consent"); localStorage.removeItem("jvf_fotos_meta"); localStorage.removeItem("jvf_flex_cfg"); localStorage.removeItem("jvf_flex_visto"); localStorage.removeItem("jvf_deporte_sesiones"); localStorage.removeItem("jvf_favoritos"); localStorage.removeItem("jvf_uso_alim"); localStorage.removeItem("jvf_hist_alim"); }catch(e){} _mem={};
   // 📸 v0.13-C · las fotos viven en IndexedDB: se borra la base entera ANTES de recargar (con
   // timeout de seguridad — si el borrado se quedara bloqueado, la app no se cuelga: recarga igual
   // y el intento de borrado sigue en cola del navegador).
@@ -3359,7 +3441,7 @@ function resetTodo(){ if(!confirm("⚠️ Esto borra TODO: perfil, pesos, entren
 // Reemplazo total con confirmación. Reusa get/set, hoyLocal, toast, validar, render. NO toca motor ni gate.
 function exportarJSON(){ try{ set("jvf_last_export",hoyLocal()); }catch(e){}
   try{
-    var data={ app:"jvf", schema:1, app_version:"0.14.1", exportadoEl:new Date().toISOString(),
+    var data={ app:"jvf", schema:1, app_version:"0.14.2", exportadoEl:new Date().toISOString(),
       perfil:get(LS_P,null), pesos:get(LS_W,[]), entrenos:get(LS_E,[]), notas_ej:get("jvf_notas_ej",{}), comida:get("jvf_comida",[]), agua:get("jvf_agua",{}), suples_cfg:get("jvf_suples_cfg",null), suples_log:get("jvf_suples_log",{}),
       rutinas:get("jvf_rutinas",[]), meals:get("jvf_meals",[]), ent_start:get("jvf_ent_start",null),   // v0.10 · backup completo
       alimentos_propios:get("jvf_alimentos_propios",[]), barcode_cache:get("jvf_barcode_cache",{}),   // I5/I6 · también viajan en el backup
@@ -3373,6 +3455,7 @@ function exportarJSON(){ try{ set("jvf_last_export",hoyLocal()); }catch(e){}
       flex_cfg:get("jvf_flex_cfg",null), flex_visto:get("jvf_flex_visto",null),   // M · capa FLEX: tono elegido + descartes del día
       deporte_sesiones:get("jvf_deporte_sesiones",[]),   // 🏀 v0.13.7 · sesiones de deporte estimadas (MET) — viajan en el backup
       favoritos:get("jvf_favoritos",[]), uso_alim:get("jvf_uso_alim",{}),   // ⭐ v0.13.9 · favoritos + contador de uso por alimento
+      hist_alim:get("jvf_hist_alim",[]),   // 🕑 v0.14.2 · historial de alimentos (deriva del diario; viaja en el backup)
       fotos_aviso:"Las fotos de progreso NO van en este JSON: viven solo en el dispositivo (IndexedDB). Exportarlas aparte esta pendiente." };
     var blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
     var url=URL.createObjectURL(blob);
@@ -3426,6 +3509,8 @@ function procesarImport(file){
     // ⭐ v0.13.9 · favoritos + contador de uso (los backups antiguos no los traen: se dejan como están)
     if(Array.isArray(data.favoritos)) set("jvf_favoritos", data.favoritos.filter(function(f){ return f && (typeof f==="string"?f:f.n); }));
     if(data.uso_alim && typeof data.uso_alim==="object" && !Array.isArray(data.uso_alim)) set("jvf_uso_alim", data.uso_alim);
+    // 🕑 v0.14.2 · historial de alimentos (los backups antiguos no lo traen: se deja como está)
+    if(Array.isArray(data.hist_alim)) set("jvf_hist_alim", data.hist_alim.filter(function(h){ return h && h.n; }).map(function(h){ return { n:String(h.n), g:(+h.g>0?+h.g:100), u:(h.u==="ml"?"ml":"g"), fecha:(typeof h.fecha==="string"?h.fecha:"") }; }));
     render();
     toast("✓ Datos importados");
   };
