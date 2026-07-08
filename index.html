@@ -421,7 +421,7 @@
 
 <header class="brandbar">
   <div class="logo"><span class="dot"></span>JV <b>Fitness</b></div>
-  <span class="tag">MVP v0.13.5 · motor v0.7</span>
+  <span class="tag">MVP v0.13.6 · motor v0.7</span>
 </header>
 <div class="statuschip"><span class="pulse"></span> cálculo science-based · ajustable · calibración real</div>
 
@@ -653,6 +653,17 @@
 <!-- COMIDA (Fase 3 — diario de comida con base curada) -->
 <div id="comida" class="card hidden">
   <h2>Diario de comida</h2>
+
+  <div class="card" style="margin-top:10px;padding:12px" id="agua_card">
+    <div class="eyebrow-lbl">💧 Agua de hoy</div>
+    <div id="agua_resumen"></div>
+    <div class="row" style="gap:6px;margin-top:8px">
+      <button class="sec" type="button" style="flex:1;width:auto" onclick="aguaAdd(250)">+ Vaso 250</button>
+      <button class="sec" type="button" style="flex:1;width:auto" onclick="aguaAdd(500)">+ Botella 500</button>
+      <button class="sec" type="button" style="flex:1;width:auto" onclick="aguaAdd(750)">+ Grande 750</button>
+    </div>
+    <p class="hint" style="margin-top:8px">Bebe antes, durante y después de entrenar: llegar deshidratado resta rendimiento (Savoie 2015). El objetivo es orientativo (~35 ml/kg/día); con calor o mucho entreno, más.</p>
+  </div>
   <div class="row" style="gap:6px;align-items:flex-end"><div style="flex:2"><label>Fecha</label><input id="com_fecha" type="date" onchange="renderComida()"></div><button class="sec" type="button" style="flex:1;width:auto" onclick="comCopiarAyer()">⧉ Copiar ayer</button></div><div id="com_recientes"></div>
   <div class="row" style="gap:6px;align-items:flex-end;margin-top:6px">
     <div style="flex:2"><label>Alimento</label><input id="com_nombre" list="com-foods" placeholder="Busca: pollo, arroz, huevo…" oninput="comUnidadSync()"></div>
@@ -696,16 +707,6 @@
   <div id="meals_box" style="margin-top:12px"></div>
   <p class="hint">Base de alimentos curada (valores por 100 g). El botón <b style="color:var(--soft)">📷 Foto (beta)</b> te da un rango honesto de calorías con 4 preguntas; el motor de visión real llegará después. Suma tus comidas y compáralas con tu objetivo del Plan.<br>Datos de platos españoles: <a href="https://www.bedca.net" target="_blank" rel="noopener" style="color:var(--jade)">BEDCA/AESAN</a> (base oficial española).</p>
 
-  <div class="card" style="margin-top:14px;padding:12px" id="agua_card">
-    <div class="eyebrow-lbl">💧 Agua de hoy</div>
-    <div id="agua_resumen"></div>
-    <div class="row" style="gap:6px;margin-top:8px">
-      <button class="sec" type="button" style="flex:1;width:auto" onclick="aguaAdd(250)">+ Vaso 250</button>
-      <button class="sec" type="button" style="flex:1;width:auto" onclick="aguaAdd(500)">+ Botella 500</button>
-      <button class="sec" type="button" style="flex:1;width:auto" onclick="aguaAdd(750)">+ Grande 750</button>
-    </div>
-    <p class="hint" style="margin-top:8px">Bebe antes, durante y después de entrenar: llegar deshidratado resta rendimiento (Savoie 2015). El objetivo es orientativo (~35 ml/kg/día); con calor o mucho entreno, más.</p>
-  </div>
 
   <div class="card" style="margin-top:10px;padding:12px" id="suples_card">
     <div class="eyebrow-lbl">💊 Suplementos · seguimiento diario</div>
@@ -2738,7 +2739,7 @@ function resetTodo(){ if(!confirm("⚠️ Esto borra TODO: perfil, pesos, entren
 // Reemplazo total con confirmación. Reusa get/set, hoyLocal, toast, validar, render. NO toca motor ni gate.
 function exportarJSON(){ try{ set("jvf_last_export",hoyLocal()); }catch(e){}
   try{
-    var data={ app:"jvf", schema:1, app_version:"0.13.5", exportadoEl:new Date().toISOString(),
+    var data={ app:"jvf", schema:1, app_version:"0.13.6", exportadoEl:new Date().toISOString(),
       perfil:get(LS_P,null), pesos:get(LS_W,[]), entrenos:get(LS_E,[]), notas_ej:get("jvf_notas_ej",{}), comida:get("jvf_comida",[]), agua:get("jvf_agua",{}), suples_cfg:get("jvf_suples_cfg",null), suples_log:get("jvf_suples_log",{}),
       rutinas:get("jvf_rutinas",[]), meals:get("jvf_meals",[]), ent_start:get("jvf_ent_start",null),   // v0.10 · backup completo
       alimentos_propios:get("jvf_alimentos_propios",[]), barcode_cache:get("jvf_barcode_cache",{}),   // I5/I6 · también viajan en el backup
@@ -4687,7 +4688,7 @@ function renderEntForm(){
       +'<button class="sec" type="button" style="width:auto;margin:0;padding:8px 11px" onclick="entDelEjercicio('+i+')">🗑</button>'
       +'</div>'+ultHtml+metaHtml+sets
       +'<div class="hint" style="margin:6px 0 0;font-size:.68rem">RIR: <b style="color:var(--soft)">0 = al límite</b> (ninguna completa más) · <b style="color:var(--soft)">fallo</b> = intentas otra y no sale · negativo (−1, −2) = más allá del fallo (parciales/ayuda)</div>'
-      +'<input class="ent-nota" placeholder="Nota para este ejercicio (se guarda)" value="'+nota+'" oninput="guardarNotaEjercicio(this,'+i+')" style="margin-top:8px;font-size:.85rem">'
+      +'<input class="ent-nota" placeholder="📝 Nota: RIR, técnica, sensaciones… (se guarda y vuelve la próxima sesión)" value="'+nota+'" oninput="guardarNotaEjercicio(this,'+i+')" style="margin-top:8px">'
       // D v0.12 · descanso PROPIO del ejercicio en segundos (opcional): el ⏱ lo usa; vacío = global
       +'<div class="row" style="margin-top:8px;gap:6px"><button class="sec" type="button" style="flex:2" onclick="entAddSerie('+i+')">+ Serie</button>'
       +'<input class="ent-desc" type="number" inputmode="numeric" min="10" max="900" placeholder="seg" value="'+escAttr(ej.desc==null?'':ej.desc)+'" title="Descanso de ESTE ejercicio en segundos (lo usa el ⏱; vacío = el global)" style="flex:0 0 64px;width:64px;margin:0">'
