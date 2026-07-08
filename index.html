@@ -421,7 +421,7 @@
 
 <header class="brandbar">
   <div class="logo"><span class="dot"></span>JV <b>Fitness</b></div>
-  <span class="tag">MVP v0.13.6 · motor v0.7</span>
+  <span class="tag">MVP v0.13.7 · motor v0.7</span>
 </header>
 <div class="statuschip"><span class="pulse"></span> cálculo science-based · ajustable · calibración real</div>
 
@@ -770,6 +770,34 @@
     <button class="sec" type="button" style="margin-top:8px" onclick="rutEditorAbrir(null)">➕ Nueva rutina</button>
     <!-- v0.12.2 · catálogo recomendado (antes CTA encima del form; lo rellena entCtaRutina()) -->
     <div id="ent_recomendadas"></div>
+    <!-- 🏀 v0.13.7 · Estimador de sesión de deporte (MET · Compendium Ainsworth). COMPLEMENTARIO y
+         standalone: NO toca el motor ni el factor por DÍAS (deporte_extra). Solo estima + registra + muestra. -->
+    <div class="eyebrow-lbl" style="margin-top:18px">🏀 Sesión de deporte</div>
+    <button class="sec" type="button" style="margin-top:8px" onclick="depSesToggle()">🏀 Registrar sesión de deporte</button>
+    <div id="deps_form" class="hidden" style="margin-top:10px">
+      <label for="deps_dep">Deporte</label>
+      <select id="deps_dep" onchange="depSesEstimar()"></select>
+      <div class="row" style="margin-top:2px">
+        <div>
+          <label for="deps_min">Tiempo efectivo (min)</label>
+          <input id="deps_min" type="number" inputmode="numeric" min="1" step="1" placeholder="ej. 60" oninput="depSesEstimar()">
+        </div>
+        <div>
+          <label for="deps_int">Intensidad</label>
+          <select id="deps_int" onchange="depSesEstimar()">
+            <option value="suave">Suave (×0.8)</option>
+            <option value="moderado" selected>Moderado (×1.0)</option>
+            <option value="intenso">Intenso (×1.2)</option>
+          </select>
+        </div>
+      </div>
+      <label for="deps_peso">Tu peso (kg)</label>
+      <input id="deps_peso" type="number" inputmode="decimal" min="1" step="0.1" oninput="depSesEstimar()">
+      <div id="deps_est" style="margin-top:12px"></div>
+      <button type="button" style="margin-top:12px" onclick="depSesGuardar()">🏀 Registrar sesión</button>
+      <p class="hint" style="margin-top:8px">Estimación orientativa (MET × peso × horas). No cambia tu objetivo de calorías: tu <b style="color:var(--soft)">peso semanal (Capa 2)</b> es el corrector real del gasto.</p>
+    </div>
+    <div id="deps_hist" style="margin-top:10px"></div>
     <div class="eyebrow-lbl" style="margin-top:18px">📖 Historial</div>
     <div id="ent_resumen" class="hidden" style="margin-top:10px"></div>
     <div id="ent_hist" style="margin-top:10px"></div>
@@ -2443,7 +2471,8 @@ function bcConfirmar(prod){
   // v0.13 · L2: honestidad "está pero incompleto" — el producto SÍ existe en la base, lo que
   // faltan son datos (ficha colaborativa a medias). Se dice tal cual y se ofrece el alta manual
   // PREFIJADA con el nombre, en vez del genérico "no encontrado" o de dejarle pelearse a ciegas.
-  if(falta) h+="<div class='aviso' style='margin-top:8px'>⚠️ El producto SÍ está en la base, pero su ficha está incompleta: faltan kcal o proteína. Cópialas de la etiqueta aquí arriba, o guárdalo como alimento propio (ya te lo dejo con el nombre puesto):</div>"
+  if(falta) h+="<div class='aviso' style='margin-top:8px'>⚠️ El producto SÍ está en la base, pero su ficha está incompleta: faltan kcal o proteína. ¿Es agua o una bebida 0 kcal? Ponlo a cero de un toque. Si no, cópialas de la etiqueta aquí arriba, o guárdalo como alimento propio (ya te lo dejo con el nombre puesto):</div>"
+    +"<button class='sec' type='button' onclick='bcEsAgua()'>💧 Es agua / 0 kcal</button>"
     +"<button class='sec' type='button' onclick='bcCrearPropioPrefijado()'>🍽 Crear alimento propio con este nombre</button>";
   // Cantidad en LA UNIDAD del producto + toggle manual g↔ml (punto 2 de la spec). El input conserva el
   // id histórico bc_gramos aunque ahora guarda "cantidad en _bcUnidadIn" (renombrarlo rompería hábitos).
@@ -2458,6 +2487,13 @@ function bcConfirmar(prod){
   res.innerHTML=h; res.classList.remove("hidden");
   bcPintarChipsUnidad();
   bcEstado("");
+}
+// Agua/bebida 0 kcal: relleno de un toque para el caso "ficha incompleta" de aguas y bebidas sin
+// valores (Aquabona y cía). SOLO escribe 0 en los 4 inputs existentes (kcal/P/C/G); no toca ninguna
+// cuenta — el usuario sigue validando y bcAddDiario recalcula igual que siempre.
+function bcEsAgua(){
+  ["bc_kcal","bc_p","bc_c","bc_g"].forEach(function(id){ var el=$(id); if(el) el.value="0"; });
+  toast("Puesto a 0 kcal · revisa y añade");
 }
 // Chips g/ml de la cantidad: marca el activo (borde/verde) y actualiza la etiqueta del label.
 function bcPintarChipsUnidad(){
@@ -2724,7 +2760,7 @@ document.addEventListener('DOMContentLoaded',function(){
     if(ents.length>20 && _old) setTimeout(function(){ toast("💾 Llevas tiempo sin copia de seguridad — toca Exportar en Ajustes"); }, 3500);
   }catch(e){}
 });
-function resetTodo(){ if(!confirm("⚠️ Esto borra TODO: perfil, pesos, entrenos, rutinas, comidas, alimentos propios, agua, suplementos, lo hablado con el Cerebro y las fotos de progreso. ¿Seguro?")) return; try{ localStorage.removeItem(LS_P); localStorage.removeItem(LS_W); localStorage.removeItem(LS_E); localStorage.removeItem("jvf_notas_ej"); localStorage.removeItem("jvf_comida"); localStorage.removeItem("jvf_agua"); localStorage.removeItem("jvf_suples_cfg"); localStorage.removeItem("jvf_suples_log"); localStorage.removeItem("jvf_rutinas"); localStorage.removeItem("jvf_ent_start"); localStorage.removeItem("jvf_meals"); localStorage.removeItem("jvf_alimentos_propios"); localStorage.removeItem("jvf_barcode_cache"); localStorage.removeItem("jvf_foto_ajustes"); localStorage.removeItem("jvf_warmup_stats"); localStorage.removeItem("jvf_plate_barra"); localStorage.removeItem("jvf_rest_seg"); localStorage.removeItem("jvf_cerebro_diario"); localStorage.removeItem("jvf_cerebro_norec"); localStorage.removeItem("jvf_fotos_consent"); localStorage.removeItem("jvf_fotos_meta"); localStorage.removeItem("jvf_flex_cfg"); localStorage.removeItem("jvf_flex_visto"); }catch(e){} _mem={};
+function resetTodo(){ if(!confirm("⚠️ Esto borra TODO: perfil, pesos, entrenos, rutinas, comidas, alimentos propios, agua, suplementos, lo hablado con el Cerebro y las fotos de progreso. ¿Seguro?")) return; try{ localStorage.removeItem(LS_P); localStorage.removeItem(LS_W); localStorage.removeItem(LS_E); localStorage.removeItem("jvf_notas_ej"); localStorage.removeItem("jvf_comida"); localStorage.removeItem("jvf_agua"); localStorage.removeItem("jvf_suples_cfg"); localStorage.removeItem("jvf_suples_log"); localStorage.removeItem("jvf_rutinas"); localStorage.removeItem("jvf_ent_start"); localStorage.removeItem("jvf_meals"); localStorage.removeItem("jvf_alimentos_propios"); localStorage.removeItem("jvf_barcode_cache"); localStorage.removeItem("jvf_foto_ajustes"); localStorage.removeItem("jvf_warmup_stats"); localStorage.removeItem("jvf_plate_barra"); localStorage.removeItem("jvf_rest_seg"); localStorage.removeItem("jvf_cerebro_diario"); localStorage.removeItem("jvf_cerebro_norec"); localStorage.removeItem("jvf_fotos_consent"); localStorage.removeItem("jvf_fotos_meta"); localStorage.removeItem("jvf_flex_cfg"); localStorage.removeItem("jvf_flex_visto"); localStorage.removeItem("jvf_deporte_sesiones"); }catch(e){} _mem={};
   // 📸 v0.13-C · las fotos viven en IndexedDB: se borra la base entera ANTES de recargar (con
   // timeout de seguridad — si el borrado se quedara bloqueado, la app no se cuelga: recarga igual
   // y el intento de borrado sigue en cola del navegador).
@@ -2739,7 +2775,7 @@ function resetTodo(){ if(!confirm("⚠️ Esto borra TODO: perfil, pesos, entren
 // Reemplazo total con confirmación. Reusa get/set, hoyLocal, toast, validar, render. NO toca motor ni gate.
 function exportarJSON(){ try{ set("jvf_last_export",hoyLocal()); }catch(e){}
   try{
-    var data={ app:"jvf", schema:1, app_version:"0.13.6", exportadoEl:new Date().toISOString(),
+    var data={ app:"jvf", schema:1, app_version:"0.13.7", exportadoEl:new Date().toISOString(),
       perfil:get(LS_P,null), pesos:get(LS_W,[]), entrenos:get(LS_E,[]), notas_ej:get("jvf_notas_ej",{}), comida:get("jvf_comida",[]), agua:get("jvf_agua",{}), suples_cfg:get("jvf_suples_cfg",null), suples_log:get("jvf_suples_log",{}),
       rutinas:get("jvf_rutinas",[]), meals:get("jvf_meals",[]), ent_start:get("jvf_ent_start",null),   // v0.10 · backup completo
       alimentos_propios:get("jvf_alimentos_propios",[]), barcode_cache:get("jvf_barcode_cache",{}),   // I5/I6 · también viajan en el backup
@@ -2751,6 +2787,7 @@ function exportarJSON(){ try{ set("jvf_last_export",hoyLocal()); }catch(e){}
       // aparte: PENDIENTE (documentado; de momento las fotos no se pueden migrar de dispositivo).
       fotos_meta:get("jvf_fotos_meta",[]),
       flex_cfg:get("jvf_flex_cfg",null), flex_visto:get("jvf_flex_visto",null),   // M · capa FLEX: tono elegido + descartes del día
+      deporte_sesiones:get("jvf_deporte_sesiones",[]),   // 🏀 v0.13.7 · sesiones de deporte estimadas (MET) — viajan en el backup
       fotos_aviso:"Las fotos de progreso NO van en este JSON: viven solo en el dispositivo (IndexedDB). Exportarlas aparte esta pendiente." };
     var blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
     var url=URL.createObjectURL(blob);
@@ -2799,6 +2836,8 @@ function procesarImport(file){
     // M · capa FLEX (los backups antiguos no la traen: se deja como está)
     if(data.flex_cfg && typeof data.flex_cfg==="object") set("jvf_flex_cfg", data.flex_cfg);
     if(data.flex_visto && typeof data.flex_visto==="object") set("jvf_flex_visto", data.flex_visto);
+    // 🏀 v0.13.7 · sesiones de deporte (los backups antiguos no las traen: se dejan como están)
+    if(Array.isArray(data.deporte_sesiones)) set("jvf_deporte_sesiones", data.deporte_sesiones.filter(function(s){ return s && s.f && +s.kcal>=0; }));
     render();
     toast("✓ Datos importados");
   };
@@ -2935,6 +2974,12 @@ var CEREBRO_KB=[
     claves:["poca grasa baja testosterona","grasa y testosterona","bajar grasa baja hormonas","grasa baja pierdo musculo","testosterona por comer poca grasa","dieta baja en grasa hormonas","testosterona","poca grasa baja la testosterona"],
     r:"Comer poca grasa puede bajar algo la testosterona (~10-15%), pero se queda DENTRO del rango normal, y en un hombre natural esa fluctuación NO predice cuánto músculo ganas: manda la tensión mecánica y el receptor local, no la testosterona en sangre. Así que \"poca grasa → menos T → menos músculo\" no se sostiene. Respeta el suelo (~0,5 g/kg) por salud, no por hormonas mágicas. (— Tema 15, Morton 2016 / Jeff Nippard 2025)",
     chips:["¿cuánta grasa mínima?","¿y si tengo la testosterona baja de verdad?","¿subo la grasa entonces?"]
+  },
+  {
+    tronco:"grasa", rama:"grasa-sube-testosterona",
+    claves:["las grasas suben la testosterona","subir grasa sube testosterona","comer mas grasa sube testosterona","mas grasa mas testosterona","grasa para subir testosterona","subir la grasa para la testosterona","la grasa aumenta la testosterona","comer grasa para la testosterona","optimizar testosterona con grasa","aumentar testosterona comiendo grasa"],
+    r:"Al revés del mito: subir la grasa POR ENCIMA del suelo NO te sube la testosterona de forma útil. El efecto grasa dietética → testosterona es DÉBIL (Whittaker 2021, PMID 33741447: dietas bajas en grasa bajan la T ~10-15%, dentro del rango normal) o directamente NULO en el meta-análisis más grande (Soltani 2025, PMID 40387562). Y aunque subiera algo, en un hombre natural esa T extra no se traduce en más músculo. Así que 0,7 g/kg es el MÍNIMO DE SALUD hormonal, NO un mando para \"optimizar\" testosterona: comer más grasa \"para la testo\" solo le quita sitio a carbos y proteína, que sí rinden. (— Tema 15, Whittaker 2021 PMID 33741447 / meta-análisis Soltani 2025 PMID 40387562)",
+    chips:["¿cuánta grasa mínima?","¿poca grasa baja la testosterona?","¿y si tengo la testosterona baja de verdad?"]
   },
 
   // ─────────────── TRONCO: SUEÑO ───────────────
@@ -4665,6 +4710,12 @@ function renderEntForm(){
       else _obj=' · <b style="color:var(--jade)">hoy: sube a '+(Math.round((+_t.peso+2.5)*10)/10)+' kg</b>';
     }
     var ultHtml = ultima ? '<div class="hint" style="margin:4px 0 0">↩ Última vez ('+esc(ultima.f)+'): '+esc(ultima.txt)+_obj+'</div>' : '';
+    // Aviso SUAVE de meseta: si el ejercicio lleva >=4 semanas sin progresar (ver estancamiento(),
+    // PURA). Ámbar, no rojo: es un empujón, no una alarma. Sin datos suficientes → no pinta nada.
+    var _est=null; try{ _est=estancamiento(ej.nombre, get(LS_E,[])); }catch(_e){}
+    var estHtml=(_est&&_est.estancado)
+      ? '<div class="hint" style="margin:4px 0 0;color:#f4c04e">⏸ '+esc(ej.nombre)+' lleva ~'+_est.semanas+' semanas sin progresar (peso, reps ni series) — prueba '+esc(_est.sugerencia)+'</div>'
+      : '';
     // B v0.12 · objetivo de la rutina cargada (reps/RIR/descanso del catálogo); el porqué, en el title.
     var _meta=_entMeta[ej.nombre];
     var metaHtml=_meta?'<div class="hint" style="margin:4px 0 0;color:var(--jade)" title="'+escAttr(_meta.nota)+'">🎯 objetivo: '+esc(_meta.txt)+'</div>':'';
@@ -4686,7 +4737,7 @@ function renderEntForm(){
       +'<button class="sec" type="button" title="Biblioteca" style="width:auto;margin:0;padding:8px 11px" onclick="abrirBiblio(this)">📚</button>'
       +'<button class="sec" type="button" title="¿Qué es el RIR? Toca para saberlo" style="width:auto;margin:0;padding:8px 11px;font-size:.7rem;font-family:var(--mono);letter-spacing:.03em" onclick="rirAbrir()">RIR ⓘ</button>'
       +'<button class="sec" type="button" style="width:auto;margin:0;padding:8px 11px" onclick="entDelEjercicio('+i+')">🗑</button>'
-      +'</div>'+ultHtml+metaHtml+sets
+      +'</div>'+ultHtml+metaHtml+estHtml+sets
       +'<div class="hint" style="margin:6px 0 0;font-size:.68rem">RIR: <b style="color:var(--soft)">0 = al límite</b> (ninguna completa más) · <b style="color:var(--soft)">fallo</b> = intentas otra y no sale · negativo (−1, −2) = más allá del fallo (parciales/ayuda)</div>'
       +'<input class="ent-nota" placeholder="📝 Nota: RIR, técnica, sensaciones… (se guarda y vuelve la próxima sesión)" value="'+nota+'" oninput="guardarNotaEjercicio(this,'+i+')" style="margin-top:8px">'
       // D v0.12 · descanso PROPIO del ejercicio en segundos (opcional): el ⏱ lo usa; vacío = global
@@ -4937,6 +4988,68 @@ function mesetaMsg(ejsNuevos){
   }
   return null;
 }
+// [ESTANCA-PURE-INICIO] — Detector de estancamiento (meseta) por EJERCICIO. Función PURA: los tests
+// de node la extraen y la evalúan TAL CUAL (no toca DOM, ni localStorage, ni el motor de cálculo;
+// solo lee lo ya registrado). Regla: un ejercicio está estancado si lleva >=ESTANCA_SEMANAS semanas
+// SIN batir su mejor marca en NINGUNA dimensión — ni +peso, ni +reps, ni +series, ni +volumen total.
+// Es CONSERVADOR a propósito: con pocos datos o ante la duda, CALLA (no inventa mesetas).
+var ESTANCA_SEMANAS = 4;        // umbral de meseta: 4 semanas cumplidas desde el último récord
+var ESTANCA_MIN_SESIONES = 3;   // sesiones mínimas del ejercicio para poder hablar; si no, silencio
+// "YYYY-MM-DD" -> ms UTC (parse determinista, sin depender de la zona horaria local).
+function _estFecha(f){
+  if(typeof f!=="string") return NaN;
+  var m=/^(\d{4})-(\d{2})-(\d{2})/.exec(f); if(!m) return NaN;
+  return Date.UTC(+m[1], +m[2]-1, +m[3]);
+}
+function estancamiento(ejercicio, historial){
+  var NO={ estancado:false };
+  var nm=(ejercicio==null?'':(''+ejercicio)).trim().toLowerCase();
+  if(!nm || !Array.isArray(historial)) return NO;
+  // 1) una fila por SESIÓN de este ejercicio, con su fecha y sus 4 métricas (mejor peso, mejores
+  //    reps, nº de series y volumen total). Si el ejercicio sale dos veces en una sesión, cuenta la 1ª.
+  var ses=[];
+  for(var i=0;i<historial.length;i++){
+    var w=historial[i]; if(!w) continue;
+    var t=_estFecha(w.f); if(isNaN(t)) continue;
+    var ejs=w.ejercicios||[];
+    for(var x=0;x<ejs.length;x++){
+      var ej=ejs[x]; if(!ej || (''+(ej.nombre||'')).trim().toLowerCase()!==nm) continue;
+      var series=ej.series||[]; if(!series.length) continue;
+      var peso=0, reps=0, vol=0;
+      for(var s=0;s<series.length;s++){
+        var p=+series[s].peso||0, r=+series[s].reps||0;
+        if(p>peso) peso=p; if(r>reps) reps=r; vol+=p*r;
+      }
+      ses.push({ t:t, peso:peso, reps:reps, nser:series.length, vol:vol });
+      break;
+    }
+  }
+  // 2) ¿datos suficientes? Si no, silencio (no se inventa una meseta con dos puntos sueltos).
+  if(ses.length < ESTANCA_MIN_SESIONES) return NO;
+  ses.sort(function(a,b){ return a.t-b.t; });
+  // 3) fecha del ÚLTIMO récord: la sesión más reciente que superó el mejor acumulado en alguna
+  //    dimensión. La 1ª sesión fija la línea base y cuenta como "último progreso" inicial.
+  var maxP=-Infinity, maxR=-Infinity, maxN=-Infinity, maxV=-Infinity, tLast=ses[0].t, EPS=1e-9;
+  for(var k=0;k<ses.length;k++){
+    var mejora = ses[k].peso>maxP+EPS || ses[k].reps>maxR+EPS || ses[k].nser>maxN+EPS || ses[k].vol>maxV+EPS;
+    if(ses[k].peso>maxP) maxP=ses[k].peso;
+    if(ses[k].reps>maxR) maxR=ses[k].reps;
+    if(ses[k].nser>maxN) maxN=ses[k].nser;
+    if(ses[k].vol>maxV) maxV=ses[k].vol;
+    if(mejora) tLast=ses[k].t;
+  }
+  // 4) semanas desde el último récord hasta la sesión más reciente. Exige >=1 sesión DESPUÉS del
+  //    récord: si el récord ES la última sesión, acabas de progresar → no hay meseta.
+  var tNow=ses[ses.length-1].t;
+  var dias=Math.floor((tNow - tLast)/86400000), semanas=Math.floor(dias/7);
+  var sesTrasRecord=0; for(var z=0;z<ses.length;z++){ if(ses[z].t>tLast) sesTrasRecord++; }
+  if(semanas>=ESTANCA_SEMANAS && sesTrasRecord>=1){
+    return { estancado:true, semanas:semanas, dias:dias, sesiones:ses.length,
+             sugerencia:"doble progresión, un deload o varía el ejercicio" };
+  }
+  return NO;
+}
+// [ESTANCA-PURE-FIN]
 function detectarRecord(ejsNuevos, arrPrev){
   var maxPeso={}, maxVol={}, maxReps={};
   (arrPrev||[]).forEach(function(w){ (w.ejercicios||[]).forEach(function(ej){
@@ -5499,7 +5612,113 @@ function entVistaRender(){
   show("ent_v_home", _entVista==="home");
   show("ent_v_registro", _entVista==="registro");
   show("ent_v_editor", _entVista==="editor");
-  if(_entVista==="home"){ try{ renderMisRutinas(); entCtaRutina(); entHomeCurso(); hintNovato(); }catch(e){} }
+  if(_entVista==="home"){ try{ renderMisRutinas(); entCtaRutina(); entHomeCurso(); hintNovato(); depSesInit(); depSesRender(); }catch(e){} }
+}
+
+// ======= 🏀 SESIÓN DE DEPORTE (estimador MET · v0.13.7) =======
+// Visión de Pablo: "voy a hacer deporte" → deporte + TIEMPO EFECTIVO (min) + intensidad → estima kcal → registra.
+// COMPLEMENTARIO y standalone. NO toca el motor (bmr/calObjetivo/macros/deporte_extra/plan) ni el objetivo de
+// calorías: eso es follow-up de Pablo por el doble conteo. Aquí solo: estimar + registrar + mostrar historial.
+// La fórmula pura vive en el bloque [DEPORTE-SESION-PURE-*] (lo extraen los tests de node); esto es la capa impura
+// (DOM + storage) que la envuelve. LS nueva: jvf_deporte_sesiones (viaja en export/import; se borra en reset).
+var LS_DEP_SES="jvf_deporte_sesiones";   // [{id,f,dep,depNombre,emoji,min,intensidad,met,metAjustado,pesoKg,kcal,ts}]
+
+// [DEPORTE-SESION-PURE-INICIO] — estimador de sesión de deporte. MET del Compendium of Physical Activities
+// (Ainsworth). kcal = MET × peso_kg × horas_efectivas; la intensidad ajusta el MET (suave ×0.8 · moderado ×1.0
+// · intenso ×1.2). Puro y determinista (sin DOM ni storage): los tests extraen este bloque y lo evalúan tal cual.
+var MET_DEPORTES=[
+  {id:"baloncesto",         nombre:"Baloncesto",           emoji:"🏀", met:6.5},
+  {id:"baloncesto_partido", nombre:"Baloncesto (partido)", emoji:"🏀", met:8},
+  {id:"correr",             nombre:"Correr",               emoji:"🏃", met:9},
+  {id:"bici",               nombre:"Bici",                 emoji:"🚴", met:7},
+  {id:"padel",              nombre:"Pádel",                emoji:"🎾", met:7},
+  {id:"futbol",             nombre:"Fútbol",               emoji:"⚽", met:7},
+  {id:"futbol_partido",     nombre:"Fútbol (partido)",     emoji:"⚽", met:10},
+  {id:"natacion",           nombre:"Natación",             emoji:"🏊", met:6},
+  {id:"tenis",              nombre:"Tenis",                emoji:"🎾", met:7}
+];
+var MET_INTENSIDAD={suave:0.8, moderado:1.0, intenso:1.2};
+function metDeporte(id){ for(var i=0;i<MET_DEPORTES.length;i++){ if(MET_DEPORTES[i].id===id) return MET_DEPORTES[i]; } return null; }
+function metIntensidadMult(k){ var v=MET_INTENSIDAD[k]; return v>0?v:1.0; }   // clave desconocida → moderado (nunca rompe)
+// Núcleo puro de la fórmula. Devuelve kcal en float (el UI redondea al mostrar). Entrada basura → 0 (no inventa).
+function metKcal(metBase, minutos, intensidadMult, pesoKg){
+  metBase=+metBase; minutos=+minutos; intensidadMult=+intensidadMult; pesoKg=+pesoKg;
+  if(!(metBase>0)||!(minutos>0)||!(intensidadMult>0)||!(pesoKg>0)) return 0;
+  return metBase*intensidadMult*pesoKg*(minutos/60);
+}
+// API de alto nivel: id de deporte + minutos + clave de intensidad + peso → estimación completa (o null si el id no existe).
+function estimarSesionDeporte(depId, minutos, intensidadKey, pesoKg){
+  var d=metDeporte(depId); if(!d) return null;
+  var mult=metIntensidadMult(intensidadKey);
+  var kcal=metKcal(d.met, minutos, mult, pesoKg);
+  return { dep:d.id, depNombre:d.nombre, emoji:d.emoji, met:d.met, metAjustado:+(d.met*mult).toFixed(3),
+           intensidad:(MET_INTENSIDAD[intensidadKey]>0?intensidadKey:"moderado"),
+           min:Math.max(0,Math.round(+minutos)||0), pesoKg:+pesoKg||0, kcal:Math.round(kcal) };
+}
+// [DEPORTE-SESION-PURE-FIN]
+
+function depSesPeso(){   // peso para la estimación: último pesaje > peso del perfil > 70 (fallback visible)
+  var ws=get(LS_W,[]); if(ws.length && +ws[ws.length-1].w>0) return +ws[ws.length-1].w;
+  var p=get(LS_P,null); if(p && +p.peso_kg>0) return +p.peso_kg;
+  return 70;
+}
+function depSesInit(){
+  var sel=$("deps_dep"); if(sel && !sel.options.length){
+    sel.innerHTML=MET_DEPORTES.map(function(d){ return "<option value='"+d.id+"'>"+d.emoji+" "+esc(d.nombre)+"</option>"; }).join("");
+  }
+  var pin=$("deps_peso"); if(pin && !pin.value) pin.value=depSesPeso();
+  depSesEstimar();
+}
+function depSesToggle(){
+  var f=$("deps_form"); if(!f) return;
+  var abrir=f.classList.contains("hidden");
+  f.classList.toggle("hidden", !abrir);
+  if(abrir) depSesInit();
+}
+function depSesLeer(){
+  var depId=(($("deps_dep")||{}).value)||"";
+  var min=Math.round(+String((($("deps_min")||{}).value)||"").replace(",",".")||0);
+  var intent=(($("deps_int")||{}).value)||"moderado";
+  var peso=+String((($("deps_peso")||{}).value)||"").replace(",",".")||depSesPeso();
+  return {depId:depId, min:min, intent:intent, peso:peso};
+}
+function depSesEstimar(){
+  var el=$("deps_est"); if(!el) return;
+  var q=depSesLeer();
+  var r=estimarSesionDeporte(q.depId, q.min, q.intent, q.peso);
+  if(!r || !(q.min>0)){ el.innerHTML="<span class='hint'>Elige deporte, minutos e intensidad para ver la estimación.</span>"; return; }
+  el.innerHTML="<div class='kv'><span>Estimación</span><span><b style='color:var(--ember);font-size:1.15rem'>~"+r.kcal+" kcal</b></span></div>"
+    +"<p class='hint' style='margin-top:6px'>"+r.emoji+" "+esc(r.depNombre)+" · "+r.min+" min · "+esc(r.intensidad)+" (MET "+r.metAjustado+" × "+r.pesoKg+" kg × "+(r.min/60).toFixed(2)+" h).</p>";
+}
+function depSesGuardar(){
+  var q=depSesLeer();
+  if(!(q.min>0)){ toast("Pon los minutos de la sesión"); return; }
+  var r=estimarSesionDeporte(q.depId, q.min, q.intent, q.peso);
+  if(!r){ toast("Elige un deporte"); return; }
+  var arr=get(LS_DEP_SES,[]);
+  arr.push({ id:Date.now().toString(36)+Math.random().toString(36).slice(2,6), f:hoyLocal(),
+    dep:r.dep, depNombre:r.depNombre, emoji:r.emoji, min:r.min, intensidad:r.intensidad,
+    met:r.met, metAjustado:r.metAjustado, pesoKg:r.pesoKg, kcal:r.kcal, ts:Date.now() });
+  set(LS_DEP_SES,arr);
+  var mn=$("deps_min"); if(mn) mn.value="";
+  depSesEstimar(); depSesRender();
+  toast("🏀 Sesión registrada · ~"+r.kcal+" kcal");
+}
+function depSesDel(id){
+  var arr=get(LS_DEP_SES,[]); var i=arr.map(function(x){return x.id;}).indexOf(id);
+  if(i<0) return; arr.splice(i,1); set(LS_DEP_SES,arr); depSesRender();
+}
+function depSesRender(){
+  var el=$("deps_hist"); if(!el) return;
+  var arr=get(LS_DEP_SES,[]).slice().sort(function(a,b){ return (b.ts||0)-(a.ts||0); });
+  if(!arr.length){ el.innerHTML=""; return; }
+  var rows=arr.slice(0,12).map(function(s){
+    return "<div class='kv'><span>"+esc(s.f)+" · "+(s.emoji||"🏀")+" "+esc(s.depNombre||s.dep)+" · "+(+s.min||0)+" min · "+esc(s.intensidad||"")+"</span>"
+      +"<span><b style='color:var(--ember)'>~"+(+s.kcal||0)+" kcal</b> <button class='sec' type='button' style='width:auto;margin:0 0 0 8px;padding:2px 8px;font-size:.7rem' onclick=\"depSesDel('"+s.id+"')\">✕</button></span></div>";
+  }).join("");
+  var tot=arr.length;
+  el.innerHTML="<div class='eyebrow-lbl' style='margin-top:12px'>Sesiones registradas"+(tot>12?" (últimas 12 de "+tot+")":"")+"</div>"+rows
+    +"<p class='hint' style='margin-top:6px'>Registro orientativo — no cambia tu objetivo de calorías. Tu peso semanal (Capa 2) manda.</p>";
 }
 // ¿Hay un entreno "en curso"? = crono corriendo O datos ya tecleados en el form.
 function entEnCurso(){ return (+get(LS_ENT_START,0)>0) || !entFormVacio(); }
