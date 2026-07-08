@@ -116,6 +116,20 @@
   .wchip.done{color:var(--soft);border-color:var(--ink-2);cursor:pointer}
   .wchip.cur{color:var(--jade);border-color:var(--jade);font-weight:600}
   .wstep .hint{margin-top:6px}
+  /* bienvenida · vídeo + copy motivador antes de la 1ª pregunta del onboarding */
+  .bienve-video{position:relative;width:100%;aspect-ratio:16/9;border-radius:14px;overflow:hidden;
+    background:var(--ink-3);border:1px solid var(--line);margin:2px 0 14px}
+  .bienve-player{width:100%;height:100%;display:block;object-fit:cover;background:#000}
+  .bienve-ph{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    gap:10px;text-align:center;color:var(--mute);
+    background:
+      radial-gradient(420px 200px at 50% 32%, rgba(61,220,151,.10), transparent 70%),
+      repeating-linear-gradient(135deg, var(--ink-2) 0 14px, var(--ink-3) 14px 28px)}
+  .bienve-ph-emoji{font-size:2.4rem;line-height:1;filter:drop-shadow(0 4px 14px rgba(0,0,0,.4))}
+  .bienve-ph-txt{font-family:var(--mono);font-size:.74rem;letter-spacing:.06em;line-height:1.5;color:var(--mute)}
+  .bienve-ph-txt b{color:var(--soft)}
+  .bienve-copy{font-size:.9rem;line-height:1.55;color:var(--soft);margin-top:0}
+  .bienve-review{width:auto;margin-top:12px;font-size:.78rem;padding:8px 13px}
   textarea{width:100%;background:var(--ink-3);border:1px solid var(--line);color:var(--bone);
     border-radius:10px;padding:11px;font-size:1rem;font-family:var(--body);resize:vertical}
   textarea:focus{outline:0;border-color:var(--jade);box-shadow:0 0 0 3px var(--jade-soft)}
@@ -433,7 +447,7 @@
 
 <header class="brandbar">
   <div class="logo"><span class="dot"></span>JV <b>Fitness</b></div>
-  <span class="tag">MVP v0.14.2 · motor v0.7</span>
+  <span class="tag">MVP v0.14.3 · motor v0.7</span>
 </header>
 <div class="statuschip"><span class="pulse"></span> cálculo science-based · ajustable · calibración real</div>
 
@@ -447,6 +461,27 @@
   <button class="tab"        id="tab-comida"   onclick="abrir('comida')">Comida</button>
   <button class="tab"        id="tab-cerebro"  onclick="abrir('cerebro')">🧠 JARVIS</button>
 </nav>
+
+<!-- BIENVENIDA · vídeo de Pablo + copy motivador. Se enseña UNA vez, antes de la 1ª pregunta del
+     onboarding (clave LS jvf_bienvenida_vista). Solo UI — no toca el motor de cálculo. -->
+<div id="bienvenida" class="card hidden">
+  <h2>👋 Bienvenido a JV Fitness</h2>
+  <div class="bienve-video">
+    <!-- ▶▶ SUSTITUIR: aquí va el VÍDEO DE PABLO. Self-host (NO YouTube/externos): copia tu vídeo junto
+         a este HTML (p. ej. app/bienvenida.mp4) y DESCOMENTA la línea <source> de abajo. Al hacerlo el
+         reproductor aparece solo y el póster "próximamente" desaparece (lo detecta bienveVideoInit()). -->
+    <video id="bienve_player" class="bienve-player hidden" controls playsinline preload="none" poster="">
+      <!-- <source src="bienvenida.mp4" type="video/mp4"> -->
+      Tu navegador no puede reproducir este vídeo.
+    </video>
+    <div id="bienve_placeholder" class="bienve-ph">
+      <span class="bienve-ph-emoji">🎬</span>
+      <span class="bienve-ph-txt">Vídeo de bienvenida<br><b>(próximamente)</b></span>
+    </div>
+  </div>
+  <p class="hint bienve-copy">Dedícale <b style="color:var(--soft)">10-15 minutos de verdad</b> a las preguntas que vienen ahora. Cuanto más te esmeres, mejor te conoceré, mejor me adaptaré a ti y mejor conservaré tu contexto. <b style="color:var(--soft)">Esto no es un formulario</b>: es enseñarme quién eres para personalizarte de verdad.</p>
+  <button class="btn-lg" type="button" onclick="bienveEmpezar()" style="width:100%;margin-top:14px">Empezar — vamos a conocernos</button>
+</div>
 
 <!-- WIZARD / ONBOARDING (entrevista de bienvenida — voz de Jarvis) -->
 <div id="onboarding" class="card">
@@ -463,6 +498,7 @@
       <option value="es" selected>Español</option>
       <option value="en" disabled>English (próximamente)</option>
     </select>
+    <button class="sec bienve-review" type="button" onclick="verBienvenida()">▶ Volver a ver la bienvenida</button>
   </div>
 
   <!-- 1 · Objetivo -->
@@ -3441,7 +3477,7 @@ function resetTodo(){ if(!confirm("⚠️ Esto borra TODO: perfil, pesos, entren
 // Reemplazo total con confirmación. Reusa get/set, hoyLocal, toast, validar, render. NO toca motor ni gate.
 function exportarJSON(){ try{ set("jvf_last_export",hoyLocal()); }catch(e){}
   try{
-    var data={ app:"jvf", schema:1, app_version:"0.14.2", exportadoEl:new Date().toISOString(),
+    var data={ app:"jvf", schema:1, app_version:"0.14.3", exportadoEl:new Date().toISOString(),
       perfil:get(LS_P,null), pesos:get(LS_W,[]), entrenos:get(LS_E,[]), notas_ej:get("jvf_notas_ej",{}), comida:get("jvf_comida",[]), agua:get("jvf_agua",{}), suples_cfg:get("jvf_suples_cfg",null), suples_log:get("jvf_suples_log",{}),
       rutinas:get("jvf_rutinas",[]), meals:get("jvf_meals",[]), ent_start:get("jvf_ent_start",null),   // v0.10 · backup completo
       alimentos_propios:get("jvf_alimentos_propios",[]), barcode_cache:get("jvf_barcode_cache",{}),   // I5/I6 · también viajan en el backup
@@ -4892,6 +4928,24 @@ function badgesHTML(){
   return "<div class='eyebrow-lbl' style='margin:12px 0 4px'>Logros</div><div class='badges'>"+list.join("")+"</div>";
 }
 
+// ======= BIENVENIDA (vídeo + copy antes del onboarding) =======
+// Solo UI. Enseña la tarjeta #bienvenida una sola vez (clave LS jvf_bienvenida_vista) antes de la 1ª
+// pregunta. Si Pablo aún no ha metido su vídeo (no hay <source src> en #bienve_player) se ve el póster
+// "próximamente"; en cuanto lo mete, el reproductor aparece solo. NO toca el motor de cálculo.
+function bienveVideoInit(){
+  var v=$("bienve_player"), ph=$("bienve_placeholder"); if(!v||!ph) return;
+  var tiene = !!(v.querySelector("source[src]") || (v.getAttribute("src")||"").trim());
+  show("bienve_player", tiene); show("bienve_placeholder", !tiene);
+}
+function bienveEmpezar(){
+  set("jvf_bienvenida_vista", true);
+  try{ var v=$("bienve_player"); if(v && v.pause) v.pause(); }catch(e){}
+  show("bienvenida",false); show("onboarding",true); wizShow(0); window.scrollTo(0,0);
+}
+function verBienvenida(){   // "▶ Volver a ver la bienvenida" desde el paso Inicio del wizard
+  show("onboarding",false); show("bienvenida",true); bienveVideoInit(); window.scrollTo(0,0);
+}
+
 // ======= WIZARD (entrevista de bienvenida) =======
 let _wiz=0; const WIZ_MAX=8;
 // Navegación por pasos: chips clicables para VOLVER a una pregunta concreta sin recorrer todo.
@@ -5270,7 +5324,7 @@ function editarPerfil(){ const p=get(LS_P); if(p){
   restoreOtroTxt("w_trabajo","w_trabajo_otro",c.trabajo,c.trabajo_txt,"Otro");
   $("w_comidas").value=c.comidas_dia||""; $("w_restric").value=c.restricciones||""; $("w_suples").value=c.suplementos||"";
   $("w_sobremi").value=c.sobre_mi||"";
-} _wizEdit=true; _wizSeen=WIZ_MAX; _tab="plan"; show("tabs",false); show("onboarding",true); show("plan",false); show("ajustes",false); show("registro",false); show("calib",false); wizShow(0); window.scrollTo(0,0); }
+} _wizEdit=true; _wizSeen=WIZ_MAX; _tab="plan"; show("tabs",false); show("bienvenida",false); show("onboarding",true); show("plan",false); show("ajustes",false); show("registro",false); show("calib",false); wizShow(0); window.scrollTo(0,0); }
 
 function aplicarAjustes(){
   const p=get(LS_P); if(!p) return;
@@ -7735,8 +7789,12 @@ function bibCerrar(){ show("bibModal", false); _bibTarget=null; }
 
 function render(){
   const p=get(LS_P);
-  if(!p){ TABS.forEach(i=>show(i,false)); show("tabs",false); show("onboarding",true); wizShow(0); return; }
-  show("onboarding",false); show("tabs",true);
+  if(!p){ TABS.forEach(i=>show(i,false)); show("tabs",false);
+    // Usuario nuevo: la BIENVENIDA (vídeo + copy) va antes de la 1ª pregunta, solo la 1ª vez.
+    if(!get("jvf_bienvenida_vista",false)){ show("onboarding",false); show("bienvenida",true); bienveVideoInit(); }
+    else { show("bienvenida",false); show("onboarding",true); wizShow(0); }
+    return; }
+  show("bienvenida",false); show("onboarding",false); show("tabs",true);
 
   const rec=plan(p);
   const ov=p.ov||{};
