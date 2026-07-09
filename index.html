@@ -447,7 +447,7 @@
 
 <header class="brandbar">
   <div class="logo"><span class="dot"></span>JV <b>Fitness</b></div>
-  <span class="tag">MVP v0.16.9 · motor v0.7</span>
+  <span class="tag">MVP v0.16.10 · motor v0.7</span>
 </header>
 <div class="statuschip"><span class="pulse"></span> cálculo science-based · ajustable · calibración real</div>
 
@@ -3659,7 +3659,7 @@ function resetTodo(){ if(!confirm("⚠️ Esto borra TODO: perfil, pesos, entren
 // Reemplazo total con confirmación. Reusa get/set, hoyLocal, toast, validar, render. NO toca motor ni gate.
 function exportarJSON(){ try{ set("jvf_last_export",hoyLocal()); }catch(e){}
   try{
-    var data={ app:"jvf", schema:1, app_version:"0.16.9", exportadoEl:new Date().toISOString(),
+    var data={ app:"jvf", schema:1, app_version:"0.16.10", exportadoEl:new Date().toISOString(),
       perfil:get(LS_P,null), pesos:get(LS_W,[]), entrenos:get(LS_E,[]), notas_ej:get("jvf_notas_ej",{}), comida:get("jvf_comida",[]), agua:get("jvf_agua",{}), suples_cfg:get("jvf_suples_cfg",null), suples_log:get("jvf_suples_log",{}),
       rutinas:get("jvf_rutinas",[]), meals:get("jvf_meals",[]), ent_start:get("jvf_ent_start",null),   // v0.10 · backup completo
       alimentos_propios:get("jvf_alimentos_propios",[]), barcode_cache:get("jvf_barcode_cache",{}),   // I5/I6 · también viajan en el backup
@@ -4856,7 +4856,9 @@ function lesRenderActivas(){
     return "<div class='kv'><span>"+esc((e?e.emoji+" ":"")+x.zona)+" <span class='hint' style='display:inline'>· desde "+esc(x.f)+"</span></span>"
       +"<span style='display:flex;gap:6px'><button class='sec' type='button' style='width:auto;margin:0;padding:6px 10px' onclick=\"lesVerFicha('"+x.id+"')\">ver</button>"
       +"<button class='sec' type='button' style='width:auto;margin:0;padding:6px 10px' onclick=\"lesQuitarUI('"+x.id+"')\">✓ curado</button></span></div>";
-  }).join("");
+  }).join("")
+  +"<div class='card' style='padding:10px 12px;margin-top:10px;border:1px solid var(--line)'><b>🍽️ Nutrición con lesión activa</b>"
+  +"<span class='hint' style='display:block;margin-top:4px'>Sube la <b style='color:var(--soft)'>proteína</b> (~1,6-2,5 g/kg) para conservar músculo, y <b style='color:var(--soft)'>NO hundas las kcal</b> (la lesión sube el gasto en reposo). Si recortas, recorta de grasa/carbos, nunca de proteína. Honesto: el que de verdad recupera es el estímulo mecánico — vuelve a cargar lo que puedas cuanto antes. <span style='color:var(--mute)'>(— Tipton 2015; revisión Nunes 2024)</span></span></div>";
 }
 function lesVerFicha(id){
   var e=lesionFichaPorId(id, LESIONES_KB), box=$("les_ficha"); if(!e||!box) return;
