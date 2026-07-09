@@ -447,7 +447,7 @@
 
 <header class="brandbar">
   <div class="logo"><span class="dot"></span>JV <b>Fitness</b></div>
-  <span class="tag">MVP v0.14.4 · motor v0.7</span>
+  <span class="tag">MVP v0.15.0 · motor v0.7</span>
 </header>
 <div class="statuschip"><span class="pulse"></span> cálculo science-based · ajustable · calibración real</div>
 
@@ -3376,7 +3376,7 @@ var I18N={
     // pestañas
     tab_plan:"Plan", tab_ajustar:"Ajustar", tab_peso:"Peso", tab_entrenos:"Entrenos", tab_progreso:"Progreso", tab_comida:"Comida", tab_cerebro:"🧠 JARVIS",
     // 🧠 cerebro v0.13-B (textos que pinta el JS del chat)
-    cb_saludo:"Soy el Cerebro de Jarvis 🧠 — respondo con reglas y ciencia del master, sin inventar nada. Pregúntame («¿cuánta proteína al día?») o cuéntame cómo estás («he dormido mal») y lo apunto.",
+    cb_saludo:"¡Hola! 👋 Soy Jarvis, tu motor de reglas — sin IA y sin inventarme nada. Puedo con proteína, calorías, carbos, creatina, sueño… con tu día de hoy («¿cuántas kcal me quedan?») o con cómo te encuentras («dormí fatal»). ¿Por dónde tiramos?",
     cb_fallback:"Aún no reconozco ese patrón 🤷. Soy un motor de reglas (sin IA) y JAMÁS me invento una respuesta: he guardado tu pregunta para ampliar mi base con ciencia real del master. Prueba a decírmelo de otra forma.",
     cb_sin_plan:"Todavía no tienes plan generado: completa la entrevista de Jarvis y vuelve — entonces te responderé con TUS números reales.",
     cb_apuntado:"Apuntado en tu diario del Cerebro (solo en este dispositivo).",
@@ -3477,7 +3477,7 @@ function resetTodo(){ if(!confirm("⚠️ Esto borra TODO: perfil, pesos, entren
 // Reemplazo total con confirmación. Reusa get/set, hoyLocal, toast, validar, render. NO toca motor ni gate.
 function exportarJSON(){ try{ set("jvf_last_export",hoyLocal()); }catch(e){}
   try{
-    var data={ app:"jvf", schema:1, app_version:"0.14.4", exportadoEl:new Date().toISOString(),
+    var data={ app:"jvf", schema:1, app_version:"0.15.0", exportadoEl:new Date().toISOString(),
       perfil:get(LS_P,null), pesos:get(LS_W,[]), entrenos:get(LS_E,[]), notas_ej:get("jvf_notas_ej",{}), comida:get("jvf_comida",[]), agua:get("jvf_agua",{}), suples_cfg:get("jvf_suples_cfg",null), suples_log:get("jvf_suples_log",{}),
       rutinas:get("jvf_rutinas",[]), meals:get("jvf_meals",[]), ent_start:get("jvf_ent_start",null),   // v0.10 · backup completo
       alimentos_propios:get("jvf_alimentos_propios",[]), barcode_cache:get("jvf_barcode_cache",{}),   // I5/I6 · también viajan en el backup
@@ -4311,7 +4311,146 @@ function cerebroAccion(texto){
   if(/me lo apunto|apuntalo|apuntamelo|apuntame\b/.test(n)) return "apuntar";
   return null;
 }
+// cerebroSaludo · ¿el mensaje es un SALUDO PURO (sin pregunta real detrás)? Capa previa al match: un
+// «hola» merece respuesta cálida, pero «hola, ¿cuánta proteína?» debe ir al pipeline normal. PURO (sin
+// DOM ni storage) y determinista. NO entra en la KB (un saludo no lleva cita del master → cerebroMatch
+// sigue devolviendo null para «hola buenas»; esto es una capa aparte, como cerebroAccion).
+function cerebroSaludo(texto){
+  var n=cerebroNorm(texto); if(!n) return false;
+  // apelativos al bot al final no cuentan: «hola jarvis» == «hola»
+  n=n.replace(/\b(jarvis|jarbis|javis|bot|cerebro|maquina|crack|tio|tia|amigo|colega|hermano|bro)\b/g," ").replace(/\s+/g," ").trim();
+  if(!n) return false;
+  // frases-saludo completas: el mensaje ES el saludo y nada más
+  if(/^(hola|holas|holi|holis|ola|olis|klk|wenas|buenas|buenos|buenos dias|buenas tardes|buenas noches|hey|ey|epa|saludos|hi|hello|que tal|que pasa|que hay|que onda|como estas|como andas|como va|como te va|como vas|todo bien|que tal todo|que hay de nuevo)$/.test(n)) return true;
+  // saludo con núcleo «hola/buenas/hey…» + solo relleno detrás (buenas, dias, y tú, qué tal…)
+  var toks=n.split(" "), core=false, i;
+  var relleno={buenas:1,buenos:1,dias:1,tardes:1,noches:1,que:1,tal:1,como:1,estas:1,andas:1,va:1,te:1,todo:1,bien:1,y:1,tu:1,muy:1,pues:1,hey:1,ey:1,ola:1,hi:1,hello:1,epa:1,saludos:1,nuevo:1,de:1};
+  for(i=0;i<toks.length;i++){
+    var w=toks[i]; if(!w) continue;
+    if(/^h?ol+a+s?$/.test(w) || /^buen[oa]s+$/.test(w) || /^wenas+$/.test(w) || w==="hey" || w==="hi" || w==="hello" || w==="ey" || w==="epa" || w==="saludos"){ core=true; continue; }
+    if(relleno[w]) continue;
+    return false;   // token con contenido real → NO es saludo puro → al pipeline normal
+  }
+  return core;
+}
 // [CEREBRO-PURE-FIN]
+
+// [LESIONES-PURE-INICIO] — 🩹 SUB-MOTOR de FISIO/LESIONES v1 (rehab por CARGA). PURO (sin DOM ni storage):
+// _tests/test-lesiones.node.js extrae este bloque (junto al de CEREBRO, para reutilizar cerebroNorm) y lo
+// evalúa tal cual. Fuente ÚNICA: _INVESTIGACION-LESIONES-2026-07-09.md (investigación por lesión + verificación
+// adversarial, con citas PubMed/DOI). DOCTRINA: educamos y sugerimos modificar la CARGA; NUNCA diagnosticamos
+// ni sustituimos al fisio. 🩺 = requiere profesional. Nada de esto es consejo médico.
+var LESIONES_DISCLAIMER="Esto NO es consejo médico: es educación basada en evidencia para gestionar la carga en el gym. 🩺 Ante dolor agudo o nocturno, bloqueo articular, pérdida súbita de fuerza o sin mejora en ~6-12 semanas → fisio/médico.";
+var LESIONES_KB=[
+  { id:"rodilla-rotuliano", zona:"Rodilla · tendón rotuliano", emoji:"🦵",
+    claves:["rodilla","rotuliano","rotula","tendon rotuliano","jumper","tendinitis rodilla"],
+    resumen:"Tendinopatía rotuliana: el tratamiento es CARGA progresiva, NO reposo (el reposo la cronifica). Todo lo demás es secundario.",
+    hacer:[
+      "Isométricos para calmar el dolor: wall-sit o Spanish squat a 70-90° (≈5×45 s, ~70% de esfuerzo), o extensión de rodilla isométrica.",
+      "Fuerza pesada y lenta (HSR): sentadilla/prensa con tempo ~6 s por rep (3 s bajada + 3 s subida), subiendo poco a poco.",
+      "Fuera de temporada: excéntricos en declive a una pierna (bajada lenta), admitiendo molestia tolerable.",
+      "Guíate por la regla de las 24 h: molestia ≤5/10 durante, que vuelve a lo normal al día siguiente y no sube semana a semana."],
+    evitar:[
+      "Reposo completo (descarga el tendón y lo cronifica).",
+      "Sentadilla profunda o mucha flexión con dolor: limita el rango a ~70-90° mientras esté irritable.",
+      "Estirar agresivamente el cuádriceps en fase reactiva (aumenta la compresión sobre la rótula).",
+      "Saltar a pliometría/saltos sin tener antes base de fuerza."],
+    banderas:"🩺 Si el dolor es por dentro de la rodilla o bajando escaleras (posible femoropatelar, que empeora con la flexión pesada), o hay bloqueos/inestabilidad → cambia el plan y valóralo con un profesional.",
+    cita:"(— Malliaras 2015, JOSPT; Kongsgaard 2009)" },
+  { id:"hombro-manguito", zona:"Hombro · manguito rotador", emoji:"💪",
+    claves:["hombro","manguito","rotador","supraespinoso","subacromial","deltoides"],
+    resumen:"Dolor de manguito: primera línea = ejercicio progresivo, NO parar ni operar (la cirugía descompresiva no supera al placebo). Mejora esperable en 6-12 semanas.",
+    hacer:[
+      "Rotación externa con banda o mancuerna (codo al costado): es el ejercicio base del manguito.",
+      "Empieza en el rango que NO duele y sube carga poco a poco; da igual carga alta o baja, manda la progresión.",
+      "Sigue empujando pero MODIFICA el press de pecho: agarre no muy ancho, codos a ~45-70° (no 90° abiertos), escápulas atrás y abajo, y recorta el recorrido si el fondo duele.",
+      "Prehab: mete rotación externa + control escapular cada semana aunque no duela."],
+    evitar:[
+      "Press y jalones TRAS NUCA (rango extremo que pinza el tendón).",
+      "Remo al mentón o elevaciones con los codos por encima del hombro.",
+      "Fondos muy profundos (para en ~90°) y press plano MUY ancho a fondo cuando duele.",
+      "Cargar por encima de la cabeza a tope de rango mientras el hombro esté sintomático."],
+    banderas:"🩺 Honesto: la lista de 'evitar' es biomecánica/EMG, no hay ejercicios prohibidos de por vida; se individualiza por lo que te provoca síntomas. Si no mejora en ~12 semanas o pierdes fuerza de golpe → profesional.",
+    cita:"(— JOSPT 2025, guía clínica; Ingwersen 2017, RoCTEx; CSAW, Lancet 2018)" },
+  { id:"dedo-muneca", zona:"Dedo / muñeca · agarre", emoji:"✋",
+    claves:["dedo","dedos","muñeca","muneca","agarre","polea","antebrazo","pulgar","esguince dedo"],
+    resumen:"Descarga el tejido irritado para que el dedo/muñeca NO sea el eslabón que limita: así entrenas igual el músculo objetivo.",
+    hacer:[
+      "Usa STRAPS en todos los tirones (peso muerto, remos, jalones, dominadas): pasan la carga del agarre a la muñeca/antebrazo.",
+      "Prefiere agarre NEUTRO (palmas enfrentadas: mancuernas, trap-bar, maneral neutro) y muñeca neutra.",
+      "Agarra con la mano ABIERTA (open-hand), sin cerrar el dedo a tope tipo 'crimp'."],
+    evitar:[
+      "Que el dedo/muñeca lesionados sean el agarre que limita en tirones pesados (mixto agresivo, hook forzado, crimp).",
+      "Desviar mucho la muñeca bajo carga con agarre mixto del lado que duele.",
+      "Depender de los straps para SIEMPRE si también te importa la fuerza de agarre: reentrénala aparte, sin dolor, cuando el dedo lo tolere."],
+    banderas:"🩺 Si hay bloqueo, chasquido con dolor, hinchazón marcada o no mejora → valóralo con un profesional.",
+    cita:"(— Schweizer; Miro 2021: el crimp multiplica ~30× la carga de la polea A2 vs mano abierta)" },
+  { id:"codo-tendon", zona:"Codo · tendón (epicondilitis / tríceps)", emoji:"💪",
+    claves:["codo","epicondil","epitroclea","triceps","tenista","golfista","tendinitis codo"],
+    resumen:"Tendinopatía de codo: la carga progresiva es el tratamiento; tape/masaje/reposo son adyuvantes, no la cura. El codo medial (golfista) responde 85-95% a conservador.",
+    hacer:[
+      "Carga progresiva: isométrico → luego pesado y lento (bajada controlada 3-4 s), antes que el ejercicio pesado de golpe.",
+      "Ej.: pushdown en polea con bajada lenta antes que skull crusher pesado.",
+      "Busca el ángulo/agarre que MENOS duele (barra EZ o agarre neutro en vez de barra recta) y baja carga hasta trabajar con dolor ≤5/10.",
+      "Guíate por el dolor: ≤5/10 durante y después, que vuelve a lo normal en 24 h y no sube semana a semana."],
+    evitar:[
+      "Tríceps muy pesado en el bloqueo final: JM press o skull crushers con barra recta pesada en fase reactiva.",
+      "Seguir subiendo carga si el dolor pasa de 5/10, no vuelve a la basal en 24 h o crece cada semana → baja un escalón.",
+      "Tratarlo SOLO con tape/masaje/ultrasonido/reposo total (el reposo largo desacondiciona el tendón)."],
+    banderas:"🩺 La evidencia del codo se extrapola de Aquiles/rótula (indirecta). Si no mejora, o hay pérdida de fuerza u hormigueo → profesional.",
+    cita:"(— Silbernagel 2007, modelo de dolor; guía clínica de tendinopatía JOSPT/BJSM)" },
+  { id:"lumbar-tecnica", zona:"Zona lumbar · técnica de bisagra", emoji:"🔩",
+    claves:["lumbar","espalda baja","zona baja","riñones","rinones","sacro","good morning","peso muerto","rumano","sentadilla espalda"],
+    resumen:"Matiz honesto: 'flexionar la espalda' NO es de por sí la causa (evidencia BAJA). El riesgo es la SUMA: carga alta + rango final + fatiga + pérdida de control + progresar muy rápido. Solución = técnica controlada + dosis progresiva, NO evitar.",
+    hacer:[
+      "Sentadilla en zona neutra controlada (ni hiperlordosis forzada ni redondeo que crece rep a rep); regula la profundidad a donde mantienes el control.",
+      "Bisagra de cadera en RDL/peso muerto: mueve desde la cadera, tibias casi verticales, barra pegada, baja solo hasta donde controlas.",
+      "Sube extendiendo cadera y rodilla A LA VEZ (no saques primero las rodillas dejando la cadera arriba).",
+      "Si la lumbar está sensible: trap-bar (menos palanca), y como accesorios hip thrust, back extension a 45°, RDL con mancuernas."],
+    evitar:[
+      "Redondeo lumbar que aumenta rep a rep bajo carga pesada + fatiga.",
+      "Good morning pesado con técnica pobre: déjalo ligero-moderado y con rango controlado, o sustitúyelo.",
+      "Subir extendiendo las rodillas ANTES que la cadera (te pasa la carga a la lumbar).",
+      "Evitarlo TODO por miedo: cargar no es peligroso de por sí; evitarlo también te desacondiciona."],
+    banderas:"🩺 Dolor que baja por la pierna, hormigueo/adormecimiento, pérdida de fuerza o dolor nocturno → para y valóralo con un profesional.",
+    cita:"(— Saraceni 2020, JOSPT: evidencia BAJA de que flexionar al levantar sea factor de riesgo; J Biomech 2024)" }
+];
+// Info honesta bajo demanda (no se autopauta): péptidos de 'recuperación' y nutrición en lesión.
+var LESIONES_PEPTIDOS_INFO="Te doy la VERDAD, no una recomendación: el BPC-157 (y el TB-500) NO son suplementos como la creatina — son compuestos EXPERIMENTALES, no aprobados por la FDA ni la EMA para uso humano en ninguna indicación. La evidencia humana es casi inexistente (casi todo en animales; ni un solo ensayo con placebo para curar tendón o músculo). Para cualquier deportista con control antidopaje es DOPAJE sancionable (el BPC-157 está en la categoría S0 de la WADA, sin excepción posible). Y el mercado gris ('research chemical') no controla pureza ni esterilidad → riesgo real de infección. Lo que SÍ multiplica la recuperación con evidencia humana sólida: carga progresiva + dormir 7-9 h + proteína 1.6-2.2 g/kg + no fumar. Por eso NO te recomiendo BPC-157. (— USADA; WADA Lista 2026 S0; HSS Journal 2025, revisión sistemática)";
+var LESIONES_NUTRICION_INFO="Con una lesión, sobre todo si te mueves menos o estás inmovilizado: 1) PROTEÍNA arriba, ~1.6-2.5 g/kg de peso, repartida en varias tomas — es el macro a blindar para conservar músculo. 2) NO hundas las calorías: el gasto no cae tanto como crees (la lesión puede subir el gasto en reposo un 15-50%, y andar con muletas cuesta más) y un déficit agresivo acelera la pérdida de músculo. 3) Carbohidratos MODERADOS: no los subas 'para tener energía' si te mueves menos, pero tampoco los recortes a saco (ahorran proteína). El recorte, si acaso, sale de grasa/carbos, nunca de proteína. Honesto: el 'fármaco' principal es el estímulo mecánico (volver a cargar cuanto antes lo permitido); la comida sola NO frena la atrofia por descarga. (— Tipton 2015, Sports Med; revisión Nunes 2024)";
+// lesionDetectar · ¿el texto describe una LESIÓN/DOLOR en una zona conocida? Debe sonar a lesión (no a una
+// pregunta teórica de entreno) y luego casar la zona. Devuelve la ficha, {generico:true} si no reconoce la
+// zona, o null. Reutiliza cerebroNorm (misma <script>; en el test se evalúa el bloque de CEREBRO antes).
+function lesionDetectar(texto){
+  var n=cerebroNorm(texto); if(!n) return null;
+  var esLesion=/\b(me (he )?lesion|lesionad|me duele|dolor|molest|tengo (una |la )?(tendinit|tendinopat|contractur|esguince)|se me carga|pinchazo|me cruje|tiron)/.test(n);
+  if(!esLesion) return null;
+  for(var i=0;i<LESIONES_KB.length;i++){
+    var e=LESIONES_KB[i];
+    for(var j=0;j<e.claves.length;j++){ if(n.indexOf(e.claves[j])>=0) return e; }
+  }
+  return { generico:true };   // dice que se lesionó pero sin zona reconocida → se le pide la zona (no se inventa)
+}
+// lesionPeptidos · ¿pregunta por BPC-157 / TB-500 / péptidos de recuperación? (evita falsos positivos con
+// 'péptidos de proteína' de la comida exigiendo contexto de recuperación/lesión).
+function lesionPeptidos(texto){
+  var n=cerebroNorm(texto); if(!n) return false;
+  if(/\bbpc[\s-]?157\b|\btb[\s-]?500\b/.test(n)) return true;
+  return /peptido|thymosin|timosina/.test(n) && /recuper|lesion|curar|cura|regenera|tendon|articul|sanar|inflamac/.test(n);
+}
+// lesionNutricion · ¿pregunta cómo comer/nutrirse teniendo una lesión? (no confundir con las preguntas
+// genéricas de macros, que las resuelve la KB del Cerebro).
+function lesionNutricion(texto){
+  var n=cerebroNorm(texto); if(!n) return false;
+  return /(que como|como como|nutricion|dieta|proteina|calorias|comer|alimenta|macros)/.test(n)
+      && /(lesion|lesionad|inmoviliz|escayola|ferula|yeso|recuper|roto|rotura|operad|cirugia)/.test(n);
+}
+// lesionRespuesta · texto plano de una ficha (para tests y como respaldo; la app la pinta con cbLesionRender).
+function lesionRespuesta(e){
+  if(!e || e.generico) return null;
+  return e.zona+" — "+e.resumen+"\nHaz: "+e.hacer.join(" · ")+"\nEvita: "+e.evitar.join(" · ")+"\n"+e.banderas+"\n"+LESIONES_DISCLAIMER+" "+e.cita;
+}
+// [LESIONES-PURE-FIN]
 
 // --- capa impura del Cerebro: chat (DOM) + captura sin fricción (storage) + números reales ---
 var _cbCap=null, _cbUltimaQ=null, _cbIniciado=false, _cbChat=false;
@@ -4436,7 +4575,21 @@ function cbEnviarTexto(txt){
   _cbUltimaQ=txt;
   cbResponder(txt);
 }
+// 🩹 pinta una ficha de lesión con estructura (escapando cada campo del sub-motor de fisio).
+function cbLesionRender(e){
+  function items(arr){ return arr.map(function(x){ return "• "+esc(x); }).join("<br>"); }
+  var html="<b>"+esc(e.emoji+" "+e.zona)+"</b><br>"+esc(e.resumen)
+    +"<br><br><b>✅ Haz</b><br>"+items(e.hacer)
+    +"<br><br><b>⛔ Evita / ajusta</b><br>"+items(e.evitar)
+    +"<br><br>"+esc(e.banderas)
+    +"<br><br>"+esc(LESIONES_DISCLAIMER)
+    +"<span class='cb-cita'>"+esc(e.cita)+"</span>";
+  cbMsg("j", html);
+}
 function cbResponder(txt){
+  // SALUDO · un «hola/buenas/qué tal» suelto merece bienvenida cálida que ORIENTA (no el fallback frío
+  // «no reconozco patrón»). Solo dispara con saludo PURO; si lleva pregunta detrás, sigue el pipeline.
+  if(cerebroSaludo(txt)){ cbMsg("j", esc(t("cb_saludo"))); cbChips(["¿Cuántas calorías me quedan hoy?","¿Cuánta proteína al día?","He dormido mal"]); return; }
   // O4 · CAPA COMBINATORIA (v0.13-D) — corre ANTES del match simple. Multi-concepto > un solo concepto.
   var cmb=cerebroComboMatch(txt);
   if(cmb){ cbMsg("j", cbHtmlRespuesta(cmb.r)); cbChips(cmb.chips||[]); return; }
@@ -4455,6 +4608,15 @@ function cbResponder(txt){
     cbMsg("j", cbHtmlRespuesta(e.r));
     cbChips(e.chips||[]);
     return;
+  }
+  // 🩹 SUB-MOTOR FISIO/LESIONES — antes del fallback: un dolor/lesión reconocido recibe guía por CARGA
+  // (evitar/alternativas + 🩺), no el «no reconozco». Fuente: _INVESTIGACION-LESIONES (con citas).
+  if(lesionPeptidos(txt)){ cbMsg("j", cbHtmlRespuesta(LESIONES_PEPTIDOS_INFO)); cbChips(["¿Cómo comer con una lesión?","Me duele la rodilla","Me duele el hombro"]); return; }
+  if(lesionNutricion(txt)){ cbMsg("j", cbHtmlRespuesta(LESIONES_NUTRICION_INFO)); cbChips(["Me duele la rodilla","Me duele el hombro","¿El BPC-157 sirve?"]); return; }
+  var les=lesionDetectar(txt);
+  if(les){
+    if(les.generico){ cbMsg("j", esc("Entiendo, te has hecho daño 🩹. ¿Qué zona? Dímelo y te cuento qué cargar y qué evitar, con la ciencia — no es consejo médico.")); cbChips(["Me duele la rodilla","Me duele el hombro","Me duele la zona lumbar","Me duele el codo","Me duele la muñeca"]); return; }
+    cbLesionRender(les); cbChips(["¿Cómo comer con una lesión?","¿El BPC-157 sirve?"]); return;
   }
   // Fallback honesto (doctrina): lo digo y guardo la pregunta — cola de ampliación del flywheel.
   var arr=get(LS_CEREBRO_NOREC,[]); arr.push({f:hoyLocal(), q:txt}); set(LS_CEREBRO_NOREC,arr);
