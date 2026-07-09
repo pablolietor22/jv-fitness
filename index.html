@@ -447,7 +447,7 @@
 
 <header class="brandbar">
   <div class="logo"><span class="dot"></span>JV <b>Fitness</b></div>
-  <span class="tag">MVP v0.16.14 · motor v0.7</span>
+  <span class="tag">MVP v0.16.15 · motor v0.7</span>
 </header>
 <div class="statuschip"><span class="pulse"></span> cálculo science-based · ajustable · calibración real</div>
 
@@ -3690,7 +3690,7 @@ function resetTodo(){ if(!confirm("⚠️ Esto borra TODO: perfil, pesos, entren
 // Reemplazo total con confirmación. Reusa get/set, hoyLocal, toast, validar, render. NO toca motor ni gate.
 function exportarJSON(){ try{ set("jvf_last_export",hoyLocal()); }catch(e){}
   try{
-    var data={ app:"jvf", schema:1, app_version:"0.16.14", exportadoEl:new Date().toISOString(),
+    var data={ app:"jvf", schema:1, app_version:"0.16.15", exportadoEl:new Date().toISOString(),
       perfil:get(LS_P,null), pesos:get(LS_W,[]), entrenos:get(LS_E,[]), notas_ej:get("jvf_notas_ej",{}), comida:get("jvf_comida",[]), agua:get("jvf_agua",{}), suples_cfg:get("jvf_suples_cfg",null), suples_log:get("jvf_suples_log",{}),
       rutinas:get("jvf_rutinas",[]), meals:get("jvf_meals",[]), ent_start:get("jvf_ent_start",null),   // v0.10 · backup completo
       alimentos_propios:get("jvf_alimentos_propios",[]), barcode_cache:get("jvf_barcode_cache",{}),   // I5/I6 · también viajan en el backup
@@ -4000,10 +4000,10 @@ var CEREBRO_KB=[
 
   // ─────────────── TRONCO: MELATONINA (HUECO — no inventar) ───────────────
   {
-    tronco:"melatonina", rama:"sin-cobertura-master",
-    claves:["melatonina","melatonina para dormir","suplemento para dormir","pastilla para dormir","melatonina dosis","tomo melatonina"],
-    r:"Todavía no tengo ciencia específica de melatonina cargada en mi base (es un hueco que Pablo tiene que rellenar). Lo que SÍ está validado es lo que de verdad mueve la aguja del sueño: objetivo de 7-9h e higiene (horarios fijos, oscuridad, sin pantallas 1h antes, cortar cafeína ~8h antes). Ningún suplemento compensa dormir poco. (— Tema 27, higiene de sueño)",
-    chips:["¿cuántas horas dormir?","¿higiene de sueño?","guardar la pregunta para ampliar"]
+    tronco:"melatonina", rama:"melatonina-cronobiotico-no-sedante-dosis-timing",
+    claves:["melatonina para dormir","cuanta melatonina tomo para dormir","cuanta melatonina tomo","sirve la melatonina para dormir","cuanta melatonina tomar para dormir","melatonina 0.5 mg o 5 mg","a que hora tomar la melatonina","melatonina jet lag funciona","la melatonina crea dependencia","melatonina no es un somnifero","melatonina fase de sueno retrasada"],
+    r:"Vamos en cristiano, sin venderte humo. La melatonina NO es una pastilla para dormir (un somnifero tipo benzodiacepina): no te \"noquea\", es la hormona con la que tu cerebro marca \"ya es de noche\". Por eso funciona como un reloj, no como un martillo. Donde SI hay evidencia decente: jet lag (sobre todo volando hacia el este cruzando 5+ husos), sindrome de fase de sueno retrasada (el clasico que se acuesta a las 3 y no puede antes), personas ciegas, y ayudar a conciliar un poco antes en insomnio primario. Donde es floja o no vale: como remedio general para el insomnio del estres o el mal dormir de siempre el efecto es pequeno, del orden de adelantar el sueno unos minutos, no horas. Lo importante, y aqui casi todo el mundo se equivoca: manda el CUANDO, no el CUANTO. Dosis pequena (0,5 a 5 mg) ya hace el trabajo; subir mg no te duerme mejor, solo sube el riesgo de somnolencia al dia siguiente. Tomala cerca de la hora de acostarte en el destino (grosso modo entre las 22 h y medianoche). Tomada a deshora, por la manana, hace lo contrario: te da sueno cuando no toca y retrasa la adaptacion. Uso corto y ocasional se considera seguro y no genera la dependencia de los somniferos, pero no es un caramelo cronico: si duermes mal muchas semanas, el problema es higiene de sueno / horarios / ansiedad, y eso la melatonina no lo arregla (— Herxheimer y Petrie 2002, revision Cochrane CD001520, y Auld et al. 2017, Sleep Medicine Reviews, PMID 27298885: la melatonina es notablemente eficaz para prevenir o reducir el jet lag y su uso ocasional a corto plazo parece seguro, con dosis de 0,5 a 5 mg tomadas cerca de la hora de acostarse; la mejor evidencia esta en reducir la latencia de sueno en el insomnio primario, el sindrome de fase de sueno retrasada y en regular el ciclo en personas ciegas)",
+    chips:["¿Y para el insomnio normal por estres?","¿Cuando la tomo si vuelo a Japon?","¿Puedo tomarla cada noche mucho tiempo?"]
   },
 
   // ─────────────── TRONCO: CHICLE ───────────────
@@ -4156,7 +4156,7 @@ var CEREBRO_KB=[
   {
     tronco:"agua", rama:"cuanta-agua",
     claves:["cuanta agua","hidratacion","agua al dia","beber agua","cuanto agua bebo","hidratarme","litros de agua","agua","cuanta agua bebo","bebo mas en verano"],
-    r:"Como orientación, ~35 ml/kg/día. La deshidratación afecta al rendimiento de verdad a partir de ~3% de pérdida de peso (fuerza −5,5%), y ese nivel es más de atletas que del usuario medio, así que sin dramatizar: bebe con normalidad y algo más si sudas mucho. (— objetivo orientativo de la app, no de un Tema verificado; la ciencia verificada es el umbral ≥3 % — Savoie 2015)",
+    r:"Como orientación, ~35 ml/kg/día (la vieja regla de «2 litros» es solo eso, orientativa: manda el calor, el sudor y tu actividad). La mejor guía del día a día es simple: bebe cuando tengas sed y vigila que la orina salga clara-pálida, no oscura. El rendimiento SÍ se resiente al deshidratarte: desde ~2% de pérdida de peso caen la resistencia y la concentración, y hacia ~3-4% baja también la fuerza (~−5%). No hace falta hiperhidratarse: beber de más no mejora nada, y forzar mucha agua sin sales en esfuerzos largos es peligroso (hiponatremia). En verano y entrenando fuerte, algo más. (— Sawka 2007, ACSM Position Stand; umbral de fuerza Savoie 2015)",
     chips:["¿y el sodio?","¿bebo más en verano?"]
   },
 
@@ -4345,6 +4345,25 @@ var CEREBRO_KB=[
     claves:["cuantas horas antes de dormir dejo la cafeina","hasta que hora puedo tomar cafe si entreno","el preentreno de la tarde me quita el sueno","cafeina y sueno cuanto tiempo antes","puedo tomar cafe por la tarde sin joder el sueno","a que hora corto la cafeina","pre workout de noche insomnio","cafe 6 horas antes de dormir","cuanto tarda la cafeina en irse antes de acostarme","tomar cafeina tarde afecta al descanso"],
     r:"Corta la cafeína con margen según la dosis, no \"a ojo por la tarde\": un café normal (~100 mg) pide unas 9 h antes de dormir, y un pre-entreno (200+ mg) pide unas 13 h. Traducido: si te acuestas a las 23:00, el café hasta las 14:00 y el pre-entreno solo para sesiones de mañana o mediodía; entrenar con pre-entreno a las 19:00 te roba en promedio ~45 min de sueño esa noche aunque \"te duermas igual\" (porque baja la profundidad, no siempre lo notas). Si entrenas de tarde-noche y necesitas empuje, usa dosis baja o cafeína de vida media corta y no dobles con otra bebida energética. (— Gardiner et al. 2023 / meta-análisis Sleep Medicine Reviews)",
     chips:["¿Y si mi entrenamiento fuerte es por la noche, cómo compenso el pre-entreno?","¿Cómo sé si soy metabolizador lento o rápido de cafeína?","¿Cuánta cafeína lleva realmente mi pre-entreno?"]
+  },
+
+  {
+    tronco:"comidas", rama:"desayuno-y-ayuno-no-son-magia-adelgazante",
+    claves:["importa desayunar para adelgazar","saltarse el desayuno engorda","el desayuno es la comida mas importante","ayuno intermitente adelgaza mas","ayuno intermitente vs dieta normal","16 8 para perder peso","desayunar o no desayunar para bajar de peso","timing de las comidas y grasa","ventana de comida adelgaza"],
+    r:"A igualdad de calorías y proteína al final del día, la hora a la que comes casi no mueve la aguja. Dos mitos que conviene desmontar: 1) \"El desayuno es la comida más importante y ayuda a adelgazar.\" Falso como regla general. Cuando se juntan los ensayos controlados, quien desayunaba pesó de media 0,44 kg MÁS, no menos, y encima ingería unas 260 kcal/día más que quien se lo saltaba. Es decir: añadir desayuno \"porque sí\" tiende a sumar calorías al día, no a restarlas. Desayunar no está prohibido; simplemente no es una palanca mágica para perder grasa. 2) \"El ayuno intermitente (comer solo en una ventana, tipo 16/8) adelgaza más.\" No por sí mismo. En el ensayo TREAT, comer solo de 12:00 a 20:00 durante 12 semanas dio una pérdida (−0,94 kg) que NO fue distinta de comer repartido en el día (−0,68 kg); la diferencia entre grupos fue trivial y no significativa. Lo que funciona del ayuno no es \"activar el metabolismo\": es que cerrar la ventana te hace comer menos veces y, sin querer, menos calorías. Si el déficit no aparece, la báscula no se mueve. Regla para el motor: el reloj no adelgaza; el déficit sí. Elige la distribución de comidas que te haga más fácil sostener tus calorías y tu proteína —desayunar o no, ventana estrecha o ancha— porque ahí la ciencia te da libertad. Matices honestos: son estudios cortos (semanas) y con bastante variabilidad, así que sirven para tumbar la magia, no para prometer que \"da exactamente igual\" en todos los casos ni a largo plazo (— Sievert et al., BMJ 2019; y Lowe et al., JAMA Internal Medicine 2020)",
+    chips:["¿Y si me da hambre por la mañana?","Enséñame a montar mi déficit","¿El ayuno tiene otras ventajas aparte del peso?"]
+  },
+  {
+    tronco:"sueno", rama:"jet-lag-melatonina-viaje-al-este",
+    claves:["jet lag deportista que hacer","melatonina para jet lag dosis","viaje al este me deja hecho polvo","cuanta melatonina tomar avion","jet lag volando al este vs oeste","cuando tomar melatonina jet lag","competir despues de vuelo largo desfase horario","melatonina hora correcta manana empeora"],
+    r:"Regla para el jet lag de un deportista: la dirección manda. Volar al ESTE (p. ej. Madrid→Japón) machaca más que al oeste, porque tu reloj interno tiene que adelantarse, y eso cuesta más. La palanca con más evidencia cuando cruzas 5 husos o más es la melatonina, y aquí está el detalle que casi nadie respeta: no es un somnífero que te tomas \"cuando toque\", es una señal horaria. Tómala a la hora de acostarte YA en la hora del destino (0,5 a 5 mg; con 5 mg te duermes algo antes, pero 0,5 mg funciona casi igual, así que no hace falta pasarse). Y el aviso serio: si te la tomas a destiempo, por la mañana, te da sueño y RETRASA la adaptación, o sea, te la juegas en contra. Combínala con luz de mañana en el destino (sal a la calle) para empujar el reloj en la misma dirección. Traducido a competición: no llegues la víspera y esperes rendir; cuenta ~1 día de ajuste por huso cruzado y usa melatonina + luz desde el primer día para acortarlo. Honestamente, no es magia: reduce el desfase, no lo borra (— Cochrane 2002, revisión de Herxheimer y Petrie sobre melatonina para el jet lag; PMID 11279722, DOI 10.1002/14651858.CD001520)",
+    chips:["Regla para el jet lag al OESTE (más fácil)","Siestas: 20-30 min sin quedar grogui","Cuándo sospechar apnea del sueño"]
+  },
+  {
+    tronco:"suplementacion", rama:"colageno-vitamina-c-tejido-conectivo-no-musculo",
+    claves:["sirve el colageno para los musculos","colageno con vitamina c para tendones","cuando tomar colageno antes o despues de entrenar","el colageno crea musculo o no","glutamina sirve para hipertrofia","necesito multivitaminico si como variado","colageno para articulaciones piel y tendon","gelatina antes de entrenar para el tendon"],
+    r:"Vamos en cristiano, porque aquí se mezclan tres cosas y solo una tiene algo de chicha. El colágeno NO te hace músculo: para músculo mandan la proteína total del día y la leucina, no el colágeno (es una proteína de baja calidad, le falta triptófano). Donde sí hay una señal —y subrayo emergente: estudios pequeños, a corto plazo, sobre marcadores en sangre, no sobre \"tendones más fuertes\" medidos a años— es en tejido conectivo: tendón, ligamento, articulación y piel. El protocolo con más respaldo mecanicista es 15 g de gelatina o péptidos de colágeno junto con vitamina C tomados alrededor de 1 hora ANTES de entrenar, no después ni a cualquier hora, porque la carga del ejercicio es la que arrastra esos aminoácidos al tendón. Es barato y sin riesgo, así que como apuesta para cuidar tendón o articulación tiene sentido; pero trátalo como \"puede ayudar al conectivo\", nunca como constructor de músculo. La glutamina para hipertrofia en persona sana es tirar el dinero, y el multivitamínico es un seguro de vida por si comes mal, no un potenciador. (— Shaw et al., 2017, American Journal of Clinical Nutrition, PMID 27852613: 15 g de gelatina enriquecida con vitamina C tomados una hora antes de ejercicio intermitente duplicaron en sangre el propeptido PINP, marcador de sintesis de colageno, en un ensayo cruzado doble ciego con 8 sujetos)",
+    chips:["¿Y la creatina, esa sí que va para el músculo?","¿Cuánta proteína al día necesito de verdad?","¿Multivitamínico sí o no en mi caso?"]
   }
 ];
 
@@ -4381,12 +4400,11 @@ var CEREBRO_COMBOS=[
 // huecosMaster — ramas ESPERABLES que el master NO cubre (NO inventadas aquí). Pendientes de que
 // Pablo alimente el master antes de escribir respuesta. El Cerebro las declina con honestidad.
 var CEREBRO_HUECOS=[
-  { tronco:"melatonina", falta:"El master no tiene NADA de melatonina (dosis, timing, seguridad, si sirve). T27 solo cubre horas de sueño e higiene." },
-  { tronco:"suplementacion", falta:"Sin cobertura propia de: multivitamínico, colágeno, glutamina (vit. D, omega-3, ashwagandha, ZMA, BCAA y quemagrasas ya cubiertos por la lista honesta)." },
-  { tronco:"comidas", falta:"'¿Importa el desayuno?' y ayuno intermitente como protocolo de adelgazamiento no están tratados directamente." },
-  { tronco:"sueno", falta:"Falta jet lag, turnos de noche y apnea como Tema propio (el corte de cafeína ya está cubierto)." },
-  { tronco:"agua", falta:"El objetivo ~35 ml/kg viene de la app, no de un Tema verificado con caja ✅; la única ciencia es el umbral ≥3%." },
-  { tronco:"lesiones", falta:"El Cerebro en sí no tiene dolor articular/tendinitis/movilidad; lo lleva el sub-motor LESIONES aparte, no CEREBRO_KB." }
+  { tronco:"suplementacion", falta:"Sin cobertura propia de multivitamínico y glutamina (colágeno, vit. D, omega-3, ashwagandha, ZMA, BCAA y quemagrasas ya cubiertos)." },
+  { tronco:"lesiones", falta:"El Cerebro en sí no tiene dolor articular/tendinitis/movilidad; lo lleva el sub-motor LESIONES aparte, no CEREBRO_KB." },
+  { tronco:"vegetariano", falta:"Cómo llegar a la proteína y a los micros clave (B12, hierro, omega-3) sin carne o sin productos animales no está tratado." },
+  { tronco:"embarazo", falta:"Entrenar y comer en embarazo/lactancia (con las cautelas médicas que exige) no está cubierto." },
+  { tronco:"termorregulacion", falta:"Entrenar con calor extremo o frío, aclimatación y golpe de calor no tienen Tema propio más allá de la hidratación." }
 ];
 
 // --- normalización (reusa otroNorm: minúsculas y sin tildes) + limpieza de signos de chat/dictado ---
