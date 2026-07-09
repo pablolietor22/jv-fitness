@@ -447,7 +447,7 @@
 
 <header class="brandbar">
   <div class="logo"><span class="dot"></span>JV <b>Fitness</b></div>
-  <span class="tag">MVP v0.16.6 · motor v0.7</span>
+  <span class="tag">MVP v0.16.7 · motor v0.7</span>
 </header>
 <div class="statuschip"><span class="pulse"></span> cálculo science-based · ajustable · calibración real</div>
 
@@ -3644,7 +3644,7 @@ function resetTodo(){ if(!confirm("⚠️ Esto borra TODO: perfil, pesos, entren
 // Reemplazo total con confirmación. Reusa get/set, hoyLocal, toast, validar, render. NO toca motor ni gate.
 function exportarJSON(){ try{ set("jvf_last_export",hoyLocal()); }catch(e){}
   try{
-    var data={ app:"jvf", schema:1, app_version:"0.16.6", exportadoEl:new Date().toISOString(),
+    var data={ app:"jvf", schema:1, app_version:"0.16.7", exportadoEl:new Date().toISOString(),
       perfil:get(LS_P,null), pesos:get(LS_W,[]), entrenos:get(LS_E,[]), notas_ej:get("jvf_notas_ej",{}), comida:get("jvf_comida",[]), agua:get("jvf_agua",{}), suples_cfg:get("jvf_suples_cfg",null), suples_log:get("jvf_suples_log",{}),
       rutinas:get("jvf_rutinas",[]), meals:get("jvf_meals",[]), ent_start:get("jvf_ent_start",null),   // v0.10 · backup completo
       alimentos_propios:get("jvf_alimentos_propios",[]), barcode_cache:get("jvf_barcode_cache",{}),   // I5/I6 · también viajan en el backup
@@ -4517,78 +4517,66 @@ function cerebroSaludo(texto){
 // ni sustituimos al fisio. 🩺 = requiere profesional. Nada de esto es consejo médico.
 var LESIONES_DISCLAIMER="Esto NO es consejo médico: es educación basada en evidencia para gestionar la carga en el gym. 🩺 Ante dolor agudo o nocturno, bloqueo articular, pérdida súbita de fuerza o sin mejora en ~6-12 semanas → fisio/médico.";
 var LESIONES_KB=[
-  { id:"rodilla-rotuliano", zona:"Rodilla · tendón rotuliano", emoji:"🦵",
-    claves:["rodilla","rotuliano","rotula","tendon rotuliano","jumper","tendinitis rodilla"],
+  {
+    id:"rodilla-rotuliano",
+    zona:"Rodilla · tendón rotuliano",
+    emoji:"🦵",
+    claves:["rodilla", "rotuliano", "rotula", "tendon rotuliano", "jumper", "tendinitis rodilla"],
     resumen:"Tendinopatía rotuliana: el tratamiento es CARGA progresiva, NO reposo (el reposo la cronifica). Todo lo demás es secundario.",
-    hacer:[
-      "Isométricos para calmar el dolor: wall-sit o Spanish squat a 70-90° (≈5×45 s, ~70% de esfuerzo), o extensión de rodilla isométrica.",
-      "Fuerza pesada y lenta (HSR): sentadilla/prensa con tempo ~6 s por rep (3 s bajada + 3 s subida), subiendo poco a poco.",
-      "Fuera de temporada: excéntricos en declive a una pierna (bajada lenta), admitiendo molestia tolerable.",
-      "Guíate por la regla de las 24 h: molestia ≤5/10 durante, que vuelve a lo normal al día siguiente y no sube semana a semana."],
-    evitar:[
-      "Reposo completo (descarga el tendón y lo cronifica).",
-      "Sentadilla profunda o mucha flexión con dolor: limita el rango a ~70-90° mientras esté irritable.",
-      "Estirar agresivamente el cuádriceps en fase reactiva (aumenta la compresión sobre la rótula).",
-      "Saltar a pliometría/saltos sin tener antes base de fuerza."],
+    hacer:["Isométricos para calmar el dolor: wall-sit o Spanish squat a 70-90° (≈5×45 s, ~70% de esfuerzo), o extensión de rodilla isométrica.", "Fuerza pesada y lenta (HSR): sentadilla/prensa con tempo ~6 s por rep (3 s bajada + 3 s subida), subiendo poco a poco.", "Fuera de temporada: excéntricos en declive a una pierna (bajada lenta), admitiendo molestia tolerable.", "Guíate por la regla de las 24 h: molestia ≤5/10 durante, que vuelve a lo normal al día siguiente y no sube semana a semana."],
+    evitar:["Reposo completo (descarga el tendón y lo cronifica).", "Sentadilla profunda o mucha flexión con dolor: limita el rango a ~70-90° mientras esté irritable.", "Estirar agresivamente el cuádriceps en fase reactiva (aumenta la compresión sobre la rótula).", "Saltar a pliometría/saltos sin tener antes base de fuerza."],
+    fortalecer:["Cuádriceps (lo clave del tendón): sentadilla española o isométricos a 70-90°, luego pesado y lento (HSR).", "Glúteo medio/mayor (protegen la rótula): abducción con banda, puente, y que la rodilla NO caiga hacia dentro.", "Tobillo (sóleo + dorsiflexión): si es rígido, la rodilla paga en el fondo de la sentadilla."],
     banderas:"🩺 Si el dolor es por dentro de la rodilla o bajando escaleras (posible femoropatelar, que empeora con la flexión pesada), o hay bloqueos/inestabilidad → cambia el plan y valóralo con un profesional.",
-    cita:"(— Malliaras 2015, JOSPT; Kongsgaard 2009)" },
-  { id:"hombro-manguito", zona:"Hombro · manguito rotador", emoji:"💪",
-    claves:["hombro","manguito","rotador","supraespinoso","subacromial","deltoides"],
+    cita:"(— Malliaras 2015, JOSPT; Kongsgaard 2009)"
+  },
+  {
+    id:"hombro-manguito",
+    zona:"Hombro · manguito rotador",
+    emoji:"💪",
+    claves:["hombro", "manguito", "rotador", "supraespinoso", "subacromial", "deltoides"],
     resumen:"Dolor de manguito: primera línea = ejercicio progresivo, NO parar ni operar (la cirugía descompresiva no supera al placebo). Mejora esperable en 6-12 semanas.",
-    hacer:[
-      "Rotación externa con banda o mancuerna (codo al costado): es el ejercicio base del manguito.",
-      "Empieza en el rango que NO duele y sube carga poco a poco; da igual carga alta o baja, manda la progresión.",
-      "Sigue empujando pero MODIFICA el press de pecho: agarre no muy ancho, codos a ~45-70° (no 90° abiertos), escápulas atrás y abajo, y recorta el recorrido si el fondo duele.",
-      "Prehab: mete rotación externa + control escapular cada semana aunque no duela."],
-    evitar:[
-      "Press y jalones TRAS NUCA (rango extremo que pinza el tendón).",
-      "Remo al mentón o elevaciones con los codos por encima del hombro.",
-      "Fondos muy profundos (para en ~90°) y press plano MUY ancho a fondo cuando duele.",
-      "Cargar por encima de la cabeza a tope de rango mientras el hombro esté sintomático."],
+    hacer:["Rotación externa con banda o mancuerna (codo al costado): es el ejercicio base del manguito.", "Empieza en el rango que NO duele y sube carga poco a poco; da igual carga alta o baja, manda la progresión.", "Sigue empujando pero MODIFICA el press de pecho: agarre no muy ancho, codos a ~45-70° (no 90° abiertos), escápulas atrás y abajo, y recorta el recorrido si el fondo duele.", "Prehab: mete rotación externa + control escapular cada semana aunque no duela."],
+    evitar:["Press y jalones TRAS NUCA (rango extremo que pinza el tendón).", "Remo al mentón o elevaciones con los codos por encima del hombro.", "Fondos muy profundos (para en ~90°) y press plano MUY ancho a fondo cuando duele.", "Cargar por encima de la cabeza a tope de rango mientras el hombro esté sintomático."],
+    fortalecer:["Rotadores externos (infraespinoso): rotación externa con banda/mancuerna, codo al costado, tempo lento — el pilar.", "Escápula (serrato): 'push-up plus' o wall slide para que el tendón no se pince.", "Trapecio inferior: 'Y' en banco inclinado con poco peso o face pull, juntando y bajando las escápulas."],
     banderas:"🩺 Honesto: la lista de 'evitar' es biomecánica/EMG, no hay ejercicios prohibidos de por vida; se individualiza por lo que te provoca síntomas. Si no mejora en ~12 semanas o pierdes fuerza de golpe → profesional.",
-    cita:"(— JOSPT 2025, guía clínica; Ingwersen 2017, RoCTEx; CSAW, Lancet 2018)" },
-  { id:"dedo-muneca", zona:"Dedo / muñeca · agarre", emoji:"✋",
-    claves:["dedo","dedos","muñeca","muneca","agarre","polea","antebrazo","pulgar","esguince dedo"],
+    cita:"(— JOSPT 2025, guía clínica; Ingwersen 2017, RoCTEx; CSAW, Lancet 2018)"
+  },
+  {
+    id:"dedo-muneca",
+    zona:"Dedo / muñeca · agarre",
+    emoji:"✋",
+    claves:["dedo", "dedos", "muñeca", "muneca", "agarre", "polea", "antebrazo", "pulgar", "esguince dedo"],
     resumen:"Descarga el tejido irritado para que el dedo/muñeca NO sea el eslabón que limita: así entrenas igual el músculo objetivo.",
-    hacer:[
-      "Usa STRAPS en todos los tirones (peso muerto, remos, jalones, dominadas): pasan la carga del agarre a la muñeca/antebrazo.",
-      "Prefiere agarre NEUTRO (palmas enfrentadas: mancuernas, trap-bar, maneral neutro) y muñeca neutra.",
-      "Agarra con la mano ABIERTA (open-hand), sin cerrar el dedo a tope tipo 'crimp'."],
-    evitar:[
-      "Que el dedo/muñeca lesionados sean el agarre que limita en tirones pesados (mixto agresivo, hook forzado, crimp).",
-      "Desviar mucho la muñeca bajo carga con agarre mixto del lado que duele.",
-      "Depender de los straps para SIEMPRE si también te importa la fuerza de agarre: reentrénala aparte, sin dolor, cuando el dedo lo tolere."],
+    hacer:["Usa STRAPS en todos los tirones (peso muerto, remos, jalones, dominadas): pasan la carga del agarre a la muñeca/antebrazo.", "Prefiere agarre NEUTRO (palmas enfrentadas: mancuernas, trap-bar, maneral neutro) y muñeca neutra.", "Agarra con la mano ABIERTA (open-hand), sin cerrar el dedo a tope tipo 'crimp'."],
+    evitar:["Que el dedo/muñeca lesionados sean el agarre que limita en tirones pesados (mixto agresivo, hook forzado, crimp).", "Desviar mucho la muñeca bajo carga con agarre mixto del lado que duele.", "Depender de los straps para SIEMPRE si también te importa la fuerza de agarre: reentrénala aparte, sin dolor, cuando el dedo lo tolere."],
+    fortalecer:["Flexores/extensores de muñeca: wrist curls en ambos sentidos con mancuerna o goma, suave y progresivo.", "Estabilizadores cubitales (ECU): protegen el lado del meñique y el TFCC.", "Agarre y antebrazo: reentrena el agarre APARTE, sin dolor, cuando el dedo lo tolere (no dependas de straps para siempre)."],
     banderas:"🩺 Si hay bloqueo, chasquido con dolor, hinchazón marcada o no mejora → valóralo con un profesional.",
-    cita:"(— Schweizer; Miro 2021: el crimp multiplica ~30× la carga de la polea A2 vs mano abierta)" },
-  { id:"codo-tendon", zona:"Codo · tendón (epicondilitis / tríceps)", emoji:"💪",
-    claves:["codo","epicondil","epitroclea","triceps","tenista","golfista","tendinitis codo"],
+    cita:"(— Schweizer; Miro 2021: el crimp multiplica ~30× la carga de la polea A2 vs mano abierta)"
+  },
+  {
+    id:"codo-tendon",
+    zona:"Codo · tendón (epicondilitis / tríceps)",
+    emoji:"💪",
+    claves:["codo", "epicondil", "epitroclea", "triceps", "tenista", "golfista", "tendinitis codo"],
     resumen:"Tendinopatía de codo: la carga progresiva es el tratamiento; tape/masaje/reposo son adyuvantes, no la cura. El codo medial (golfista) responde 85-95% a conservador.",
-    hacer:[
-      "Carga progresiva: isométrico → luego pesado y lento (bajada controlada 3-4 s), antes que el ejercicio pesado de golpe.",
-      "Ej.: pushdown en polea con bajada lenta antes que skull crusher pesado.",
-      "Busca el ángulo/agarre que MENOS duele (barra EZ o agarre neutro en vez de barra recta) y baja carga hasta trabajar con dolor ≤5/10.",
-      "Guíate por el dolor: ≤5/10 durante y después, que vuelve a lo normal en 24 h y no sube semana a semana."],
-    evitar:[
-      "Tríceps muy pesado en el bloqueo final: JM press o skull crushers con barra recta pesada en fase reactiva.",
-      "Seguir subiendo carga si el dolor pasa de 5/10, no vuelve a la basal en 24 h o crece cada semana → baja un escalón.",
-      "Tratarlo SOLO con tape/masaje/ultrasonido/reposo total (el reposo largo desacondiciona el tendón)."],
+    hacer:["Carga progresiva: isométrico → luego pesado y lento (bajada controlada 3-4 s), antes que el ejercicio pesado de golpe.", "Ej.: pushdown en polea con bajada lenta antes que skull crusher pesado.", "Busca el ángulo/agarre que MENOS duele (barra EZ o agarre neutro en vez de barra recta) y baja carga hasta trabajar con dolor ≤5/10.", "Guíate por el dolor: ≤5/10 durante y después, que vuelve a lo normal en 24 h y no sube semana a semana."],
+    evitar:["Tríceps muy pesado en el bloqueo final: JM press o skull crushers con barra recta pesada en fase reactiva.", "Seguir subiendo carga si el dolor pasa de 5/10, no vuelve a la basal en 24 h o crece cada semana → baja un escalón.", "Tratarlo SOLO con tape/masaje/ultrasonido/reposo total (el reposo largo desacondiciona el tendón)."],
+    fortalecer:["Codo de tenista (lateral): excéntrico lento de EXTENSIÓN de muñeca con goma (tipo Tyler twist).", "Codo de golfista (medial): excéntrico de FLEXIÓN de muñeca y de pronación.", "Tríceps y espalda: fortalécelos con rango controlado para repartir y descargar la carga del codo."],
     banderas:"🩺 La evidencia del codo se extrapola de Aquiles/rótula (indirecta). Si no mejora, o hay pérdida de fuerza u hormigueo → profesional.",
-    cita:"(— Silbernagel 2007, modelo de dolor; guía clínica de tendinopatía JOSPT/BJSM)" },
-  { id:"lumbar-tecnica", zona:"Zona lumbar · técnica de bisagra", emoji:"🔩",
-    claves:["lumbar","espalda baja","zona baja","riñones","rinones","sacro","good morning","peso muerto","rumano","sentadilla espalda"],
+    cita:"(— Silbernagel 2007, modelo de dolor; guía clínica de tendinopatía JOSPT/BJSM)"
+  },
+  {
+    id:"lumbar-tecnica",
+    zona:"Zona lumbar · técnica de bisagra",
+    emoji:"🔩",
+    claves:["lumbar", "espalda baja", "zona baja", "riñones", "rinones", "sacro", "good morning", "peso muerto", "rumano", "sentadilla espalda"],
     resumen:"Matiz honesto: 'flexionar la espalda' NO es de por sí la causa (evidencia BAJA). El riesgo es la SUMA: carga alta + rango final + fatiga + pérdida de control + progresar muy rápido. Solución = técnica controlada + dosis progresiva, NO evitar.",
-    hacer:[
-      "Sentadilla en zona neutra controlada (ni hiperlordosis forzada ni redondeo que crece rep a rep); regula la profundidad a donde mantienes el control.",
-      "Bisagra de cadera en RDL/peso muerto: mueve desde la cadera, tibias casi verticales, barra pegada, baja solo hasta donde controlas.",
-      "Sube extendiendo cadera y rodilla A LA VEZ (no saques primero las rodillas dejando la cadera arriba).",
-      "Si la lumbar está sensible: trap-bar (menos palanca), y como accesorios hip thrust, back extension a 45°, RDL con mancuernas."],
-    evitar:[
-      "Redondeo lumbar que aumenta rep a rep bajo carga pesada + fatiga.",
-      "Good morning pesado con técnica pobre: déjalo ligero-moderado y con rango controlado, o sustitúyelo.",
-      "Subir extendiendo las rodillas ANTES que la cadera (te pasa la carga a la lumbar).",
-      "Evitarlo TODO por miedo: cargar no es peligroso de por sí; evitarlo también te desacondiciona."],
+    hacer:["Sentadilla en zona neutra controlada (ni hiperlordosis forzada ni redondeo que crece rep a rep); regula la profundidad a donde mantienes el control.", "Bisagra de cadera en RDL/peso muerto: mueve desde la cadera, tibias casi verticales, barra pegada, baja solo hasta donde controlas.", "Sube extendiendo cadera y rodilla A LA VEZ (no saques primero las rodillas dejando la cadera arriba).", "Si la lumbar está sensible: trap-bar (menos palanca), y como accesorios hip thrust, back extension a 45°, RDL con mancuernas."],
+    evitar:["Redondeo lumbar que aumenta rep a rep bajo carga pesada + fatiga.", "Good morning pesado con técnica pobre: déjalo ligero-moderado y con rango controlado, o sustitúyelo.", "Subir extendiendo las rodillas ANTES que la cadera (te pasa la carga a la lumbar).", "Evitarlo TODO por miedo: cargar no es peligroso de por sí; evitarlo también te desacondiciona."],
+    fortalecer:["Core profundo (multífido + transverso): 'bird-dog', plancha y dead-bug — estabilizan SIN flexionar la columna.", "Glúteo mayor: puente y hip thrust; descarga la lumbar en la bisagra de cadera.", "Estabilidad lateral (cuadrado lumbar + oblicuos): plancha lateral y farmer/suitcase carry.", "Erectores: back extension a 45° por resistencia y control, no a fallo con peso máximo."],
     banderas:"🩺 Dolor que baja por la pierna, hormigueo/adormecimiento, pérdida de fuerza o dolor nocturno → para y valóralo con un profesional.",
-    cita:"(— Saraceni 2020, JOSPT: evidencia BAJA de que flexionar al levantar sea factor de riesgo; J Biomech 2024)" }
+    cita:"(— Saraceni 2020, JOSPT: evidencia BAJA de que flexionar al levantar sea factor de riesgo; J Biomech 2024)"
+  }
 ];
 // Info honesta bajo demanda (no se autopauta): péptidos de 'recuperación' y nutrición en lesión.
 var LESIONES_PEPTIDOS_INFO="Te doy la VERDAD, no una recomendación: el BPC-157 (y el TB-500) NO son suplementos como la creatina — son compuestos EXPERIMENTALES, no aprobados por la FDA ni la EMA para uso humano en ninguna indicación. La evidencia humana es casi inexistente (casi todo en animales; ni un solo ensayo con placebo para curar tendón o músculo). Para cualquier deportista con control antidopaje es DOPAJE sancionable (el BPC-157 está en la categoría S0 de la WADA, sin excepción posible). Y el mercado gris ('research chemical') no controla pureza ni esterilidad → riesgo real de infección. Lo que SÍ multiplica la recuperación con evidencia humana sólida: carga progresiva + dormir 7-9 h + proteína 1.6-2.2 g/kg + no fumar. Por eso NO te recomiendo BPC-157. (— USADA; WADA Lista 2026 S0; HSS Journal 2025, revisión sistemática)";
