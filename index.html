@@ -447,7 +447,7 @@
 
 <header class="brandbar">
   <div class="logo"><span class="dot"></span>JV <b>Fitness</b></div>
-  <span class="tag">MVP v0.16.13 · motor v0.7</span>
+  <span class="tag">MVP v0.16.14 · motor v0.7</span>
 </header>
 <div class="statuschip"><span class="pulse"></span> cálculo science-based · ajustable · calibración real</div>
 
@@ -1237,10 +1237,13 @@ Tus datos se guardan solo en este dispositivo.</p>
 
 <script>
 // ======= REGLAS (espejo de _motor/motor-reglas.json v0.6) =======
+// [MOTOR-CORE-INI] — motor de cálculo PURO (R + bmr/calObjetivo/macros/factorPasos/factorDeporte/planificar/plan).
+// Los tests (test-motor.node.js) extraen este bloque y lo evalúan tal cual. No meter aquí DOM ni storage.
 const R = {
   kcal_por_kg: 7700,
   factores: {sedentario:1.30, ligero:1.45, activo:1.60, muy_activo:1.75},
   prot: {general:1.6, magro_cut_agresivo:2.2, umbral_magro:{hombre:15,mujer:22}, umbral_cut_agresivo_int:22},
+  lesion: {prot_suelo:2.0, deficit_max_pct:0},   // 🩹 2C: con lesión activa, proteína ≥2,0 g/kg (Math.max, nunca baja) y kcal a MANTENIMIENTO (déficit 0%: Tipton 2015 pide balance energético en fase aguda). Verificador adversarial 2026-07-09.
   grasa: {general:0.7, bulk:0.9},
   fibra_g_1000: 14,
   calib: {perder_grasa:{estancado:-0.1, rapido:-1.0}, ganar_musculo:{estancado:0.1, rapido:0.5}}
@@ -1279,6 +1282,10 @@ function macros(cal,p){
   let pgkg, nota;
   if(magro && cutAgresivo){ pgkg=R.prot.magro_cut_agresivo; nota=pgkg+" g/kg (cut agresivo en persona magra)"; }
   else { pgkg=R.prot.general; nota=pgkg+" g/kg (regla general T3)"; }
+  // 🩹 LESIÓN activa (2C · al motor): sube la proteína a un SUELO de 2,0 g/kg con Math.max → NUNCA la baja
+  // (quien ya va a 2,2 por cut agresivo se queda en 2,2). Tipton 2015: "2–2.5 g/kg warranted during immobilization".
+  let lesionProtSubida=false;
+  if(p.lesionActiva && pgkg < R.lesion.prot_suelo){ pgkg=R.lesion.prot_suelo; nota=pgkg+" g/kg (suelo por lesión activa · Tipton 2015)"; lesionProtSubida=true; }
   const prot=pgkg*p.peso_kg;
   const ggkg = p.objetivo==="ganar_musculo"?R.grasa.bulk:R.grasa.general;
   const gr=ggkg*p.peso_kg;
@@ -1286,6 +1293,7 @@ function macros(cal,p){
   const carb=Math.max(0,resto/4);
   const fibra=Math.round(R.fibra_g_1000*cal/1000);
   return {prot:Math.round(prot), gr:Math.round(gr), carb:Math.round(carb), fibra, azucar:Math.round(cal*0.10/4), sat:Math.round(cal*0.10/9), pgkg, ggkg, nota,
+    lesionActiva:!!p.lesionActiva, lesionProtSubida:lesionProtSubida,
     aviso: resto<0 ? "Calorías demasiado bajas para la proteína+grasa mínimas → déficit demasiado agresivo." : null};
 }
 // Pasos -> factor (Tudor-Locke & Bassett 2004). Capturan el NEAT que el desplegable de gym ignora.
@@ -1415,10 +1423,21 @@ function plan(p){
   const fAct=R.factores[p.actividad]||1.30, fPas=factorPasos(p.pasos), fDep=factorDeporte(p.actividad,p.deporte);
   const fEff=Math.max(fAct,fPas,fDep);
   const b=bmr(p); const t=b.v*fEff;
-  const cal=calObjetivo(t,p.objetivo,p.intensidad_pct); const m=macros(cal,p);
+  // 🩹 LESIÓN activa (2C): no hundir las kcal. En fase activa la evidencia pide BALANCE energético, no déficit
+  // (Tipton 2015). Con objetivo perder grasa se lleva a MANTENIMIENTO (déficit tope 0%) y nunca por debajo del BMR.
+  // Mantenimiento y ganar músculo no se tocan. Verificador adversarial 2026-07-09 (Tipton 2015 / Wall 2013).
+  var intEff=p.intensidad_pct;
+  var capLesion = p.lesionActiva && p.objetivo==="perder_grasa" && intEff>R.lesion.deficit_max_pct;
+  if(capLesion) intEff=R.lesion.deficit_max_pct;
+  var cal=calObjetivo(t,p.objetivo,intEff);
+  if(p.lesionActiva && cal<b.v) cal=b.v;
+  const m=macros(cal,p);
   return {bmr:Math.round(b.v), bmrM:b.m, tdee:Math.round(t), cal:Math.round(cal), m, factorEff:fEff,
-    porPasos: fPas>fAct && fPas>=fDep, porDeporte: fDep>Math.max(fAct,fPas)};
+    porPasos: fPas>fAct && fPas>=fDep, porDeporte: fDep>Math.max(fAct,fPas),
+    lesionActiva: !!p.lesionActiva, lesionCapDeficit: !!capLesion,
+    lesionAvisoBulk: !!(p.lesionActiva && p.objetivo==="ganar_musculo")};
 }
+// [MOTOR-CORE-FIN]
 function calibrar(calComidas,pAntes,pDespues,dias,obj){
   if(!(dias>=1)||!(pAntes>0)) return null;
   const d=pDespues-pAntes;
@@ -3671,7 +3690,7 @@ function resetTodo(){ if(!confirm("⚠️ Esto borra TODO: perfil, pesos, entren
 // Reemplazo total con confirmación. Reusa get/set, hoyLocal, toast, validar, render. NO toca motor ni gate.
 function exportarJSON(){ try{ set("jvf_last_export",hoyLocal()); }catch(e){}
   try{
-    var data={ app:"jvf", schema:1, app_version:"0.16.13", exportadoEl:new Date().toISOString(),
+    var data={ app:"jvf", schema:1, app_version:"0.16.14", exportadoEl:new Date().toISOString(),
       perfil:get(LS_P,null), pesos:get(LS_W,[]), entrenos:get(LS_E,[]), notas_ej:get("jvf_notas_ej",{}), comida:get("jvf_comida",[]), agua:get("jvf_agua",{}), suples_cfg:get("jvf_suples_cfg",null), suples_log:get("jvf_suples_log",{}),
       rutinas:get("jvf_rutinas",[]), meals:get("jvf_meals",[]), ent_start:get("jvf_ent_start",null),   // v0.10 · backup completo
       alimentos_propios:get("jvf_alimentos_propios",[]), barcode_cache:get("jvf_barcode_cache",{}),   // I5/I6 · también viajan en el backup
@@ -5100,11 +5119,13 @@ function cbRespDia(acc){
 function cbPorque(){
   var p=get(LS_P,null);
   if(!p){ cbMsg("j", esc(t("cb_sin_plan"))); cbChips([]); return; }
-  var rec=plan(p), o=window._obj||{cal:rec.cal, prot:rec.m.prot, grasa:rec.m.gr, carb:rec.m.carb};
+  var _hayLesion = lesionesGet().length>0;   // 🩹 2C: el desglose debe reflejar el ajuste por lesión, no el déficit viejo
+  var rec=plan(_hayLesion ? Object.assign({}, p, {lesionActiva:true}) : p), o=window._obj||{cal:rec.cal, prot:rec.m.prot, grasa:rec.m.gr, carb:rec.m.carb};
   var fSrc = rec.porDeporte ? "tu deporte extra manda sobre el desplegable" : rec.porPasos ? "tus pasos diarios capturan el NEAT" : "tu actividad declarada";
   var objTxt = p.objetivo==="perder_grasa" ? ("perder grasa → −"+p.intensidad_pct+"%")
     : p.objetivo==="ganar_musculo" ? ("ganar músculo → +"+p.intensidad_pct+"%")
     : "recomposición → mantenimiento";
+  if(rec.lesionCapDeficit) objTxt = "perder grasa, pero con lesión activa lo pauso a MANTENIMIENTO (no dieta agresiva con lesión)";
   var L=[
     "1) Reposo (BMR): "+rec.bmr+" kcal — fórmula "+rec.bmrM+".",
     "2) × factor de actividad "+rec.factorEff+" ("+fSrc+") → gasto total (TDEE): "+rec.tdee+" kcal.",
@@ -8317,7 +8338,10 @@ function render(){
     return; }
   show("bienvenida",false); show("onboarding",false); show("tabs",true);
 
-  const rec=plan(p);
+  // 🩹 LESIÓN activa (2C): si hay lesión registrada, el motor sube proteína (suelo 2,0 g/kg) y lleva las kcal
+  // a mantenimiento (no dieta agresiva con lesión). Se pasa como flag; NO se persiste en el perfil.
+  var _hayLesion = lesionesGet().length>0;
+  const rec=plan(_hayLesion ? Object.assign({}, p, {lesionActiva:true}) : p);
   const ov=p.ov||{};
   const pgkg = ov.prot_gkg!=null?ov.prot_gkg:rec.m.pgkg;
   const ggkg = ov.grasa_gkg!=null?ov.grasa_gkg:rec.m.ggkg;
@@ -8345,6 +8369,16 @@ function render(){
   $("o_ovnote").innerHTML = ajustado
     ? "✏️ <b style='color:var(--soft)'>Plan ajustado por ti.</b> Recomendado: "+rec.cal+" kcal · P"+rec.m.prot+" G"+rec.m.gr+" C"+rec.m.carb+". La app vigilará si progresas con tu ajuste."
     : "Science-based · "+rec.m.nota+". Ajústalo en la pestaña «Ajustar».";
+  // 🩹 LESIÓN activa: nota honesta bajo el plan (qué cambió el motor y por qué; la comida atenúa, no salva sola).
+  if(rec.lesionActiva){
+    var _lp=[];
+    if(rec.m.lesionProtSubida) _lp.push("subo tu proteína a "+rec.m.pgkg+" g/kg para blindar el músculo");
+    if(rec.lesionCapDeficit) _lp.push("mantengo tus calorías en mantenimiento (sin déficit): con lesión activa el cuerpo pide balance energético, no dieta agresiva");
+    if(rec.lesionAvisoBulk) _lp.push("ojo: un superávit sin poder cargar la zona añade sobre todo grasa — recarga antes de subir kcal");
+    var _mid=_lp.join("; "); if(_mid) _mid=_mid.charAt(0).toUpperCase()+_mid.slice(1)+". ";
+    $("o_ovnote").innerHTML += "<div style='margin-top:8px;color:var(--jade);line-height:1.45'>🩹 <b>Plan adaptado por tu lesión.</b> "+_mid
+      +"Comer bien no frena por sí solo la pérdida de músculo cuando estás lesionado: solo la atenúa. La palanca de verdad es volver a cargar la zona (moverla, fisio) en cuanto la lesión lo permita. (— Wall 2013; Tipton 2015)</div>";
+  }
   const aviso = restoKcal<0 ? "⚠️ Calorías demasiado bajas para esa proteína+grasa → déficit inviable. Sube calorías o baja proteína/grasa." : null;
   if(aviso){ $("o_aviso").textContent=aviso; show("o_aviso",true);} else show("o_aviso",false);
 
