@@ -447,7 +447,7 @@
 
 <header class="brandbar">
   <div class="logo"><span class="dot"></span>JV <b>Fitness</b></div>
-  <span class="tag">MVP v0.16.11 · motor v0.7</span>
+  <span class="tag">MVP v0.16.12 · motor v0.7</span>
 </header>
 <div class="statuschip"><span class="pulse"></span> cálculo science-based · ajustable · calibración real</div>
 
@@ -3671,7 +3671,7 @@ function resetTodo(){ if(!confirm("⚠️ Esto borra TODO: perfil, pesos, entren
 // Reemplazo total con confirmación. Reusa get/set, hoyLocal, toast, validar, render. NO toca motor ni gate.
 function exportarJSON(){ try{ set("jvf_last_export",hoyLocal()); }catch(e){}
   try{
-    var data={ app:"jvf", schema:1, app_version:"0.16.11", exportadoEl:new Date().toISOString(),
+    var data={ app:"jvf", schema:1, app_version:"0.16.12", exportadoEl:new Date().toISOString(),
       perfil:get(LS_P,null), pesos:get(LS_W,[]), entrenos:get(LS_E,[]), notas_ej:get("jvf_notas_ej",{}), comida:get("jvf_comida",[]), agua:get("jvf_agua",{}), suples_cfg:get("jvf_suples_cfg",null), suples_log:get("jvf_suples_log",{}),
       rutinas:get("jvf_rutinas",[]), meals:get("jvf_meals",[]), ent_start:get("jvf_ent_start",null),   // v0.10 · backup completo
       alimentos_propios:get("jvf_alimentos_propios",[]), barcode_cache:get("jvf_barcode_cache",{}),   // I5/I6 · también viajan en el backup
@@ -3897,7 +3897,7 @@ var CEREBRO_KB=[
   {
     tronco:"sueno", rama:"cuantas-horas",
     claves:["cuanto dormir","horas de sueño","cuantas horas dormir","sueño musculo","dormir para ganar musculo","cuanto hay que dormir","sueño optimo","dormir","sueño","cuantas horas hay que dormir","higiene de sueño","cuantas horas necesito"],
-    r:"El objetivo son 7-9 horas. Dormir es una variable anabólica crítica: por debajo de 6h crónicas el anabolismo se resiente aunque entrenes y comas perfecto. Higiene básica: horarios consistentes, cuarto oscuro/fresco/silencioso, sin pantallas 1h antes y cortar cafeína ~8h antes. Ningún suplemento compensa la falta de sueño. (— Tema 27, Hirshkowitz 2015 / Lamon 2021)",
+    r:"El objetivo son 7-9 horas. Dormir es una variable anabólica crítica: por debajo de 6h crónicas el anabolismo se resiente aunque entrenes y comas perfecto. Higiene básica: horarios consistentes, cuarto oscuro/fresco/silencioso, sin pantallas 1h antes y cortar cafeína con margen (un café ~9h antes; el pre-entreno, más). Ningún suplemento compensa la falta de sueño. (— Tema 27, Hirshkowitz 2015 / Lamon 2021)",
     chips:["¿qué pasa si duermo mal una noche?","¿entreno igual si no dormí?","¿la creatina compensa dormir mal?"]
   },
   {
@@ -3967,7 +3967,7 @@ var CEREBRO_KB=[
   {
     tronco:"suplementacion", rama:"cafeina",
     claves:["cafeina","cafe antes de entrenar","cuanta cafeina","pre workout","cafeina pre entreno","cafe para entrenar","cafeina rendimiento","cafe","tomo cafeina","cafe o pre workout","cafeina cuanta","ayuda si dormi mal"],
-    r:"La cafeína mejora el foco y baja la percepción del esfuerzo: 3-6 mg/kg unos 40-60 min antes (un café doble para ~70 kg). Un café basta, el pre-workout de marca no es necesario. Córtala ~8h antes de dormir para no cargarte el sueño. (— Tema 26, Grgic 2018 / refuerzos tanda-4)",
+    r:"La cafeína mejora el foco y baja la percepción del esfuerzo: 3-6 mg/kg unos 40-60 min antes (un café doble para ~70 kg). Un café basta, el pre-workout de marca no es necesario. Córtala con margen: un café ~9h antes de dormir; un pre-entreno, bastante más (lleva mucha más cafeína). (— Tema 26, Grgic 2018 / refuerzos tanda-4)",
     chips:["¿café o pre-workout?","¿afecta al sueño?","¿ayuda si dormí mal?"]
   },
 
@@ -4289,8 +4289,44 @@ var CEREBRO_KB=[
     claves:["aceites de semilla","aceite de girasol","omega 6","aceite vegetal","seed oils","aceite de semillas malo","aceite de girasol malo","que aceite uso para cocinar","omega 3","omega-3","que grasas elijo"],
     r:"El alarmismo de que los aceites de semilla son \"el mayor error nutricional\" NO está respaldado por evidencia humana directa: los mecanismos (oxidación del omega-6) son plausibles pero no probados a dosis dietéticas normales. Consejo práctico: para cocinar a fuego vivo, mejor oliva o aguacate; y en vez de demonizar el omega-6, AÑADE omega-3 (pescado graso, lino, chía). (— Tema 30, @santirpardo honesto)",
     chips:["¿qué aceite uso para cocinar?","¿cuánta grasa al día?","¿omega-3?"]
-  }
+  },
 
+  {
+    tronco:"alcohol", rama:"alcohol-ganancias-musculares",
+    claves:["el alcohol corta las ganancias","el alcohol corta las ganancias musculares","beber alcohol afecta la definicion","cerveza despues de entrenar musculo","emborracharse arruina el gym","alcohol y sintesis de proteina","tomar alcohol baja la testosterona","alcohol fin de semana pierdo musculo","cuanto alcohol puedo beber sin perder gains","el alcohol da barriga o quita musculo","copas y volumen muscular"],
+    r:"Emborracharte de verdad sí frena el músculo, pero por dosis: en el único estudio que lo midió directo, una borrachera (1,5 g/kg, unos 12 chupitos) tras entrenar bajó la síntesis de proteína muscular un 24% aunque tomaras proteína a la vez, y un 37% si no la tomabas. O sea: el alcohol golpea el interruptor anabólico y la proteína solo amortigua el golpe, no lo anula. Qué hacer sin dramatizar: una o dos copas sueltas casi no mueven la aguja; el problema es la cantidad, la frecuencia, y sobre todo que el alcohol te roba sueño, te mete calorías vacías y suele venir con mala comida (ahí va la definición). Regla práctica: si vas a beber fuerte, que no sea justo después de la sesión más importante de la semana, hidrata, y no lo conviertas en hábito de fin de semana. (— Parr 2014 / PLoS ONE, alcohol y síntesis proteica post-ejercicio)",
+    chips:["¿Cuántas calorías vacías mete el alcohol y cómo cuadran en mi déficit?","¿Cuánto me destroza el sueño una noche de copas?","¿Da igual beber los días que no entreno?"]
+  },
+  {
+    tronco:"cardio", rama:"cardio-hipertrofia-interferencia-4x4",
+    claves:["hiit o liss para hipertrofia","cardio mata las ganancias de musculo","efecto interferencia cardio y fuerza","correr o bici para no perder gains","como meter cardio sin joder la hipertrofia","protocolo 4x4 noruego vo2max","mejor cardio para el corazon y salud","separar cardio del gimnasio mismo dia","dosis minima de cardio a la semana","hiit vs liss"],
+    r:"El cardio bien puesto NO te come el músculo: el mayor metaanálisis a nivel de fibra encontró solo un efecto negativo pequeño y en el límite (diferencia media -0,23; p=0,050) frente a solo pesas, y a nivel de músculo entero prácticamente cero. El matiz clave: correr interfiere más que la bici en las fibras tipo I (-0,81 corriendo vs sin efecto pedaleando), así que para proteger piernas usa bici/elíptica/remo antes que carrera. Reglas prácticas: (1) separa el cardio duro de tu sesión de pesas —otra sesión u otro día— para no llegar fatigado a las series pesadas; (2) para VO2máx y corazón, el 4x4 noruego —4 min al 90-95% FCmáx, 3 min flojo al 70%, x4, 3 días/semana— subió el VO2máx un 7,2% en 8 semanas, más que el continuo moderado al mismo trabajo total; (3) 2-3 sesiones/semana bastan para la salud cardiovascular sin canibalizar la hipertrofia. La potencia explosiva (saltar, esprintar) SÍ se resiente algo, no la masa. (— Lundberg/Schumann 2022, Sports Medicine; 4x4: Helgerud 2007)",
+    chips:["¿Cómo reparto cardio y pesas en una semana de 4 días?","¿Qué pasa con el cardio si estoy en definición?","¿Cuánto VO2máx necesito para considerarme sano?"]
+  },
+  {
+    tronco:"suplementacion", rama:"suplementos-que-valen-la-pena",
+    claves:["cuanto omega 3 tomar gym","vitamina d suplemento hace falta","sirve la ashwagandha para el gym","los bcaa valen la pena","quemagrasas funcionan de verdad","zma sirve para dormir y testosterona","que suplementos son tirar el dinero","el omega 3 sirve para el musculo","la ashwagandha sube la testosterona"],
+    r:"Casi todo el pasillo de suplementos es humo; la lista corta que SÍ mueve la aguja es: proteína en polvo (útil solo para llegar a tu total diario de ~1,6 g/kg, no es magia, es comida cómoda), cafeína 3-6 mg/kg unos 45-60 min antes de entrenar (el ergogénico mejor probado que existe), creatina (ya la tienes), omega-3 EPA+DHA a 2-3 g/día si comes poco pescado (baja agujetas e inflamación, no te hace más fuerte directamente) y vitamina D SOLO si tienes déficit real medido en analítica, no a ciegas. Lo que NO compres: BCAA (inútiles si ya comes suficiente proteína, les falta el resto de aminoácidos), ZMA, ashwagandha como \"quemagrasas\" o \"subetestosterona\", y cualquier quemagrasas termogénico: no queman grasa, solo te aceleran el pulso. Regla base: si tu dieta ya cuadra, ningún bote la va a arreglar. (— Morton 2018 / Br J Sports Med, meta-análisis proteína; ISSN cafeína/omega-3)",
+    chips:["¿Cómo calculo mi proteína diaria exacta?","¿Cuánta cafeína es demasiada para mi peso?","¿Cómo sé si tengo déficit de vitamina D?"]
+  },
+  {
+    tronco:"mujer", rama:"periodizar-ciclo-menstrual",
+    claves:["hay que entrenar segun el ciclo menstrual","periodizar el entreno por fases del ciclo","en que fase del ciclo se rinde mas","entreno mas fuerte en fase folicular","la regla afecta al rendimiento en el gym","debo bajar cargas cuando tengo la regla","sirve el ciclo para planificar el entrenamiento","fase del ciclo y fuerza en mujeres","cambiar el entreno cada fase del mes","menstruacion y rendimiento deportivo"],
+    r:"La idea de programar el entreno por fases del ciclo suena bien pero la evidencia es floja: al juntar los estudios, la fase del ciclo mueve el rendimiento de forma \"trivial\" (efecto -0,06; lo mayor, folicular temprana vs tardía, -0,14; ambos prácticamente cero) y con calidad de evidencia baja. Traducción accionable: no bajes cargas ni cambies el plan \"porque toca fase X\". Entrena por progresión normal y usa el ciclo solo como diario personal: si a TI un día concreto del mes se te desploma la fuerza o el ánimo, ajusta ESE día, no el calendario entero por regla general. La recomendación de los propios autores es enfoque individualizado, no una guía universal por fases. (— McNulty 2020 / Sports Medicine)",
+    chips:["¿En la regla rindo peor de verdad o es sensación?","¿Qué es el RED-S y cómo sé si estoy en déficit energético?","¿Puede una mujer ganar músculo y perder grasa a la vez?"]
+  },
+  {
+    tronco:"estres", rama:"sueno-cortisol-composicion",
+    claves:["el estres me hace perder musculo","el cortisol engorda o me quita gains","dormir poco pierdo musculo en dieta","como afecta el estres a la recuperacion en el gym","suplementos anti cortisol funcionan","estres alto y ganancias en el gimnasio","dormir mal y composicion corporal","bajar cortisol para perder grasa"],
+    r:"El cortisol no es tu enemigo: sube de forma normal cuando entrenas y eso está bien, hasta es parte de la adaptación. El problema es tenerlo crónicamente alto por dormir poco y estrés vital sostenido, porque ahí cambia QUÉ pierdes. En un ensayo cruzado de 14 días con la misma dieta, dormir 5,5h en vez de 8,5h no hizo perder más peso total, pero el grupo que dormía poco perdió el doble de músculo (2,4 kg vs 1,5 kg) y casi nada de grasa (0,6 kg vs 1,4 kg): en déficit y durmiendo mal, sacrificas músculo en lugar de grasa. Lo accionable no es comprar potingues anti-cortisol (es humo): duerme 7-9h como prioridad número uno, camina para descargar estrés, y baja volumen o intensidad las semanas de mucha presión vital. (— Nedeltcheva 2010 / Ann Intern Med, ensayo cruzado n=10)",
+    chips:["¿Cuántas horas de sueño necesito para no perder músculo en definición?","¿Sirve la ashwagandha o la fosfatidilserina para bajar el cortisol?","¿Cómo recorto el volumen en una semana de mucho estrés?"]
+  },
+  {
+    tronco:"sueno", rama:"cafeina-corte-horas-antes",
+    claves:["cuantas horas antes de dormir dejo la cafeina","hasta que hora puedo tomar cafe si entreno","el preentreno de la tarde me quita el sueno","cafeina y sueno cuanto tiempo antes","puedo tomar cafe por la tarde sin joder el sueno","a que hora corto la cafeina","pre workout de noche insomnio","cafe 6 horas antes de dormir","cuanto tarda la cafeina en irse antes de acostarme","tomar cafeina tarde afecta al descanso"],
+    r:"Corta la cafeína con margen según la dosis, no \"a ojo por la tarde\": un café normal (~100 mg) pide unas 9 h antes de dormir, y un pre-entreno (200+ mg) pide unas 13 h. Traducido: si te acuestas a las 23:00, el café hasta las 14:00 y el pre-entreno solo para sesiones de mañana o mediodía; entrenar con pre-entreno a las 19:00 te roba en promedio ~45 min de sueño esa noche aunque \"te duermas igual\" (porque baja la profundidad, no siempre lo notas). Si entrenas de tarde-noche y necesitas empuje, usa dosis baja o cafeína de vida media corta y no dobles con otra bebida energética. (— Gardiner et al. 2023 / meta-análisis Sleep Medicine Reviews)",
+    chips:["¿Y si mi entrenamiento fuerte es por la noche, cómo compenso el pre-entreno?","¿Cómo sé si soy metabolizador lento o rápido de cafeína?","¿Cuánta cafeína lleva realmente mi pre-entreno?"]
+  }
 ];
 
 // ─────────────── O4 · CEREBRO COMBINATORIO (v0.13-D) ───────────────
@@ -4327,15 +4363,11 @@ var CEREBRO_COMBOS=[
 // Pablo alimente el master antes de escribir respuesta. El Cerebro las declina con honestidad.
 var CEREBRO_HUECOS=[
   { tronco:"melatonina", falta:"El master no tiene NADA de melatonina (dosis, timing, seguridad, si sirve). T27 solo cubre horas de sueño e higiene." },
-  { tronco:"suplementacion", falta:"Sin cobertura de: multivitamínico, vitamina D, omega-3 (dosis concreta), ashwagandha, ZMA, colágeno, glutamina." },
-  { tronco:"alcohol", falta:"Rama esperable ('¿el alcohol corta las ganancias?') sin ningún Tema. No responder hasta ingerirlo." },
+  { tronco:"suplementacion", falta:"Sin cobertura propia de: multivitamínico, colágeno, glutamina (vit. D, omega-3, ashwagandha, ZMA, BCAA y quemagrasas ya cubiertos por la lista honesta)." },
   { tronco:"comidas", falta:"'¿Importa el desayuno?' y ayuno intermitente como protocolo de adelgazamiento no están tratados directamente." },
-  { tronco:"cardio", falta:"No hay HIIT vs LISS, ni dosis de cardio, ni cardio para salud cardiovascular. Solo caminar/NEAT e interferencia genérica." },
-  { tronco:"sueno", falta:"Falta jet lag, turnos de noche, apnea, corte de cafeína detallado como Tema propio." },
+  { tronco:"sueno", falta:"Falta jet lag, turnos de noche y apnea como Tema propio (el corte de cafeína ya está cubierto)." },
   { tronco:"agua", falta:"El objetivo ~35 ml/kg viene de la app, no de un Tema verificado con caja ✅; la única ciencia es el umbral ≥3%." },
-  { tronco:"lesiones", falta:"Nada sobre dolor articular, tendinitis, calentamiento/movilidad, o entrenar con molestias." },
-  { tronco:"mujer", falta:"Perfil mujer disperso (RED-S en T35, recomp Radfar 2026). Falta rama 'entreno/dieta en ciclo menstrual'." },
-  { tronco:"estres", falta:"Captura 'estoy estresado' sin consejo del master propio; solo cortisol/caminar (T11). Falta protocolo." }
+  { tronco:"lesiones", falta:"El Cerebro en sí no tiene dolor articular/tendinitis/movilidad; lo lleva el sub-motor LESIONES aparte, no CEREBRO_KB." }
 ];
 
 // --- normalización (reusa otroNorm: minúsculas y sin tildes) + limpieza de signos de chat/dictado ---
