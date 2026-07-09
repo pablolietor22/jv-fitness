@@ -447,7 +447,7 @@
 
 <header class="brandbar">
   <div class="logo"><span class="dot"></span>JV <b>Fitness</b></div>
-  <span class="tag">MVP v0.16.4 · motor v0.7</span>
+  <span class="tag">MVP v0.16.5 · motor v0.7</span>
 </header>
 <div class="statuschip"><span class="pulse"></span> cálculo science-based · ajustable · calibración real</div>
 
@@ -831,7 +831,7 @@
     </div>
   </div>
   <div id="cb_diario"></div>
-  <p class="cb-foot">⚕️ Cita la ciencia del master file · <b style="color:var(--mute)">no es consejo médico</b> (salud/lesiones → profesional). 🔒 Todo se queda <b style="color:var(--mute)">solo en tu dispositivo</b>.</p>
+  <p class="cb-foot"><b style="color:var(--mute)">No es consejo médico</b> (salud/lesiones → profesional). 🔒 Todo se queda <b style="color:var(--mute)">solo en tu dispositivo</b>.</p>
 </div>
 
 <!-- 🩹 LESIONES · el mini-fisio como apartado propio (reusa el sub-motor LESIONES_KB + jvf_lesiones) -->
@@ -1283,7 +1283,7 @@ function macros(cal,p){
   const resto=cal-prot*4-gr*9;
   const carb=Math.max(0,resto/4);
   const fibra=Math.round(R.fibra_g_1000*cal/1000);
-  return {prot:Math.round(prot), gr:Math.round(gr), carb:Math.round(carb), fibra, pgkg, ggkg, nota,
+  return {prot:Math.round(prot), gr:Math.round(gr), carb:Math.round(carb), fibra, azucar:Math.round(cal*0.10/4), sat:Math.round(cal*0.10/9), pgkg, ggkg, nota,
     aviso: resto<0 ? "Calorías demasiado bajas para la proteína+grasa mínimas → déficit demasiado agresivo." : null};
 }
 // Pasos -> factor (Tudor-Locke & Bassett 2004). Capturan el NEAT que el desplegable de gym ignora.
@@ -1480,52 +1480,120 @@ var _favSugDismiss={};   // descartes de la sugerencia (solo en memoria; no se p
 var LS_HIST_ALIM="jvf_hist_alim";
 var _histQuery="";   // último texto del buscador (solo en memoria; para sobrevivir a un renderComida)
 var FOODS=[
-  {n:"Pechuga de pollo",kcal:165,p:31,c:0,f:3.6},{n:"Muslo de pollo",kcal:209,p:26,c:0,f:11},
-  {n:"Ternera magra",kcal:175,p:26,c:0,f:8},{n:"Lomo de cerdo",kcal:145,p:21,c:0,f:6},
-  {n:"Pavo (pechuga)",kcal:135,p:29,c:0,f:2},{n:"Atún al natural",kcal:116,p:26,c:0,f:1},
-  {n:"Salmón",kcal:208,p:20,c:0,f:13},{n:"Merluza",kcal:90,p:18,c:0,f:2},{n:"Gambas",kcal:99,p:24,c:0,f:0.3},
-  {n:"Huevo entero",kcal:155,p:13,c:1.1,f:11},{n:"Clara de huevo",kcal:52,p:11,c:0.7,f:0.2},
-  {n:"Jamón serrano",kcal:241,p:31,c:1,f:12},{n:"Jamón cocido (pavo)",kcal:104,p:17,c:1.5,f:3},
-  {n:"Leche entera",kcal:61,p:3.2,c:4.8,f:3.3,u:"ml"},{n:"Leche desnatada",kcal:35,p:3.4,c:5,f:0.1,u:"ml"},
-  {n:"Yogur natural",kcal:61,p:3.5,c:4.7,f:3.3},{n:"Yogur griego",kcal:97,p:9,c:4,f:5},
-  {n:"Queso batido 0%",kcal:47,p:8,c:4,f:0.2},{n:"Requesón",kcal:98,p:11,c:3,f:4},{n:"Queso curado",kcal:380,p:25,c:1.4,f:30},
-  {n:"Arroz blanco cocido",kcal:130,p:2.7,c:28,f:0.3},{n:"Pasta cocida",kcal:158,p:5.8,c:31,f:0.9},
-  {n:"Avena",kcal:389,p:17,c:66,f:7},{n:"Pan integral",kcal:247,p:9,c:41,f:3.4},{n:"Pan blanco",kcal:265,p:9,c:49,f:3.2},
-  {n:"Patata cocida",kcal:87,p:1.9,c:20,f:0.1},{n:"Boniato",kcal:86,p:1.6,c:20,f:0.1},{n:"Quinoa cocida",kcal:120,p:4.4,c:21,f:1.9},
-  {n:"Lentejas cocidas",kcal:116,p:9,c:20,f:0.4},{n:"Garbanzos cocidos",kcal:164,p:9,c:27,f:2.6},{n:"Alubias cocidas",kcal:127,p:9,c:23,f:0.5},
-  {n:"Plátano",kcal:89,p:1.1,c:23,f:0.3},{n:"Manzana",kcal:52,p:0.3,c:14,f:0.2},{n:"Naranja",kcal:47,p:0.9,c:12,f:0.1},
-  {n:"Fresas",kcal:32,p:0.7,c:8,f:0.3},{n:"Arándanos",kcal:57,p:0.7,c:14,f:0.3},
-  {n:"Aguacate",kcal:160,p:2,c:9,f:15},{n:"Aceite de oliva",kcal:884,p:0,c:0,f:100},
-  {n:"Almendras",kcal:579,p:21,c:22,f:50},{n:"Nueces",kcal:654,p:15,c:14,f:65},{n:"Crema de cacahuete",kcal:588,p:25,c:20,f:50},
-  {n:"Brócoli",kcal:34,p:2.8,c:7,f:0.4},{n:"Espinacas",kcal:23,p:2.9,c:3.6,f:0.4},{n:"Tomate",kcal:18,p:0.9,c:3.9,f:0.2},
-  {n:"Lechuga",kcal:15,p:1.4,c:2.9,f:0.2},{n:"Pimiento",kcal:31,p:1,c:6,f:0.3},
-  {n:"Proteína whey (polvo)",kcal:380,p:75,c:8,f:6},{n:"Chocolate negro 85%",kcal:590,p:10,c:19,f:55},{n:"Miel",kcal:304,p:0.3,c:82,f:0},
-  {n:"Sardinas en aceite (escurridas)",kcal:208,p:25,c:0,f:11},{n:"Atún en aceite (escurrido)",kcal:198,p:29,c:0,f:8},
-  {n:"Bacalao",kcal:82,p:18,c:0,f:0.7},{n:"Dorada",kcal:100,p:20,c:0,f:2.5},{n:"Lubina",kcal:97,p:19,c:0,f:2},
-  {n:"Caballa",kcal:205,p:19,c:0,f:14},{n:"Boquerones",kcal:131,p:20,c:0,f:5},{n:"Pulpo cocido",kcal:82,p:15,c:2,f:1},
-  {n:"Solomillo de cerdo",kcal:143,p:21,c:0,f:6},{n:"Carne picada mixta",kcal:250,p:17,c:0,f:20},
-  {n:"Chorizo",kcal:455,p:24,c:2,f:38},{n:"Lomo embuchado",kcal:380,p:37,c:0,f:25},{n:"Fuet",kcal:470,p:25,c:2,f:40},
-  {n:"Kéfir",kcal:60,p:3.3,c:4.5,f:3.2},{n:"Skyr",kcal:63,p:11,c:4,f:0.2},{n:"Queso fresco (Burgos)",kcal:174,p:12,c:3,f:13},
-  {n:"Mozzarella",kcal:280,p:22,c:2.2,f:20},{n:"Queso de untar light",kcal:150,p:8,c:5,f:11},
-  {n:"Mantequilla",kcal:717,p:0.9,c:0.1,f:81},{n:"Nata para cocinar",kcal:195,p:2.5,c:4,f:19},
-  {n:"Tofu",kcal:76,p:8,c:1.9,f:4.8},{n:"Seitán",kcal:141,p:24,c:6,f:2},{n:"Soja texturizada (seca)",kcal:330,p:50,c:30,f:1},
-  {n:"Tempeh",kcal:193,p:19,c:9,f:11},{n:"Proteína caseína (polvo)",kcal:370,p:78,c:6,f:2},
-  {n:"Arroz integral cocido",kcal:111,p:2.6,c:23,f:0.9},{n:"Cuscús cocido",kcal:112,p:3.8,c:23,f:0.2},
-  {n:"Tortitas de arroz",kcal:388,p:8,c:82,f:3},{n:"Copos de maíz",kcal:378,p:7,c:84,f:0.9},
-  {n:"Galletas maría",kcal:436,p:7,c:75,f:12},{n:"Croissant",kcal:406,p:8,c:46,f:21},
-  {n:"Tortilla de patatas (aprox)",kcal:190,p:6,c:14,f:12},{n:"Pizza margarita (aprox)",kcal:250,p:11,c:31,f:9},
-  {n:"Gazpacho (aprox)",kcal:44,p:0.8,c:4.5,f:2.6},{n:"Hummus",kcal:166,p:8,c:14,f:10},
-  {n:"Maíz dulce",kcal:86,p:3.3,c:19,f:1.4},{n:"Guisantes",kcal:81,p:5.4,c:14,f:0.4},{n:"Judías verdes",kcal:31,p:1.8,c:7,f:0.2},
-  {n:"Calabacín",kcal:17,p:1.2,c:3.1,f:0.3},{n:"Berenjena",kcal:25,p:1,c:6,f:0.2},{n:"Cebolla",kcal:40,p:1.1,c:9,f:0.1},
-  {n:"Zanahoria",kcal:41,p:0.9,c:10,f:0.2},{n:"Champiñones",kcal:22,p:3.1,c:3.3,f:0.3},{n:"Pepino",kcal:15,p:0.7,c:3.6,f:0.1},
-  {n:"Coliflor",kcal:25,p:1.9,c:5,f:0.3},{n:"Calabaza",kcal:26,p:1,c:6.5,f:0.1},{n:"Espárragos",kcal:20,p:2.2,c:3.9,f:0.1},
-  {n:"Kiwi",kcal:61,p:1.1,c:15,f:0.5},{n:"Pera",kcal:57,p:0.4,c:15,f:0.1},{n:"Uvas",kcal:69,p:0.7,c:18,f:0.2},
-  {n:"Melón",kcal:34,p:0.8,c:8,f:0.2},{n:"Sandía",kcal:30,p:0.6,c:8,f:0.2},{n:"Mango",kcal:60,p:0.8,c:15,f:0.4},
-  {n:"Piña",kcal:50,p:0.5,c:13,f:0.1},{n:"Melocotón",kcal:39,p:0.9,c:10,f:0.3},{n:"Dátiles",kcal:282,p:2.5,c:75,f:0.4},
-  {n:"Pasas",kcal:299,p:3.1,c:79,f:0.5},{n:"Cacahuetes",kcal:567,p:26,c:16,f:49},{n:"Anacardos",kcal:553,p:18,c:30,f:44},
-  {n:"Pistachos",kcal:560,p:20,c:28,f:45},{n:"Avellanas",kcal:628,p:15,c:17,f:61},
-  {n:"Semillas de chía",kcal:486,p:17,c:42,f:31},{n:"Semillas de lino",kcal:534,p:18,c:29,f:42},
-  {n:"Aceitunas",kcal:115,p:0.8,c:6,f:11},{n:"Plátano macho frito (aprox)",kcal:252,p:1.5,c:41,f:9}
+  {n:"Pechuga de pollo",kcal:165,p:31,c:0,f:3.6,fib:0,az:0,sat:1},
+  {n:"Muslo de pollo",kcal:209,p:26,c:0,f:11,fib:0,az:0,sat:3},
+  {n:"Ternera magra",kcal:175,p:26,c:0,f:8,fib:0,az:0,sat:3.2},
+  {n:"Lomo de cerdo",kcal:145,p:21,c:0,f:6,fib:0,az:0,sat:2.1},
+  {n:"Pavo (pechuga)",kcal:135,p:29,c:0,f:2,fib:0,az:0,sat:0.5},
+  {n:"Atún al natural",kcal:116,p:26,c:0,f:1,fib:0,az:0,sat:0.3,porc:"lata:52"},
+  {n:"Salmón",kcal:208,p:20,c:0,f:13,fib:0,az:0,sat:3},
+  {n:"Merluza",kcal:90,p:18,c:0,f:2,fib:0,az:0,sat:0.4},
+  {n:"Gambas",kcal:99,p:24,c:0,f:0.3,fib:0,az:0,sat:0.1},
+  {n:"Huevo entero",kcal:155,p:13,c:1.1,f:11,fib:0,az:0.4,sat:3.1,porc:"huevo:60"},
+  {n:"Clara de huevo",kcal:52,p:11,c:0.7,f:0.2,fib:0,az:0.7,sat:0.1,porc:"clara:33"},
+  {n:"Jamón serrano",kcal:241,p:31,c:1,f:12,fib:0,az:0,sat:4.4,porc:"loncha:15"},
+  {n:"Jamón cocido (pavo)",kcal:104,p:17,c:1.5,f:3,fib:0,az:1,sat:1,porc:"loncha:20"},
+  {n:"Leche entera",kcal:61,p:3.2,c:4.8,f:3.3,u:"ml",fib:0,az:4.8,sat:2},
+  {n:"Leche desnatada",kcal:35,p:3.4,c:5,f:0.1,u:"ml",fib:0,az:5,sat:0.1},
+  {n:"Yogur natural",kcal:61,p:3.5,c:4.7,f:3.3,fib:0,az:4.7,sat:2,porc:"yogur:125"},
+  {n:"Yogur griego",kcal:97,p:9,c:4,f:5,fib:0,az:4,sat:3.3,porc:"yogur:125"},
+  {n:"Queso batido 0%",kcal:47,p:8,c:4,f:0.2,fib:0,az:4,sat:0.1},
+  {n:"Requesón",kcal:98,p:11,c:3,f:4,fib:0,az:3,sat:2.5},
+  {n:"Queso curado",kcal:380,p:25,c:1.4,f:30,fib:0,az:0,sat:19,porc:"loncha:20"},
+  {n:"Arroz blanco cocido",kcal:130,p:2.7,c:28,f:0.3,fib:0.3,az:0.1,sat:0.08,porc:"vasito:125"},
+  {n:"Pasta cocida",kcal:158,p:5.8,c:31,f:0.9,fib:1.8,az:0.6,sat:0.17},
+  {n:"Avena",kcal:389,p:17,c:66,f:7,fib:10,az:1,sat:1.2},
+  {n:"Pan integral",kcal:247,p:9,c:41,f:3.4,fib:7,az:3.5,sat:0.5,porc:"rebanada:40"},
+  {n:"Pan blanco",kcal:265,p:9,c:49,f:3.2,fib:2.7,az:4,sat:0.7,porc:"rebanada:40"},
+  {n:"Patata cocida",kcal:87,p:1.9,c:20,f:0.1,fib:1.8,az:0.9,sat:0.03},
+  {n:"Boniato",kcal:86,p:1.6,c:20,f:0.1,fib:3,az:6,sat:0.02},
+  {n:"Quinoa cocida",kcal:120,p:4.4,c:21,f:1.9,fib:2.8,az:0.9,sat:0.23},
+  {n:"Lentejas cocidas",kcal:116,p:9,c:20,f:0.4,fib:7.9,az:1.8,sat:0.05},
+  {n:"Garbanzos cocidos",kcal:164,p:9,c:27,f:2.6,fib:7.6,az:4.8,sat:0.27},
+  {n:"Alubias cocidas",kcal:127,p:9,c:23,f:0.5,fib:6.4,az:0.3,sat:0.07},
+  {n:"Plátano",kcal:89,p:1.1,c:23,f:0.3,fib:2.6,az:12,sat:0.1,porc:"unidad:120"},
+  {n:"Manzana",kcal:52,p:0.3,c:14,f:0.2,fib:2.4,az:10,sat:0.03,porc:"unidad:180"},
+  {n:"Naranja",kcal:47,p:0.9,c:12,f:0.1,fib:2.4,az:9,sat:0.02,porc:"unidad:150"},
+  {n:"Fresas",kcal:32,p:0.7,c:8,f:0.3,fib:2,az:4.9,sat:0.02},
+  {n:"Arándanos",kcal:57,p:0.7,c:14,f:0.3,fib:2.4,az:10,sat:0.03},
+  {n:"Aguacate",kcal:160,p:2,c:9,f:15,fib:6.7,az:0.7,sat:2.1,porc:"medio:100"},
+  {n:"Aceite de oliva",kcal:884,p:0,c:0,f:100,fib:0,az:0,sat:14},
+  {n:"Almendras",kcal:579,p:21,c:22,f:50,fib:12.5,az:4.4,sat:3.8,porc:"puñado:30"},
+  {n:"Nueces",kcal:654,p:15,c:14,f:65,fib:6.7,az:2.6,sat:6.1,porc:"puñado:30"},
+  {n:"Crema de cacahuete",kcal:588,p:25,c:20,f:50,fib:6,az:9,sat:10,porc:"cucharada:15"},
+  {n:"Brócoli",kcal:34,p:2.8,c:7,f:0.4,fib:2.6,az:1.7,sat:0.04},
+  {n:"Espinacas",kcal:23,p:2.9,c:3.6,f:0.4,fib:2.2,az:0.4,sat:0.06},
+  {n:"Tomate",kcal:18,p:0.9,c:3.9,f:0.2,fib:1.2,az:2.6,sat:0.03},
+  {n:"Lechuga",kcal:15,p:1.4,c:2.9,f:0.2,fib:1.3,az:0.8,sat:0.03},
+  {n:"Pimiento",kcal:31,p:1,c:6,f:0.3,fib:2,az:4.2,sat:0.06},
+  {n:"Proteína whey (polvo)",kcal:380,p:75,c:8,f:6,fib:0,az:6,sat:3.5,porc:"cazo:30"},
+  {n:"Chocolate negro 85%",kcal:590,p:10,c:19,f:55,fib:11,az:7,sat:32,porc:"onza:10"},
+  {n:"Miel",kcal:304,p:0.3,c:82,f:0,fib:0,az:82,sat:0,porc:"cucharada:21"},
+  {n:"Sardinas en aceite (escurridas)",kcal:208,p:25,c:0,f:11,fib:0,az:0,sat:2.5,porc:"lata:60"},
+  {n:"Atún en aceite (escurrido)",kcal:198,p:29,c:0,f:8,fib:0,az:0,sat:1.5,porc:"lata:52"},
+  {n:"Bacalao",kcal:82,p:18,c:0,f:0.7,fib:0,az:0,sat:0.14},
+  {n:"Dorada",kcal:100,p:20,c:0,f:2.5,fib:0,az:0,sat:0.6},
+  {n:"Lubina",kcal:97,p:19,c:0,f:2,fib:0,az:0,sat:0.45},
+  {n:"Caballa",kcal:205,p:19,c:0,f:14,fib:0,az:0,sat:3.3},
+  {n:"Boquerones",kcal:131,p:20,c:0,f:5,fib:0,az:0,sat:1.3},
+  {n:"Pulpo cocido",kcal:82,p:15,c:2,f:1,fib:0,az:0,sat:0.2},
+  {n:"Solomillo de cerdo",kcal:143,p:21,c:0,f:6,fib:0,az:0,sat:2},
+  {n:"Carne picada mixta",kcal:250,p:17,c:0,f:20,fib:0,az:0,sat:8},
+  {n:"Chorizo",kcal:455,p:24,c:2,f:38,fib:0,az:1,sat:14,porc:"rodaja:10"},
+  {n:"Lomo embuchado",kcal:380,p:37,c:0,f:25,fib:0,az:0,sat:9,porc:"loncha:10"},
+  {n:"Fuet",kcal:470,p:25,c:2,f:40,fib:0,az:1,sat:15,porc:"trozo:30"},
+  {n:"Kéfir",kcal:60,p:3.3,c:4.5,f:3.2,fib:0,az:4.5,sat:2,porc:"vaso:200"},
+  {n:"Skyr",kcal:63,p:11,c:4,f:0.2,fib:0,az:4,sat:0.1,porc:"tarrina:150"},
+  {n:"Queso fresco (Burgos)",kcal:174,p:12,c:3,f:13,fib:0,az:3,sat:8.5,porc:"tarrina:125"},
+  {n:"Mozzarella",kcal:280,p:22,c:2.2,f:20,fib:0,az:1,sat:12,porc:"bola:125"},
+  {n:"Queso de untar light",kcal:150,p:8,c:5,f:11,fib:0,az:4,sat:7,porc:"cucharada:15"},
+  {n:"Mantequilla",kcal:717,p:0.9,c:0.1,f:81,fib:0,az:0.1,sat:51,porc:"porcion:10"},
+  {n:"Nata para cocinar",kcal:195,p:2.5,c:4,f:19,fib:0,az:3.4,sat:12},
+  {n:"Tofu",kcal:76,p:8,c:1.9,f:4.8,fib:0.7,az:0.5,sat:0.7,porc:"taco:100"},
+  {n:"Seitán",kcal:141,p:24,c:6,f:2,fib:1,az:0.5,sat:0.3,porc:"filete:100"},
+  {n:"Soja texturizada (seca)",kcal:330,p:50,c:30,f:1,fib:13,az:9,sat:0.2},
+  {n:"Tempeh",kcal:193,p:19,c:9,f:11,fib:6,az:1,sat:2.5,porc:"taco:100"},
+  {n:"Proteína caseína (polvo)",kcal:370,p:78,c:6,f:2,fib:0,az:4,sat:1.3,porc:"cazo:30"},
+  {n:"Arroz integral cocido",kcal:111,p:2.6,c:23,f:0.9,fib:1.8,az:0.4,sat:0.2,porc:"vasito:125"},
+  {n:"Cuscús cocido",kcal:112,p:3.8,c:23,f:0.2,fib:1.4,az:0.1,sat:0.05,porc:"vasito:125"},
+  {n:"Tortitas de arroz",kcal:388,p:8,c:82,f:3,fib:3,az:0.6,sat:0.6,porc:"tortita:7.2"},
+  {n:"Copos de maíz",kcal:378,p:7,c:84,f:0.9,fib:3,az:8,sat:0.2},
+  {n:"Galletas maría",kcal:436,p:7,c:75,f:12,fib:2.8,az:22,sat:5.5,porc:"galleta:5"},
+  {n:"Croissant",kcal:406,p:8,c:46,f:21,fib:2.5,az:8,sat:12,porc:"unidad:60"},
+  {n:"Tortilla de patatas (aprox)",kcal:190,p:6,c:14,f:12,fib:1.2,az:1.5,sat:2.8,porc:"porcion:125"},
+  {n:"Pizza margarita (aprox)",kcal:250,p:11,c:31,f:9,fib:2.3,az:3.5,sat:3.8,porc:"porcion:125"},
+  {n:"Gazpacho (aprox)",kcal:44,p:0.8,c:4.5,f:2.6,fib:1.2,az:2.8,sat:0.4},
+  {n:"Hummus",kcal:166,p:8,c:14,f:10,fib:6,az:0.4,sat:1.4},
+  {n:"Maíz dulce",kcal:86,p:3.3,c:19,f:1.4,fib:2.4,az:6.3,sat:0.2},
+  {n:"Guisantes",kcal:81,p:5.4,c:14,f:0.4,fib:5,az:5.7,sat:0.1},
+  {n:"Judías verdes",kcal:31,p:1.8,c:7,f:0.2,fib:3.4,az:3.3,sat:0.05},
+  {n:"Calabacín",kcal:17,p:1.2,c:3.1,f:0.3,fib:1,az:2.5,sat:0.1},
+  {n:"Berenjena",kcal:25,p:1,c:6,f:0.2,fib:3,az:3.5,sat:0.03},
+  {n:"Cebolla",kcal:40,p:1.1,c:9,f:0.1,fib:1.7,az:4.7,sat:0.04},
+  {n:"Zanahoria",kcal:41,p:0.9,c:10,f:0.2,fib:2.8,az:4.7,sat:0.03},
+  {n:"Champiñones",kcal:22,p:3.1,c:3.3,f:0.3,fib:1,az:2,sat:0.05},
+  {n:"Pepino",kcal:15,p:0.7,c:3.6,f:0.1,fib:0.5,az:1.7,sat:0.03},
+  {n:"Coliflor",kcal:25,p:1.9,c:5,f:0.3,fib:2,az:1.9,sat:0.1},
+  {n:"Calabaza",kcal:26,p:1,c:6.5,f:0.1,fib:1.1,az:2.8,sat:0.05},
+  {n:"Espárragos",kcal:20,p:2.2,c:3.9,f:0.1,fib:2.1,az:1.9,sat:0.03},
+  {n:"Kiwi",kcal:61,p:1.1,c:15,f:0.5,fib:3,az:9,sat:0.03,porc:"pieza:70"},
+  {n:"Pera",kcal:57,p:0.4,c:15,f:0.1,fib:3.1,az:9.8,sat:0.02,porc:"pieza:170"},
+  {n:"Uvas",kcal:69,p:0.7,c:18,f:0.2,fib:0.9,az:16,sat:0.05,porc:"puñado:80"},
+  {n:"Melón",kcal:34,p:0.8,c:8,f:0.2,fib:0.9,az:7.9,sat:0.05,porc:"rodaja:150"},
+  {n:"Sandía",kcal:30,p:0.6,c:8,f:0.2,fib:0.4,az:6.2,sat:0.02,porc:"rodaja:200"},
+  {n:"Mango",kcal:60,p:0.8,c:15,f:0.4,fib:1.6,az:13.7,sat:0.09,porc:"unidad:200"},
+  {n:"Piña",kcal:50,p:0.5,c:13,f:0.1,fib:1.4,az:9.9,sat:0.02,porc:"rodaja:80"},
+  {n:"Melocotón",kcal:39,p:0.9,c:10,f:0.3,fib:1.5,az:8.4,sat:0.02,porc:"unidad:150"},
+  {n:"Dátiles",kcal:282,p:2.5,c:75,f:0.4,fib:8,az:63,sat:0.03,porc:"unidad:8"},
+  {n:"Pasas",kcal:299,p:3.1,c:79,f:0.5,fib:3.7,az:59,sat:0.06,porc:"puñado:30"},
+  {n:"Cacahuetes",kcal:567,p:26,c:16,f:49,fib:8.5,az:4,sat:6.8,porc:"puñado:30"},
+  {n:"Anacardos",kcal:553,p:18,c:30,f:44,fib:3.3,az:5.9,sat:7.8,porc:"puñado:30"},
+  {n:"Pistachos",kcal:560,p:20,c:28,f:45,fib:10,az:7.7,sat:5.4,porc:"puñado:30"},
+  {n:"Avellanas",kcal:628,p:15,c:17,f:61,fib:9.7,az:4.3,sat:4.5,porc:"puñado:30"},
+  {n:"Semillas de chía",kcal:486,p:17,c:42,f:31,fib:34,az:0,sat:3.3,porc:"cucharada:12"},
+  {n:"Semillas de lino",kcal:534,p:18,c:29,f:42,fib:27,az:1.5,sat:3.7,porc:"cucharada:10"},
+  {n:"Aceitunas",kcal:115,p:0.8,c:6,f:11,fib:3.3,az:0,sat:1.4,porc:"unidad:4"},
+  {n:"Plátano macho frito (aprox)",kcal:252,p:1.5,c:41,f:9,fib:2.3,az:17,sat:3.5}
 ];
 // B v0.12 · Alimentos españoles OFICIALES embebidos desde data/alimentos-espana-bedca.json
 // (filosofía single-file: el JSON se EMBEBE, no se fetchea). Valores por 100 g de porción
@@ -1717,7 +1785,7 @@ function comAdd(){
   if(!fd){ var _cand=_base.filter(function(x){ return x.n.toLowerCase().indexOf(_q)>=0; }); if(_cand.length===1) fd=_cand[0]; else if(_cand.length>1){ toast("Hay "+_cand.length+" que encajan — elige uno de la lista"); return; } }
   if(!fd){ toast("No está en la base — elige de la lista, escanea el código o crea un alimento propio"); return; }
   var k=g/100, arr=get(LS_COMIDA,[]);
-  var _item={id:Date.now().toString(36)+Math.random().toString(36).slice(2,6), f:($("com_fecha").value||hoyLocal()), n:fd.n, g:g, kcal:Math.round(fd.kcal*k), p:+(fd.p*k).toFixed(1), c:+(fd.c*k).toFixed(1), gr:+(fd.f*k).toFixed(1)};
+  var _item={id:Date.now().toString(36)+Math.random().toString(36).slice(2,6), f:($("com_fecha").value||hoyLocal()), n:fd.n, g:g, kcal:Math.round(fd.kcal*k), p:+(fd.p*k).toFixed(1), c:+(fd.c*k).toFixed(1), gr:+(fd.f*k).toFixed(1), fib:+((fd.fib||0)*k).toFixed(1), az:+((fd.az||0)*k).toFixed(1), sat:+((fd.sat||0)*k).toFixed(1)};
   // v0.13 · L3: las bebidas de la base local van por 100 ml (u:"ml") → la unidad viaja al diario
   // y comUnidad la pinta bien ("330 ml"). Los sólidos siguen sin u = gramos, como siempre.
   if(fd.u==="ml") _item.u="ml";
@@ -1744,7 +1812,7 @@ function comCopiarAyer(){
   var full=get(LS_COMIDA,[]), deAyer=full.filter(function(x){ return x.f===ayer; });
   if(!deAyer.length){ toast("Ayer ("+ayer+") no hay nada apuntado"); return; }
   // Fix ml · u viaja en la copia (si el item era en ml, la copia también); en los antiguos queda undefined y JSON lo omite (= g)
-  deAyer.forEach(function(x){ full.push({id:Date.now().toString(36)+Math.random().toString(36).slice(2,6), f:f, n:x.n, g:x.g, u:x.u, kcal:x.kcal, p:x.p, c:x.c, gr:x.gr}); });
+  deAyer.forEach(function(x){ full.push({id:Date.now().toString(36)+Math.random().toString(36).slice(2,6), f:f, n:x.n, g:x.g, u:x.u, kcal:x.kcal, p:x.p, c:x.c, gr:x.gr, fib:x.fib||0, az:x.az||0, sat:x.sat||0}); });
   set(LS_COMIDA,full); renderComida(); toast("⧉ Copiado el día de ayer ("+deAyer.length+" alimentos)");
 }
 function comRecientes(){
@@ -1783,20 +1851,20 @@ function histSync(){
   var ult={};
   full.forEach(function(x,i){
     if(!x || typeof x.n!=="string" || !x.n || !(+x.g>0)) return;
-    ult[x.n.toLowerCase()]={ n:x.n, g:+x.g, u:comUnidad(x), fecha:x.f||"", rank:i, kcal:+x.kcal||0, p:+x.p||0, c:+x.c||0, gr:+x.gr||0 };   // B2 · arrastra macros → re-añadir clona (funciona con escaneados)
+    ult[x.n.toLowerCase()]={ n:x.n, g:+x.g, u:comUnidad(x), fecha:x.f||"", rank:i, kcal:+x.kcal||0, p:+x.p||0, c:+x.c||0, gr:+x.gr||0, fib:+x.fib||0, az:+x.az||0, sat:+x.sat||0 };   // B2 · arrastra macros → re-añadir clona (funciona con escaneados)
   });
   var out=[], seen={};
   // 1) arrastra el historial anterior en su orden; si el alimento reaparece en el diario, se refresca
   prev.forEach(function(h){
     if(!h || typeof h.n!=="string" || !h.n) return;
     var key=h.n.toLowerCase(); if(seen[key]) return; seen[key]=1;
-    if(ult[key]) out.push({ n:ult[key].n, g:ult[key].g, u:ult[key].u, fecha:ult[key].fecha, kcal:ult[key].kcal, p:ult[key].p, c:ult[key].c, gr:ult[key].gr });
-    else out.push({ n:h.n, g:(+h.g>0?+h.g:100), u:(h.u==="ml"?"ml":"g"), fecha:h.fecha||"", kcal:+h.kcal||0, p:+h.p||0, c:+h.c||0, gr:+h.gr||0 });
+    if(ult[key]) out.push({ n:ult[key].n, g:ult[key].g, u:ult[key].u, fecha:ult[key].fecha, kcal:ult[key].kcal, p:ult[key].p, c:ult[key].c, gr:ult[key].gr, fib:ult[key].fib, az:ult[key].az, sat:ult[key].sat });
+    else out.push({ n:h.n, g:(+h.g>0?+h.g:100), u:(h.u==="ml"?"ml":"g"), fecha:h.fecha||"", kcal:+h.kcal||0, p:+h.p||0, c:+h.c||0, gr:+h.gr||0, fib:+h.fib||0, az:+h.az||0, sat:+h.sat||0 });
   });
   // 2) añade al final los alimentos nuevos del diario (por orden de aparición)
   Object.keys(ult).sort(function(a,b){ return ult[a].rank-ult[b].rank; }).forEach(function(key){
     if(seen[key]) return; seen[key]=1;
-    out.push({ n:ult[key].n, g:ult[key].g, u:ult[key].u, fecha:ult[key].fecha, kcal:ult[key].kcal, p:ult[key].p, c:ult[key].c, gr:ult[key].gr });
+    out.push({ n:ult[key].n, g:ult[key].g, u:ult[key].u, fecha:ult[key].fecha, kcal:ult[key].kcal, p:ult[key].p, c:ult[key].c, gr:ult[key].gr, fib:ult[key].fib, az:ult[key].az, sat:ult[key].sat });
   });
   set(LS_HIST_ALIM,out);
   return out;
@@ -1842,7 +1910,7 @@ function histReAdd(nombre){
   if(!h){ toast("No encuentro ese alimento en el historial"); return; }
   if(+h.kcal>0 || +h.p>0 || +h.c>0 || +h.gr>0){
     var arr=get(LS_COMIDA,[]);
-    var it={id:Date.now().toString(36)+Math.random().toString(36).slice(2,6), f:(($("com_fecha")||{}).value||hoyLocal()), n:h.n, g:+h.g||0, kcal:+h.kcal||0, p:+h.p||0, c:+h.c||0, gr:+h.gr||0};
+    var it={id:Date.now().toString(36)+Math.random().toString(36).slice(2,6), f:(($("com_fecha")||{}).value||hoyLocal()), n:h.n, g:+h.g||0, kcal:+h.kcal||0, p:+h.p||0, c:+h.c||0, gr:+h.gr||0, fib:+h.fib||0, az:+h.az||0, sat:+h.sat||0};
     if(h.u==="ml") it.u="ml";
     arr.push(it); set(LS_COMIDA,arr); renderComida(); toast("✓ Añadido");
   } else {
@@ -2283,8 +2351,8 @@ function generarMenu(obj, foods, favoritos){
 function renderComida(){
   var fecha=($("com_fecha")&&$("com_fecha").value)||hoyLocal();
   var full=get(LS_COMIDA,[]), arr=full.filter(function(x){ return x.f===fecha; });
-  var tot={kcal:0,p:0,c:0,gr:0};
-  arr.forEach(function(x){ tot.kcal+=x.kcal; tot.p+=x.p; tot.c+=x.c; tot.gr+=x.gr; });
+  var tot={kcal:0,p:0,c:0,gr:0,fib:0,az:0,sat:0};
+  arr.forEach(function(x){ tot.kcal+=x.kcal; tot.p+=x.p; tot.c+=x.c; tot.gr+=x.gr; tot.fib+=(+x.fib||0); tot.az+=(+x.az||0); tot.sat+=(+x.sat||0); });
   var obj=window._obj||null;
   function bar(v,o,col){ if(!(o>0)) return ""; var over=v>o*1.05, pct=Math.round(Math.min(1,v/o)*100); return "<div class='pbar'><i style='width:"+pct+"%;background:"+(over?'#f4c04e':col)+"'></i></div>"; }
   var h="<div class='card' style='margin:0 0 8px;padding:12px'><div class='eyebrow-lbl'>Resumen del día · "+esc(fecha)+"</div>";
@@ -2292,7 +2360,10 @@ function renderComida(){
     h+="<div class='kv'><span>Calorías</span><span>"+Math.round(tot.kcal)+" / "+obj.cal+" kcal</span></div>"+bar(tot.kcal,obj.cal,'var(--ember)')
      +"<div class='kv' style='margin-top:6px'><span>Proteínas</span><span>"+Math.round(tot.p)+" / "+obj.prot+" g</span></div>"+bar(tot.p,obj.prot,'var(--jade)')
      +"<div class='kv' style='margin-top:6px'><span>Carbohidratos</span><span>"+Math.round(tot.c)+" / "+obj.carb+" g</span></div>"+bar(tot.c,obj.carb,'#74c7ff')
-     +"<div class='kv' style='margin-top:6px'><span>Grasas</span><span>"+Math.round(tot.gr)+" / "+obj.grasa+" g</span></div>"+bar(tot.gr,obj.grasa,'#f4c04e');
+     +"<div class='kv' style='margin-top:6px'><span>Grasas</span><span>"+Math.round(tot.gr)+" / "+obj.grasa+" g</span></div>"+bar(tot.gr,obj.grasa,'#f4c04e')
+     +"<div class='kv' style='margin-top:6px'><span>🌾 Fibra <span class='hint' style='display:inline'>· objetivo</span></span><span>"+Math.round(tot.fib)+" / "+(obj.fibra||0)+" g</span></div>"+bar(tot.fib,obj.fibra,'#8fd694')
+     +"<div class='kv' style='margin-top:6px'><span>🍬 Azúcar <span class='hint' style='display:inline'>· máx ~"+(obj.azucar||0)+" g</span></span><span"+(tot.az>(obj.azucar||0)*1.05?" style='color:#f4c04e'":"")+">"+Math.round(tot.az)+" g</span></div>"+bar(tot.az,obj.azucar,'#e08fd6')
+     +"<div class='kv' style='margin-top:6px'><span>🧈 Grasa saturada <span class='hint' style='display:inline'>· máx ~"+(obj.sat||0)+" g</span></span><span"+(tot.sat>(obj.sat||0)*1.05?" style='color:#f4c04e'":"")+">"+Math.round(tot.sat)+" g</span></div>"+bar(tot.sat,obj.sat,'#f4a04e');
     // 🏀 Presupuesto del día: el deporte registrado ESE día suma encima del objetivo base (aditivo, no toca la fórmula).
     var _sesDia=get(LS_DEP_SES,[]).filter(function(s){ return s && s.f===fecha && +s.kcal>0; });
     var _pre=presupuestoHoy(obj.cal, _sesDia);
@@ -2828,7 +2899,7 @@ function mealAddHoy(id){
   if(!meal){ toast("No encontrada"); return; }
   var f=(($("com_fecha")||{}).value)||hoyLocal(), arr=get(LS_COMIDA,[]);
   (meal.items||[]).forEach(function(x){
-    var o={id:Date.now().toString(36)+Math.random().toString(36).slice(2,6), f:f, n:x.n, g:x.g||0, kcal:x.kcal||0, p:x.p||0, c:x.c||0, gr:x.gr||0};
+    var o={id:Date.now().toString(36)+Math.random().toString(36).slice(2,6), f:f, n:x.n, g:x.g||0, kcal:x.kcal||0, p:x.p||0, c:x.c||0, gr:x.gr||0, fib:x.fib||0, az:x.az||0, sat:x.sat||0};
     if(x.foto) o.foto=true;
     arr.push(o);
   });
@@ -3572,7 +3643,7 @@ function resetTodo(){ if(!confirm("⚠️ Esto borra TODO: perfil, pesos, entren
 // Reemplazo total con confirmación. Reusa get/set, hoyLocal, toast, validar, render. NO toca motor ni gate.
 function exportarJSON(){ try{ set("jvf_last_export",hoyLocal()); }catch(e){}
   try{
-    var data={ app:"jvf", schema:1, app_version:"0.16.4", exportadoEl:new Date().toISOString(),
+    var data={ app:"jvf", schema:1, app_version:"0.16.5", exportadoEl:new Date().toISOString(),
       perfil:get(LS_P,null), pesos:get(LS_W,[]), entrenos:get(LS_E,[]), notas_ej:get("jvf_notas_ej",{}), comida:get("jvf_comida",[]), agua:get("jvf_agua",{}), suples_cfg:get("jvf_suples_cfg",null), suples_log:get("jvf_suples_log",{}),
       rutinas:get("jvf_rutinas",[]), meals:get("jvf_meals",[]), ent_start:get("jvf_ent_start",null),   // v0.10 · backup completo
       alimentos_propios:get("jvf_alimentos_propios",[]), barcode_cache:get("jvf_barcode_cache",{}),   // I5/I6 · también viajan en el backup
@@ -4076,7 +4147,7 @@ var CEREBRO_KB=[
   {
     tronco:"pasos", rama:"cuantos-pasos",
     claves:["cuantos pasos","pasos al dia","caminar cuanto","neat","10000 pasos","cuantos pasos hago","pasos diarios","andar cuanto","pasos","cuantos pasos al dia","reviso mis pasos","cuentan para las calorias","reducen el cortisol"],
-    r:"Objetivo ~7.000-10.000 pasos/día, sin obsesión: el grueso del beneficio ya llega hacia los 7.000. Los pasos pesan mucho en tu gasto (NEAT) y son más fiables que las \"calorías\" que te da el reloj. De hecho, si andas 14-15k sin pisar el gym, eres \"muy activo\", no sedentario. (— Tema 11/37, Ding 2025 / Tudor-Locke 2004)",
+    r:"Apunta a 10.000 pasos/día como MÍNIMO, y cuantos más mejor sin obsesionarte. Caminar mucho mejora la sensibilidad a la insulina y dispara tu gasto (NEAT) — más fiable que las \"calorías\" del reloj. Honesto: el mayor salto de salud es pasar de sedentario a ~7-8k, pero de ahí a 10k+ sigue sumando (metabólico, apetito, recuperación). Si andas 14-15k sin pisar el gym, ya eres \"muy activo\". (— Tema 11/37, Ding 2025 / Tudor-Locke 2004)",
     chips:["¿pasos en volumen también?","¿reducen el cortisol?","¿cuentan para las calorías?"]
   },
   {
@@ -8189,7 +8260,7 @@ function render(){
   }
   const fibra=Math.round(R.fibra_g_1000*cal/1000);
   const ajustado = ov.prot_gkg!=null || ov.grasa_gkg!=null || ov.carb_gkg!=null || (ov.cal_off||0)!==0;
-  window._obj={cal:cal, prot:prot, grasa:gr, carb:carb, fibra:fibra};   // objetivo del día (lo usa el diario de comida #10)
+  window._obj={cal:cal, prot:prot, grasa:gr, carb:carb, fibra:fibra, azucar:Math.round(cal*0.10/4), sat:Math.round(cal*0.10/9)};   // objetivo del día · azúcar y grasa saturada = límite OMS ≤10% de las kcal
 
   $("plan_perfil").textContent=`${p.nombre} · ${p.sexo}, ${p.edad} a · ${p.peso_kg} kg · ${p.altura_cm} cm`+(p.grasa_pct!=null?` · ~${p.grasa_pct}% grasa`:"")+(p.pasos?` · ${p.pasos} pasos/día (media)`:"")+(p.deporte>=1.5?" · 🏀 deporte extra":"")+` · ${p.objetivo.replace("_"," ")} (${p.intensidad_pct}%)`+(rec.porPasos?" · ⚡ actividad por pasos":"")+(rec.porDeporte?" · ⚡ actividad por tu deporte":"");
   countUp($("o_bmr"), rec.bmr, " kcal"); countUp($("o_tdee"), rec.tdee, " kcal");
