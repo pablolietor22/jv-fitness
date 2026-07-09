@@ -447,7 +447,7 @@
 
 <header class="brandbar">
   <div class="logo"><span class="dot"></span>JV <b>Fitness</b></div>
-  <span class="tag">MVP v0.16.15 · motor v0.7</span>
+  <span class="tag">MVP v0.16.16 · motor v0.7</span>
 </header>
 <div class="statuschip"><span class="pulse"></span> cálculo science-based · ajustable · calibración real</div>
 
@@ -686,6 +686,10 @@
     <option value="neutro">neutro</option>
     <option value="cana">caña 🌶️ (opt-in)</option>
   </select>
+  <!-- 🔔 Recordatorios in-app (honestos: sin backend no hay push con la app cerrada) -->
+  <div class="eyebrow-lbl" style="margin-top:14px">🔔 Recordatorios</div>
+  <p class="hint" style="margin-top:0">Avisos suaves <b style="color:var(--soft)">al abrir la app</b>. No son notificaciones del móvil: sin un servidor detrás, el navegador no puede avisarte con la app cerrada — eso sería otra fase.</p>
+  <label style="display:flex;align-items:center;gap:8px;cursor:pointer;margin-top:4px"><input type="checkbox" id="aj_notif_agua" checked onchange="notifSet('aguaVerano', this.checked)"> 🌡️ Recordarme beber agua en verano</label>
 </div>
 
 <!-- REGISTRO -->
@@ -2104,6 +2108,21 @@ function aguaObjetivoDinamico(pesoKg, mes, deporteHoy, creatina){
            extra:extra, total:base+extra, ajustes:ajustes };
 }
 // [AGUA-OBJETIVO-PURE-FIN]
+
+// [NOTIF-PURE-INICIO] — recordatorios in-app HONESTOS. Sin backend NO hay notificación con la app cerrada:
+// esto avisa al ABRIR la app. PURO (sin DOM ni storage): dado config + contexto, decide qué recordar hoy.
+// cfg.aguaVerano===false lo apaga. Reutiliza aguaEsVerano (bloque de arriba). Los tests lo extraen tal cual.
+function notifAvisos(cfg, ctx){
+  cfg=cfg||{}; ctx=ctx||{}; var out=[];
+  var obj=+ctx.objetivoAgua||0, agua=Math.max(0,+ctx.aguaHoy||0), hora=Math.round(+ctx.hora);
+  // 🌡️ Agua en verano: por la tarde (>=14h), si hace calor y vas por debajo del 40% del objetivo del día.
+  if(cfg.aguaVerano!==false && aguaEsVerano(ctx.mes) && obj>0 && hora>=14 && (agua/obj)<0.4){
+    out.push({ id:"agua-verano", emoji:"🌡️",
+      txt:"Hace calor y llevas "+agua+" de "+Math.round(obj)+" ml de agua. Bebe: en verano sudas más y deshidratarte ≥2% ya te baja el rendimiento." });
+  }
+  return out;
+}
+// [NOTIF-PURE-FIN]
 // Envoltura DOM/storage: reúne los datos reales (peso, mes actual, sesiones de deporte de hoy, creatina
 // activa) y llama a la función pura. aguaObjetivo() sigue devolviendo un número (contrato intacto para el
 // resto de la app: celebración, recordatorios, barra); aguaObjetivoInfo() da además el desglose.
@@ -2116,6 +2135,22 @@ function aguaObjetivoInfo(){
   return aguaObjetivoDinamico(kg, mes, nSes, crea);
 }
 function aguaObjetivo(){ return aguaObjetivoInfo().total; }
+// 🔔 Recordatorios in-app (config + disparo al abrir). jvf_notif_cfg={aguaVerano:bool}; jvf_notif_shown={id:fecha}.
+var LS_NOTIF_CFG="jvf_notif_cfg", LS_NOTIF_SHOWN="jvf_notif_shown";
+function notifCfg(){ var c=get(LS_NOTIF_CFG,{}); return (c&&typeof c==="object")?c:{}; }
+function notifSet(id,on){ var c=notifCfg(); c[id]=!!on; set(LS_NOTIF_CFG,c); }
+function notifSyncUI(){ var el=document.getElementById("aj_notif_agua"); if(el) el.checked = notifCfg().aguaVerano!==false; }
+function notifCheck(){
+  try{
+    var d=new Date(), ctx={ mes:d.getMonth()+1, hora:d.getHours(),
+      aguaHoy:(get(LS_AGUA,{})[hoyLocal()]||0), objetivoAgua:(typeof aguaObjetivo==="function"?aguaObjetivo():0) };
+    var avisos=notifAvisos(notifCfg(), ctx); if(!avisos.length) return;
+    var shown=get(LS_NOTIF_SHOWN,{}), a=avisos[0];
+    if(shown[a.id]===hoyLocal()) return;                 // no repetir el mismo aviso el mismo día
+    shown[a.id]=hoyLocal(); set(LS_NOTIF_SHOWN,shown);
+    setTimeout(function(){ try{ toast(a.emoji+" "+a.txt); }catch(e){} }, 1800);
+  }catch(e){}
+}
 // Aplica un delta (±) al total de HOY, nunca por debajo de 0; devuelve el delta REAL aplicado (para el log).
 function _aguaAplicar(delta){
   var d=hoyLocal(), m=get(LS_AGUA,{}), antes=m[d]||0, despues=Math.max(0, antes+Math.round(delta));
@@ -3673,9 +3708,11 @@ document.addEventListener('DOMContentLoaded',function(){
     var ents=get(LS_E,[]); var lastExp=get("jvf_last_export",null);
     var _old=!lastExp || (Date.parse(hoyLocal()+'T12:00:00')-Date.parse(lastExp+'T12:00:00'))/864e5>14;
     if(ents.length>20 && _old) setTimeout(function(){ toast("💾 Llevas tiempo sin copia de seguridad — toca Exportar en Ajustes"); }, 3500);
+    notifSyncUI();   // 🔔 refleja la config del recordatorio en el checkbox de Ajustes
+    notifCheck();    // 🔔 recordatorios in-app (p.ej. agua en verano) al abrir
   }catch(e){}
 });
-function resetTodo(){ if(!confirm("⚠️ Esto borra TODO: perfil, pesos, entrenos, rutinas, comidas, alimentos propios, agua, suplementos, lo hablado con el Cerebro y las fotos de progreso. ¿Seguro?")) return; try{ localStorage.removeItem(LS_P); localStorage.removeItem(LS_W); localStorage.removeItem(LS_E); localStorage.removeItem("jvf_notas_ej"); localStorage.removeItem("jvf_comida"); localStorage.removeItem("jvf_agua"); localStorage.removeItem("jvf_agua_log"); localStorage.removeItem("jvf_suples_cfg"); localStorage.removeItem("jvf_suples_log"); localStorage.removeItem("jvf_rutinas"); localStorage.removeItem("jvf_ent_start"); localStorage.removeItem("jvf_meals"); localStorage.removeItem("jvf_alimentos_propios"); localStorage.removeItem("jvf_barcode_cache"); localStorage.removeItem("jvf_foto_ajustes"); localStorage.removeItem("jvf_warmup_stats"); localStorage.removeItem("jvf_plate_barra"); localStorage.removeItem("jvf_rest_seg"); localStorage.removeItem("jvf_cerebro_diario"); localStorage.removeItem("jvf_cerebro_norec"); localStorage.removeItem("jvf_fotos_consent"); localStorage.removeItem("jvf_fotos_meta"); localStorage.removeItem("jvf_flex_cfg"); localStorage.removeItem("jvf_flex_visto"); localStorage.removeItem("jvf_deporte_sesiones"); localStorage.removeItem("jvf_favoritos"); localStorage.removeItem("jvf_uso_alim"); localStorage.removeItem("jvf_hist_alim"); localStorage.removeItem("jvf_lesiones"); }catch(e){} _mem={};
+function resetTodo(){ if(!confirm("⚠️ Esto borra TODO: perfil, pesos, entrenos, rutinas, comidas, alimentos propios, agua, suplementos, lo hablado con el Cerebro y las fotos de progreso. ¿Seguro?")) return; try{ localStorage.removeItem(LS_P); localStorage.removeItem(LS_W); localStorage.removeItem(LS_E); localStorage.removeItem("jvf_notas_ej"); localStorage.removeItem("jvf_comida"); localStorage.removeItem("jvf_agua"); localStorage.removeItem("jvf_agua_log"); localStorage.removeItem("jvf_suples_cfg"); localStorage.removeItem("jvf_suples_log"); localStorage.removeItem("jvf_rutinas"); localStorage.removeItem("jvf_ent_start"); localStorage.removeItem("jvf_meals"); localStorage.removeItem("jvf_alimentos_propios"); localStorage.removeItem("jvf_barcode_cache"); localStorage.removeItem("jvf_foto_ajustes"); localStorage.removeItem("jvf_warmup_stats"); localStorage.removeItem("jvf_plate_barra"); localStorage.removeItem("jvf_rest_seg"); localStorage.removeItem("jvf_cerebro_diario"); localStorage.removeItem("jvf_cerebro_norec"); localStorage.removeItem("jvf_fotos_consent"); localStorage.removeItem("jvf_fotos_meta"); localStorage.removeItem("jvf_flex_cfg"); localStorage.removeItem("jvf_flex_visto"); localStorage.removeItem("jvf_deporte_sesiones"); localStorage.removeItem("jvf_favoritos"); localStorage.removeItem("jvf_uso_alim"); localStorage.removeItem("jvf_hist_alim"); localStorage.removeItem("jvf_lesiones"); localStorage.removeItem("jvf_notif_cfg"); localStorage.removeItem("jvf_notif_shown"); }catch(e){} _mem={};
   // 📸 v0.13-C · las fotos viven en IndexedDB: se borra la base entera ANTES de recargar (con
   // timeout de seguridad — si el borrado se quedara bloqueado, la app no se cuelga: recarga igual
   // y el intento de borrado sigue en cola del navegador).
@@ -3690,7 +3727,7 @@ function resetTodo(){ if(!confirm("⚠️ Esto borra TODO: perfil, pesos, entren
 // Reemplazo total con confirmación. Reusa get/set, hoyLocal, toast, validar, render. NO toca motor ni gate.
 function exportarJSON(){ try{ set("jvf_last_export",hoyLocal()); }catch(e){}
   try{
-    var data={ app:"jvf", schema:1, app_version:"0.16.15", exportadoEl:new Date().toISOString(),
+    var data={ app:"jvf", schema:1, app_version:"0.16.16", exportadoEl:new Date().toISOString(),
       perfil:get(LS_P,null), pesos:get(LS_W,[]), entrenos:get(LS_E,[]), notas_ej:get("jvf_notas_ej",{}), comida:get("jvf_comida",[]), agua:get("jvf_agua",{}), suples_cfg:get("jvf_suples_cfg",null), suples_log:get("jvf_suples_log",{}),
       rutinas:get("jvf_rutinas",[]), meals:get("jvf_meals",[]), ent_start:get("jvf_ent_start",null),   // v0.10 · backup completo
       alimentos_propios:get("jvf_alimentos_propios",[]), barcode_cache:get("jvf_barcode_cache",{}),   // I5/I6 · también viajan en el backup
@@ -3702,6 +3739,7 @@ function exportarJSON(){ try{ set("jvf_last_export",hoyLocal()); }catch(e){}
       // aparte: PENDIENTE (documentado; de momento las fotos no se pueden migrar de dispositivo).
       fotos_meta:get("jvf_fotos_meta",[]),
       flex_cfg:get("jvf_flex_cfg",null), flex_visto:get("jvf_flex_visto",null),   // M · capa FLEX: tono elegido + descartes del día
+      notif_cfg:get("jvf_notif_cfg",null),   // 🔔 config de recordatorios in-app
       deporte_sesiones:get("jvf_deporte_sesiones",[]),   // 🏀 v0.13.7 · sesiones de deporte estimadas (MET) — viajan en el backup
       favoritos:get("jvf_favoritos",[]), uso_alim:get("jvf_uso_alim",{}),   // ⭐ v0.13.9 · favoritos + contador de uso por alimento
       hist_alim:get("jvf_hist_alim",[]),   // 🕑 v0.14.2 · historial de alimentos (deriva del diario; viaja en el backup)
@@ -3753,6 +3791,7 @@ function procesarImport(file){
     if(Array.isArray(data.cerebro_norec)) set("jvf_cerebro_norec", data.cerebro_norec.filter(function(x){ return x && x.q; }));
     // M · capa FLEX (los backups antiguos no la traen: se deja como está)
     if(data.flex_cfg && typeof data.flex_cfg==="object") set("jvf_flex_cfg", data.flex_cfg);
+    if(data.notif_cfg && typeof data.notif_cfg==="object") set("jvf_notif_cfg", data.notif_cfg);   // 🔔 recordatorios
     if(data.flex_visto && typeof data.flex_visto==="object") set("jvf_flex_visto", data.flex_visto);
     // 🏀 v0.13.7 · sesiones de deporte (los backups antiguos no las traen: se dejan como están)
     if(Array.isArray(data.deporte_sesiones)) set("jvf_deporte_sesiones", data.deporte_sesiones.filter(function(s){ return s && s.f && +s.kcal>=0; }));
