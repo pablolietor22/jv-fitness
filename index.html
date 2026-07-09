@@ -456,7 +456,7 @@
 
 <header class="brandbar">
   <div class="logo"><span class="dot"></span>JV <b>Fitness</b></div>
-  <span class="tag">MVP v0.17.1 · motor v0.7</span>
+  <span class="tag">MVP v0.17.2 · motor v0.7</span>
 </header>
 <div class="statuschip"><span class="pulse"></span> cálculo science-based · ajustable · calibración real</div>
 
@@ -6138,6 +6138,21 @@ function bcNormalizarOFF(p){
     if(kcal==null && num(nu["energy_100g"])!=null) kcal=Math.round(num(nu["energy_100g"])/4.184);   // solo kJ → se convierte (1 kcal = 4,184 kJ)
     out.kcal100=kcal; out.p100=num(nu["proteins_100g"]); out.c100=num(nu["carbohydrates_100g"]); out.g100=num(nu["fat_100g"]);
   }
+  // 🛡️ CORDURA (fix Tortitas de Maíz Auchan, 09-07): OFF traía la grasa por ración como "2000" (error
+  // humano en la base colaborativa) y la regla de tres la convertía en 29.412 g/100. Un por-100
+  // FÍSICAMENTE imposible se anula y se pide la etiqueta: mejor un hueco honesto que un disparate.
+  var locos=[];
+  function cuerda(v,max,nom){ if(v==null) return null; if(!(v>=0)||v>max){ locos.push(nom); return null; } return v; }
+  out.kcal100=cuerda(out.kcal100,900,"kcal");
+  out.p100=cuerda(out.p100,100,"proteína");
+  out.c100=cuerda(out.c100,100,"carbohidratos");
+  out.g100=cuerda(out.g100,100,"grasa");
+  if(locos.length) out.avisoCordura="⚠️ La ficha de OFF trae un dato IMPOSIBLE en: "+locos.join(", ")+" (error humano de la base colaborativa). Lo dejo vacío — cópialo de tu etiqueta.";
+  // 🏷️ etiqueta completa (fibra/azúcar/saturadas/sal→sodio), con la misma cordura; el confirmador la enseña como tabla
+  function num100(k){ var v=num(nu[k]); return (v!=null && v>=0 && v<=100)?v:null; }
+  out.fib100=num100("fiber_100g"); out.az100=num100("sugars_100g"); out.sat100=num100("saturated-fat_100g");
+  var _na=num(nu["sodium_100g"]); if(_na==null && num(nu["salt_100g"])!=null) _na=num(nu["salt_100g"])/2.5;
+  out.na100=(_na!=null && _na>=0 && _na<=40)?Math.round(_na*1000):null;   // mg de sodio /100
   var marca=p.brands?String(p.brands).split(",")[0].trim():"";
   var nombre=((p.product_name||"").trim()+(marca?" ("+marca+")":"")).trim();
   out.dens=bcDensidad(nombre, p.categories_tags||[]);
@@ -6360,6 +6375,8 @@ function bcBuscar(ean){
       u:(cp.u==="ml")?"ml":"g",
       uMotivo:(cp.u?"unidad guardada de tu escaneo anterior":"escaneo antiguo sin unidad: asumo gramos — corrígelo si va en ml"),
       dens:(cp.dens && cp.dens.d>0)?cp.dens:bcDensidad(cp.nombre,null), servingAviso:null,
+      fib100:(cp.fib100!=null?+cp.fib100:null), az100:(cp.az100!=null?+cp.az100:null),
+      sat100:(cp.sat100!=null?+cp.sat100:null), na100:(cp.na100!=null?+cp.na100:null),
       serving:cp.serving||null, porcion:null});
     return;
   }
@@ -6384,6 +6401,7 @@ function bcBuscar(ean){
     bcConfirmar({ean:ean, fuente:"off", nombre:nombre, esAgua:esAgua({nombre:nombre, cats:p.categories_tags||[]}),
       kcal100:norm.kcal100, p100:norm.p100, c100:norm.c100, g100:norm.g100,
       u:norm.u, uMotivo:norm.uMotivo, dens:norm.dens, servingAviso:norm.servingAviso,
+      fib100:norm.fib100, az100:norm.az100, sat100:norm.sat100, na100:norm.na100, avisoCordura:norm.avisoCordura,
       img:(typeof p.image_front_url==="string" && p.image_front_url.indexOf("https://")===0)?p.image_front_url:null,
       nutriscore:(typeof p.nutriscore_grade==="string" && /^[a-e]$/i.test(p.nutriscore_grade))?p.nutriscore_grade.toUpperCase():null,
       serving:(typeof p.serving_size==="string" && p.serving_size)?p.serving_size:null, porcion:null});
@@ -6475,12 +6493,27 @@ function bcConfirmar(prod){
     +" · <a href='#' onclick='bcUnidadBase();return false;' style='color:var(--jade);text-decoration:underline'>¿Tu etiqueta dice por "+uOtra+"? Cámbialo</a></span></div>";
   // Punto 5 de la spec · aviso MUY visible si OFF traía datos por ración (recalculados o pendientes de etiqueta)
   if(prod.servingAviso) h+="<div class='aviso' style='margin-top:8px'>"+esc(prod.servingAviso)+"</div>";
-  h+="<p class='hint' style='margin-top:8px'>Compáralos con la etiqueta y corrige lo que no cuadre (la base es colaborativa).</p>";
-  h+="<div class='row' style='gap:6px'>"
-    +"<div><label>Kcal *</label><input id='bc_kcal' type='number' inputmode='decimal' value=\""+val(prod.kcal100)+"\"></div>"
-    +"<div><label>P (g) *</label><input id='bc_p' type='number' inputmode='decimal' value=\""+val(prod.p100)+"\"></div>"
-    +"<div><label>C (g)</label><input id='bc_c' type='number' inputmode='decimal' value=\""+val(prod.c100)+"\"></div>"
-    +"<div><label>G (g)</label><input id='bc_g' type='number' inputmode='decimal' value=\""+val(prod.g100)+"\"></div></div>";
+  // 🏷️ v0.17.2 · TABLA NUTRICIONAL estilo envase (petición de Pablo, caso Tortitas de Maíz): las mismas
+  // filas y el mismo orden que la etiqueta española, editables. Kcal y proteína obligatorias (*).
+  if(prod.avisoCordura) h+="<div class='aviso' style='margin-top:8px'>"+esc(prod.avisoCordura)+"</div>";
+  h+="<div class='eyebrow-lbl' style='margin-top:10px'>Información nutricional · por "+uTxt+"</div>";
+  h+="<p class='hint' style='margin:2px 0 6px'>Como en el envase: compara fila a fila y corrige lo que no cuadre (la base es colaborativa).</p>";
+  function bcFila(lbl,id,v,oblig,sub){
+    return "<div style='display:flex;align-items:center;justify-content:space-between;gap:8px;padding:7px 10px;border-bottom:1px solid var(--line-soft)"+(sub?";padding-left:26px":"")+"'>"
+      +"<span style='"+(sub?"color:var(--mute);font-size:.8rem":"color:var(--soft)")+"'>"+lbl+(oblig?" <b style='color:var(--ember)'>*</b>":"")+"</span>"
+      +"<input id='"+id+"' type='number' inputmode='decimal' style='width:104px;flex:none;margin:0;text-align:right;padding:7px 9px' value=\""+val(v)+"\"></div>";
+  }
+  function bcRed(v,d){ return v==null?null:+(+v).toFixed(d); }   // sin colas de decimales (382.3529… → 382)
+  h+="<div style='border:1px solid var(--line-soft);border-radius:12px;overflow:hidden;background:rgba(255,255,255,.02)'>"
+    + bcFila("Valor energético (kcal)","bc_kcal",bcRed(prod.kcal100,0),true,false)
+    + bcFila("Grasas (g)","bc_g",bcRed(prod.g100,1),false,false)
+    + bcFila("de las cuales saturadas (g)","bc_sat",bcRed(prod.sat100,1),false,true)
+    + bcFila("Hidratos de carbono (g)","bc_c",bcRed(prod.c100,1),false,false)
+    + bcFila("de los cuales azúcares (g)","bc_az",bcRed(prod.az100,1),false,true)
+    + bcFila("Fibra alimentaria (g)","bc_fib",bcRed(prod.fib100,1),false,false)
+    + bcFila("Proteínas (g)","bc_p",bcRed(prod.p100,1),true,false)
+    + bcFila("Sal (g)","bc_sal",(prod.na100!=null?+((prod.na100*2.5/1000).toFixed(2)):null),false,false)
+    +"</div>";
   // v0.13 · L2: honestidad "está pero incompleto" — el producto SÍ existe en la base, lo que
   // faltan son datos (ficha colaborativa a medias). Se dice tal cual y se ofrece el alta manual
   // PREFIJADA con el nombre, en vez del genérico "no encontrado" o de dejarle pelearse a ciegas.
@@ -6532,6 +6565,9 @@ function bcUnidadBase(){
   function leer(id){ var v=parseFloat((($(id)||{}).value)); return isFinite(v)?v:null; }
   var nom=((($("bc_nombre")||{}).value)||"").trim(); if(nom) prod.nombre=nom;
   prod.kcal100=leer("bc_kcal"); prod.p100=leer("bc_p"); prod.c100=leer("bc_c"); prod.g100=leer("bc_g");
+  // v0.17.2 · conservar también la tabla completa al re-renderizar (cambio de unidad base)
+  prod.fib100=leer("bc_fib"); prod.az100=leer("bc_az"); prod.sat100=leer("bc_sat");
+  var _sal=leer("bc_sal"); prod.na100=(_sal!=null)?Math.round(_sal*400):null;
   var cant=leer("bc_gramos"); if(cant>0) prod._cant=cant;
   prod.u=(prod.u==="ml")?"g":"ml";
   prod.uMotivo="corregida a mano por ti (la ficha de OFF decía lo contrario)";
@@ -6553,16 +6589,25 @@ function bcAddDiario(){
   if(fk.err==="cantidad"){ toast("¿Cuánto te has comido? (en "+uIn+")"); return; }
   if(fk.err==="densidad"){ toast("No conozco la densidad: apúntalo en "+uProd+", como el envase"); return; }
   var k=fk.k, arr=get(LS_COMIDA,[]);
+  // 🏷️ v0.17.2 · la tabla completa también viaja al diario (fibra/azúcar/saturadas/sal→sodio), escalada
+  function leerOpc(id){ var v=parseFloat((($(id)||{}).value)); return (isFinite(v)&&v>=0&&v<=100)?v:null; }
+  var fib=leerOpc("bc_fib"), az=leerOpc("bc_az"), sat=leerOpc("bc_sat"), sal=leerOpc("bc_sal");
   // Estructura EXACTA del diario (la misma que comAdd) + u con la unidad en que APUNTASTE la cantidad
   // (los items antiguos no llevan u → gramos). Los macros van escalados de por-100 a lo comido.
-  arr.push({id:Date.now().toString(36)+Math.random().toString(36).slice(2,6), f:((($("com_fecha")||{}).value)||hoyLocal()),
-    n:nombre, g:g, u:uIn, kcal:Math.round(kcal*k), p:+(p*k).toFixed(1), c:+(c*k).toFixed(1), gr:+(gr*k).toFixed(1)});
+  var _it={id:Date.now().toString(36)+Math.random().toString(36).slice(2,6), f:((($("com_fecha")||{}).value)||hoyLocal()),
+    n:nombre, g:g, u:uIn, kcal:Math.round(kcal*k), p:+(p*k).toFixed(1), c:+(c*k).toFixed(1), gr:+(gr*k).toFixed(1)};
+  if(fib!=null) _it.fib=+(fib*k).toFixed(1);
+  if(az!=null)  _it.az=+(az*k).toFixed(1);
+  if(sat!=null) _it.sat=+(sat*k).toFixed(1);
+  if(sal!=null) _it.na=Math.round(sal*400*k);   // sal g → sodio mg (sal = sodio×2,5)
+  arr.push(_it);
   set(LS_COMIDA,arr);
   // Se cachea con los valores YA corregidos por el usuario (mejores que los crudos de OFF), incluida
   // la unidad base y la densidad: el próximo escaneo del mismo EAN sale igual de bien SIN red.
   if(prod.ean && prod.fuente!=="propio"){
     var cache=get(LS_BC_CACHE,{});
-    cache[prod.ean]={producto:{nombre:nombre, kcal100:kcal, p100:p, c100:c, g100:gr, u:uProd, dens:prod.dens||null, img:prod.img||null, nutriscore:prod.nutriscore||null, serving:prod.serving||null}, ts:Date.now()};
+    cache[prod.ean]={producto:{nombre:nombre, kcal100:kcal, p100:p, c100:c, g100:gr, u:uProd, dens:prod.dens||null, img:prod.img||null, nutriscore:prod.nutriscore||null, serving:prod.serving||null,
+      fib100:(fib!=null?fib:null), az100:(az!=null?az:null), sat100:(sat!=null?sat:null), na100:(sal!=null?Math.round(sal*400):null)}, ts:Date.now()};
     set(LS_BC_CACHE,cache);
   }
   bcCerrar(); renderComida(); toast("✓ Añadido · "+Math.round(kcal*k)+" kcal");
@@ -6978,7 +7023,7 @@ function resetTodo(){ if(!confirm("⚠️ Esto borra TODO: perfil, pesos, entren
 // Reemplazo total con confirmación. Reusa get/set, hoyLocal, toast, validar, render. NO toca motor ni gate.
 function exportarJSON(){ try{ set("jvf_last_export",hoyLocal()); }catch(e){}
   try{
-    var data={ app:"jvf", schema:1, app_version:"0.17.1", exportadoEl:new Date().toISOString(),
+    var data={ app:"jvf", schema:1, app_version:"0.17.2", exportadoEl:new Date().toISOString(),
       perfil:get(LS_P,null), pesos:get(LS_W,[]), entrenos:get(LS_E,[]), notas_ej:get("jvf_notas_ej",{}), comida:get("jvf_comida",[]), agua:get("jvf_agua",{}), suples_cfg:get("jvf_suples_cfg",null), suples_log:get("jvf_suples_log",{}),
       rutinas:get("jvf_rutinas",[]), meals:get("jvf_meals",[]), ent_start:get("jvf_ent_start",null),   // v0.10 · backup completo
       alimentos_propios:get("jvf_alimentos_propios",[]), barcode_cache:get("jvf_barcode_cache",{}),   // I5/I6 · también viajan en el backup
