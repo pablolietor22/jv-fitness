@@ -447,7 +447,7 @@
 
 <header class="brandbar">
   <div class="logo"><span class="dot"></span>JV <b>Fitness</b></div>
-  <span class="tag">MVP v0.16.3 · motor v0.7</span>
+  <span class="tag">MVP v0.16.4 · motor v0.7</span>
 </header>
 <div class="statuschip"><span class="pulse"></span> cálculo science-based · ajustable · calibración real</div>
 
@@ -460,6 +460,7 @@
   <button class="tab"        id="tab-calib"    onclick="abrir('calib')">Progreso</button>
   <button class="tab"        id="tab-comida"   onclick="abrir('comida')">Comida</button>
   <button class="tab"        id="tab-cerebro"  onclick="abrir('cerebro')">🧠 JARVIS</button>
+  <button class="tab"        id="tab-lesiones" onclick="abrir('lesiones')">🩹 Lesión</button>
 </nav>
 
 <!-- BIENVENIDA · vídeo de Pablo + copy motivador. Se enseña UNA vez, antes de la 1ª pregunta del
@@ -831,6 +832,16 @@
   </div>
   <div id="cb_diario"></div>
   <p class="cb-foot">⚕️ Cita la ciencia del master file · <b style="color:var(--mute)">no es consejo médico</b> (salud/lesiones → profesional). 🔒 Todo se queda <b style="color:var(--mute)">solo en tu dispositivo</b>.</p>
+</div>
+
+<!-- 🩹 LESIONES · el mini-fisio como apartado propio (reusa el sub-motor LESIONES_KB + jvf_lesiones) -->
+<div id="lesiones" class="card hidden">
+  <div class="eyebrow-lbl">🩹 Mini-fisio · tus lesiones</div>
+  <p class="hint" style="margin-top:0">Educación basada en evidencia para gestionar la carga en el gym. <b style="color:var(--soft)">No es consejo médico</b>: ante dolor agudo/nocturno, bloqueo o sin mejora en ~6-12 semanas → fisio.</p>
+  <div id="les_activas"></div>
+  <div class="eyebrow-lbl" style="margin-top:16px">➕ ¿Qué te molesta? Elige la zona</div>
+  <div id="les_zonas" class="wizchips" style="margin-top:8px"></div>
+  <div id="les_ficha"></div>
 </div>
 
 <!-- ENTRENOS (Fase 3.3 — logging estilo Hevy · v0.12.2 máquina de vistas home/registro/editor) -->
@@ -3499,9 +3510,9 @@ function idiomaCambia(sel){ var v=(sel&&sel.value)||"es"; if(!I18N[v]){ if(sel) 
 
 // ======= PESTAÑAS + TOAST (UX v0.3) =======
 // Orden de las pestañas (única fuente de verdad; antes estaba duplicado en aplicarTab/render y lo usa el swipe).
-const TABS=["plan","ajustes","registro","entrenos","calib","comida","cerebro"];
+const TABS=["plan","ajustes","registro","entrenos","calib","comida","cerebro","lesiones"];
 let _tab="plan";
-function abrir(t){ _tab=t; aplicarTab(); if(t==="entrenos" && !$("ent_form").innerHTML.trim()) entInit(); if(t==="comida") comInit(); if(t==="cerebro") cbInit(); if(t==="calib") pfRefrescar(); window.scrollTo(0,0); }   // 📸 v0.13-C · Progreso pinta también la sección de fotos
+function abrir(t){ _tab=t; aplicarTab(); if(t==="entrenos" && !$("ent_form").innerHTML.trim()) entInit(); if(t==="comida") comInit(); if(t==="cerebro") cbInit(); if(t==="calib") pfRefrescar(); if(t==="lesiones") lesInit(); window.scrollTo(0,0); }   // 📸 v0.13-C · Progreso pinta también la sección de fotos
 function aplicarTab(){
   TABS.forEach(function(s){
     show(s, s===_tab);
@@ -3561,7 +3572,7 @@ function resetTodo(){ if(!confirm("⚠️ Esto borra TODO: perfil, pesos, entren
 // Reemplazo total con confirmación. Reusa get/set, hoyLocal, toast, validar, render. NO toca motor ni gate.
 function exportarJSON(){ try{ set("jvf_last_export",hoyLocal()); }catch(e){}
   try{
-    var data={ app:"jvf", schema:1, app_version:"0.16.3", exportadoEl:new Date().toISOString(),
+    var data={ app:"jvf", schema:1, app_version:"0.16.4", exportadoEl:new Date().toISOString(),
       perfil:get(LS_P,null), pesos:get(LS_W,[]), entrenos:get(LS_E,[]), notas_ej:get("jvf_notas_ej",{}), comida:get("jvf_comida",[]), agua:get("jvf_agua",{}), suples_cfg:get("jvf_suples_cfg",null), suples_log:get("jvf_suples_log",{}),
       rutinas:get("jvf_rutinas",[]), meals:get("jvf_meals",[]), ent_start:get("jvf_ent_start",null),   // v0.10 · backup completo
       alimentos_propios:get("jvf_alimentos_propios",[]), barcode_cache:get("jvf_barcode_cache",{}),   // I5/I6 · también viajan en el backup
@@ -4731,6 +4742,41 @@ function entLesionesAviso(){
   h+="<p class='hint' style='margin-top:8px'>"+esc(LESIONES_DISCLAIMER)+" Dile a Jarvis «ya me curé» cuando te recuperes.</p></div>";
   box.innerHTML=h;
 }
+// 🩹 PESTAÑA LESIONES · el mini-fisio con su apartado propio (reusa LESIONES_KB + lesiones* de la fase 2B).
+function lesInit(){ lesRenderActivas(); lesRenderZonas(); }
+function lesRenderZonas(){
+  var box=$("les_zonas"); if(!box) return;
+  box.innerHTML=LESIONES_KB.map(function(e){ return "<span class='wchip done' onclick=\"lesVerFicha('"+e.id+"')\">"+esc(e.emoji+" "+e.zona.split(" · ")[0])+"</span>"; }).join("");
+}
+function lesRenderActivas(){
+  var box=$("les_activas"); if(!box) return;
+  var a=lesionesGet();
+  if(!a.length){ box.innerHTML="<p class='hint' style='margin:0'>No tienes lesiones registradas. Si algo te molesta, elige la zona abajo y te digo qué cargar y qué evitar.</p>"; return; }
+  box.innerHTML="<div class='eyebrow-lbl' style='margin-top:0'>Tus lesiones activas</div>"+a.map(function(x){
+    var e=lesionFichaPorId(x.id,LESIONES_KB);
+    return "<div class='kv'><span>"+esc((e?e.emoji+" ":"")+x.zona)+" <span class='hint' style='display:inline'>· desde "+esc(x.f)+"</span></span>"
+      +"<span style='display:flex;gap:6px'><button class='sec' type='button' style='width:auto;margin:0;padding:6px 10px' onclick=\"lesVerFicha('"+x.id+"')\">ver</button>"
+      +"<button class='sec' type='button' style='width:auto;margin:0;padding:6px 10px' onclick=\"lesQuitarUI('"+x.id+"')\">✓ curado</button></span></div>";
+  }).join("");
+}
+function lesVerFicha(id){
+  var e=lesionFichaPorId(id, LESIONES_KB), box=$("les_ficha"); if(!e||!box) return;
+  var ya=lesionesGet().some(function(x){ return x.id===id; });
+  function items(a){ return (a||[]).map(function(x){ return "• "+esc(x); }).join("<br>"); }
+  box.innerHTML="<div class='card' style='padding:12px;margin-top:12px'><b>"+esc(e.emoji+" "+e.zona)+"</b><br>"+esc(e.resumen)
+    +"<br><br><b>✅ Haz</b><br>"+items(e.hacer)
+    +"<br><br><b>⛔ Evita / ajusta</b><br>"+items(e.evitar)
+    + (e.fortalecer&&e.fortalecer.length ? "<br><br><b>💪 Fortalece (prehab)</b><br>"+items(e.fortalecer) : "")
+    +"<br><br>"+esc(e.banderas)
+    +"<br><br>"+esc(LESIONES_DISCLAIMER)
+    +"<span class='cb-cita'>"+esc(e.cita)+"</span>"
+    +"<div style='margin-top:12px'>"+(ya
+        ? "<button class='sec' type='button' style='width:auto;margin:0' onclick=\"lesQuitarUI('"+id+"')\">✓ Ya me curé (quitar)</button>"
+        : "<button type='button' style='width:auto;margin:0' onclick=\"lesGuardarUI('"+id+"')\">📌 Tengo esta lesión</button>")
+    +"</div></div>";
+}
+function lesGuardarUI(id){ lesionesGuardar(id); lesRenderActivas(); lesVerFicha(id); try{ entLesionesAviso(); }catch(e){} toast("📌 Lesión registrada — adapto tu rutina"); }
+function lesQuitarUI(id){ lesionesQuitar(id); lesRenderActivas(); lesVerFicha(id); try{ entLesionesAviso(); }catch(e){} toast("💪 ¡Recuperado! Te la quito"); }
 function cbResponder(txt){
   // SALUDO · un «hola/buenas/qué tal» suelto merece bienvenida cálida que ORIENTA (no el fallback frío
   // «no reconozco patrón»). Solo dispara con saludo PURO; si lleva pregunta detrás, sigue el pipeline.
