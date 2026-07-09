@@ -447,7 +447,7 @@
 
 <header class="brandbar">
   <div class="logo"><span class="dot"></span>JV <b>Fitness</b></div>
-  <span class="tag">MVP v0.16.12 · motor v0.7</span>
+  <span class="tag">MVP v0.16.13 · motor v0.7</span>
 </header>
 <div class="statuschip"><span class="pulse"></span> cálculo science-based · ajustable · calibración real</div>
 
@@ -1499,7 +1499,7 @@ var FOODS=[
   {n:"Leche desnatada",kcal:35,p:3.4,c:5,f:0.1,u:"ml",fib:0,az:5,sat:0.1},
   {n:"Yogur natural",kcal:61,p:3.5,c:4.7,f:3.3,fib:0,az:4.7,sat:2,porc:"yogur:125"},
   {n:"Yogur griego",kcal:97,p:9,c:4,f:5,fib:0,az:4,sat:3.3,porc:"yogur:125"},
-  {n:"Queso batido 0%",kcal:47,p:8,c:4,f:0.2,fib:0,az:4,sat:0.1},
+  {n:"Queso batido 0%",kcal:47,p:8,c:4,f:0.2,fib:0,az:4,sat:0.1,porc:"tarrina:125"},
   {n:"Requesón",kcal:98,p:11,c:3,f:4,fib:0,az:3,sat:2.5},
   {n:"Queso curado",kcal:380,p:25,c:1.4,f:30,fib:0,az:0,sat:19,porc:"loncha:20"},
   {n:"Arroz blanco cocido",kcal:130,p:2.7,c:28,f:0.3,fib:0.3,az:0.1,sat:0.08,porc:"vasito:125"},
@@ -1559,14 +1559,14 @@ var FOODS=[
   {n:"Arroz integral cocido",kcal:111,p:2.6,c:23,f:0.9,fib:1.8,az:0.4,sat:0.2,porc:"vasito:125"},
   {n:"Cuscús cocido",kcal:112,p:3.8,c:23,f:0.2,fib:1.4,az:0.1,sat:0.05,porc:"vasito:125"},
   {n:"Tortitas de arroz",kcal:388,p:8,c:82,f:3,fib:3,az:0.6,sat:0.6,porc:"tortita:7.2"},
-  {n:"Copos de maíz",kcal:378,p:7,c:84,f:0.9,fib:3,az:8,sat:0.2},
+  {n:"Copos de maíz",kcal:378,p:7,c:84,f:0.9,fib:3,az:8,sat:0.2,porc:"tazon:30"},
   {n:"Galletas maría",kcal:436,p:7,c:75,f:12,fib:2.8,az:22,sat:5.5,porc:"galleta:5"},
   {n:"Croissant",kcal:406,p:8,c:46,f:21,fib:2.5,az:8,sat:12,porc:"unidad:60"},
   {n:"Tortilla de patatas (aprox)",kcal:190,p:6,c:14,f:12,fib:1.2,az:1.5,sat:2.8,porc:"porcion:125"},
   {n:"Pizza margarita (aprox)",kcal:250,p:11,c:31,f:9,fib:2.3,az:3.5,sat:3.8,porc:"porcion:125"},
   {n:"Gazpacho (aprox)",kcal:44,p:0.8,c:4.5,f:2.6,fib:1.2,az:2.8,sat:0.4},
   {n:"Hummus",kcal:166,p:8,c:14,f:10,fib:6,az:0.4,sat:1.4},
-  {n:"Maíz dulce",kcal:86,p:3.3,c:19,f:1.4,fib:2.4,az:6.3,sat:0.2},
+  {n:"Maíz dulce",kcal:86,p:3.3,c:19,f:1.4,fib:2.4,az:6.3,sat:0.2,porc:"guarnicion:80"},
   {n:"Guisantes",kcal:81,p:5.4,c:14,f:0.4,fib:5,az:5.7,sat:0.1},
   {n:"Judías verdes",kcal:31,p:1.8,c:7,f:0.2,fib:3.4,az:3.3,sat:0.05},
   {n:"Calabacín",kcal:17,p:1.2,c:3.1,f:0.3,fib:1,az:2.5,sat:0.1},
@@ -1595,7 +1595,7 @@ var FOODS=[
   {n:"Semillas de chía",kcal:486,p:17,c:42,f:31,fib:34,az:0,sat:3.3,porc:"cucharada:12"},
   {n:"Semillas de lino",kcal:534,p:18,c:29,f:42,fib:27,az:1.5,sat:3.7,porc:"cucharada:10"},
   {n:"Aceitunas",kcal:115,p:0.8,c:6,f:11,fib:3.3,az:0,sat:1.4,porc:"unidad:4"},
-  {n:"Plátano macho frito (aprox)",kcal:252,p:1.5,c:41,f:9,fib:2.3,az:17,sat:3.5},
+  {n:"Plátano macho frito (aprox)",kcal:252,p:1.5,c:41,f:9,fib:2.3,az:17,sat:3.5,porc:"racion:100"},
   {n:"Weider Rush (energética/pre-entreno)",kcal:2,p:0,c:0,f:0,u:"ml",fib:0,az:0,sat:0,porc:"lata:250",ean:"4044782317730"}
 ];
 // 🏷️ Base CURADA por código de barras: productos que OFF no tiene (incl. suplementos de gym tipo Weider Rush)
@@ -1608,25 +1608,25 @@ var FOODS_EAN={}; try{ FOODS.forEach(function(f){ if(f&&f.ean) FOODS_EAN[String(
 // casos) en data/README-alimentos.md. Generado el 2026-07-06; regenerable con regenerar-bedca.py.
 var FOODS_BEDCA=[
   {n:"Aceitunas",kcal:120,p:1.3,c:1,f:12.5},{n:"Aceitunas negras (con hueso)",kcal:288,p:2,c:4,f:29.8},{n:"Albóndigas (en conserva)",kcal:141,p:6.8,c:6.8,f:9.7},
-  {n:"Almendras fritas saladas",kcal:590,p:19,c:4.5,f:56},{n:"Anchoas en aceite (conserva)",kcal:203,p:28.9,c:0,f:9.7},{n:"Arroz con leche",kcal:92,p:3.3,c:16.4,f:1.3},
+  {n:"Almendras fritas saladas",kcal:590,p:19,c:4.5,f:56,porc:"puñado:30"},{n:"Anchoas en aceite (conserva)",kcal:203,p:28.9,c:0,f:9.7},{n:"Arroz con leche",kcal:92,p:3.3,c:16.4,f:1.3},
   {n:"Bacalao salado (remojado)",kcal:109,p:26,c:0,f:0.4},{n:"Berenjena frita",kcal:298,p:1.2,c:2.7,f:31.9},{n:"Bizcocho",kcal:381,p:6.5,c:39.6,f:21.9},
   {n:"Boquerones fritos",kcal:137,p:20.1,c:0.5,f:6},{n:"Butifarra",kcal:240,p:10,c:5.5,f:20},{n:"Calamar asado",kcal:81,p:16.6,c:0.5,f:1.3},
   {n:"Cecina",kcal:242,p:39,c:0,f:9.5},{n:"Cerveza",kcal:42,p:0.5,c:3.1,f:0,u:"ml"},{n:"Chipirón",kcal:81,p:16.2,c:0.7,f:1.4},
   {n:"Chorizo",kcal:322,p:27,c:1.9,f:23.1},{n:"Churro",kcal:358,p:4.6,c:40,f:20},{n:"Croquetas de pollo",kcal:154,p:5.8,c:20.4,f:5.3},
   {n:"Cuajada",kcal:87,p:4.5,c:6.6,f:4.7},{n:"Empanada de carne",kcal:298,p:21.9,c:12,f:18.1},{n:"Empanadilla",kcal:247,p:4.8,c:29.7,f:12},
-  {n:"Ensaladilla rusa",kcal:110,p:2.7,c:9.8,f:6.7},{n:"Fabada asturiana",kcal:157,p:6.1,c:13.4,f:8.8},{n:"Flan de huevo",kcal:132,p:4.8,c:20.4,f:3.4},
+  {n:"Ensaladilla rusa",kcal:110,p:2.7,c:9.8,f:6.7},{n:"Fabada asturiana",kcal:157,p:6.1,c:13.4,f:8.8},{n:"Flan de huevo",kcal:132,p:4.8,c:20.4,f:3.4,porc:"unidad:100"},
   {n:"Fuet",kcal:473,p:19.5,c:5.5,f:42},{n:"Gambas hervidas",kcal:94,p:19.8,c:0,f:1.7},{n:"Garbanzos en conserva",kcal:133,p:7.2,c:14.1,f:2.9},
-  {n:"Gazpacho",kcal:34,p:0.6,c:1.6,f:2.8},{n:"Horchata",kcal:98,p:1.2,c:17,f:2.7},{n:"Huevo frito",kcal:185,p:13.4,c:0.3,f:14.6},
-  {n:"Huevo revuelto (con mantequilla)",kcal:228,p:10.2,c:0.8,f:20.7},{n:"Jamón cocido (york)",kcal:113,p:21,c:0.4,f:3},{n:"Jamón ibérico de bellota",kcal:333,p:33.2,c:0.5,f:22.2},
-  {n:"Jamón ibérico de cebo",kcal:301,p:32.3,c:0.1,f:19.2},{n:"Jamón serrano",kcal:318,p:28.8,c:0.2,f:22.6},{n:"Leche condensada",kcal:334,p:8.5,c:53.6,f:9.2},
-  {n:"Lomo embuchado",kcal:321,p:34,c:0,f:20.7},{n:"Magdalena",kcal:385,p:6.1,c:39.9,f:22.4},{n:"Mejillones en escabeche",kcal:167,p:10.7,c:0,f:14},
+  {n:"Gazpacho",kcal:34,p:0.6,c:1.6,f:2.8},{n:"Horchata",kcal:98,p:1.2,c:17,f:2.7},{n:"Huevo frito",kcal:185,p:13.4,c:0.3,f:14.6,porc:"huevo:55"},
+  {n:"Huevo revuelto (con mantequilla)",kcal:228,p:10.2,c:0.8,f:20.7,porc:"huevo:55"},{n:"Jamón cocido (york)",kcal:113,p:21,c:0.4,f:3,porc:"loncha:20"},{n:"Jamón ibérico de bellota",kcal:333,p:33.2,c:0.5,f:22.2,porc:"loncha:15"},
+  {n:"Jamón ibérico de cebo",kcal:301,p:32.3,c:0.1,f:19.2,porc:"loncha:15"},{n:"Jamón serrano",kcal:318,p:28.8,c:0.2,f:22.6,porc:"loncha:15"},{n:"Leche condensada",kcal:334,p:8.5,c:53.6,f:9.2},
+  {n:"Lomo embuchado",kcal:321,p:34,c:0,f:20.7},{n:"Magdalena",kcal:385,p:6.1,c:39.9,f:22.4,porc:"unidad:35"},{n:"Mejillones en escabeche",kcal:167,p:10.7,c:0,f:14},
   {n:"Mejillón hervido",kcal:112,p:18.4,c:3.2,f:2.7},{n:"Merluza rebozada frita",kcal:149,p:10.7,c:3.5,f:10.3},{n:"Morcilla",kcal:323,p:11,c:3.2,f:30},
   {n:"Morcilla frita",kcal:306,p:12.6,c:15,f:21.9},{n:"Mosto (zumo de uva)",kcal:62,p:0.4,c:15,f:0},{n:"Natillas",kcal:104,p:3.7,c:15.5,f:2.9},
   {n:"Paella",kcal:172,p:12.4,c:17.4,f:5.7},{n:"Paella marinera",kcal:122,p:3.5,c:25.1,f:0.6},{n:"Panceta frita",kcal:734,p:4.7,c:0,f:80.9},
-  {n:"Paté de hígado de cerdo",kcal:338,p:14,c:5,f:29.5},{n:"Pulpo hervido",kcal:69,p:13.4,c:1.4,f:0.9},{n:"Queso manchego",kcal:388,p:28.8,c:0.5,f:30.4},
-  {n:"Rosquilla",kcal:349,p:7.8,c:49.3,f:13.2},{n:"Salchichón",kcal:420,p:25.8,c:2,f:34.7},{n:"San Jacobo",kcal:237,p:4.1,c:25.2,f:13.3},
-  {n:"Sardina asada",kcal:255,p:16.7,c:0,f:21.2},{n:"Sobrasada",kcal:595,p:12.9,c:0,f:61.4},{n:"Sofrito",kcal:209,p:1.1,c:4.7,f:21},
-  {n:"Tomate frito",kcal:84,p:1.5,c:5.2,f:6.4},{n:"Tortilla francesa",kcal:170,p:14.6,c:0.4,f:12.3},{n:"Turrón (tipo Alicante)",kcal:484,p:13.1,c:44.9,f:28.1},
+  {n:"Paté de hígado de cerdo",kcal:338,p:14,c:5,f:29.5},{n:"Pulpo hervido",kcal:69,p:13.4,c:1.4,f:0.9},{n:"Queso manchego",kcal:388,p:28.8,c:0.5,f:30.4,porc:"loncha:20"},
+  {n:"Rosquilla",kcal:349,p:7.8,c:49.3,f:13.2},{n:"Salchichón",kcal:420,p:25.8,c:2,f:34.7,porc:"loncha:10"},{n:"San Jacobo",kcal:237,p:4.1,c:25.2,f:13.3},
+  {n:"Sardina asada",kcal:255,p:16.7,c:0,f:21.2,porc:"unidad:40"},{n:"Sobrasada",kcal:595,p:12.9,c:0,f:61.4},{n:"Sofrito",kcal:209,p:1.1,c:4.7,f:21},
+  {n:"Tomate frito",kcal:84,p:1.5,c:5.2,f:6.4},{n:"Tortilla francesa",kcal:170,p:14.6,c:0.4,f:12.3,porc:"unidad:90"},{n:"Turrón (tipo Alicante)",kcal:484,p:13.1,c:44.9,f:28.1},
   {n:"Vino tinto",kcal:70,p:0.2,c:0.3,f:0,u:"ml"}
 ];
 // v0.13 · L3 — tanda curada (~40): bebidas, kebab/fast-food común en España y básicos que
@@ -1639,11 +1639,11 @@ var FOODS_V013=[
   // — Bebidas · valores por 100 ml —
   {n:"Coca-Cola",kcal:42,p:0,c:10.6,f:0,u:"ml"},                       // OFF
   {n:"Coca-Cola Zero",kcal:0,p:0,c:0,f:0,u:"ml"},                      // OFF (0,2 kcal reales → 0 a efectos del diario)
-  {n:"Fanta naranja",kcal:38,p:0,c:9.2,f:0,u:"ml"},                    // OFF España
+  {n:"Fanta naranja",kcal:38,p:0,c:9.2,f:0,u:"ml",porc:"lata:330"},                    // OFF España
   {n:"Aquarius limón",kcal:21,p:0,c:5,f:0,u:"ml"},                     // OFF
   {n:"Cerveza 0,0",kcal:24,p:0.4,c:5.3,f:0,u:"ml"},                    // OFF (media 0,0 España)
   {n:"Tinto de verano",kcal:33,p:0,c:4.4,f:0,u:"ml"},                  // OFF
-  {n:"Zumo de naranja (envasado)",kcal:44,p:0.7,c:10,f:0.1,u:"ml"},    // BEDCA/OFF
+  {n:"Zumo de naranja (envasado)",kcal:44,p:0.7,c:10,f:0.1,u:"ml",porc:"vaso:200"},    // BEDCA/OFF
   {n:"Café solo",kcal:2,p:0.1,c:0.3,f:0,u:"ml"},                       // BEDCA (café infusión)
   {n:"Café con leche entera (aprox)",kcal:32,p:1.6,c:2.5,f:1.7,u:"ml"},// aprox mitad café / mitad leche entera
   {n:"Té frío limón",kcal:30,p:0,c:7.2,f:0,u:"ml"},                    // OFF (tipo Nestea)
@@ -1654,20 +1654,20 @@ var FOODS_V013=[
   {n:"Dürüm de pollo (aprox)",kcal:215,p:11,c:21,f:9.5},               // OFF (media wraps kebab)
   {n:"Kebab en plato con ensalada (aprox)",kcal:145,p:11,c:7,f:8},     // aprox carne+ensalada+salsa
   {n:"Carne de kebab (aprox)",kcal:215,p:18,c:3,f:14.5},               // OFF (döner asado)
-  {n:"Pan de pita",kcal:275,p:9,c:55,f:1.2},                           // USDA
+  {n:"Pan de pita",kcal:275,p:9,c:55,f:1.2,porc:"unidad:60"},                           // USDA
   {n:"Falafel",kcal:333,p:13.3,c:31.8,f:17.8},                         // USDA
-  {n:"Salsa de yogur (kebab, aprox)",kcal:180,p:2.5,c:6,f:16},         // aprox yogur+mayonesa
+  {n:"Salsa de yogur (kebab, aprox)",kcal:180,p:2.5,c:6,f:16,porc:"cucharada:15"},         // aprox yogur+mayonesa
   {n:"Patatas fritas (freiduría)",kcal:312,p:3.4,c:41,f:15},           // USDA (fast food)
   {n:"Patatas chips (bolsa)",kcal:536,p:6.6,c:50,f:34.6},              // USDA
-  {n:"Hamburguesa completa con pan (aprox)",kcal:254,p:13,c:24,f:12},  // USDA (media fast food)
-  {n:"Nuggets de pollo",kcal:296,p:15.5,c:16,f:19.7},                  // USDA
+  {n:"Hamburguesa completa con pan (aprox)",kcal:254,p:13,c:24,f:12,porc:"unidad:250"},  // USDA (media fast food)
+  {n:"Nuggets de pollo",kcal:296,p:15.5,c:16,f:19.7,porc:"nugget:18"},                  // USDA
   {n:"Perrito caliente completo (aprox)",kcal:290,p:10.5,c:24,f:17},   // USDA
   {n:"Sándwich mixto (aprox)",kcal:260,p:12.5,c:28,f:11},              // aprox pan molde+york+queso
   {n:"Lasaña de carne (aprox)",kcal:163,p:8.8,c:13.2,f:8.4},           // BEDCA
   {n:"Ketchup",kcal:112,p:1.2,c:25.8,f:0.2},                           // USDA
   {n:"Mayonesa",kcal:680,p:1.1,c:2.4,f:74.7},                          // USDA
   {n:"Alioli (aprox)",kcal:703,p:1.5,c:3,f:76},                        // OFF (media España)
-  {n:"Salchichas Frankfurt",kcal:250,p:11.5,c:3.5,f:21},               // OFF (media España)
+  {n:"Salchichas Frankfurt",kcal:250,p:11.5,c:3.5,f:21,porc:"salchicha:30"},               // OFF (media España)
   {n:"Bacon (crudo)",kcal:417,p:12.6,c:0.7,f:39.7},                    // USDA
   // — Básicos que faltaban · valores por 100 g —
   {n:"Azúcar blanco",kcal:400,p:0,c:100,f:0},                          // BEDCA
@@ -1678,7 +1678,7 @@ var FOODS_V013=[
   {n:"Pasta (cruda)",kcal:359,p:12.5,c:71.7,f:1.5},                    // etiqueta típica/OFF (solo había cocida)
   {n:"Cacao soluble (tipo ColaCao)",kcal:389,p:4.7,c:84,f:2.4},        // OFF
   {n:"Pollo asado (con piel)",kcal:239,p:27.3,c:0,f:13.6},             // USDA
-  {n:"Palomitas de maíz (sin mantequilla)",kcal:387,p:12,c:78,f:4.5},   // USDA
+  {n:"Palomitas de maíz (sin mantequilla)",kcal:387,p:12,c:78,f:4.5,porc:"bol:25"},   // USDA
   // v0.13.2 · 2026-07-07 — ampliación de despensa (~60): carnes/pescados, legumbres, frutas,
   // verduras, lácteos+bebidas vegetales, frutos secos/semillas, panes/cereales, snacks y platos
   // españoles que faltaban. Entra por el MISMO embudo de dedup (por eso 0 colisiones con lo previo).
@@ -1696,7 +1696,7 @@ var FOODS_V013=[
   {n:"Langostinos",kcal:96,p:21,c:0,f:1},                        // BEDCA
   {n:"Emperador (pez espada)",kcal:121,p:20,c:0,f:4.5},          // BEDCA
   {n:"Salmón ahumado",kcal:117,p:20,c:0,f:4},                    // OFF (prot ~20 g: valor real, cuadra kcal — verif. v0.13-E)
-  {n:"Surimi (palitos de cangrejo)",kcal:95,p:8,c:12,f:1},       // OFF
+  {n:"Surimi (palitos de cangrejo)",kcal:95,p:8,c:12,f:1,porc:"palito:17"},       // OFF
   {n:"Mortadela",kcal:311,p:16,c:3,f:26},                        // BEDCA
   // — Legumbres · por 100 g (cocidas) —
   {n:"Habas cocidas",kcal:110,p:8,c:18,f:0.6},                   // BEDCA
@@ -1710,7 +1710,7 @@ var FOODS_V013=[
   {n:"Higos",kcal:74,p:0.8,c:19,f:0.3},                          // USDA
   {n:"Granada",kcal:83,p:1.7,c:19,f:1.2},                        // USDA
   {n:"Frambuesas",kcal:52,p:1.2,c:12,f:0.7},                     // USDA
-  {n:"Mandarina",kcal:53,p:0.8,c:13,f:0.3},                      // BEDCA
+  {n:"Mandarina",kcal:53,p:0.8,c:13,f:0.3,porc:"unidad:70"},                      // BEDCA
   {n:"Caqui",kcal:70,p:0.6,c:18,f:0.2},                          // USDA
   {n:"Coco (fresco)",kcal:354,p:3.3,c:15,f:33},                  // USDA
   // — Verduras · por 100 g —
@@ -1722,34 +1722,34 @@ var FOODS_V013=[
   {n:"Coles de Bruselas",kcal:43,p:3.4,c:9,f:0.3},               // USDA
   {n:"Repollo",kcal:25,p:1.3,c:6,f:0.1},                         // BEDCA
   // — Lácteos y bebidas vegetales —
-  {n:"Queso parmesano",kcal:431,p:38,c:4,f:29},                  // USDA
-  {n:"Queso cheddar",kcal:402,p:25,c:1.3,f:33},                  // USDA
-  {n:"Queso azul",kcal:353,p:21,c:2.3,f:29},                     // USDA
-  {n:"Yogur desnatado",kcal:41,p:4.3,c:6,f:0.2},                 // BEDCA
+  {n:"Queso parmesano",kcal:431,p:38,c:4,f:29,porc:"racion:15"},                  // USDA
+  {n:"Queso cheddar",kcal:402,p:25,c:1.3,f:33,porc:"loncha:20"},                  // USDA
+  {n:"Queso azul",kcal:353,p:21,c:2.3,f:29,porc:"racion:20"},                     // USDA
+  {n:"Yogur desnatado",kcal:41,p:4.3,c:6,f:0.2,porc:"yogur:125"},                 // BEDCA
   {n:"Leche de avena",kcal:45,p:0.3,c:7,f:1.5,u:"ml"},           // OFF
   {n:"Bebida de soja",kcal:42,p:3.3,c:2.5,f:1.8,u:"ml"},         // OFF
-  {n:"Bebida de almendras",kcal:22,p:0.5,c:3,f:1.1,u:"ml"},      // OFF
+  {n:"Bebida de almendras",kcal:22,p:0.5,c:3,f:1.1,u:"ml",porc:"vaso:200"},      // OFF
   // — Frutos secos y semillas · por 100 g —
   {n:"Piñones",kcal:673,p:14,c:13,f:68},                         // USDA
-  {n:"Nueces de macadamia",kcal:718,p:8,c:14,f:76},              // USDA
+  {n:"Nueces de macadamia",kcal:718,p:8,c:14,f:76,porc:"puñado:20"},              // USDA
   {n:"Semillas de calabaza",kcal:559,p:30,c:11,f:49},            // USDA
   {n:"Semillas de girasol",kcal:584,p:21,c:20,f:51},             // USDA
   {n:"Semillas de sésamo",kcal:573,p:18,c:23,f:50},              // USDA
   // — Panes y cereales · por 100 g —
-  {n:"Pan de centeno",kcal:259,p:9,c:48,f:3.3},                  // BEDCA
+  {n:"Pan de centeno",kcal:259,p:9,c:48,f:3.3,porc:"rebanada:40"},                  // BEDCA
   {n:"Bagel",kcal:250,p:10,c:48,f:1.5},                          // USDA
   {n:"Muesli",kcal:363,p:10,c:66,f:6},                           // OFF
   {n:"Trigo sarraceno cocido",kcal:92,p:3.4,c:20,f:0.6},         // USDA
-  {n:"Pan rallado",kcal:395,p:13,c:72,f:5.5},                    // BEDCA
+  {n:"Pan rallado",kcal:395,p:13,c:72,f:5.5,porc:"cucharada:15"},                    // BEDCA
   // — Snacks y dulces · por 100 g —
   {n:"Crema de cacao y avellanas",kcal:539,p:6.3,c:57.5,f:30.9}, // OFF
   {n:"Donut glaseado",kcal:452,p:5,c:51,f:25},                   // USDA
   {n:"Gominolas",kcal:343,p:6.9,c:79,f:0.2},                     // OFF
-  {n:"Barrita de cereales",kcal:380,p:6,c:68,f:9},               // OFF
+  {n:"Barrita de cereales",kcal:380,p:6,c:68,f:9,porc:"barrita:25"},               // OFF
   // — Platos españoles · por 100 g —
   {n:"Salmorejo",kcal:80,p:1.8,c:7,f:5},                         // OFF
   {n:"Pisto",kcal:75,p:1.5,c:6,f:5},                             // BEDCA
-  {n:"Croquetas de jamón",kcal:220,p:6,c:20,f:13},               // OFF
+  {n:"Croquetas de jamón",kcal:220,p:6,c:20,f:13,porc:"croqueta:25"},               // OFF
   {n:"Boquerones en vinagre",kcal:156,p:17,c:0.3,f:9}            // OFF
 ];
 // Fusión con dedup por nombre (case-insensitive): la base curada MANDA en las colisiones
@@ -3671,7 +3671,7 @@ function resetTodo(){ if(!confirm("⚠️ Esto borra TODO: perfil, pesos, entren
 // Reemplazo total con confirmación. Reusa get/set, hoyLocal, toast, validar, render. NO toca motor ni gate.
 function exportarJSON(){ try{ set("jvf_last_export",hoyLocal()); }catch(e){}
   try{
-    var data={ app:"jvf", schema:1, app_version:"0.16.12", exportadoEl:new Date().toISOString(),
+    var data={ app:"jvf", schema:1, app_version:"0.16.13", exportadoEl:new Date().toISOString(),
       perfil:get(LS_P,null), pesos:get(LS_W,[]), entrenos:get(LS_E,[]), notas_ej:get("jvf_notas_ej",{}), comida:get("jvf_comida",[]), agua:get("jvf_agua",{}), suples_cfg:get("jvf_suples_cfg",null), suples_log:get("jvf_suples_log",{}),
       rutinas:get("jvf_rutinas",[]), meals:get("jvf_meals",[]), ent_start:get("jvf_ent_start",null),   // v0.10 · backup completo
       alimentos_propios:get("jvf_alimentos_propios",[]), barcode_cache:get("jvf_barcode_cache",{}),   // I5/I6 · también viajan en el backup
