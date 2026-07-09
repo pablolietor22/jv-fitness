@@ -447,7 +447,7 @@
 
 <header class="brandbar">
   <div class="logo"><span class="dot"></span>JV <b>Fitness</b></div>
-  <span class="tag">MVP v0.14.3 · motor v0.7</span>
+  <span class="tag">MVP v0.14.4 · motor v0.7</span>
 </header>
 <div class="statuschip"><span class="pulse"></span> cálculo science-based · ajustable · calibración real</div>
 
@@ -3477,7 +3477,7 @@ function resetTodo(){ if(!confirm("⚠️ Esto borra TODO: perfil, pesos, entren
 // Reemplazo total con confirmación. Reusa get/set, hoyLocal, toast, validar, render. NO toca motor ni gate.
 function exportarJSON(){ try{ set("jvf_last_export",hoyLocal()); }catch(e){}
   try{
-    var data={ app:"jvf", schema:1, app_version:"0.14.3", exportadoEl:new Date().toISOString(),
+    var data={ app:"jvf", schema:1, app_version:"0.14.4", exportadoEl:new Date().toISOString(),
       perfil:get(LS_P,null), pesos:get(LS_W,[]), entrenos:get(LS_E,[]), notas_ej:get("jvf_notas_ej",{}), comida:get("jvf_comida",[]), agua:get("jvf_agua",{}), suples_cfg:get("jvf_suples_cfg",null), suples_log:get("jvf_suples_log",{}),
       rutinas:get("jvf_rutinas",[]), meals:get("jvf_meals",[]), ent_start:get("jvf_ent_start",null),   // v0.10 · backup completo
       alimentos_propios:get("jvf_alimentos_propios",[]), barcode_cache:get("jvf_barcode_cache",{}),   // I5/I6 · también viajan en el backup
@@ -3651,6 +3651,12 @@ var CEREBRO_KB=[
     claves:["proteina en definicion","proteina en cut","proteina secando","bajo la proteina en deficit","proteina en deficit","mas proteina para no perder musculo","bajo la proteina","por que no bajarla","cuanta proteina en cut"],
     r:"En definición la proteína SUBE, nunca baja (bajarla es un mito rojo). Déficit suave con grasa que perder → 1,6 basta; moderado → 1,8-2,2; agresivo o ya muy magro → hasta 2,2-2,7 g/kg. Pero el usuario normal NO hace cuts agresivos: con 1,6-2,0 g/kg y carbos altos vas sobrado. El ajuste se hace recortando grasa, no proteína ni carbos. (— Tema 3, Longland 2016 / cierre proteína 2026)",
     chips:["¿por qué no bajarla?","¿cuánto déficit uso?","¿y los carbos?","¿cuánta grasa mínima?"]
+  },
+  {
+    tronco:"proteina", rama:"entrenos-malos-en-cut-sube-carbos",
+    claves:["entreno fatal en definicion","entreno fatal en el cut","voy reventado en definicion","voy reventado en el cut","no rindo en el gym en deficit","no tengo fuerza en definicion","sin fuerza en el gym en definicion","me cuesta entrenar en definicion","entrenos flojos en cut","entrenos malos en definicion","estoy sin energia en el cut","bajo la proteina porque entreno mal","bajo la proteina porque voy fatal","me siento reventado en la definicion","voy sin fuerza haciendo definicion"],
+    r:"Si vas reventado o los entrenos flojean en definición, casi nunca es por poca proteína: suele ser un déficit demasiado agresivo o pocos carbos. Sube primero las calorías/carbos y afloja el déficit ANTES de tocar la proteína. Mantén la proteína en 1,6-2,0 g/kg de tu PESO CORPORAL (no de masa magra): es la que protege el músculo, y son los carbos los que te dan el rendimiento que de verdad lo protege. Bajar proteína para \"rendir mejor\" es justo al revés. Eres libre de ajustarla, pero ese es el orden que dice la ciencia. (— Tema 3, Longland 2016 / cierre proteína 2026)",
+    chips:["¿cuánta proteína en cut?","¿cuántos carbos en cut?","¿cuánto déficit uso?","¿cuánta grasa mínima?"]
   },
   {
     tronco:"proteina", rama:"repartida-o-de-golpe",
@@ -3945,6 +3951,14 @@ var CEREBRO_KB=[
     claves:["fibra hincha","fibra antes de entrenar","fibra me hincha","mucha fibra molestias","fibra estomago","fibra cerca del entreno","fibra y gases","la fibra hincha","ayuda con el hambre"],
     r:"En definición con muchos carbos, baja la fibra CERCA del entreno (y 24-48h antes de sesiones largas) para no hincharte; concentra la fibra lejos del gym. Comer mucha fibra + comida voluminosa puede ser estrategia deliberada en un cut profundo (máxima saciedad por caloría), pero el trade-off son las molestias digestivas: depende de tu tolerancia. (— Tema 33, Mlinaric 2025 / @leoonpham)",
     chips:["¿cuánta fibra al día?","¿ayuda con el hambre?","¿y los carbos pre-entreno?"]
+  },
+
+  // ─────────────── TRONCO: SACIEDAD / NO PASAR HAMBRE ───────────────
+  {
+    tronco:"saciedad", rama:"densidad-calorica-volumen",
+    claves:["densidad calorica","baja densidad calorica","densidad energetica","comer mucho volumen","mucho plato pocas calorias","volumen de comida","comida que llena","alimentos que sacian","alimentos saciantes","que alimentos sacian mas","no pasar hambre en definicion","no pasar hambre en deficit","como no pasar hambre","aguantar el hambre en la dieta","la patata sacia","llenar el plato con pocas calorias","comer mucho sin pasarme de calorias"],
+    r:"Para no pasar hambre en definición, el truco nº1 es bajar la DENSIDAD CALÓRICA (calorías por gramo): comemos un volumen de comida parecido cada día, así que si ese plato pesa pocas calorías (verdura, fruta, patata, legumbre, caldos, proteína magra) te llenas igual comiendo menos kcal. En 38 ensayos controlados, bajar la densidad recortó la ingesta ~223 kcal/día SIN que la gente comiera menos cantidad ni pasara más hambre; la patata cocida fue el alimento más saciante medido. No es magia ni una fórmula exacta: es la palanca de ADHERENCIA que hace sostenible el déficit. Súmale fibra 25-35 g/día. (— Tema 33, meta EJN 2022 PMID 36460778 / Holt 1995 PMID 7498104)",
+    chips:["¿cuánta fibra al día?","¿cuántos carbos en cut?","¿la fibra ayuda con el hambre?","¿cuánto déficit uso?"]
   },
 
   // ─────────────── TRONCO: CARDIO ───────────────
@@ -4372,6 +4386,7 @@ var CB_TRONCO_NOMBRE={
   chicle:"🍬 Chicle", fatiga:"🪫 Fatiga", volumen:"📊 Volumen", fallo:"🎯 Fallo / RIR", orden:"🔀 Orden de ejercicios",
   repeticiones:"🔁 Repeticiones", tecnica:"🧩 Técnica", sodio:"🧂 Sal / Sodio", agua:"💧 Agua", fibra:"🌾 Fibra",
   cardio:"🏃 Cardio", pasos:"👟 Pasos / NEAT", bascula:"⚖️ Báscula", ayuno:"⏳ Ayuno", comidas:"🍽 Nº de comidas",
+  saciedad:"🥗 Saciedad / no pasar hambre",
   estado:"🛌 Cómo estoy hoy", estimulo:"⚡ Estímulo", pecho:"💪 Pecho", abdomen:"🔺 Abdomen", biceps:"💪 Bíceps",
   entreno:"🏋️ Entreno"
 };
