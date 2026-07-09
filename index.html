@@ -447,7 +447,7 @@
 
 <header class="brandbar">
   <div class="logo"><span class="dot"></span>JV <b>Fitness</b></div>
-  <span class="tag">MVP v0.16.0 · motor v0.7</span>
+  <span class="tag">MVP v0.16.1 · motor v0.7</span>
 </header>
 <div class="statuschip"><span class="pulse"></span> cálculo science-based · ajustable · calibración real</div>
 
@@ -1934,6 +1934,18 @@ function comToastDeshacer(msg){   // como toast() pero con botón accionable; 6 
   t.classList.add("show"); clearTimeout(window._toastId);
   window._toastId=setTimeout(function(){ t.classList.remove("show"); }, 6000);
 }
+// ✏️ corregir los GRAMOS de un alimento ya añadido (Pablo, audio #1: «me equivoqué de gramos»). Escala los macros.
+function comEditar(id){
+  var arr=get(LS_COMIDA,[]), i=arr.map(function(x){return x.id;}).indexOf(id);
+  if(i<0) return;
+  var it=arr[i];
+  if(!(+it.g>0)){ toast("Este item no tiene gramos que editar (foto/rápido)"); return; }
+  var nv=prompt("Nuevos "+(it.u==="ml"?"ml":"gramos")+" de "+it.n+":", it.g);
+  if(nv==null) return; nv=+String(nv).replace(",","."); if(!(nv>0)){ toast("Pon un número válido"); return; }
+  var f=nv/it.g;
+  it.g=nv; it.kcal=Math.round(it.kcal*f); it.p=+(it.p*f).toFixed(1); it.c=+(it.c*f).toFixed(1); it.gr=+(it.gr*f).toFixed(1);
+  set(LS_COMIDA,arr); renderComida(); toast("✓ Actualizado a "+nv+(it.u==="ml"?" ml":" g"));
+}
 // Media diaria REAL del diario para la Capa 2. Solo cuenta días "completos" (>=800 kcal
 // registradas: por debajo casi seguro es un día a medio apuntar y corrompería el TDEE real).
 // Exige >=7 días completos en la ventana; si no, devuelve null y la calibración usa el plan.
@@ -2290,7 +2302,7 @@ function renderComida(){
     var idx=full.indexOf(x);
     // v0.10 · los items sin gramos (📷 foto, ⚡ rápido) no enseñan "· 0 g"
     // Fix ml · comUnidad(x): los escaneados en ml enseñan "ml"; los antiguos sin u siguen en "g"
-    return "<div class='kv'><span>"+esc(x.n)+(x.g>0?" · "+x.g+" "+comUnidad(x):"")+"</span><span style='font-variant-numeric:tabular-nums'>"+x.kcal+" kcal · P"+Math.round(x.p)+" C"+Math.round(x.c)+" G"+Math.round(x.gr)+" <button class='sec' type='button' style='width:auto;margin:0 0 0 6px;padding:4px 9px' onclick='comDel("+(x.id?JSON.stringify(x.id):idx)+")'>✕</button></span></div>";
+    return "<div class='kv'><span>"+esc(x.n)+(x.g>0?" · "+x.g+" "+comUnidad(x):"")+"</span><span style='font-variant-numeric:tabular-nums'>"+x.kcal+" kcal · P"+Math.round(x.p)+" C"+Math.round(x.c)+" G"+Math.round(x.gr)+" "+((x.id&&x.g>0)?"<button class='sec' type='button' style='width:auto;margin:0 0 0 6px;padding:4px 9px' title='Editar gramos' onclick='comEditar("+JSON.stringify(x.id)+")'>✏️</button>":"")+"<button class='sec' type='button' style='width:auto;margin:0 0 0 6px;padding:4px 9px' onclick='comDel("+(x.id?JSON.stringify(x.id):idx)+")'>✕</button></span></div>";
   }).join("");
   try{ renderMeals(); }catch(e){}   // F4 · el botón "guardar día" y "Mis comidas" dependen del día mostrado
 }
@@ -3534,7 +3546,7 @@ function resetTodo(){ if(!confirm("⚠️ Esto borra TODO: perfil, pesos, entren
 // Reemplazo total con confirmación. Reusa get/set, hoyLocal, toast, validar, render. NO toca motor ni gate.
 function exportarJSON(){ try{ set("jvf_last_export",hoyLocal()); }catch(e){}
   try{
-    var data={ app:"jvf", schema:1, app_version:"0.16.0", exportadoEl:new Date().toISOString(),
+    var data={ app:"jvf", schema:1, app_version:"0.16.1", exportadoEl:new Date().toISOString(),
       perfil:get(LS_P,null), pesos:get(LS_W,[]), entrenos:get(LS_E,[]), notas_ej:get("jvf_notas_ej",{}), comida:get("jvf_comida",[]), agua:get("jvf_agua",{}), suples_cfg:get("jvf_suples_cfg",null), suples_log:get("jvf_suples_log",{}),
       rutinas:get("jvf_rutinas",[]), meals:get("jvf_meals",[]), ent_start:get("jvf_ent_start",null),   // v0.10 · backup completo
       alimentos_propios:get("jvf_alimentos_propios",[]), barcode_cache:get("jvf_barcode_cache",{}),   // I5/I6 · también viajan en el backup
@@ -3932,6 +3944,12 @@ var CEREBRO_KB=[
     claves:["cuantas repeticiones","rango de reps","cuantas reps","repeticiones para musculo","que rango de repeticiones","reps para hipertrofia","numero de repeticiones","cuantas reps hago","repeticiones","reps","y en aislamientos"],
     r:"Manda acercarse al fallo, no el rango exacto: de ~5 a ~30 reps dan crecimiento similar. El ideal de la casa es ~5-8 reps PESADO con técnica estandarizada y RIR 0-2: misma hipertrofia, menos fatiga y el fallo se juzga mejor. En aislamientos pequeños (laterales, abdominales, gemelo) sube a 8-15, donde cargar fino es impracticable. (— Tema 23, Schoenfeld 2021 / regla v2 2026)",
     chips:["¿10-15 si soy principiante?","¿cómo progreso las reps?","¿tengo que ir al fallo?","¿y en aislamientos?"]
+  },
+  {
+    tronco:"repeticiones", rama:"series-de-aproximacion",
+    claves:["series de aproximacion","series de aproximación","series de aproximacion cuentan","aproximaciones","calentamiento en rampa","series de calentamiento cuentan","piramide ascendente","que es una serie efectiva","aproximacion vs trabajo","subir el peso serie a serie","series efectivas"],
+    r:"Distingue APROXIMACIÓN de TRABAJO. Las de aproximación (subes peso poco a poco para calibrar el día y calentar) NO cuentan como estímulo ni como volumen efectivo: preparan, no fatigan a propósito. Las de TRABAJO son las que van cerca del fallo (RIR 0-2) y son las que crecen. Error típico: subir el peso serie a serie en las de trabajo (piramidal ascendente) → llegas a la serie top ya prefatigado y con menos tensión mecánica en las fibras que importan. Mejor: 1-3 aproximaciones ligeras y luego tus series de trabajo pesadas con el atleta fresco (o pirámide inversa). (— Tema 24, tensión mecánica y reclutamiento de unidades motoras / Schoenfeld)",
+    chips:["¿tengo que ir al fallo?","¿importa el orden?","¿qué rango de reps?"]
   },
   {
     tronco:"repeticiones", rama:"principiante-reps-altas",
