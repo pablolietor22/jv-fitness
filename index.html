@@ -447,7 +447,7 @@
 
 <header class="brandbar">
   <div class="logo"><span class="dot"></span>JV <b>Fitness</b></div>
-  <span class="tag">MVP v0.16.5 · motor v0.7</span>
+  <span class="tag">MVP v0.16.6 · motor v0.7</span>
 </header>
 <div class="statuschip"><span class="pulse"></span> cálculo science-based · ajustable · calibración real</div>
 
@@ -836,12 +836,13 @@
 
 <!-- 🩹 LESIONES · el mini-fisio como apartado propio (reusa el sub-motor LESIONES_KB + jvf_lesiones) -->
 <div id="lesiones" class="card hidden">
-  <div class="eyebrow-lbl">🩹 Mini-fisio · tus lesiones</div>
-  <p class="hint" style="margin-top:0">Educación basada en evidencia para gestionar la carga en el gym. <b style="color:var(--soft)">No es consejo médico</b>: ante dolor agudo/nocturno, bloqueo o sin mejora en ~6-12 semanas → fisio.</p>
+  <div class="eyebrow-lbl">🩹 JV Galeno · tu fisio de bolsillo</div>
+  <p class="hint" style="margin-top:0">Elige tu lesión y te digo qué cargar, qué evitar y qué fortalecer — con base científica.</p>
   <div id="les_activas"></div>
   <div class="eyebrow-lbl" style="margin-top:16px">➕ ¿Qué te molesta? Elige la zona</div>
   <div id="les_zonas" class="wizchips" style="margin-top:8px"></div>
   <div id="les_ficha"></div>
+  <p class="hint" style="margin-top:18px;font-size:.7rem;opacity:.6">JV Galeno educa sobre cómo gestionar la carga con base científica. No es consejo médico ni sustituye a un fisio/médico: ante dolor agudo, nocturno, bloqueo articular o sin mejora, acude a un profesional.</p>
 </div>
 
 <!-- ENTRENOS (Fase 3.3 — logging estilo Hevy · v0.12.2 máquina de vistas home/registro/editor) -->
@@ -3643,7 +3644,7 @@ function resetTodo(){ if(!confirm("⚠️ Esto borra TODO: perfil, pesos, entren
 // Reemplazo total con confirmación. Reusa get/set, hoyLocal, toast, validar, render. NO toca motor ni gate.
 function exportarJSON(){ try{ set("jvf_last_export",hoyLocal()); }catch(e){}
   try{
-    var data={ app:"jvf", schema:1, app_version:"0.16.5", exportadoEl:new Date().toISOString(),
+    var data={ app:"jvf", schema:1, app_version:"0.16.6", exportadoEl:new Date().toISOString(),
       perfil:get(LS_P,null), pesos:get(LS_W,[]), entrenos:get(LS_E,[]), notas_ej:get("jvf_notas_ej",{}), comida:get("jvf_comida",[]), agua:get("jvf_agua",{}), suples_cfg:get("jvf_suples_cfg",null), suples_log:get("jvf_suples_log",{}),
       rutinas:get("jvf_rutinas",[]), meals:get("jvf_meals",[]), ent_start:get("jvf_ent_start",null),   // v0.10 · backup completo
       alimentos_propios:get("jvf_alimentos_propios",[]), barcode_cache:get("jvf_barcode_cache",{}),   // I5/I6 · también viajan en el backup
@@ -4839,7 +4840,6 @@ function lesVerFicha(id){
     +"<br><br><b>⛔ Evita / ajusta</b><br>"+items(e.evitar)
     + (e.fortalecer&&e.fortalecer.length ? "<br><br><b>💪 Fortalece (prehab)</b><br>"+items(e.fortalecer) : "")
     +"<br><br>"+esc(e.banderas)
-    +"<br><br>"+esc(LESIONES_DISCLAIMER)
     +"<span class='cb-cita'>"+esc(e.cita)+"</span>"
     +"<div style='margin-top:12px'>"+(ya
         ? "<button class='sec' type='button' style='width:auto;margin:0' onclick=\"lesQuitarUI('"+id+"')\">✓ Ya me curé (quitar)</button>"
