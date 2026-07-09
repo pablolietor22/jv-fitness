@@ -447,7 +447,7 @@
 
 <header class="brandbar">
   <div class="logo"><span class="dot"></span>JV <b>Fitness</b></div>
-  <span class="tag">MVP v0.15.1 · motor v0.7</span>
+  <span class="tag">MVP v0.16.0 · motor v0.7</span>
 </header>
 <div class="statuschip"><span class="pulse"></span> cálculo science-based · ajustable · calibración real</div>
 
@@ -566,6 +566,9 @@
     <input id="w_deporte_nota" placeholder="Cuéntaselo a Jarvis (opcional): ej. baloncesto en la calle, ganas y sigues jugando…">
     <p id="w_deporte_futuro" class="hint hidden" style="margin:4px 0 8px;color:var(--soft)">Pongo lo de ahora. Si cambia, edítalo y te recalculo — y tu peso real me va afinando igualmente.</p>
     <p class="hint">Si sudas de verdad, tu deporte <b style="color:var(--soft)">cuenta como días de entreno</b>: lo sumo a tu gym y te subo las calorías.</p>
+    <label style="margin-top:12px">¿Qué deportes o ejercicios haces habitualmente? <span style="color:var(--mute)">(para adaptar tus lesiones)</span></label>
+    <input id="f_deportes" placeholder="ej. gym, baloncesto, fútbol, correr…">
+    <p class="hint">Jarvis los recuerda: si te lesionas, te pregunta cómo te afecta a cada uno.</p>
   </div>
 
   <!-- 5 · Tu entrenamiento -->
@@ -845,6 +848,7 @@
     <div id="ent_mis_rutinas"></div>
     <button class="sec" type="button" style="margin-top:8px" onclick="rutEditorAbrir(null)">➕ Nueva rutina</button>
     <!-- v0.12.2 · catálogo recomendado (antes CTA encima del form; lo rellena entCtaRutina()) -->
+    <div id="ent_lesiones_aviso"></div>
     <div id="ent_recomendadas"></div>
     <!-- 🏀 v0.13.7 · Estimador de sesión de deporte (MET · Compendium Ainsworth). COMPLEMENTARIO y
          standalone: NO toca el motor ni el factor por DÍAS (deporte_extra). Solo estima + registra + muestra. -->
@@ -2427,9 +2431,10 @@ function fotoFeatures(img){
 //          o null, ajustes: contenido de jvf_foto_ajustes o null}. También acepta la entrada v1 plana
 //          ({tipo:'ligero|mixto|contundente', tam, aceite, bebida}) → cae sola en la rama fallback v1.
 // Salida:  {min, max, kcal, prot, desglose:[texto por decisión], tipo: clave usada para el ajuste}.
+// [FOTOCOMIDA-PURE-INICIO] — estimador de comida por foto (PURO: sin DOM ni storage). test-fotocomida.node.js lo extrae.
 function motorFotoComida(datos){
   datos=datos||{};
-  var r=datos.r||datos, D=[], min=0, max=0, prot=0, tipoKey;
+  var r=datos.r||datos, D=[], min=0, max=0, prot=0, carb=0, fat=0, tipoKey;
   var tam=(datos.tam==="S"||datos.tam==="L")?datos.tam:"M";
   function ns(v){ return v==null||v==="nose"; }                 // regla dictada: "si no lo sabes = medio"
   var V2={legumbres:1,carne:1,pescado:1,pasta:1,ensalada:1,frito:1};
@@ -2443,7 +2448,7 @@ function motorFotoComida(datos){
 
     if(tipoKey==="legumbres"){
       // Base cocidas 90-120 kcal/100 g · BEDCA: lenteja cocida ~92 · judía blanca cocida ~90 · garbanzo cocido ~119
-      min=g*0.90; max=g*1.20; prot=g*0.09;                       // proteína ~9 g/100 g cocidas (BEDCA)
+      min=g*0.90; max=g*1.20; prot=g*0.09; carb=g*0.17; fat=g*0.015;   // BEDCA cocidas: prot ~9, carb ~17, grasa ~1,5 g/100 g (compango/guiso lo reconcilia)
       D.push("base legumbres cocidas ("+g+" g × 90-120 kcal/100 g) "+Math.round(min)+"-"+Math.round(max));
       var prep=ns(r.leg_prep)?"medio":r.leg_prep;
       if(prep==="guisadas"){ min+=80; max+=150; D.push("guisadas (sofrito con aceite) +80-150"); }
@@ -2464,7 +2469,7 @@ function motorFotoComida(datos){
       var ct=ns(r.car_tipo)?null:r.car_tipo;
       if(ct==="pollo"){ bs[0]-=10; bs[1]-=10; }                  // el pollo tira a menos calórico a igual corte
       else if(ct==="ternera"){ bs[0]+=5; bs[1]+=10; }
-      min=g*bs[0]/100; max=g*bs[1]/100; prot=g*0.22;             // proteína ~21-23 g/100 g (BEDCA)
+      min=g*bs[0]/100; max=g*bs[1]/100; prot=g*0.22; carb=0; fat=g*0.05;   // prot ~22 g/100 g (BEDCA); grasa base magra, el nivel/cocción la reconcilia por las kcal
       D.push("base carne "+(ct?ct+" ":"")+niv+" ("+g+" g × "+bs[0]+"-"+bs[1]+" kcal/100 g) "+Math.round(min)+"-"+Math.round(max));
       var coc=ns(r.car_coc)?"medio":r.car_coc;
       if(coc==="frito"){ min+=60; max+=120; D.push("frita (aceite absorbido) +60-120"); }
@@ -2475,7 +2480,7 @@ function motorFotoComida(datos){
       // kcal/100 g · blanco 75-100 (BEDCA: merluza ~65, lubina ~90) · azul 160-200 (BEDCA salmón ~182; USDA ~208)
       var pt=ns(r.pes_tipo)?"medio":r.pes_tipo;
       var pb= pt==="blanco"?[75,100] : pt==="azul"?[160,200] : [110,150];   // no sabido → medio entre ambos
-      min=g*pb[0]/100; max=g*pb[1]/100; prot=g*0.19;             // proteína ~17-21 g/100 g (BEDCA)
+      min=g*pb[0]/100; max=g*pb[1]/100; prot=g*0.19; carb=0; fat=g*(pt==="blanco"?0.02:pt==="azul"?0.11:0.05);   // BEDCA: pescado blanco ~2, azul ~11 g grasa/100 g (B5: ya no es solo proteína)
       D.push("base pescado "+(pt==="medio"?"(tipo no sabido → medio)":pt)+" ("+g+" g × "+pb[0]+"-"+pb[1]+" kcal/100 g) "+Math.round(min)+"-"+Math.round(max));
       var pc=ns(r.pes_coc)?"medio":r.pes_coc;
       if(pc==="frito"){ min+=100; max+=180; D.push("frito/rebozado (harina + aceite absorbido) +100-180"); }
@@ -2484,7 +2489,7 @@ function motorFotoComida(datos){
     }
     else if(tipoKey==="pasta"){
       // Cocidos 130-160 kcal/100 g · USDA: espagueti cocido ~158 · arroz blanco cocido ~130
-      min=g*1.30; max=g*1.60; prot=g*0.05;                        // proteína ~5 g/100 g cocidos (USDA)
+      min=g*1.30; max=g*1.60; prot=g*0.05; carb=g*0.30; fat=g*0.011;   // USDA cocidos: carb ~28-31, grasa ~1 g/100 g (la salsa la reconcilia)
       D.push("base pasta/arroz cocidos ("+g+" g × 130-160 kcal/100 g) "+Math.round(min)+"-"+Math.round(max));
       var sal=ns(r.pas_salsa)?"medio":r.pas_salsa;
       if(sal==="poca"){ min+=50; max+=90; D.push("poca salsa +50-90"); }
@@ -2494,7 +2499,7 @@ function motorFotoComida(datos){
     }
     else if(tipoKey==="ensalada"){
       // Hortaliza cruda 15-35 kcal/100 g · BEDCA: lechuga ~15 · tomate ~20 · zanahoria ~33
-      min=g*0.15; max=g*0.35; prot=g*0.02;
+      min=g*0.15; max=g*0.35; prot=g*0.02; carb=g*0.04; fat=g*0.005;   // hortaliza cruda; el aliño de aceite lo reconcilia
       D.push("base verdura/hortaliza ("+g+" g × 15-35 kcal/100 g) "+Math.round(min)+"-"+Math.round(max));
       // LA variable es el aceite: 1 cucharada sopera ≈ 13,5 g ≈ 119 kcal (USDA: aceite de oliva 884 kcal/100 g)
       var ali=ns(r.ens_alino)?"medio":r.ens_alino;
@@ -2506,7 +2511,7 @@ function motorFotoComida(datos){
     else {                                                        // frito/rebozado como categoría propia
       // Alimento rebozado 140-190 kcal/100 g + GRASA ABSORBIDA: la fritura absorbe un 8-25% del peso
       // (tecnología de alimentos). Aceite 884 kcal/100 g (USDA) ≈ 8,8 kcal/g · mantequilla 717 ≈ 7,2 kcal/g.
-      min=g*1.40; max=g*1.90; prot=g*0.10;
+      min=g*1.40; max=g*1.90; prot=g*0.10; carb=g*0.15; fat=g*0.05;   // rebozado; la grasa absorbida la reconcilia por las kcal
       D.push("base alimento rebozado/frito ("+g+" g × 140-190 kcal/100 g) "+Math.round(min)+"-"+Math.round(max));
       var kcalg=(r.frit_grasa==="mantequilla")?7.2:8.8;
       var escu=ns(r.fri_escurrido)?"medio":r.fri_escurrido;
@@ -2531,7 +2536,7 @@ function motorFotoComida(datos){
     var v1t=BASE[r.v1tipo]?r.v1tipo:(BASE[datos.tipo]?datos.tipo:"mixto");
     var fila=BASE[v1t], rg=(fila[tam]||fila.M).slice();
     min=rg[0]; max=rg[1];
-    var pr=PROT[v1t]||PROT.mixto; prot=(pr[0]+pr[1])/2;
+    var pr=PROT[v1t]||PROT.mixto; prot=(pr[0]+pr[1])/2; carb=0; fat=0;   // plato mixto: carb/grasa salen de reconciliar las kcal (50/50)
     D.push("base plato "+v1t+" tamaño "+tam+" · "+min+"-"+max);
     var ac=r.aceite||datos.aceite;
     if(ac==="algo"){ min+=80; max+=150; D.push("algo de aceite/salsas +80-150"); }
@@ -2543,7 +2548,7 @@ function motorFotoComida(datos){
   // suelo 0,55 para que una medida rara no desbarre la estimación.
   if(datos.feat && datos.feat.ok && datos.feat.frac>0){
     var fr=Math.round(Math.min(1.0, Math.max(0.55, datos.feat.frac/0.8))*100)/100;
-    if(fr!==1){ min*=fr; max*=fr; prot*=fr; D.push("el plato se ve al "+Math.round(datos.feat.frac*100)+"% de lleno → ración ×"+fr); }
+    if(fr!==1){ min*=fr; max*=fr; prot*=fr; carb*=fr; fat*=fr; D.push("el plato se ve al "+Math.round(datos.feat.frac*100)+"% de lleno → ración ×"+fr); }
   }
   // Bebida calórica (transversal, fuera del plato) · refresco/cerveza 330 ml ≈ 140 kcal (USDA) · zumo ≈ 150
   if(datos.bebida==="si"){ min+=90; max+=200; D.push("bebida calórica +90-200"); }
@@ -2554,7 +2559,12 @@ function motorFotoComida(datos){
     D.push("ajuste personal "+(aj.pct>0?"+":"")+Math.round(aj.pct*100)+"% aprendido de "+aj.n+(aj.n>1?" correcciones tuyas":" corrección tuya"));
   }
   min=Math.round(min/10)*10; max=Math.round(max/10)*10;
-  return {min:min, max:max, kcal:Math.round((min+max)/2), prot:Math.round(prot), desglose:D, tipo:tipoKey};
+  // Reconciliar los MACROS con las kcal finales: las adiciones de cocina (aceite/sofrito/salsa/rebozado/
+  // compango) son sobre todo GRASA (en "mixto", plato desconocido, repartimos 50/50). Nunca RESTA → la
+  // proteína y la base quedan intactas. Así la foto deja de contar "solo proteína" (B5) y suma carbos/grasa.
+  var _kcalF=Math.round((min+max)/2), _resid=_kcalF-(4*prot+4*carb+9*fat);
+  if(_resid>0){ var _fF=(tipoKey==="mixto")?0.5:0.7; fat+=_resid*_fF/9; carb+=_resid*(1-_fF)/4; }
+  return {min:min, max:max, kcal:_kcalF, prot:Math.round(prot), carb:Math.round(carb), grasa:Math.round(fat), desglose:D, tipo:tipoKey};
 }
 
 // --- Capa 3 · fotoAjusteNuevo: aprendizaje determinista (media incremental del desvío, con topes) ---
@@ -2570,6 +2580,7 @@ function fotoAjusteNuevo(prev, kcalMotor, kcalUser){
   if(nuevo>0.4) nuevo=0.4; if(nuevo<-0.4) nuevo=-0.4;
   return {pct:Math.round(nuevo*100)/100, n:n+1};
 }
+// [FOTOCOMIDA-PURE-FIN]
 // FIN-MOTOR-PURO (marcador para los tests de dev con node; no borrar)
 
 // --- Estado del formulario v2 · cada campo con su valor por defecto ("nose" = no lo sé → medio) ---
@@ -2701,7 +2712,12 @@ function fotoAddDiario(){
   var f=(($("com_fecha")||{}).value)||hoyLocal();
   var desc=(($("foto_desc")||{}).value||"").trim();
   var arr=get(LS_COMIDA,[]);
-  arr.push({id:Date.now().toString(36)+Math.random().toString(36).slice(2,6), f:f, n:"📷 "+(desc||FOTO_NOMBRE[est.tipo]||"Comida por foto"), g:0, kcal:kcalU, p:est.prot, c:0, gr:0, foto:true});
+  // B3 · si describes un condimento de grasa pura (aceite/aliño/AOVE/mantequilla), TODAS las kcal van a GRASA
+  // (antes salía como proteína). Si no, usamos los macros del estimador (ya trae carbos y grasa, B5).
+  var _dn=(typeof otroNorm==="function"?otroNorm(desc):(desc||"").toLowerCase());
+  var _esGrasa=/\baceite\b|alino|aova|aceitun|mantequilla|\boil\b/.test(_dn);
+  var _mp=_esGrasa?0:est.prot, _mc=_esGrasa?0:(est.carb||0), _mg=_esGrasa?Math.round(kcalU/9):(est.grasa||0);
+  arr.push({id:Date.now().toString(36)+Math.random().toString(36).slice(2,6), f:f, n:"📷 "+(desc||FOTO_NOMBRE[est.tipo]||"Comida por foto"), g:0, kcal:kcalU, p:_mp, c:_mc, gr:_mg, foto:true});
   set(LS_COMIDA,arr);
   fotoCerrar(); renderComida();
   toast("✓ Añadido "+kcalU+" kcal (rango "+est.min+"-"+est.max+")"+(aprendido?" · apunto tu corrección para aprender":""));
@@ -3503,7 +3519,7 @@ document.addEventListener('DOMContentLoaded',function(){
     if(ents.length>20 && _old) setTimeout(function(){ toast("💾 Llevas tiempo sin copia de seguridad — toca Exportar en Ajustes"); }, 3500);
   }catch(e){}
 });
-function resetTodo(){ if(!confirm("⚠️ Esto borra TODO: perfil, pesos, entrenos, rutinas, comidas, alimentos propios, agua, suplementos, lo hablado con el Cerebro y las fotos de progreso. ¿Seguro?")) return; try{ localStorage.removeItem(LS_P); localStorage.removeItem(LS_W); localStorage.removeItem(LS_E); localStorage.removeItem("jvf_notas_ej"); localStorage.removeItem("jvf_comida"); localStorage.removeItem("jvf_agua"); localStorage.removeItem("jvf_agua_log"); localStorage.removeItem("jvf_suples_cfg"); localStorage.removeItem("jvf_suples_log"); localStorage.removeItem("jvf_rutinas"); localStorage.removeItem("jvf_ent_start"); localStorage.removeItem("jvf_meals"); localStorage.removeItem("jvf_alimentos_propios"); localStorage.removeItem("jvf_barcode_cache"); localStorage.removeItem("jvf_foto_ajustes"); localStorage.removeItem("jvf_warmup_stats"); localStorage.removeItem("jvf_plate_barra"); localStorage.removeItem("jvf_rest_seg"); localStorage.removeItem("jvf_cerebro_diario"); localStorage.removeItem("jvf_cerebro_norec"); localStorage.removeItem("jvf_fotos_consent"); localStorage.removeItem("jvf_fotos_meta"); localStorage.removeItem("jvf_flex_cfg"); localStorage.removeItem("jvf_flex_visto"); localStorage.removeItem("jvf_deporte_sesiones"); localStorage.removeItem("jvf_favoritos"); localStorage.removeItem("jvf_uso_alim"); localStorage.removeItem("jvf_hist_alim"); }catch(e){} _mem={};
+function resetTodo(){ if(!confirm("⚠️ Esto borra TODO: perfil, pesos, entrenos, rutinas, comidas, alimentos propios, agua, suplementos, lo hablado con el Cerebro y las fotos de progreso. ¿Seguro?")) return; try{ localStorage.removeItem(LS_P); localStorage.removeItem(LS_W); localStorage.removeItem(LS_E); localStorage.removeItem("jvf_notas_ej"); localStorage.removeItem("jvf_comida"); localStorage.removeItem("jvf_agua"); localStorage.removeItem("jvf_agua_log"); localStorage.removeItem("jvf_suples_cfg"); localStorage.removeItem("jvf_suples_log"); localStorage.removeItem("jvf_rutinas"); localStorage.removeItem("jvf_ent_start"); localStorage.removeItem("jvf_meals"); localStorage.removeItem("jvf_alimentos_propios"); localStorage.removeItem("jvf_barcode_cache"); localStorage.removeItem("jvf_foto_ajustes"); localStorage.removeItem("jvf_warmup_stats"); localStorage.removeItem("jvf_plate_barra"); localStorage.removeItem("jvf_rest_seg"); localStorage.removeItem("jvf_cerebro_diario"); localStorage.removeItem("jvf_cerebro_norec"); localStorage.removeItem("jvf_fotos_consent"); localStorage.removeItem("jvf_fotos_meta"); localStorage.removeItem("jvf_flex_cfg"); localStorage.removeItem("jvf_flex_visto"); localStorage.removeItem("jvf_deporte_sesiones"); localStorage.removeItem("jvf_favoritos"); localStorage.removeItem("jvf_uso_alim"); localStorage.removeItem("jvf_hist_alim"); localStorage.removeItem("jvf_lesiones"); }catch(e){} _mem={};
   // 📸 v0.13-C · las fotos viven en IndexedDB: se borra la base entera ANTES de recargar (con
   // timeout de seguridad — si el borrado se quedara bloqueado, la app no se cuelga: recarga igual
   // y el intento de borrado sigue en cola del navegador).
@@ -3518,7 +3534,7 @@ function resetTodo(){ if(!confirm("⚠️ Esto borra TODO: perfil, pesos, entren
 // Reemplazo total con confirmación. Reusa get/set, hoyLocal, toast, validar, render. NO toca motor ni gate.
 function exportarJSON(){ try{ set("jvf_last_export",hoyLocal()); }catch(e){}
   try{
-    var data={ app:"jvf", schema:1, app_version:"0.15.1", exportadoEl:new Date().toISOString(),
+    var data={ app:"jvf", schema:1, app_version:"0.16.0", exportadoEl:new Date().toISOString(),
       perfil:get(LS_P,null), pesos:get(LS_W,[]), entrenos:get(LS_E,[]), notas_ej:get("jvf_notas_ej",{}), comida:get("jvf_comida",[]), agua:get("jvf_agua",{}), suples_cfg:get("jvf_suples_cfg",null), suples_log:get("jvf_suples_log",{}),
       rutinas:get("jvf_rutinas",[]), meals:get("jvf_meals",[]), ent_start:get("jvf_ent_start",null),   // v0.10 · backup completo
       alimentos_propios:get("jvf_alimentos_propios",[]), barcode_cache:get("jvf_barcode_cache",{}),   // I5/I6 · también viajan en el backup
@@ -3533,6 +3549,7 @@ function exportarJSON(){ try{ set("jvf_last_export",hoyLocal()); }catch(e){}
       deporte_sesiones:get("jvf_deporte_sesiones",[]),   // 🏀 v0.13.7 · sesiones de deporte estimadas (MET) — viajan en el backup
       favoritos:get("jvf_favoritos",[]), uso_alim:get("jvf_uso_alim",{}),   // ⭐ v0.13.9 · favoritos + contador de uso por alimento
       hist_alim:get("jvf_hist_alim",[]),   // 🕑 v0.14.2 · historial de alimentos (deriva del diario; viaja en el backup)
+      lesiones:get("jvf_lesiones",[]),   // 🩹 2B · lesiones activas (viajan en el backup)
       fotos_aviso:"Las fotos de progreso NO van en este JSON: viven solo en el dispositivo (IndexedDB). Exportarlas aparte esta pendiente." };
     var blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
     var url=URL.createObjectURL(blob);
@@ -3588,6 +3605,7 @@ function procesarImport(file){
     if(data.uso_alim && typeof data.uso_alim==="object" && !Array.isArray(data.uso_alim)) set("jvf_uso_alim", data.uso_alim);
     // 🕑 v0.14.2 · historial de alimentos (los backups antiguos no lo traen: se deja como está)
     if(Array.isArray(data.hist_alim)) set("jvf_hist_alim", data.hist_alim.filter(function(h){ return h && h.n; }).map(function(h){ return { n:String(h.n), g:(+h.g>0?+h.g:100), u:(h.u==="ml"?"ml":"g"), fecha:(typeof h.fecha==="string"?h.fecha:"") }; }));
+    if(Array.isArray(data.lesiones)) set("jvf_lesiones", data.lesiones.filter(function(l){ return l && l.id; }));   // 🩹 2B · lesiones activas
     render();
     toast("✓ Datos importados");
   };
@@ -4491,6 +4509,19 @@ function lesionRespuesta(e){
   if(!e || e.generico) return null;
   return e.zona+" — "+e.resumen+"\nHaz: "+e.hacer.join(" · ")+"\nEvita: "+e.evitar.join(" · ")+"\n"+e.banderas+"\n"+LESIONES_DISCLAIMER+" "+e.cita;
 }
+// lesionFichaPorId · resuelve un id guardado (jvf_lesiones) a su ficha de la KB. PURO.
+function lesionFichaPorId(id, kb){ kb=kb||LESIONES_KB; for(var i=0;i<kb.length;i++) if(kb[i].id===id) return kb[i]; return null; }
+// lesionComando · gestión: listar («¿qué lesiones tengo?») o quitar («ya me curé la rodilla»). Corre ANTES del
+// detector para que «ya no me duele» no se confunda con «me duele». Devuelve {tipo, zona:id|null} o null. PURO.
+function lesionComando(texto){
+  var n=cerebroNorm(texto); if(!n) return null;
+  var quitar=/ya me (he )?cur|estoy (ya )?recuperad|ya no me duele|ya no tengo (la |esa )?lesion|quita(r|me)?( la| esa)? lesion|borra(r|me)?( la| esa)? lesion|elimina(r|me)?( la| esa)? lesion|ya (esta|estoy) (bien|curad)/.test(n);
+  var listar=/que lesiones tengo|cuantas lesiones|mis lesiones|lesiones activas|que lesiones (tengo|hay|me quedan)|ver (mis )?lesiones|lesiones registrad/.test(n);
+  if(!quitar && !listar) return null;
+  var zona=null, i, j;
+  for(i=0;i<LESIONES_KB.length;i++){ for(j=0;j<LESIONES_KB[i].claves.length;j++){ if(n.indexOf(LESIONES_KB[i].claves[j])>=0){ zona=LESIONES_KB[i].id; break; } } if(zona) break; }
+  return { tipo: quitar?"quitar":"listar", zona:zona };
+}
 // [LESIONES-PURE-FIN]
 
 // --- capa impura del Cerebro: chat (DOM) + captura sin fricción (storage) + números reales ---
@@ -4627,10 +4658,57 @@ function cbLesionRender(e){
     +"<span class='cb-cita'>"+esc(e.cita)+"</span>";
   cbMsg("j", html);
 }
+// 🩹 lesiones PERSISTENTES (jvf_lesiones): el Cerebro las recuerda, Entrenos adapta la rutina, y se quitan al curar.
+var LS_LESIONES="jvf_lesiones", _cbLesionUltima=null;
+function lesionesGet(){ var a=get(LS_LESIONES,[]); return Array.isArray(a)?a:[]; }
+function lesionesGuardar(id){ var a=lesionesGet(); if(!a.some(function(x){return x.id===id;})){ var f=lesionFichaPorId(id,LESIONES_KB); a.push({id:id, zona:f?f.zona:id, f:hoyLocal()}); set(LS_LESIONES,a); } }
+function lesionesQuitar(id){ set(LS_LESIONES, lesionesGet().filter(function(x){return x.id!==id;})); }
+function _curarChip(f){ return "Ya me curé "+((f&&f.claves&&f.claves[0])||"la lesión"); }
+function cbLesionesGestion(lc){
+  var a=lesionesGet();
+  if(lc.tipo==="listar"){
+    if(!a.length){ cbMsg("j", esc("No tienes ninguna lesión registrada. Si te duele algo, dímelo («me duele la rodilla») y te la guardo para adaptar tu rutina.")); cbChips(["Me duele la rodilla","Me duele el hombro"]); return; }
+    var filas=a.map(function(x){ return "• "+esc(x.zona)+" <span style='color:var(--mute)'>(desde "+esc(x.f)+")</span>"; }).join("<br>");
+    cbMsg("j", "<b>🩹 Tus lesiones activas</b><br>"+filas+"<br><br>"+esc("Adapto tu rutina (mira Entrenos) y la nutrición. Cuando cures una, dime «ya me curé…» y te la quito."));
+    cbChips(a.map(function(x){ return _curarChip(lesionFichaPorId(x.id,LESIONES_KB)); }).concat(["¿Cómo comer con una lesión?"]));
+    return;
+  }
+  if(!a.length){ cbMsg("j", esc("No tienes lesiones registradas, nada que quitar. ¡Bien! 💪")); return; }
+  var id=lc.zona;
+  if(!id){ if(a.length===1) id=a[0].id; else { cbMsg("j", esc("¿Cuál te has curado? Tienes varias:")); cbChips(a.map(function(x){ return _curarChip(lesionFichaPorId(x.id,LESIONES_KB)); })); return; } }
+  if(!a.some(function(x){return x.id===id;})){ cbMsg("j", esc("No tenías registrada esa lesión.")); return; }
+  var f=lesionFichaPorId(id,LESIONES_KB);
+  lesionesQuitar(id);
+  try{ if(typeof entLesionesAviso==="function") entLesionesAviso(); }catch(e){}
+  cbMsg("j", esc("💪 ¡Genial! Te quito la lesión de "+(f?f.zona:"esa zona")+" y te devuelvo tu rutina normal. Reintroduce la carga sin prisa."));
+  cbChips(["¿Qué lesiones tengo?"]);
+}
+// 🩹 aviso en Entrenos: si hay lesiones activas, muestra los swaps contraindicado→alternativa de la KB.
+function entLesionesAviso(){
+  var box=$("ent_lesiones_aviso"); if(!box) return;
+  var a=lesionesGet();
+  if(!a.length){ box.innerHTML=""; return; }
+  var h="<div class='card' style='padding:12px;margin:0 0 10px'><div class='eyebrow-lbl'>🩹 Rutina adaptada a tus lesiones</div>";
+  a.forEach(function(it){
+    var e=lesionFichaPorId(it.id, LESIONES_KB); if(!e) return;
+    h+="<div style='margin-top:8px'><b>"+esc(e.emoji+" "+e.zona)+"</b>"
+      +"<br><span style='color:#f4c04e'>⛔ Evita:</span> "+esc(e.evitar.slice(0,2).join(" · "))
+      +"<br><span style='color:var(--jade)'>✅ Alternativa:</span> "+esc(e.hacer.slice(0,2).join(" · "))+"</div>";
+  });
+  h+="<p class='hint' style='margin-top:8px'>"+esc(LESIONES_DISCLAIMER)+" Dile a Jarvis «ya me curé» cuando te recuperes.</p></div>";
+  box.innerHTML=h;
+}
 function cbResponder(txt){
   // SALUDO · un «hola/buenas/qué tal» suelto merece bienvenida cálida que ORIENTA (no el fallback frío
   // «no reconozco patrón»). Solo dispara con saludo PURO; si lleva pregunta detrás, sigue el pipeline.
   if(cerebroSaludo(txt)){ cbMsg("j", esc(t("cb_saludo"))); cbChips(["¿Cuántas calorías me quedan hoy?","¿Cuánta proteína al día?","He dormido mal"]); return; }
+  // 🩹 GESTIÓN de lesiones (guardar / listar / quitar) — antes del pipeline para que «ya no me duele» no dispare el detector.
+  if(/recordar (esta |la )?lesion|guardar (esta |la )?lesion|apunta(r|me)? (esta |la )?lesion/.test(cerebroNorm(txt))){
+    if(_cbLesionUltima){ lesionesGuardar(_cbLesionUltima); var _lf=lesionFichaPorId(_cbLesionUltima,LESIONES_KB); cbMsg("j", esc("📌 Anotada tu lesión de "+(_lf?_lf.zona:"esa zona")+". La recordaré y adaptaré tu rutina (mira Entrenos). Cuando cures, dime «ya me curé» y te la quito.")); cbChips(["¿Qué lesiones tengo?","¿Cómo comer con una lesión?"]); }
+    else cbMsg("j", esc("Dime primero qué te duele (p. ej. «me duele la rodilla») y luego te la guardo."));
+    return;
+  }
+  var _lc=lesionComando(txt); if(_lc){ cbLesionesGestion(_lc); return; }
   // O4 · CAPA COMBINATORIA (v0.13-D) — corre ANTES del match simple. Multi-concepto > un solo concepto.
   var cmb=cerebroComboMatch(txt);
   if(cmb){ cbMsg("j", cbHtmlRespuesta(cmb.r)); cbChips(cmb.chips||[]); return; }
@@ -4657,7 +4735,7 @@ function cbResponder(txt){
   var les=lesionDetectar(txt);
   if(les){
     if(les.generico){ cbMsg("j", esc("Entiendo, te has hecho daño 🩹. ¿Qué zona? Dímelo y te cuento qué cargar y qué evitar, con la ciencia — no es consejo médico.")); cbChips(["Me duele la rodilla","Me duele el hombro","Me duele la zona lumbar","Me duele el codo","Me duele la muñeca"]); return; }
-    cbLesionRender(les); cbChips(["¿Cómo comer con una lesión?","¿El BPC-157 sirve?"]); return;
+    _cbLesionUltima=les.id; cbLesionRender(les); cbChips(["📌 Recordar esta lesión","¿Cómo comer con una lesión?","¿El BPC-157 sirve?"]); return;
   }
   // Fallback honesto (doctrina): lo digo y guardo la pregunta — cola de ampliación del flywheel.
   var arr=get(LS_CEREBRO_NOREC,[]); arr.push({f:hoyLocal(), q:txt}); set(LS_CEREBRO_NOREC,arr);
@@ -5501,6 +5579,7 @@ function guardarPerfil(){ _wizEdit=false;
     actividad: ($("f_act").value==="Otro" ? ((_actInt&&_actInt.valor)||"activo") : $("f_act").value), objetivo:$("f_obj").value, intensidad_pct:+$("f_int").value,
     pasos: +$("f_pasos").value||null,
     deporte: deporteValor(),   // O2 v0.13.4 · si el select es "Otro", el número sale de la nota (silencioso)
+    deportes: ($("f_deportes")&&$("f_deportes").value.trim())||null,   // 🩹 2B · deportes del usuario (metadata para lesiones; NO entra al cálculo del motor)
     coach:{
       actividad_nota: _actTxt,
       deporte_nota: $("w_deporte_nota").value.trim()||null,
@@ -5529,6 +5608,7 @@ function editarPerfil(){ const p=get(LS_P); if(p){
   $("f_deporte").value=(p.deporte!=null?p.deporte:0);
   var c=p.coach||{};
   $("w_deporte_nota").value=c.deporte_nota||"";
+  if($("f_deportes")) $("f_deportes").value=p.deportes||"";
   if(c.actividad_nota){ $("f_act").value="Otro"; $("w_act_otro").value=c.actividad_nota; $("w_act_otro").classList.remove("hidden"); try{ ecoPinta("w_act_otro"); }catch(e){} }
   else { $("f_act").value=p.actividad; $("w_act_otro").value=""; $("w_act_otro").classList.add("hidden"); var _ae=$("w_act_otro_eco"); if(_ae) _ae.remove(); }
   // C v0.12 · si hay texto original guardado (X_txt), se restaura CON su eco interpretado
@@ -5741,7 +5821,7 @@ function entInit(){
   // F1 v0.10 · rutinas guardadas + chip del crono (si había sesión en marcha, revive al volver);
   // F5 v0.10 · hint para el novato sin historial. D v0.12 · estado del toggle de calentamiento.
   try{ var wch=$("warmup_stats_chk"); if(wch) wch.checked=warmupCuenta(); }catch(e){}
-  try{ renderMisRutinas(); cronoRender(); rutBtnSync(); hintNovato(); }catch(e){}
+  try{ renderMisRutinas(); cronoRender(); rutBtnSync(); hintNovato(); entLesionesAviso(); }catch(e){}
   // v0.12.2 · pinta la vista activa de la máquina home/registro/editor (por defecto, home)
   try{ entVistaRender(); }catch(e){}
 }
