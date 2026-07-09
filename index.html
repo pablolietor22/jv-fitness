@@ -447,7 +447,7 @@
 
 <header class="brandbar">
   <div class="logo"><span class="dot"></span>JV <b>Fitness</b></div>
-  <span class="tag">MVP v0.16.7 · motor v0.7</span>
+  <span class="tag">MVP v0.16.8 · motor v0.7</span>
 </header>
 <div class="statuschip"><span class="pulse"></span> cálculo science-based · ajustable · calibración real</div>
 
@@ -740,7 +740,7 @@
   </div>
   <div class="row" style="gap:6px;align-items:flex-end"><div style="flex:2"><label>Fecha</label><input id="com_fecha" type="date" onchange="renderComida()"></div><button class="sec" type="button" style="flex:1;width:auto" onclick="comCopiarAyer()">⧉ Copiar ayer</button></div><div id="com_favoritos"></div><div id="com_recientes"></div><div id="com_fav_sug"></div><div id="com_historial"></div>
   <div class="row" style="gap:6px;align-items:flex-end;margin-top:6px">
-    <div style="flex:2"><label>Alimento</label><input id="com_nombre" list="com-foods" placeholder="Busca: pollo, arroz, huevo…" oninput="comUnidadSync();favSyncBtn()"></div>
+    <div style="flex:2"><label>Alimento</label><input id="com_nombre" list="com-foods" placeholder="Busca: pollo, arroz, huevo…" oninput="comUnidadSync();favSyncBtn();comPorcSync()"></div>
     <div style="flex:1"><label id="com_g_label">Gramos</label><input id="com_gramos" type="number" inputmode="numeric" placeholder="g"></div>
     <button id="com_fav_btn" class="sec" type="button" title="Marcar como favorito" style="flex:0 0 auto;width:auto;padding:8px 12px;margin:0" onclick="favToggleActual()">☆</button>
   </div>
@@ -751,6 +751,7 @@
     <button class="sec" type="button" style="flex:1;width:auto;padding:5px" onclick="comGr(150)">150g</button>
     <button class="sec" type="button" style="flex:1;width:auto;padding:5px" onclick="comGr(200)">200g</button>
   </div>
+  <div id="com_porc" style="margin-top:6px"></div>
   <!-- I5 · escáner de barcode junto al alta manual: mismo diario, dos puertas de entrada -->
   <div class="row" style="gap:6px;margin-top:8px">
     <button class="sec" type="button" style="flex:1;width:auto;margin:0" onclick="comAdd()">+ Añadir alimento</button>
@@ -1992,6 +1993,20 @@ function favSugAceptar(nombre){
 function favSugDescartar(nombre){ _favSugDismiss[(nombre||"").toLowerCase()]=1; favSugCerrar(); }
 function favSugCerrar(){ var el=$("com_fav_sug"); if(el) el.innerHTML=""; }
 function comGr(g){ var el=$("com_gramos"); if(el) el.value=g; if((($("com_nombre")||{}).value||'').trim()) comAdd(); }
+// 🥣 Porciones LÓGICAS (Pablo): si el alimento tiene una medida casera (vasito 125g, tortita 7.2g, rebanada…),
+// muestra chips "1/2/3 [medida]" que meten los gramos justos sin multiplicar a mano. Solo aparecen si el alimento la tiene.
+function comPorcSync(){
+  var box=$("com_porc"); if(!box) return; box.innerHTML="";
+  var q=(($("com_nombre")||{}).value||"").trim().toLowerCase(); if(!q) return;
+  var base=(typeof apComoFoods==="function"?apComoFoods():[]).concat(typeof FOODS!=="undefined"?FOODS:[]);
+  var fd=base.filter(function(x){ return x.n.toLowerCase()===q; })[0];
+  if(!fd){ var c=base.filter(function(x){ return x.n.toLowerCase().indexOf(q)>=0; }); if(c.length===1) fd=c[0]; }
+  if(!fd || !fd.porc) return;
+  var parts=String(fd.porc).split(":"), label=parts[0], g=+parts[1]; if(!(g>0)) return;
+  var h="<span class='hint' style='display:block;margin:2px 0 4px'>🥣 Por "+esc(label)+" (~"+g+" g):</span>";
+  [1,2,3,4].forEach(function(n){ h+="<button class='sec' type='button' style='width:auto;margin:0 6px 6px 0;padding:6px 12px' onclick='comGr("+(+(n*g).toFixed(1))+")'>"+n+" "+esc(label)+(n>1?"s":"")+"</button>"; });
+  box.innerHTML=h;
+}
 var _comPapelera=[];   // pila (en memoria de sesión) de alimentos quitados → DESHACER. Evita perder el día por un borrado accidental.
 function comDel(i){
   var arr=get(LS_COMIDA,[]);
@@ -3644,7 +3659,7 @@ function resetTodo(){ if(!confirm("⚠️ Esto borra TODO: perfil, pesos, entren
 // Reemplazo total con confirmación. Reusa get/set, hoyLocal, toast, validar, render. NO toca motor ni gate.
 function exportarJSON(){ try{ set("jvf_last_export",hoyLocal()); }catch(e){}
   try{
-    var data={ app:"jvf", schema:1, app_version:"0.16.7", exportadoEl:new Date().toISOString(),
+    var data={ app:"jvf", schema:1, app_version:"0.16.8", exportadoEl:new Date().toISOString(),
       perfil:get(LS_P,null), pesos:get(LS_W,[]), entrenos:get(LS_E,[]), notas_ej:get("jvf_notas_ej",{}), comida:get("jvf_comida",[]), agua:get("jvf_agua",{}), suples_cfg:get("jvf_suples_cfg",null), suples_log:get("jvf_suples_log",{}),
       rutinas:get("jvf_rutinas",[]), meals:get("jvf_meals",[]), ent_start:get("jvf_ent_start",null),   // v0.10 · backup completo
       alimentos_propios:get("jvf_alimentos_propios",[]), barcode_cache:get("jvf_barcode_cache",{}),   // I5/I6 · también viajan en el backup
