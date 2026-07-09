@@ -447,7 +447,7 @@
 
 <header class="brandbar">
   <div class="logo"><span class="dot"></span>JV <b>Fitness</b></div>
-  <span class="tag">MVP v0.16.2 · motor v0.7</span>
+  <span class="tag">MVP v0.16.3 · motor v0.7</span>
 </header>
 <div class="statuschip"><span class="pulse"></span> cálculo science-based · ajustable · calibración real</div>
 
@@ -2760,7 +2760,7 @@ function renderMeals(){
   var h="";
   if(hayDia){
     h+='<button class="sec" type="button" style="margin-top:0" onclick="mealGuardarAbrir()">💾 Guardar día como comida</button>'
-      +'<div id="meal_form" class="hidden" style="margin-top:8px"><div class="row" style="gap:6px;align-items:center">'
+      +'<div id="meal_form" class="hidden" style="margin-top:8px"><div id="meal_sel"></div><div class="row" style="gap:6px;align-items:center">'
       +'<input id="meal_nombre" placeholder="Nombre (ej. Desayuno de diario)" style="flex:2">'
       +'<button type="button" style="flex:0 0 auto;width:auto;margin:0;padding:11px 14px" onclick="mealGuardarOk()">OK</button>'
       +'<button class="sec" type="button" style="flex:0 0 auto;width:auto;margin:0;padding:11px 14px" onclick="show(\'meal_form\',false)">Cancelar</button>'
@@ -2780,6 +2780,17 @@ function renderMeals(){
 }
 function mealGuardarAbrir(){
   show("meal_form", true);
+  // Pablo: guardar SOLO desayuno, o SOLO comida — no el día entero. Se marca qué alimentos incluir (todos por defecto).
+  var f=(($("com_fecha")||{}).value)||hoyLocal();
+  var items=get(LS_COMIDA,[]).filter(function(x){ return x.f===f; });
+  var box=$("meal_sel");
+  if(box){
+    box.innerHTML=items.length
+      ? "<p class='hint' style='margin:2px 0 6px'>Marca qué alimentos guardar (para separar desayuno / comida / cena):</p>"+items.map(function(x,i){
+          return "<label style='display:flex;gap:8px;align-items:center;margin:3px 0'><input type='checkbox' class='meal_chk' data-idx='"+i+"' checked> <span>"+esc(x.n)+(x.g>0?" · "+x.g+" "+comUnidad(x):"")+" <span class='hint' style='display:inline'>· "+x.kcal+" kcal</span></span></label>";
+        }).join("")
+      : "<p class='hint'>Este día no tiene alimentos.</p>";
+  }
   var i=$("meal_nombre"); if(i){ i.value=""; setTimeout(function(){ try{ i.focus(); }catch(e){} },60); }
 }
 function mealGuardarOk(){
@@ -2788,12 +2799,16 @@ function mealGuardarOk(){
   var f=(($("com_fecha")||{}).value)||hoyLocal();
   var items=get(LS_COMIDA,[]).filter(function(x){ return x.f===f; });
   if(!items.length){ toast("Este día no tiene comidas"); return; }
+  // SOLO los alimentos marcados (por defecto todos) → así se guardan desayuno y comida por SEPARADO, no el día entero.
+  var chks=document.querySelectorAll(".meal_chk"), sel=items;
+  if(chks && chks.length){ sel=[]; Array.prototype.forEach.call(chks, function(c){ if(c.checked){ var ix=+c.getAttribute("data-idx"); if(items[ix]) sel.push(items[ix]); } }); }
+  if(!sel.length){ toast("Marca al menos un alimento"); return; }
   // copias limpias de los items (sin id ni fecha: se regeneran al volcar la plantilla a un día)
-  var copias=items.map(function(x){ var o={n:x.n, g:x.g||0, kcal:x.kcal||0, p:x.p||0, c:x.c||0, gr:x.gr||0}; if(x.foto) o.foto=true; return o; });
+  var copias=sel.map(function(x){ var o={n:x.n, g:x.g||0, kcal:x.kcal||0, p:x.p||0, c:x.c||0, gr:x.gr||0}; if(x.foto) o.foto=true; return o; });
   var meals=get(LS_MEALS,[]);
   meals.push({id:Date.now().toString(36)+Math.random().toString(36).slice(2,6), nombre:nombre, items:copias});
   set(LS_MEALS,meals);
-  renderMeals(); toast("💾 Comida guardada ("+copias.length+" alimentos)");
+  show("meal_form",false); renderMeals(); toast("💾 Comida guardada ("+copias.length+" alimentos)");
 }
 // ➕ añadir hoy: vuelca los items de la plantilla al día mostrado del diario.
 function mealAddHoy(id){
@@ -3546,7 +3561,7 @@ function resetTodo(){ if(!confirm("⚠️ Esto borra TODO: perfil, pesos, entren
 // Reemplazo total con confirmación. Reusa get/set, hoyLocal, toast, validar, render. NO toca motor ni gate.
 function exportarJSON(){ try{ set("jvf_last_export",hoyLocal()); }catch(e){}
   try{
-    var data={ app:"jvf", schema:1, app_version:"0.16.2", exportadoEl:new Date().toISOString(),
+    var data={ app:"jvf", schema:1, app_version:"0.16.3", exportadoEl:new Date().toISOString(),
       perfil:get(LS_P,null), pesos:get(LS_W,[]), entrenos:get(LS_E,[]), notas_ej:get("jvf_notas_ej",{}), comida:get("jvf_comida",[]), agua:get("jvf_agua",{}), suples_cfg:get("jvf_suples_cfg",null), suples_log:get("jvf_suples_log",{}),
       rutinas:get("jvf_rutinas",[]), meals:get("jvf_meals",[]), ent_start:get("jvf_ent_start",null),   // v0.10 · backup completo
       alimentos_propios:get("jvf_alimentos_propios",[]), barcode_cache:get("jvf_barcode_cache",{}),   // I5/I6 · también viajan en el backup
