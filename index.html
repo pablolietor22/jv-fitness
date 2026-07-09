@@ -447,7 +447,7 @@
 
 <header class="brandbar">
   <div class="logo"><span class="dot"></span>JV <b>Fitness</b></div>
-  <span class="tag">MVP v0.16.10 · motor v0.7</span>
+  <span class="tag">MVP v0.16.11 · motor v0.7</span>
 </header>
 <div class="statuschip"><span class="pulse"></span> cálculo science-based · ajustable · calibración real</div>
 
@@ -1595,8 +1595,12 @@ var FOODS=[
   {n:"Semillas de chía",kcal:486,p:17,c:42,f:31,fib:34,az:0,sat:3.3,porc:"cucharada:12"},
   {n:"Semillas de lino",kcal:534,p:18,c:29,f:42,fib:27,az:1.5,sat:3.7,porc:"cucharada:10"},
   {n:"Aceitunas",kcal:115,p:0.8,c:6,f:11,fib:3.3,az:0,sat:1.4,porc:"unidad:4"},
-  {n:"Plátano macho frito (aprox)",kcal:252,p:1.5,c:41,f:9,fib:2.3,az:17,sat:3.5}
+  {n:"Plátano macho frito (aprox)",kcal:252,p:1.5,c:41,f:9,fib:2.3,az:17,sat:3.5},
+  {n:"Weider Rush (energética/pre-entreno)",kcal:2,p:0,c:0,f:0,u:"ml",fib:0,az:0,sat:0,porc:"lata:250",ean:"4044782317730"}
 ];
+// 🏷️ Base CURADA por código de barras: productos que OFF no tiene (incl. suplementos de gym tipo Weider Rush)
+// → escanearlos funciona sin depender de OFF. Se construye de las entradas de FOODS que llevan `ean`.
+var FOODS_EAN={}; try{ FOODS.forEach(function(f){ if(f&&f.ean) FOODS_EAN[String(f.ean)]=f; }); }catch(e){}
 // B v0.12 · Alimentos españoles OFICIALES embebidos desde data/alimentos-espana-bedca.json
 // (filosofía single-file: el JSON se EMBEBE, no se fetchea). Valores por 100 g de porción
 // comestible. © Consorcio BEDCA / AESAN (bedca.net) — atribución obligatoria (ver hint de Comida).
@@ -3250,6 +3254,14 @@ function bcBuscar(ean){
       serving:cp.serving||null, porcion:null});
     return;
   }
+  // 🏷️ base CURADA por EAN (productos que OFF no tiene, p.ej. suplementos de gym) → sin red, ANTES de OFF
+  if(typeof FOODS_EAN==="object" && FOODS_EAN[ean]){
+    var fc=FOODS_EAN[ean];
+    bcConfirmar({ean:ean, fuente:"cache", nombre:fc.n, kcal100:+fc.kcal, p100:+fc.p, c100:+fc.c, g100:+fc.f,
+      u:(fc.u==="ml")?"ml":"g", uMotivo:"producto de la base curada de la app", dens:bcDensidad(fc.n,null),
+      servingAviso:null, serving:null, porcion:(fc.porc?(+String(fc.porc).split(":")[1]||null):null)});
+    return;
+  }
   // OJO: sin headers custom (el User-Agent no se puede tocar desde fetch de navegador). Sin API key.
   // v0.13 · L2: ya NO es una petición única — bcFetchCadena recorre bcUrlsLookup (v2→v0 + variantes
   // del código, bloque puro de arriba) y corta en el primer acierto. El "resumen" acumula qué tipo
@@ -3659,7 +3671,7 @@ function resetTodo(){ if(!confirm("⚠️ Esto borra TODO: perfil, pesos, entren
 // Reemplazo total con confirmación. Reusa get/set, hoyLocal, toast, validar, render. NO toca motor ni gate.
 function exportarJSON(){ try{ set("jvf_last_export",hoyLocal()); }catch(e){}
   try{
-    var data={ app:"jvf", schema:1, app_version:"0.16.10", exportadoEl:new Date().toISOString(),
+    var data={ app:"jvf", schema:1, app_version:"0.16.11", exportadoEl:new Date().toISOString(),
       perfil:get(LS_P,null), pesos:get(LS_W,[]), entrenos:get(LS_E,[]), notas_ej:get("jvf_notas_ej",{}), comida:get("jvf_comida",[]), agua:get("jvf_agua",{}), suples_cfg:get("jvf_suples_cfg",null), suples_log:get("jvf_suples_log",{}),
       rutinas:get("jvf_rutinas",[]), meals:get("jvf_meals",[]), ent_start:get("jvf_ent_start",null),   // v0.10 · backup completo
       alimentos_propios:get("jvf_alimentos_propios",[]), barcode_cache:get("jvf_barcode_cache",{}),   // I5/I6 · también viajan en el backup
