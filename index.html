@@ -447,7 +447,7 @@
 
 <header class="brandbar">
   <div class="logo"><span class="dot"></span>JV <b>Fitness</b></div>
-  <span class="tag">MVP v0.16.8 · motor v0.7</span>
+  <span class="tag">MVP v0.16.9 · motor v0.7</span>
 </header>
 <div class="statuschip"><span class="pulse"></span> cálculo science-based · ajustable · calibración real</div>
 
@@ -3659,7 +3659,7 @@ function resetTodo(){ if(!confirm("⚠️ Esto borra TODO: perfil, pesos, entren
 // Reemplazo total con confirmación. Reusa get/set, hoyLocal, toast, validar, render. NO toca motor ni gate.
 function exportarJSON(){ try{ set("jvf_last_export",hoyLocal()); }catch(e){}
   try{
-    var data={ app:"jvf", schema:1, app_version:"0.16.8", exportadoEl:new Date().toISOString(),
+    var data={ app:"jvf", schema:1, app_version:"0.16.9", exportadoEl:new Date().toISOString(),
       perfil:get(LS_P,null), pesos:get(LS_W,[]), entrenos:get(LS_E,[]), notas_ej:get("jvf_notas_ej",{}), comida:get("jvf_comida",[]), agua:get("jvf_agua",{}), suples_cfg:get("jvf_suples_cfg",null), suples_log:get("jvf_suples_log",{}),
       rutinas:get("jvf_rutinas",[]), meals:get("jvf_meals",[]), ent_start:get("jvf_ent_start",null),   // v0.10 · backup completo
       alimentos_propios:get("jvf_alimentos_propios",[]), barcode_cache:get("jvf_barcode_cache",{}),   // I5/I6 · también viajan en el backup
@@ -4591,6 +4591,30 @@ var LESIONES_KB=[
     fortalecer:["Core profundo (multífido + transverso): 'bird-dog', plancha y dead-bug — estabilizan SIN flexionar la columna.", "Glúteo mayor: puente y hip thrust; descarga la lumbar en la bisagra de cadera.", "Estabilidad lateral (cuadrado lumbar + oblicuos): plancha lateral y farmer/suitcase carry.", "Erectores: back extension a 45° por resistencia y control, no a fallo con peso máximo."],
     banderas:"🩺 Dolor que baja por la pierna, hormigueo/adormecimiento, pérdida de fuerza o dolor nocturno → para y valóralo con un profesional.",
     cita:"(— Saraceni 2020, JOSPT: evidencia BAJA de que flexionar al levantar sea factor de riesgo; J Biomech 2024)"
+  },
+  {
+    id:"tobillo",
+    zona:"Tobillo · esguince y movilidad",
+    emoji:"🦶",
+    claves:["tobillo", "esguince", "esguince tobillo", "torcedura", "me torci el tobillo", "inestabilidad tobillo"],
+    resumen:"El esguince lateral se rehabilita con CARGA progresiva y equilibrio, no con reposo. Lo que protege el tobillo son los peroneos (evertores) y el control propioceptivo. Y si el tobillo no dobla bien, la rodilla y la lumbar pagan en la sentadilla.",
+    hacer:["Mide antes de decidir: test de estocada a la pared (¿la rodilla toca sin levantar el talón?).", "Sentadilla con talón elevado (discos o zapatilla de peso) mientras recuperas la dorsiflexión.", "Carga tolerable pronto (la guía recomienda apoyar peso, no inmovilizar) + equilibrio a una pierna."],
+    evitar:["Sentadilla libre profunda con talones planos si el tobillo está rígido.", "Forzar profundidad o estirar agresivo dentro del dolor en fase aguda.", "Saltos, aterrizajes y giros bruscos las primeras semanas."],
+    fortalecer:["Peroneos/fibulares (evertores): eversión con goma — LOS estabilizadores del ligamento lateral.", "Sóleo y gemelo: elevaciones de talón lentas para control bajo carga y aterrizajes.", "Propiocepción: equilibrio a una pierna (ojos abiertos→cerrados, superficie inestable) — lo que MÁS reduce la recaída (JOSPT)."],
+    banderas:"🩺 Deriva a fisio/médico si no puedes dar 4 pasos apoyando justo tras la lesión, o hay dolor óseo al tocar los maléolos o la base del 5º metatarsiano (posible fractura).",
+    cita:"(— Martin & Davenport, JOSPT: Ankle Stability CPG)"
+  },
+  {
+    id:"cadera-gluteo",
+    zona:"Cadera / glúteo · estabilidad",
+    emoji:"🍑",
+    claves:["cadera", "gluteo", "gluteo medio", "psoas", "pinzamiento cadera", "dolor de cadera", "ingle"],
+    resumen:"La cadera se protege desde arriba (glúteo medio + core que estabilizan la pelvis) y desde el rango. En el pinzamiento (FAI) la clave no es dejar de entrenar, sino recortar la profundidad y evitar la combinación que pincha.",
+    hacer:["Entrena en rango TOLERABLE, no evites la pierna: recorta la profundidad hasta donde no pincha.", "Cambia la sentadilla bilateral profunda por split squat / zancada / búlgara.", "Paciencia: la mayoría mejora con rehab estructurada en 3-6 meses."],
+    evitar:["Sentadilla profunda bajo paralela y prensa a recorrido completo bajo carga si pincha.", "La combinación FADIR: flexión + aducción (rodilla hacia dentro) + rotación interna forzada.", "Sentarte con las piernas cruzadas o en cuclillas mantenidas mucho rato."],
+    fortalecer:["Glúteo medio (estabilizador pélvico): abducción en decúbito lateral, clamshell, monster walk con banda.", "Control monopodal: sentadilla y peso muerto a una pierna, vigilando que la pelvis no caiga.", "Core / estabilidad lumbopélvica: plancha, bird-dog, pallof press."],
+    banderas:"🩺 Deriva a fisio/médico si hay dolor profundo en la ingle en forma de 'C', con bloqueos, chasquidos dolorosos o sensación de que la cadera se traba.",
+    cita:"(— Distefano, JOSPT: activación glútea; guía de FAI)"
   }
 ];
 // Info honesta bajo demanda (no se autopauta): péptidos de 'recuperación' y nutrición en lesión.
@@ -4601,7 +4625,7 @@ var LESIONES_NUTRICION_INFO="Con una lesión, sobre todo si te mueves menos o es
 // zona, o null. Reutiliza cerebroNorm (misma <script>; en el test se evalúa el bloque de CEREBRO antes).
 function lesionDetectar(texto){
   var n=cerebroNorm(texto); if(!n) return null;
-  var esLesion=/\b(me (he )?lesion|lesionad|me duele|dolor|molest|tengo (una |la )?(tendinit|tendinopat|contractur|esguince)|se me carga|pinchazo|me cruje|tiron)/.test(n);
+  var esLesion=/\b(me (he )?lesion|lesionad|me duele|dolor|molest|tengo (una |la )?(tendinit|tendinopat|contractur|esguince)|se me carga|pinchazo|me cruje|tiron|torc)/.test(n);
   if(!esLesion) return null;
   for(var i=0;i<LESIONES_KB.length;i++){
     var e=LESIONES_KB[i];
