@@ -194,6 +194,10 @@
   .super-chip{font-size:.72rem;padding:4px 10px;border-radius:100px;border:1px solid var(--ink-3);background:transparent;
     color:var(--dim);cursor:pointer;flex:none;width:auto;margin:0;box-shadow:none}
   .super-chip.on{color:var(--jade);border-color:var(--jade);font-weight:600}
+  /* 🔍 Buscador 2.0 (v0.20) — icono de categoría offline que se convierte en foto OFF si hay red */
+  .super-ico{flex:none;width:34px;height:34px;margin-right:8px;border-radius:8px;background:var(--ink-3);
+    display:flex;align-items:center;justify-content:center;font-size:19px;overflow:hidden}
+  .super-ico img{width:100%;height:100%;object-fit:cover;border-radius:8px;display:block}
   .hidden{display:none}
   /* 🧠 Cerebro v0.13-B · chat de burbujas estilo Jarvis (solo estética; el motor es [CEREBRO-PURE]) */
   .cb-log{display:flex;flex-direction:column;gap:8px;max-height:340px;overflow-y:auto;padding:4px 2px;margin-top:6px;
@@ -490,7 +494,7 @@
 
 <header class="brandbar">
   <div class="logo"><span class="dot"></span>JV <b>Fitness</b></div>
-  <span class="tag">MVP v0.19.2 · motor v0.7</span>
+  <span class="tag">MVP v0.20.0 · motor v0.7</span>
 </header>
 <div class="statuschip"><span class="pulse"></span> cálculo science-based · ajustable · calibración real</div>
 
@@ -1141,6 +1145,7 @@ Tus datos se guardan solo en este dispositivo.</p>
     <h2>🛒 Supermercado JV</h2>
     <input id="super_buscar" placeholder="Busca: pollo, arroz, huevo…" oninput="superRender()">
     <div id="super_cats" class="super-chips"></div>
+    <div id="super_negocios" class="super-chips letras hidden"></div>
     <div id="super_letras" class="super-chips letras"></div>
     <div id="super_lista"></div>
   </div>
@@ -7775,7 +7780,7 @@ function apGuardar(){
 // Los propios "disfrazados" de FOODS ({n,kcal,p,c,f} por 100 g) para reutilizar comAdd tal cual.
 function apComoFoods(){
   return get(LS_ALIM,[]).map(function(a){
-    return {n:a.nombre+(a.marca?" ("+a.marca+")":""), kcal:+a.kcal100||0, p:+a.p100||0, c:+a.c100||0, f:+a.g100||0, propio:true};
+    return {n:a.nombre+(a.marca?" ("+a.marca+")":""), kcal:+a.kcal100||0, p:+a.p100||0, c:+a.c100||0, f:+a.g100||0, ean:(a.ean||null), propio:true};
   });
 }
 // Datalist del buscador de Comida: primero tus alimentos (los usas más), luego la base curada.
@@ -7795,7 +7800,7 @@ function comFillDatalist(){
 var SUPER_CATS=[
   {c:"Bebidas", k:["cerveza","vino","tinto","cola","coca","fanta","aquarius","zumo","cafe","refresco","bebida","agua","mosto","horchata","sidra","nestea","energetica","te frio"]},
   {c:"Lácteos", k:["leche","yogur","queso","cuajada","requeson","natillas","flan","nata","mantequilla","kefir","lacteo"]},
-  {c:"Snacks/Dulces", k:["chocolate","cacao","galleta","bizcocho","magdalena","donut","gominola","turron","churro","rosquilla","barrita","snack","dulce","helado","tarta","croissant","bolleria","mermelada","miel","chips","chuche"]},
+  {c:"Snacks/Dulces", k:["chocolate","cacao","galleta","cookie","brownie","bizcocho","magdalena","donut","gominola","turron","churro","rosquilla","barrita","snack","dulce","helado","tarta","croissant","bolleria","mermelada","miel","chips","chuche"]},
   {c:"Carnes/Pescados", k:["pollo","pavo","ternera","cerdo","lomo","jamon","atun","salmon","merluza","gamba","huevo","bacalao","sardina","boqueron","anchoa","chorizo","morcilla","salchich","fuet","butifarra","cecina","panceta","carne","pescado","marisco","mejillon","pulpo","calamar","chipiron","kebab","durum","albondiga","sobrasada","pate","filete","solomillo","conejo","cordero","higado"]},
   {c:"Panes/Cereales", k:["pan","pita","arroz","pasta","macarron","espagueti","fideo","avena","cereal","muesli","quinoa","cuscus","trigo","maiz","harina","biscote","tostada","tortita","pizza"]},
   {c:"Frutas/Verduras", k:["manzana","platano","naranja","fresa","uva","pera","melon","sandia","kiwi","piña","mango","aguacate","tomate","lechuga","espinaca","brocoli","coliflor","zanahoria","cebolla","pimiento","calabacin","calabaza","berenjena","pepino","judia","garbanzo","lenteja","alubia","fruta","verdura","ensalada","aceituna","patata","boniato","champiñon","seta","esparrago","alcachofa","puerro","col","gazpacho","salmorejo"]}
@@ -7834,11 +7839,141 @@ function superMatch(q, nombre){
   }
   return true;
 }
+// ── 🔍 Buscador 2.0 (v0.20) — puras nuevas (test: _tests/test-buscador2.node.js) ──
+// Icono de categoría OFFLINE (emoji embebido: cero red, cero assets; es el estado base de cada fila).
+var SUPER_ICONO={"Bebidas":"🥤","Lácteos":"🥛","Snacks/Dulces":"🍪","Carnes/Pescados":"🥩",
+  "Panes/Cereales":"🍞","Frutas/Verduras":"🥦","Otros":"🍽️"};
+function superIcono(nombre){ return SUPER_ICONO[supermercadoCategoria(nombre)]||"🍽️"; }
+// NEGOCIO/marca del nombre: el ÚLTIMO "(…)" que empiece por mayúscula es marca/negocio
+// ("Cookie de chocolate (Domino's) (aprox)"→"Domino's"); los calificadores van en minúscula y no
+// cuentan ("Pavo (pechuga)"→null, "(aprox)"→null). Si empieza por dígito solo vale con una Palabra
+// capitalizada dentro ("100 Montaditos" sí; "330 ml"/"6 uds" no).
+function superNegocio(nombre){
+  var s=String(nombre==null?"":nombre), m, re=/\(([^()]+)\)/g, out=null;
+  var NO={"aprox":1,"aproximado":1,"aproximada":1};
+  while((m=re.exec(s))){
+    var t=m[1].trim();
+    if(t.length<2 || NO[cerebroNorm(t)]) continue;
+    var c0=t.charAt(0);
+    if(c0>="0"&&c0<="9"){ if(/[A-ZÁÉÍÓÚÜÑ][a-záéíóúüñ]{2,}/.test(t)) out=t; continue; }
+    if(c0!==c0.toLowerCase()) out=t;
+  }
+  return out;
+}
+// Facetas: cuenta los negocios de una lista de nombres y devuelve los repetidos (≥min),
+// ordenados por nº de productos desc y alfabético de desempate. [{neg,k,total}] (k = clave normalizada).
+function superNegocios(nombres, min){
+  min=(+min>0)?+min:2;
+  var cnt={}, disp={};
+  for(var i=0;i<nombres.length;i++){
+    var neg=superNegocio(nombres[i]); if(!neg) continue;
+    var k=cerebroNorm(neg);
+    cnt[k]=(cnt[k]||0)+1; if(!disp[k]) disp[k]=neg;
+  }
+  var out=[];
+  for(var k2 in cnt){ if(cnt[k2]>=min) out.push({neg:disp[k2], k:k2, total:cnt[k2]}); }
+  out.sort(function(a,b){ return (b.total-a.total)||a.neg.localeCompare(b.neg,"es"); });
+  return out;
+}
+// Relevancia del nombre frente a lo tecleado (menor = mejor): 0 exacto · 1 el nombre EMPIEZA por lo
+// tecleado · 2 alguna PALABRA empieza por ello (o por su primer token) · 3 substring a secas ·
+// 4 casó solo por typo (superMatch ya dio el sí). Query vacía = 0 para todos (modo pasillo).
+function superScore(q, nombre){
+  var qn=cerebroNorm(String(q==null?"":q)).replace(/\s+/g," ").trim();
+  if(!qn) return 0;
+  var nn=cerebroNorm(String(nombre==null?"":nombre)).replace(/\s+/g," ").trim();
+  if(nn===qn) return 0;
+  if(nn.indexOf(qn)===0) return 1;
+  if(nn.indexOf(" "+qn)>=0) return 2;
+  var t0=qn.split(" ")[0];
+  if(nn.indexOf(t0)===0 || nn.indexOf(" "+t0)>=0) return 2;
+  if(nn.indexOf(qn)>0) return 3;
+  return 4;
+}
+// ¿Producto del mercado español? Sin EAN = base curada/BEDCA/cadenas de aquí → sí. Con EAN manda el
+// prefijo GS1: 84 = España. Heurística honesta SOLO para ordenar (español primero), jamás filtra.
+function superEsEspanol(ean){
+  var d=String(ean==null?"":ean).replace(/\D/g,"");
+  if(!d) return true;
+  if(d.slice(0,2)==="84") return true;
+  return d.length<8;
+}
+// URL del API de OFF para pedir SOLO la miniatura de un EAN (la red vive fuera, esto solo construye).
+function superFotoURL(ean){
+  var d=String(ean==null?"":ean).replace(/\D/g,"");
+  if(d.length<8) return null;
+  return "https://world.openfoodfacts.org/api/v2/product/"+d+"?fields=image_front_small_url";
+}
+// Orden Buscador 2.0: relevancia → español-primero → alfabético (estable). Muta res y lo devuelve.
+function superOrdena(res, q){
+  var dec=res.map(function(x,i){ return {x:x, s:superScore(q,x.n), e:superEsEspanol(x.ean)?0:1, i:i}; });
+  dec.sort(function(a,b){ return (a.s-b.s)||(a.e-b.e)||a.x.n.localeCompare(b.x.n,"es")||(a.i-b.i); });
+  for(var j=0;j<res.length;j++) res[j]=dec[j].x;
+  return res;
+}
 // [SUPER-PURE-FIN]
+
+// 📷 🔍 Buscador 2.0 · fotos LAZY por EAN (v0.20). El emoji de categoría es el estado BASE de cada
+// fila (offline-first: sin red no cambia nada). Si hay red, cada fila con EAN pide su miniatura a
+// OFF SOLO al entrar en pantalla (IntersectionObserver), con caché ean→url en localStorage (tope
+// 400, honesto: también cachea "no tiene foto") y cola de máximo 3 peticiones a la vez. Si la red
+// falla se queda el emoji y punto — ni spinner ni error (reintentará en otra sesión).
+var LS_FOTOS="jvf_fotos_ean", _fotoRAM=null, _fotoCola=[], _fotoVuelo=0;
+function fotoCacheGet(ean){ if(!_fotoRAM) _fotoRAM=get(LS_FOTOS,{}); return _fotoRAM[ean]; }
+function fotoCachePut(ean, url){
+  if(!_fotoRAM) _fotoRAM=get(LS_FOTOS,{});
+  _fotoRAM[ean]=url||"no";
+  var ks=Object.keys(_fotoRAM);
+  if(ks.length>400){ for(var i=0;i<ks.length-400;i++) delete _fotoRAM[ks[i]]; }   // FIFO simple
+  set(LS_FOTOS,_fotoRAM);
+}
+// Icono/foto de una fila: emoji SIEMPRE; si además hay EAN válido y red, data-ean lo marca como
+// candidato a foto (superFotosLazy lo recogerá cuando la fila entre en pantalla).
+function superIcoHTML(x){
+  var ean=(x&&x.ean)?String(x.ean).replace(/\D/g,""):"";
+  var atr=(ean.length>=8 && navigator.onLine!==false)?' data-ean="'+ean+'"':'';
+  return '<span class="super-ico"'+atr+'>'+superIcono(x&&x.n)+'</span>';
+}
+function superFotoPinta(el, url){
+  if(!el || !url || url==="no") return;
+  var img=new Image();
+  img.onload=function(){ el.textContent=""; el.appendChild(img); };   // solo pisa el emoji si la foto CARGÓ
+  img.alt=""; img.src=url;
+}
+function fotoColaTira(){
+  while(_fotoVuelo<3 && _fotoCola.length){
+    var it=_fotoCola.shift(); _fotoVuelo++;
+    (function(it){
+      fetch(superFotoURL(it.ean)).then(function(r){ return r.ok?r.json():null; })
+        .then(function(j){
+          var u=(j && j.product && j.product.image_front_small_url)||null;
+          fotoCachePut(it.ean, u);           // "no" también se cachea: OFF ya dijo que no hay foto
+          superFotoPinta(it.el, u);
+        })
+        .catch(function(){})                  // fallo de RED: no se cachea, otra sesión reintentará
+        .then(function(){ _fotoVuelo--; fotoColaTira(); });
+    })(it);
+  }
+}
+function superFotosLazy(root){
+  if(!root || navigator.onLine===false || typeof IntersectionObserver==="undefined") return;
+  var io=new IntersectionObserver(function(entradas){
+    entradas.forEach(function(en){
+      if(!en.isIntersecting) return;
+      io.unobserve(en.target);
+      var ean=en.target.getAttribute("data-ean"); if(!ean) return;
+      var hit=fotoCacheGet(ean);
+      if(hit!==undefined){ superFotoPinta(en.target, hit); return; }
+      _fotoCola.push({el:en.target, ean:ean}); fotoColaTira();
+    });
+  }, {rootMargin:"120px"});
+  var nodos=root.querySelectorAll(".super-ico[data-ean]");
+  for(var i=0;i<nodos.length;i++) io.observe(nodos[i]);
+}
 
 // 🛒 Supermercado JV · UI (popup a pantalla completa, patrón bibModal). Base: apComoFoods().concat(FOODS)
 // — FOODS ya lleva BEDCA y V013 fusionadas en runtime (IIFE tras FOODS_V013), NO re-concatenar.
-var _superLetra="", _superCat="";
+var _superLetra="", _superCat="", _superNeg="", _superNegDisp="";   // _superNeg = clave normalizada del negocio activo (🔍 2.0); Disp = su nombre visible (para pinar el chip)
 var SUPER_CAT_LISTA=["Lácteos","Carnes/Pescados","Panes/Cereales","Frutas/Verduras","Bebidas","Snacks/Dulces","Otros"];
 // 🛒 E1 · el buscador de comida abre SIEMPRE el Supermercado: el datalist nativo salía apretado sobre
 // el teclado del móvil (pantallazo de Pablo). El texto ya tecleado viaja a #super_buscar (superAbrir lo
@@ -7853,7 +7988,7 @@ function comNombreFoco(el){
   superAbrir();
 }
 function superAbrir(){
-  _superLetra=""; _superCat="";
+  _superLetra=""; _superCat=""; _superNeg="";
   var b=$("super_buscar"); if(b) b.value=(($("com_nombre")||{}).value||"").trim();   // lo tecleado sigue vivo en el popup
   show("superModal", true);
   superPintaChips(); superRender();
@@ -7862,32 +7997,61 @@ function superAbrir(){
 function superCerrar(){ show("superModal", false); }
 function superLetra(l){ _superLetra=(_superLetra===l?"":l); superPintaChips(); superRender(); }
 function superCat(c){ _superCat=(_superCat===c?"":c); superPintaChips(); superRender(); }
+function superNeg(k, disp){
+  if(_superNeg===k){ _superNeg=""; _superNegDisp=""; }
+  else { _superNeg=k; _superNegDisp=disp||k; }
+  superRender();
+}
 function superPintaChips(){
   var cats=$("super_cats"), letras=$("super_letras"); if(!cats||!letras) return;
   cats.innerHTML=SUPER_CAT_LISTA.map(function(c){
-    return '<button class="super-chip'+(_superCat===c?' on':'')+'" type="button" onclick="superCat(\''+escAttr(c)+'\')">'+esc(c)+'</button>';
+    return '<button class="super-chip'+(_superCat===c?' on':'')+'" type="button" onclick="superCat(\''+escAttr(c)+'\')">'+(SUPER_ICONO[c]||"")+' '+esc(c)+'</button>';
   }).join("");
   letras.innerHTML="ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("").map(function(l){
     return '<button class="super-chip'+(_superLetra===l?' on':'')+'" type="button" onclick="superLetra(\''+l+'\')">'+l+'</button>';
   }).join("");
 }
+// 🔍 2.0 · facetas por NEGOCIO/marca deducidas del "(…)" de los nombres — CONTEXTUALES: se
+// recalculan con los resultados de la búsqueda ACTUAL (tecleas "cookie" → aparece Domino's),
+// sin aplicarse a sí mismas (para poder cambiar de negocio sin destildar). Hay ~226 negocios en
+// la base: un top fijo enseñaría siempre a Hacendado y jamás a las cadenas — por eso contextual.
+// El chip activo se PINA aunque se quede con 1 resultado (siempre se puede destildar).
+function superPintaNegocios(lista){
+  var negs=$("super_negocios"); if(!negs) return;
+  var nombres=lista.map(function(x){ return x.n; });
+  var fac=superNegocios(nombres, 2).slice(0,14);
+  if(_superNeg && !fac.some(function(f){ return f.k===_superNeg; })){
+    var acts=superNegocios(nombres, 1).filter(function(f){ return f.k===_superNeg; });
+    fac=(acts.length?acts:[{neg:(_superNegDisp||_superNeg), k:_superNeg, total:0}]).concat(fac).slice(0,14);
+  }
+  negs.innerHTML=fac.map(function(f){
+    // ⚠️ apóstrofes ("Domino's"): args SIEMPRE con JSON.stringify+&quot; (patrón superElegir), jamás '…'
+    var aK=JSON.stringify(f.k).replace(/"/g,"&quot;"), aN=JSON.stringify(f.neg).replace(/"/g,"&quot;");
+    return '<button class="super-chip'+(_superNeg===f.k?' on':'')+'" type="button" onclick="superNeg('+aK+','+aN+')">🏪 '+esc(f.neg)+' · '+f.total+'</button>';
+  }).join("");
+  negs.classList.toggle("hidden", !fac.length);
+}
 function superRender(){
   var box=$("super_lista"); if(!box) return;
   var q=(($("super_buscar")||{}).value||"").trim();
   var base=(typeof apComoFoods==="function"?apComoFoods():[]).concat(typeof FOODS!=="undefined"?FOODS:[]);
-  var res=base.filter(function(x){
+  var res0=base.filter(function(x){
     if(q && !superMatch(q, x.n)) return false;
     if(_superLetra && otroNorm(x.n).charAt(0).toUpperCase()!==_superLetra) return false;
     if(_superCat && supermercadoCategoria(x.n)!==_superCat) return false;
     return true;
   });
-  res.sort(function(a,b){ return a.n.localeCompare(b.n,"es"); });
+  superPintaNegocios(res0);   // 🔍 2.0 · chips de negocio del CONTEXTO actual (antes de su propio filtro)
+  var res=!_superNeg?res0:res0.filter(function(x){
+    var ng=superNegocio(x.n); return !!ng && cerebroNorm(ng)===_superNeg;
+  });
+  superOrdena(res, q);   // 🔍 2.0 · relevancia → español-primero → alfabético (antes: solo alfabético)
   var tot=res.length; res=res.slice(0,200);   // techo de render: el móvil no pinta 700 divs
   var h=res.map(function(x){
     var arg=JSON.stringify(x.n).replace(/"/g,"&quot;");
     var uni=(x.u==="ml")?"100 ml":"100 g";
     var tag=x.propio?' · <span style="color:var(--jade)">tuyo</span>':'';
-    return '<div class="bib-item" onclick="superElegir('+arg+')"><span style="flex:1">'+esc(x.n)
+    return '<div class="bib-item" onclick="superElegir('+arg+')">'+superIcoHTML(x)+'<span style="flex:1">'+esc(x.n)
       +'<span class="mus" style="display:block">'+Math.round(x.kcal)+" kcal / "+uni+tag+"</span></span></div>";
   }).join("");
   if(!tot) h="<p class='hint'>Nada en la base con ese nombre.</p>";
@@ -7896,6 +8060,7 @@ function superRender(){
   var argQ=JSON.stringify(q).replace(/"/g,"&quot;");
   h+='<button class="sec" type="button" style="width:100%;margin-top:10px" onclick="superBuscarOFF('+argQ+')">🌍 Buscar '+(q?"«"+esc(q)+"» ":"")+"en Open Food Facts (internet)</button>";
   box.innerHTML=h;
+  superFotosLazy(box);   // 📷 2.0 · las filas con EAN piden su miniatura al entrar en pantalla
   // 🗄️ Base España (solo si está descargada y hay ≥3 letras): búsqueda asíncrona en IndexedDB y
   // APPEND bajo separador, sin duplicar nombres ya listados. superRender corre en CADA input →
   // el contador _superDBXReq invalida las respuestas que lleguen tarde (el hueco viejo además ya
@@ -7914,9 +8079,10 @@ function superRender(){
       _superDBX=lista;
       hueco.innerHTML='<div class="eyebrow-lbl" style="margin-top:10px">🗄️ Base España</div>'
         + lista.map(function(e,i){
-            return '<div class="bib-item" onclick="superElegirDBX('+i+')"><span style="flex:1">'+esc(e.n)
+            return '<div class="bib-item" onclick="superElegirDBX('+i+')">'+superIcoHTML(e)+'<span style="flex:1">'+esc(e.n)
               +'<span class="mus" style="display:block">'+Math.round(+e.kcal||0)+' kcal / 100 g · base España</span></span></div>';
           }).join("");
+      superFotosLazy(hueco);   // 📷 2.0 · también las filas de la Base España (todas llevan EAN)
     });
   }
 }
@@ -7991,11 +8157,12 @@ function superOFFResultados(q, j){
   }
   var h="<p class='hint'>🌍 "+res.length+" de Open Food Facts — toca uno y se guarda en TUS alimentos (para siempre, offline):</p>";
   h+=res.map(function(x,i){
-    return '<div class="bib-item" onclick="superElegirOFF('+i+')"><span style="flex:1">'+esc(x.nombre+(x.marca?" ("+x.marca+")":""))
+    return '<div class="bib-item" onclick="superElegirOFF('+i+')">'+superIcoHTML({n:x.nombre, ean:x.ean})+'<span style="flex:1">'+esc(x.nombre+(x.marca?" ("+x.marca+")":""))
       +'<span class="mus" style="display:block">'+x.kcal100+" kcal / 100 "+(x.u==="ml"?"ml":"g")+" · OFF</span></span></div>";
   }).join("");
   h+='<button class="sec" type="button" style="width:100%;margin-top:10px" onclick="superBuscarOFF('+argQ+')">↻ Buscar otra vez</button>';
   superOFFPinta(h);
+  superFotosLazy($("super_lista"));   // 📷 2.0 · resultados OFF: hay red seguro (acaban de llegar de ella)
 }
 // Núcleo compartido OFF/🗄️ Base España (v0.18, factorizado de superElegirOFF): guarda x como
 // alimento PROPIO si no estaba ya (dedupe por ean o por nombre+marca), rellena com_nombre y
@@ -8474,7 +8641,7 @@ function resetTodo(){ if(!confirm("⚠️ Esto borra TODO: perfil, pesos, entren
 // Reemplazo total con confirmación. Reusa get/set, hoyLocal, toast, validar, render. NO toca motor ni gate.
 function exportarJSON(){ try{ set("jvf_last_export",hoyLocal()); }catch(e){}
   try{
-    var data={ app:"jvf", schema:1, app_version:"0.19.2", exportadoEl:new Date().toISOString(),
+    var data={ app:"jvf", schema:1, app_version:"0.20.0", exportadoEl:new Date().toISOString(),
       perfil:get(LS_P,null), pesos:get(LS_W,[]), entrenos:get(LS_E,[]), notas_ej:get("jvf_notas_ej",{}), comida:get("jvf_comida",[]), agua:get("jvf_agua",{}), suples_cfg:get("jvf_suples_cfg",null), suples_log:get("jvf_suples_log",{}),
       rutinas:get("jvf_rutinas",[]), meals:get("jvf_meals",[]), ent_start:get("jvf_ent_start",null),   // v0.10 · backup completo
       alimentos_propios:get("jvf_alimentos_propios",[]), barcode_cache:get("jvf_barcode_cache",{}),   // I5/I6 · también viajan en el backup
