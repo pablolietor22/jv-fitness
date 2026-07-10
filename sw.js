@@ -7,6 +7,9 @@ self.addEventListener("install", function (e) { self.skipWaiting(); });
 self.addEventListener("activate", function (e) { e.waitUntil(self.clients.claim()); });
 self.addEventListener("fetch", function (e) {
   if (e.request.method !== "GET") return;
+  // Los chunks de la base España (/data/db/) van a IndexedDB, NO a la caché del SW: cachearlos aquí
+  // duplicaría los ~5 MB en Cache Storage sin aportar nada (la app nunca los re-pide una vez importados).
+  if (e.request.url.indexOf("/data/db/") >= 0) return;
   e.respondWith(
     fetch(e.request).then(function (r) {
       try { var cc = r.clone(); caches.open(C).then(function (k) { k.put(e.request, cc); }); } catch (_) {}

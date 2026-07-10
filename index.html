@@ -456,7 +456,7 @@
 
 <header class="brandbar">
   <div class="logo"><span class="dot"></span>JV <b>Fitness</b></div>
-  <span class="tag">MVP v0.18.1 · motor v0.7</span>
+  <span class="tag">MVP v0.19.0 · motor v0.7</span>
 </header>
 <div class="statuschip"><span class="pulse"></span> cálculo science-based · ajustable · calibración real</div>
 
@@ -716,6 +716,14 @@
   <div class="eyebrow-lbl" style="margin-top:14px">🔔 Recordatorios</div>
   <p class="hint" style="margin-top:0">Avisos suaves <b style="color:var(--soft)">al abrir la app</b>. No son notificaciones del móvil: sin un servidor detrás, el navegador no puede avisarte con la app cerrada — eso sería otra fase.</p>
   <label style="display:flex;align-items:center;gap:8px;cursor:pointer;margin-top:4px"><input type="checkbox" id="aj_notif_agua" checked onchange="notifSet('aguaVerano', this.checked)"> 🌡️ Recordarme beber agua en verano</label>
+  <!-- 🗄️ BASE ESPAÑA COMPLETA (IndexedDB, descarga opcional). La lógica vive en [DBX-*]; esto solo pinta.
+       Los datos (data/db/*.jsonl.gz) son públicos de Open Food Facts (ODbL): aquí no hay ningún secreto. -->
+  <div class="eyebrow-lbl" style="margin-top:14px">🗄️ Base España completa (176.150 alimentos · 4,8 MB)</div>
+  <p class="hint" style="margin-top:0">Se guarda EN tu móvil: buscar y escanear funcionan sin internet. Fuente: Open Food Facts (ODbL).</p>
+  <div id="dbx_estado" class="hint" style="margin-top:4px">no descargada</div>
+  <button class="sec" type="button" id="dbx_btn_descargar" onclick="dbxUIDescargar()">⬇️ Descargar</button>
+  <button class="sec hidden" type="button" id="dbx_btn_borrar" onclick="dbxUIBorrar()">🗑️ Borrar de este dispositivo</button>
+  <div id="dbx_prog" class="hint"></div>
   <!-- 👟 SPEC 4 · SYNC AUTOMÁTICO DE PASOS (2026-07-09). La PWA solo LEE una URL RAW pública de GitHub:
        el token de escritura vive SOLO en Tasker (móvil de Pablo) — aquí no hay ningún secreto.
        Lógica de mezcla PURA en [PASOS-SYNC-PURE-*]; red/DOM en las funciones pasosSync*. -->
@@ -6989,6 +6997,31 @@ function bcBuscar(ean){
       servingAviso:null, serving:null, porcion:(fc.porc?(+String(fc.porc).split(":")[1]||null):null)});
     return;
   }
+  // 🗄️ Base España descargada (IndexedDB) → por EAN sin red, ANTES de salir a OFF. dbxPorEan es
+  // asíncrono: si hay hit se confirma como el camino "base curada" (fuente:"cache"); si NO hay
+  // base descargada, o IDB falla, o el EAN no está → sigue el flujo actual EXACTO hacia OFF
+  // (bcBuscarRedOFF, factorizado abajo tal cual era): cero regresión sin base.
+  if(_dbxInfo){
+    dbxPorEan(ean, function(e){
+      if(e){
+        bcConfirmar({ean:ean, fuente:"cache", nombre:e.n, kcal100:(e.kcal==null?null:+e.kcal),
+          p100:(e.p==null?null:+e.p), c100:(+e.c||0), g100:(+e.f||0), img:null, nutriscore:null,
+          u:"g", uMotivo:"base España descargada en tu móvil", dens:bcDensidad(e.n,null),
+          servingAviso:null, serving:null,
+          fib100:(e.fib!=null?+e.fib:null), az100:(e.az!=null?+e.az:null),
+          sat100:(e.sat!=null?+e.sat:null), na100:(e.na!=null?+e.na:null),
+          porcion:(e.porc?(+String(e.porc).split(":")[1]||null):null)});
+        return;
+      }
+      bcBuscarRedOFF(ean);
+    });
+    return;
+  }
+  bcBuscarRedOFF(ean);
+}
+// Salida a red OFF (v0.18: factorizada de bcBuscar SIN cambios — bcBuscar la llama directo si no
+// hay Base España descargada, o como fallback si el EAN no está en ella).
+function bcBuscarRedOFF(ean){
   // OJO: sin headers custom (el User-Agent no se puede tocar desde fetch de navegador). Sin API key.
   // v0.13 · L2: ya NO es una petición única — bcFetchCadena recorre bcUrlsLookup (v2→v0 + variantes
   // del código, bloque puro de arriba) y corta en el primer acierto. El "resumen" acumula qué tipo
@@ -7424,9 +7457,33 @@ function superRender(){
   }).join("");
   if(!tot) h="<p class='hint'>Nada en la base con ese nombre.</p>";
   else if(tot>200) h+="<p class='hint'>Enseño 200 de "+tot+" — afina la búsqueda.</p>";
+  h+='<div id="super_dbx"></div>';   // 🗄️ hueco para la Base España (se rellena asíncrono, abajo)
   var argQ=JSON.stringify(q).replace(/"/g,"&quot;");
   h+='<button class="sec" type="button" style="width:100%;margin-top:10px" onclick="superBuscarOFF('+argQ+')">🌍 Buscar '+(q?"«"+esc(q)+"» ":"")+"en Open Food Facts (internet)</button>";
   box.innerHTML=h;
+  // 🗄️ Base España (solo si está descargada y hay ≥3 letras): búsqueda asíncrona en IndexedDB y
+  // APPEND bajo separador, sin duplicar nombres ya listados. superRender corre en CADA input →
+  // el contador _superDBXReq invalida las respuestas que lleguen tarde (el hueco viejo además ya
+  // no existe en el DOM: doble seguro contra pintar resultados de una búsqueda anterior).
+  _superDBXReq++; _superDBX=[];
+  var _reqId=_superDBXReq;
+  if(_dbxInfo && q.length>=3){
+    var yaListados={};
+    res.forEach(function(x){ yaListados[otroNorm(x.n)]=1; });
+    dbxBuscar(q, 30, function(hits){
+      if(_reqId!==_superDBXReq) return;   // llegó tarde: el usuario ya tecleó otra cosa
+      var hueco=$("super_dbx"); if(!hueco) return;
+      var lista=[];
+      for(var i=0;i<hits.length;i++){ if(!yaListados[otroNorm(hits[i].n)]) lista.push(hits[i]); }
+      if(!lista.length) return;
+      _superDBX=lista;
+      hueco.innerHTML='<div class="eyebrow-lbl" style="margin-top:10px">🗄️ Base España</div>'
+        + lista.map(function(e,i){
+            return '<div class="bib-item" onclick="superElegirDBX('+i+')"><span style="flex:1">'+esc(e.n)
+              +'<span class="mus" style="display:block">'+Math.round(+e.kcal||0)+' kcal / 100 g · base España</span></span></div>';
+          }).join("");
+    });
+  }
 }
 function superElegir(nombre){
   _superLlenando=true;   // E1 · que el rellenado programático no re-abra el popup
@@ -7505,8 +7562,10 @@ function superOFFResultados(q, j){
   h+='<button class="sec" type="button" style="width:100%;margin-top:10px" onclick="superBuscarOFF('+argQ+')">↻ Buscar otra vez</button>';
   superOFFPinta(h);
 }
-function superElegirOFF(i){
-  var x=_superOFF[i]; if(!x) return;
+// Núcleo compartido OFF/🗄️ Base España (v0.18, factorizado de superElegirOFF): guarda x como
+// alimento PROPIO si no estaba ya (dedupe por ean o por nombre+marca), rellena com_nombre y
+// porciones, y cierra el popup. x={nombre, marca, ean, kcal100, p100, c100, g100[, porcion_g]}.
+function superGuardarComoPropio(x, toastMsg){
   _superLlenando=true;   // E1 · que el rellenado programático no re-abra el popup
   var arr=get(LS_ALIM,[]), ya=null;
   for(var k=0;k<arr.length;k++){
@@ -7515,7 +7574,7 @@ function superElegirOFF(i){
   }
   if(!ya){   // mismo esquema EXACTO que apGuardar (jvf_alimentos_propios)
     ya={id:Date.now().toString(36)+Math.random().toString(36).slice(2,6), nombre:x.nombre, marca:x.marca||null,
-      ean:x.ean||null, porcion_g:null, kcal100:x.kcal100, p100:x.p100, c100:x.c100, g100:x.g100};
+      ean:x.ean||null, porcion_g:(+x.porcion_g>0?+x.porcion_g:null), kcal100:x.kcal100, p100:x.p100, c100:x.c100, g100:x.g100};
     arr.push(ya); set(LS_ALIM,arr);
   }
   comFillDatalist();                       // que aparezca YA en el buscador de la pestaña Comida
@@ -7524,7 +7583,263 @@ function superElegirOFF(i){
   superCerrar();
   setTimeout(function(){ try{ $("com_gramos").focus(); }catch(e){} }, 60);
   _superLlenando=false;
-  toast("🌍 Guardado en tus alimentos");
+  toast(toastMsg);
+}
+function superElegirOFF(i){
+  var x=_superOFF[i]; if(!x) return;
+  superGuardarComoPropio({nombre:x.nombre, marca:x.marca, ean:x.ean, kcal100:x.kcal100, p100:x.p100, c100:x.c100, g100:x.g100}, "🌍 Guardado en tus alimentos");
+}
+// 🗄️ resultado de la Base España elegido en el popup: mismo camino que superElegirOFF (alimento
+// propio para siempre). La base no separa marca (va dentro del nombre) → marca:null.
+var _superDBX=[], _superDBXReq=0;   // última tanda pintada + contador de petición (anti respuestas obsoletas)
+function superElegirDBX(i){
+  var e=_superDBX[i]; if(!e) return;
+  superGuardarComoPropio({nombre:e.n, marca:null, ean:(e.ean?String(e.ean):null),
+    kcal100:Math.round(+e.kcal||0), p100:(+e.p||0), c100:(+e.c||0), g100:(+e.f||0),
+    porcion_g:(e.porc?(+String(e.porc).split(":")[1]||null):null)}, "🗄️ Guardado en tus alimentos");
+}
+
+// [DBX-PURE-INICIO] — 🗄️ Base España completa (IndexedDB): tokenizador + parser + matcher PUROS
+// (sin DOM, sin IndexedDB, sin red): _tests/test-dbx.node.js extrae este bloque tal cual y lo
+// evalúa DESPUÉS de [OTRO-PURE] (reutiliza otroNorm — misma <script>, hoisting).
+// dbxTokens: palabras únicas normalizadas (minúsculas, sin tildes, ñ conservada — mismo otroNorm)
+// de ≥2 letras/cifras. Sirve para el índice multiEntry `w` Y para trocear lo que teclea el
+// usuario: el MISMO normalizador a ambos lados = el match nunca se desincroniza.
+function dbxTokens(nombre){
+  var n=otroNorm(String(nombre==null?"":nombre)).replace(/[^a-z0-9ñ]+/g," ").trim();
+  if(!n) return [];
+  var toks=n.split(" "), out=[], vistos={};
+  for(var i=0;i<toks.length;i++){
+    var t=toks[i];
+    if(t.length<2 || vistos[t]) continue;
+    vistos[t]=1; out.push(t);
+  }
+  return out;
+}
+// dbxParseJSONL: texto JSON-línea → SOLO entradas válidas {n,kcal,p,c,f[,fib][,az][,sat][,na][,porc][,ean]}.
+// Límites físicos por 100 g: kcal 0-900 (la grasa pura son ~900), p/c/f 0-100. Una línea corrupta
+// o con valores imposibles se DESCARTA sin tirar el resto (la base es colaborativa: mejor 1 menos
+// que 176.149 perdidos por un try/catch global).
+function dbxParseJSONL(texto){
+  var lineas=String(texto==null?"":texto).split("\n"), out=[];
+  for(var i=0;i<lineas.length;i++){
+    var l=lineas[i].replace(/\r$/,"");
+    if(!l) continue;
+    var e=null;
+    try{ e=JSON.parse(l); }catch(err){ continue; }
+    if(!e || typeof e!=="object" || typeof e.n!=="string" || !e.n.trim()) continue;
+    var kcal=+e.kcal, p=+e.p, c=+e.c, f=+e.f;
+    if(!isFinite(kcal) || kcal<0 || kcal>900) continue;
+    if(!isFinite(p) || p<0 || p>100) continue;
+    if(!isFinite(c) || c<0 || c>100) continue;
+    if(!isFinite(f) || f<0 || f>100) continue;
+    out.push(e);
+  }
+  return out;
+}
+// dbxMatch: ¿TODOS los tokens del query son PREFIJO de alguna palabra del nombre? («yog gri» casa
+// «Yogur griego»; «gur» NO — prefijo, no substring). Usa entrada.w si ya viene indexada (IDB);
+// si no, tokeniza el nombre al vuelo. Query sin tokens = deja pasar (como superMatch).
+function dbxMatch(entrada, tokensQuery){
+  var ws=(entrada && entrada.w && entrada.w.length)?entrada.w:dbxTokens(entrada&&entrada.n);
+  if(!tokensQuery || !tokensQuery.length) return true;
+  for(var i=0;i<tokensQuery.length;i++){
+    var t=tokensQuery[i], ok=false;
+    for(var j=0;j<ws.length;j++){ if(ws[j].indexOf(t)===0){ ok=true; break; } }
+    if(!ok) return false;
+  }
+  return true;
+}
+// [DBX-PURE-FIN]
+
+// 🗄️ Capa IndexedDB de la Base España (IMPURA: navegador). BD jvf_db v1 — store `alimentos`
+// (autoIncrement) con índice `w` (multiEntry sobre los tokens del nombre) e índice `ean`;
+// store `meta` (keyPath "k") con {k:"info", version, total, fecha}. Separada de jvf_fotos a
+// propósito: borrar fotos (resetTodo) no toca la base y viceversa.
+var _dbxDB=null;        // conexión abierta (se reusa)
+var _dbxInfo=null;      // caché en memoria del meta "info" (null = no descargada); la refrescan dbxEstado/dbxDescargar/dbxBorrar
+var _dbxBajando=false;  // candado anti doble-descarga
+function dbxAbrir(){
+  return new Promise(function(res, rej){
+    if(_dbxDB){ res(_dbxDB); return; }
+    if(typeof indexedDB==="undefined" || !indexedDB){ rej(new Error("este navegador no permite guardar la base (sin IndexedDB)")); return; }
+    var req=indexedDB.open("jvf_db", 1);
+    req.onupgradeneeded=function(){
+      var db=req.result;
+      if(!db.objectStoreNames.contains("alimentos")){
+        var st=db.createObjectStore("alimentos",{autoIncrement:true});
+        st.createIndex("w","w",{multiEntry:true});
+        st.createIndex("ean","ean");
+      }
+      if(!db.objectStoreNames.contains("meta")) db.createObjectStore("meta",{keyPath:"k"});
+    };
+    req.onsuccess=function(){ _dbxDB=req.result; try{ _dbxDB.onclose=function(){ _dbxDB=null; }; }catch(e){} res(_dbxDB); };
+    req.onerror=function(){ rej(req.error||new Error("no se pudo abrir IndexedDB")); };
+  });
+}
+// Estado: cb({version,total,fecha}) si la base está descargada, cb(null) si no (o si IDB falla).
+function dbxEstado(cb){
+  cb=cb||function(){};
+  dbxAbrir().then(function(db){
+    var req=db.transaction(["meta"],"readonly").objectStore("meta").get("info");
+    req.onsuccess=function(){ _dbxInfo=req.result||null; cb(_dbxInfo); };
+    req.onerror=function(){ _dbxInfo=null; cb(null); };
+  }).catch(function(){ _dbxInfo=null; cb(null); });
+}
+function dbxVaciar(db){
+  return new Promise(function(res, rej){
+    var tx=db.transaction(["alimentos","meta"],"readwrite");
+    tx.objectStore("alimentos").clear();
+    tx.objectStore("meta").clear();
+    tx.oncomplete=function(){ res(); };
+    tx.onerror=function(){ rej(tx.error||new Error("no se pudo vaciar la base")); };
+    tx.onabort=function(){ rej(tx.error||new Error("no se pudo vaciar la base")); };
+  });
+}
+// Un chunk = UNA transacción (bulk put). El índice `w` se calcula aquí (dbxTokens sobre el nombre).
+function dbxMeterChunk(db, entradas){
+  return new Promise(function(res, rej){
+    var tx=db.transaction(["alimentos"],"readwrite");
+    var st=tx.objectStore("alimentos");
+    tx.oncomplete=function(){ res(entradas.length); };
+    tx.onerror=function(){ rej(tx.error||new Error("fallo guardando en IndexedDB")); };
+    tx.onabort=function(){ rej(tx.error||new Error("guardado abortado (¿sin espacio libre?)")); };
+    for(var i=0;i<entradas.length;i++){
+      var e=entradas[i];
+      e.w=dbxTokens(e.n);
+      st.put(e);
+    }
+  });
+}
+// Descarga completa: manifest (ruta RELATIVA, mismo origen) → chunk a chunk (fetch + gzip nativo
+// del navegador + parse + bulk put) → meta + storage.persist(). onProgreso(i, n) por chunk;
+// fin(errorTexto|null, info). HONESTO: sin DecompressionStream no se descarga (nada de librerías
+// de 200 KB para descomprimir a mano) — se dice tal cual y la app sigue funcionando como siempre.
+function dbxDescargar(onProgreso, fin){
+  onProgreso=onProgreso||function(){}; fin=fin||function(){};
+  if(_dbxBajando){ fin("ya hay una descarga en marcha"); return; }
+  if(typeof DecompressionStream==="undefined"){ fin("tu navegador no soporta la descarga en segundo plano — actualiza Chrome/Samsung Internet"); return; }
+  _dbxBajando=true;
+  var manifest=null, total=0;
+  dbxAbrir().then(function(db){
+    return fetch("data/db/manifest.json",{cache:"no-cache"}).then(function(r){
+      if(!r.ok) throw new Error("HTTP "+r.status+" pidiendo el índice de la base");
+      return r.json();
+    }).then(function(m){
+      if(!m || !m.chunks || !m.chunks.length) throw new Error("el índice de la base llegó vacío o corrupto");
+      manifest=m;
+      return dbxVaciar(db);   // re-descargar NUNCA duplica (el store es autoIncrement)
+    }).then(function(){
+      var i=0;
+      function paso(){
+        if(i>=manifest.chunks.length) return Promise.resolve();
+        onProgreso(i+1, manifest.chunks.length);
+        var ch=manifest.chunks[i]||{};
+        return fetch("data/db/"+ch.file).then(function(r){
+          if(!r.ok || !r.body) throw new Error("HTTP "+r.status+" bajando "+ch.file);
+          return new Response(r.body.pipeThrough(new DecompressionStream("gzip"))).text();
+        }).then(function(txt){
+          return dbxMeterChunk(db, dbxParseJSONL(txt));
+        }).then(function(n){ total+=n; i++; return paso(); });
+      }
+      return paso();
+    }).then(function(){
+      return new Promise(function(res, rej){
+        var info={k:"info", version:String(manifest.version||"?"), total:total, fecha:new Date().toISOString().slice(0,10)};
+        var tx=db.transaction(["meta"],"readwrite");
+        tx.objectStore("meta").put(info);
+        tx.oncomplete=function(){ res(info); };
+        tx.onerror=function(){ rej(tx.error||new Error("no se pudo guardar el estado de la descarga")); };
+      });
+    });
+  }).then(function(info){
+    _dbxBajando=false; _dbxInfo=info;
+    try{ navigator.storage && navigator.storage.persist && navigator.storage.persist(); }catch(e){}
+    fin(null, info);
+  }).catch(function(err){
+    _dbxBajando=false;
+    dbxEstado(function(){});   // si murió a medias, el meta quedó vaciado → estado honesto "no descargada"
+    fin((err && err.message)?err.message:"fallo de red o de almacenamiento");
+  });
+}
+function dbxBorrar(cb){
+  cb=cb||function(){};
+  dbxAbrir().then(function(db){ return dbxVaciar(db); })
+    .then(function(){ _dbxInfo=null; cb(null); })
+    .catch(function(err){ cb((err && err.message)||"no se pudo borrar la base"); });
+}
+// Búsqueda por nombre: el PRIMER token del query acota por el índice `w` (rango de prefijo
+// t → t+"￿") y dbxMatch filtra el resto de tokens. Dedupe por primaryKey: el índice
+// multiEntry devuelve el MISMO registro una vez por token que case el rango. cb(array), corta en `limite`.
+function dbxBuscar(query, limite, cb){
+  cb=cb||function(){}; limite=(+limite>0)?+limite:30;
+  var toks=dbxTokens(query);
+  if(!toks.length){ cb([]); return; }
+  dbxAbrir().then(function(db){
+    var idx=db.transaction(["alimentos"],"readonly").objectStore("alimentos").index("w");
+    var req=idx.openCursor(IDBKeyRange.bound(toks[0], toks[0]+"￿"));
+    var out=[], vistos={};
+    req.onsuccess=function(){
+      var cur=req.result;
+      if(!cur){ cb(out); return; }
+      var pk=String(cur.primaryKey);
+      if(!vistos[pk]){
+        vistos[pk]=1;
+        if(dbxMatch(cur.value, toks)){
+          out.push(cur.value);
+          if(out.length>=limite){ cb(out); return; }
+        }
+      }
+      cur.continue();
+    };
+    req.onerror=function(){ cb(out); };
+  }).catch(function(){ cb([]); });
+}
+// Por código de barras: índice `ean` (las entradas sin ean simplemente no están en el índice). cb(entrada|null).
+function dbxPorEan(ean, cb){
+  cb=cb||function(){};
+  ean=String(ean==null?"":ean).replace(/\D/g,"");
+  if(!ean){ cb(null); return; }
+  dbxAbrir().then(function(db){
+    var req=db.transaction(["alimentos"],"readonly").objectStore("alimentos").index("ean").get(ean);
+    req.onsuccess=function(){ cb(req.result||null); };
+    req.onerror=function(){ cb(null); };
+  }).catch(function(){ cb(null); });
+}
+// ── UI de Ajustes (estado + descargar con progreso + borrar). Solo pinta; la lógica está arriba. ──
+function dbxUIRender(){
+  var est=$("dbx_estado"), bD=$("dbx_btn_descargar"), bB=$("dbx_btn_borrar"), prog=$("dbx_prog");
+  if(!est) return;
+  if(_dbxInfo){
+    est.innerHTML="v"+esc(_dbxInfo.version)+" · "+Number(_dbxInfo.total).toLocaleString("es-ES")+" alimentos <b style='color:var(--jade)'>✓</b>";
+    if(bD) bD.classList.add("hidden");
+    if(bB) bB.classList.remove("hidden");
+  }else{
+    est.textContent="no descargada";
+    if(bD) bD.classList.remove("hidden");
+    if(bB) bB.classList.add("hidden");
+  }
+  if(prog && !_dbxBajando) prog.textContent="";
+}
+function dbxUIDescargar(){
+  var prog=$("dbx_prog"), bD=$("dbx_btn_descargar");
+  if(bD) bD.disabled=true;
+  if(prog) prog.textContent="preparando la descarga…";
+  dbxDescargar(function(i, n){ if(prog) prog.textContent="descargando "+i+"/"+n+"…"; }, function(err){
+    if(bD) bD.disabled=false;
+    if(prog) prog.textContent="";
+    if(err){ toast("🗄️ "+err); dbxUIRender(); return; }
+    toast("🗄️ Base España lista: buscar y escanear ya funcionan sin internet");
+    dbxUIRender();
+  });
+}
+function dbxUIBorrar(){
+  if(!confirm("¿Borrar la Base España de este dispositivo? Podrás volver a descargarla cuando quieras.")) return;
+  dbxBorrar(function(err){
+    if(err){ toast("🗄️ "+err); return; }
+    toast("🗄️ Base borrada de este dispositivo");
+    dbxUIRender();
+  });
 }
 
 // ======= ESTADO / PERSISTENCIA =======
@@ -7649,6 +7964,7 @@ document.addEventListener('DOMContentLoaded',function(){
     notifCheck();    // 🔔 recordatorios in-app (p.ej. agua en verano) al abrir
     pasosSyncUI();          // 👟 spec 4 · refleja toggle+URL del sync de pasos en Ajustes
     pasosSyncFetch(false);  // 👟 spec 4 · primera lectura del steps.json al abrir la app
+    dbxEstado(function(){ dbxUIRender(); });   // 🗄️ Base España: refresca _dbxInfo (lo usan escáner y supermercado) + pinta el estado en Ajustes
   }catch(e){}
 });
 function resetTodo(){ if(!confirm("⚠️ Esto borra TODO: perfil, pesos, entrenos, rutinas, comidas, alimentos propios, agua, suplementos, lo hablado con el Cerebro y las fotos de progreso. ¿Seguro?")) return; try{ localStorage.removeItem(LS_P); localStorage.removeItem(LS_W); localStorage.removeItem(LS_E); localStorage.removeItem("jvf_notas_ej"); localStorage.removeItem("jvf_comida"); localStorage.removeItem("jvf_agua"); localStorage.removeItem("jvf_agua_log"); localStorage.removeItem("jvf_suples_cfg"); localStorage.removeItem("jvf_suples_log"); localStorage.removeItem("jvf_rutinas"); localStorage.removeItem("jvf_ent_start"); localStorage.removeItem("jvf_meals"); localStorage.removeItem("jvf_alimentos_propios"); localStorage.removeItem("jvf_barcode_cache"); localStorage.removeItem("jvf_foto_ajustes"); localStorage.removeItem("jvf_warmup_stats"); localStorage.removeItem("jvf_plate_barra"); localStorage.removeItem("jvf_rest_seg"); localStorage.removeItem("jvf_cerebro_diario"); localStorage.removeItem("jvf_cerebro_norec"); localStorage.removeItem("jvf_fotos_consent"); localStorage.removeItem("jvf_fotos_meta"); localStorage.removeItem("jvf_flex_cfg"); localStorage.removeItem("jvf_flex_visto"); localStorage.removeItem("jvf_deporte_sesiones"); localStorage.removeItem("jvf_favoritos"); localStorage.removeItem("jvf_uso_alim"); localStorage.removeItem("jvf_hist_alim"); localStorage.removeItem("jvf_lesiones"); localStorage.removeItem("jvf_notif_cfg"); localStorage.removeItem("jvf_notif_shown"); localStorage.removeItem("jvf_pasos_log"); localStorage.removeItem("jvf_pasos_sync_cfg"); localStorage.removeItem("jvf_pasos_sync_last"); }catch(e){} _mem={};
@@ -7666,7 +7982,7 @@ function resetTodo(){ if(!confirm("⚠️ Esto borra TODO: perfil, pesos, entren
 // Reemplazo total con confirmación. Reusa get/set, hoyLocal, toast, validar, render. NO toca motor ni gate.
 function exportarJSON(){ try{ set("jvf_last_export",hoyLocal()); }catch(e){}
   try{
-    var data={ app:"jvf", schema:1, app_version:"0.18.1", exportadoEl:new Date().toISOString(),
+    var data={ app:"jvf", schema:1, app_version:"0.19.0", exportadoEl:new Date().toISOString(),
       perfil:get(LS_P,null), pesos:get(LS_W,[]), entrenos:get(LS_E,[]), notas_ej:get("jvf_notas_ej",{}), comida:get("jvf_comida",[]), agua:get("jvf_agua",{}), suples_cfg:get("jvf_suples_cfg",null), suples_log:get("jvf_suples_log",{}),
       rutinas:get("jvf_rutinas",[]), meals:get("jvf_meals",[]), ent_start:get("jvf_ent_start",null),   // v0.10 · backup completo
       alimentos_propios:get("jvf_alimentos_propios",[]), barcode_cache:get("jvf_barcode_cache",{}),   // I5/I6 · también viajan en el backup
