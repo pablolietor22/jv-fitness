@@ -206,6 +206,13 @@
   .super-ico{flex:none;width:34px;height:34px;margin-right:8px;border-radius:8px;background:var(--ink-3);
     display:flex;align-items:center;justify-content:center;font-size:19px;overflow:hidden}
   .super-ico img{width:100%;height:100%;object-fit:cover;border-radius:8px;display:block}
+  /* 👁️ Ficha de alimento (tanda #25 · v0.22) — ojito por fila del buscador + foto grande de la ficha */
+  .ficha-ojo{flex:none;width:30px;height:30px;margin:0 0 0 6px;padding:0;display:flex;align-items:center;justify-content:center;
+    border-radius:50%;background:transparent;color:var(--soft);border:1px solid var(--line-soft);font-size:.95rem;line-height:1;cursor:pointer;box-shadow:none}
+  .ficha-ojo:hover,.ficha-ojo:active{border-color:var(--jade);background:var(--ink-3);box-shadow:none}
+  .ficha-foto{width:100%;height:180px;border-radius:14px;background:var(--ink-3);border:1px solid var(--line-soft);
+    display:flex;align-items:center;justify-content:center;font-size:64px;overflow:hidden}
+  .ficha-foto img{width:100%;height:100%;object-fit:contain;display:block;background:#fff}
   .hidden{display:none}
   /* 🧠 Cerebro v0.13-B · chat de burbujas estilo Jarvis (solo estética; el motor es [CEREBRO-PURE]) */
   .cb-log{display:flex;flex-direction:column;gap:8px;max-height:340px;overflow-y:auto;padding:4px 2px;margin-top:6px;
@@ -503,7 +510,7 @@
 <header class="brandbar">
   <div class="logo"><span class="dot"></span>JV <b>Fitness</b></div>
   <div style="display:flex;align-items:center">
-    <span class="tag">MVP v0.21.0 · motor v0.7</span>
+    <span class="tag">MVP v0.22.0 · motor v0.7</span>
     <!-- ⚙️ tanda #22 · hub de AJUSTES (no es pestaña): modal a pantalla completa -->
     <button class="gearbtn" id="btn_hub" type="button" title="Ajustes" aria-label="Abrir ajustes" onclick="hubAbrir()">⚙️</button>
   </div>
@@ -1225,6 +1232,16 @@ Tus datos se guardan solo en este dispositivo.</p>
     <div id="super_negocios" class="super-chips letras hidden"></div>
     <div id="super_letras" class="super-chips letras"></div>
     <div id="super_lista"></div>
+  </div>
+</div>
+
+<!-- MODAL: 👁️ Ficha de alimento (tanda #25 · v0.22) — se abre ENCIMA del buscador SIN cerrarlo.
+     Va DESPUÉS de superModal en el DOM a propósito: mismo z-index (100) → el orden del DOM decide
+     y la ficha pinta encima. Cerrarla devuelve al buscador tal cual estaba. -->
+<div id="fichaModal" class="modal hidden">
+  <div class="modal-card">
+    <button class="modal-x" type="button" title="Cerrar" aria-label="Cerrar" onclick="fichaCerrar()">✕</button>
+    <div id="ficha_cuerpo"></div>
   </div>
 </div>
 
@@ -8122,12 +8139,13 @@ function superRender(){
   });
   superOrdena(res, q);   // 🔍 2.0 · relevancia → español-primero → alfabético (antes: solo alfabético)
   var tot=res.length; res=res.slice(0,200);   // techo de render: el móvil no pinta 700 divs
-  var h=res.map(function(x){
+  _superRes=res;   // 👁️ v0.22 · espejo de la tanda pintada (índice → ficha, patrón _superDBX/_superOFF)
+  var h=res.map(function(x,i){
     var arg=JSON.stringify(x.n).replace(/"/g,"&quot;");
     var uni=(x.u==="ml")?"100 ml":"100 g";
     var tag=x.propio?' · <span style="color:var(--jade)">tuyo</span>':'';
     return '<div class="bib-item" onclick="superElegir('+arg+')">'+superIcoHTML(x)+'<span style="flex:1">'+esc(x.n)
-      +'<span class="mus" style="display:block">'+Math.round(x.kcal)+" kcal / "+uni+tag+"</span></span></div>";
+      +'<span class="mus" style="display:block">'+Math.round(x.kcal)+" kcal / "+uni+tag+"</span></span>"+fichaOjoHTML("base",i)+"</div>";
   }).join("");
   if(!tot) h="<p class='hint'>Nada en la base con ese nombre.</p>";
   else if(tot>200) h+="<p class='hint'>Enseño 200 de "+tot+" — afina la búsqueda.</p>";
@@ -8155,7 +8173,7 @@ function superRender(){
       hueco.innerHTML='<div class="eyebrow-lbl" style="margin-top:10px">🗄️ Base España</div>'
         + lista.map(function(e,i){
             return '<div class="bib-item" onclick="superElegirDBX('+i+')">'+superIcoHTML(e)+'<span style="flex:1">'+esc(e.n)
-              +'<span class="mus" style="display:block">'+Math.round(+e.kcal||0)+' kcal / 100 g · base España</span></span></div>';
+              +'<span class="mus" style="display:block">'+Math.round(+e.kcal||0)+' kcal / 100 g · base España</span></span>'+fichaOjoHTML("dbx",i)+'</div>';
           }).join("");
       superFotosLazy(hueco);   // 📷 2.0 · también las filas de la Base España (todas llevan EAN)
     });
@@ -8233,7 +8251,7 @@ function superOFFResultados(q, j){
   var h="<p class='hint'>🌍 "+res.length+" de Open Food Facts — toca uno y se guarda en TUS alimentos (para siempre, offline):</p>";
   h+=res.map(function(x,i){
     return '<div class="bib-item" onclick="superElegirOFF('+i+')">'+superIcoHTML({n:x.nombre, ean:x.ean})+'<span style="flex:1">'+esc(x.nombre+(x.marca?" ("+x.marca+")":""))
-      +'<span class="mus" style="display:block">'+x.kcal100+" kcal / 100 "+(x.u==="ml"?"ml":"g")+" · OFF</span></span></div>";
+      +'<span class="mus" style="display:block">'+x.kcal100+" kcal / 100 "+(x.u==="ml"?"ml":"g")+" · OFF</span></span>"+fichaOjoHTML("off",i)+"</div>";
   }).join("");
   h+='<button class="sec" type="button" style="width:100%;margin-top:10px" onclick="superBuscarOFF('+argQ+')">↻ Buscar otra vez</button>';
   superOFFPinta(h);
@@ -8274,6 +8292,242 @@ function superElegirDBX(i){
   superGuardarComoPropio({nombre:e.n, marca:null, ean:(e.ean?String(e.ean):null),
     kcal100:Math.round(+e.kcal||0), p100:(+e.p||0), c100:(+e.c||0), g100:(+e.f||0),
     porcion_g:(e.porc?(+String(e.porc).split(":")[1]||null):null)}, "🗄️ Guardado en tus alimentos");
+}
+
+// [FICHA-PURE-INICIO] — 👁️ Ficha de alimento (tanda #25 · v0.22): puras SIN DOM/red/storage.
+// _tests/test-ficha.node.js extrae este bloque y lo evalúa tras [OTRO/CEREBRO/SUPER-PURE].
+// Doctrina HONESTIDAD: campo ausente = "—" (jamás inventar un 0); el 0 DECLARADO sí se enseña.
+function fichaNum(v){ return (v==null || v==="" || !isFinite(+v)) ? null : +v; }
+// SAL en g desde el sodio en mg (regla del etiquetado UE: sal = sodio × 2,5). null-safe.
+function fichaSal(na){ var n=fichaNum(na); return n==null?null:n*2.5/1000; }
+// Parser del campo porc: "unidad:85" → {nombre:"unidad", g:85}; malformado o no positivo → null
+// (sin porción declarada NO se inventa una).
+function fichaPorcion(porc){
+  var s=String(porc==null?"":porc);
+  var i=s.indexOf(":"); if(i<=0) return null;
+  var nombre=s.slice(0,i).trim(), g=+s.slice(i+1);
+  if(!nombre || !isFinite(g) || g<=0) return null;
+  return {nombre:nombre, g:g};
+}
+// Regla de 3: valor por 100 g/ml → valor por g gramos de porción, a 1 decimal. null-safe ambos lados.
+function fichaPorPorcion(valor100, g){
+  var v=fichaNum(valor100), gr=fichaNum(g);
+  if(v==null || gr==null || gr<=0) return null;
+  return Math.round(v*gr/100*10)/10;
+}
+// Formatea valor + unidad o da "—" (honesto). 1 decimal máximo, coma española, sin ",0" postizo.
+function fichaCampo(v, unidad){
+  var n=fichaNum(v); if(n==null) return "—";
+  var r=Math.round(n*10)/10;
+  var s=(r%1===0)?String(r):String(r).replace(".",",");
+  return s+(unidad?" "+unidad:"");
+}
+// Origen del dato por FLAGS que pone el caller (fichaVer): tuyo > OFF > Base España > BEDCA > curada.
+function fichaFuente(x){
+  if(!x || typeof x!=="object") return "base curada";
+  if(x.propio) return "tuyo";
+  if(x.off) return "Open Food Facts";
+  if(x.dbx) return "Base España";
+  if(x.bedca) return "BEDCA";
+  return "base curada";
+}
+// URL del API v2 para la foto GRANDE (image_front_url) — espejo de superFotoURL (que pide miniatura).
+function fichaFotoURLGrande(ean){
+  var d=String(ean==null?"":ean).replace(/\D/g,"");
+  if(d.length<8) return null;
+  return "https://world.openfoodfacts.org/api/v2/product/"+d+"?fields=image_front_url";
+}
+// nutriments del API v2 de OFF → campos de la casa (por 100 g/ml). OFF da sodio/potasio/hierro en
+// GRAMOS → aquí se pasan a mg (unidad de la casa); si no hay sodio pero sí sal, sodio = sal/2,5.
+// Solo devuelve campos que OFF trae DE VERDAD (ausente ≠ 0).
+function fichaDeOFFNutriments(nu){
+  if(!nu || typeof nu!=="object") return {};
+  var out={};
+  var kcal=fichaNum(nu["energy-kcal_100g"]); if(kcal!=null) out.kcal=kcal;
+  var p=fichaNum(nu["proteins_100g"]);       if(p!=null)    out.p=p;
+  var c=fichaNum(nu["carbohydrates_100g"]);  if(c!=null)    out.c=c;
+  var f=fichaNum(nu["fat_100g"]);            if(f!=null)    out.f=f;
+  var fib=fichaNum(nu["fiber_100g"]);        if(fib!=null)  out.fib=fib;
+  var az=fichaNum(nu["sugars_100g"]);        if(az!=null)   out.az=az;
+  var sat=fichaNum(nu["saturated-fat_100g"]);if(sat!=null)  out.sat=sat;
+  var na=fichaNum(nu["sodium_100g"]);
+  if(na!=null) out.na=Math.round(na*1000);
+  else { var sal=fichaNum(nu["salt_100g"]); if(sal!=null) out.na=Math.round(sal/2.5*1000); }
+  var pot=fichaNum(nu["potassium_100g"]);    if(pot!=null)  out.k=Math.round(pot*1000);
+  var fe=fichaNum(nu["iron_100g"]);          if(fe!=null)   out.fe=Math.round(fe*10000)/10;
+  var tr=fichaNum(nu["trans-fat_100g"]);     if(tr!=null)   out.tr=tr;
+  return out;
+}
+// Rellena SOLO los HUECOS de x con el detalle det (jamás pisa un dato ya presente — el 0 declarado
+// también se respeta). Devuelve COPIA (no muta x).
+function fichaRellena(x, det){
+  var out={}, cpo;
+  for(cpo in x) out[cpo]=x[cpo];
+  if(!det || typeof det!=="object") return out;
+  var campos=["kcal","p","c","f","fib","az","sat","na","k","fe","tr"];
+  for(var i=0;i<campos.length;i++){
+    cpo=campos[i];
+    if(fichaNum(out[cpo])==null && det[cpo]!=null) out[cpo]=det[cpo];
+  }
+  return out;
+}
+// [FICHA-PURE-FIN]
+
+// ── 👁️ Ficha de alimento · UI (tanda #25 · v0.22). El ojito de cada fila del buscador abre este
+// modal ENCIMA de superModal (fichaModal va después en el DOM → pinta encima con el mismo z-index);
+// cerrarla devuelve al buscador TAL CUAL estaba. «Elegir este alimento» dispara el MISMO flujo que
+// tocar la fila (superElegir / superElegirDBX / superElegirOFF), que ya cierra ficha+buscador.
+var _fichaX=null;    // view-model del alimento abierto en la ficha
+var _superRes=[];    // última tanda de la base embebida pintada por superRender (índice → ficha, patrón _superDBX/_superOFF)
+var _fichaDet={};    // RAM por sesión: ean → detalle OFF ya pedido (no se re-pide en toda la sesión)
+function fichaOjoHTML(src, i){
+  // ⚠️ args con JSON.stringify+&quot; (patrón superElegir); event.stopPropagation() para NO robar
+  // el tap principal de la fila (la fila sigue eligiendo; el ojito solo abre la ficha).
+  var aS=JSON.stringify(src).replace(/"/g,"&quot;");
+  return '<button class="ficha-ojo" type="button" title="Ver ficha" aria-label="Ver ficha del alimento" '
+    +'onclick="event.stopPropagation();fichaVer('+aS+','+i+')">👁️</button>';
+}
+// Normaliza la fila (según su fuente) a un view-model único {n,marca,ean,u,kcal,p,c,f,fib,az,sat,
+// na,k,fe,tr,porc,flags…}. HONESTIDAD: lo que la fuente no trae queda undefined → la ficha pinta "—".
+function fichaVer(src, i){
+  var x=null;
+  if(src==="base"){
+    var b=_superRes[i]; if(!b) return;
+    x={n:b.n, marca:superNegocio(b.n), ean:(b.ean?String(b.ean):null), u:(b.u==="ml"?"ml":"g"),
+       kcal:b.kcal, p:b.p, c:b.c, f:b.f, fib:b.fib, az:b.az, sat:b.sat, na:b.na, k:b.k, fe:b.fe, tr:b.tr,
+       porc:(b.porc||null), propio:!!b.propio,
+       bedca:(typeof FOODS_BEDCA!=="undefined" && FOODS_BEDCA.indexOf(b)>=0)};   // identidad de objeto: la fusión (dedup) mete las MISMAS referencias en FOODS
+  } else if(src==="dbx"){
+    var e=_superDBX[i]; if(!e) return;
+    x={n:e.n, marca:superNegocio(e.n), ean:(e.ean?String(e.ean):null), u:(e.u==="ml"?"ml":"g"),
+       kcal:e.kcal, p:e.p, c:e.c, f:e.f, fib:e.fib, az:e.az, sat:e.sat, na:e.na,
+       porc:(e.porc||null), dbx:true};
+  } else if(src==="off"){
+    var o=_superOFF[i]; if(!o) return;
+    x={n:o.nombre, marca:(o.marca||null), ean:(o.ean?String(o.ean):null), u:(o.u==="ml"?"ml":"g"),
+       kcal:o.kcal100, p:o.p100, c:o.c100, f:o.g100, off:true};
+  } else return;
+  x.src=src; x.idx=i;
+  var d=String(x.ean||"").replace(/\D/g,"");
+  if(d && _fichaDet[d]){ x=fichaRellena(x,_fichaDet[d]); x._detOFF=true; }   // detalle ya pedido esta sesión
+  _fichaX=x;
+  fichaRender();
+  show("fichaModal", true);
+}
+function fichaCerrar(){ show("fichaModal", false); _fichaX=null; }
+function fichaElegir(){
+  var x=_fichaX; if(!x) return;
+  fichaCerrar();
+  if(x.src==="base") superElegir(x.n);
+  else if(x.src==="dbx") superElegirDBX(x.idx);
+  else if(x.src==="off") superElegirOFF(x.idx);
+}
+function fichaRender(){
+  var box=$("ficha_cuerpo"), x=_fichaX; if(!box||!x) return;
+  var u=(x.u==="ml")?"ml":"g";
+  var d=String(x.ean||"").replace(/\D/g,"");
+  // cabecera: foto/icono grande + nombre + marca/negocio + origen del dato + EAN
+  var h='<div class="ficha-foto" id="ficha_foto"><span>'+superIcono(x.n)+'</span></div>';
+  h+='<h2 style="margin:12px 0 2px">'+esc(x.n)+'</h2>';
+  var sub=[];
+  if(x.marca) sub.push("🏪 "+esc(x.marca));
+  sub.push(esc(fichaFuente(x)));
+  if(d) sub.push("EAN "+esc(d));
+  h+='<p class="hint" style="margin-top:2px">'+sub.join(" · ")+'</p>';
+  // macros por 100 g/ml
+  h+='<div class="eyebrow-lbl">Por 100 '+u+'</div>'
+    +'<div class="kv"><span>Calorías</span><span>'+fichaCampo(x.kcal,"kcal")+'</span></div>'
+    +'<div class="kv"><span>Proteína</span><span>'+fichaCampo(x.p,"g")+'</span></div>'
+    +'<div class="kv"><span>Carbohidratos</span><span>'+fichaCampo(x.c,"g")+'</span></div>'
+    +'<div class="kv"><span>Grasa</span><span>'+fichaCampo(x.f,"g")+'</span></div>';
+  // detalle (siempre visible: "—" honesto si la fuente no lo trae) + micros SOLO si existen
+  h+='<div class="eyebrow-lbl">Detalle</div>'
+    +'<div class="kv"><span>Fibra</span><span>'+fichaCampo(x.fib,"g")+'</span></div>'
+    +'<div class="kv"><span>Azúcares</span><span>'+fichaCampo(x.az,"g")+'</span></div>'
+    +'<div class="kv"><span>Grasas saturadas</span><span>'+fichaCampo(x.sat,"g")+'</span></div>'
+    +'<div class="kv"><span>Sodio</span><span>'+fichaCampo(x.na,"mg")+'</span></div>'
+    +'<div class="kv"><span>Sal (sodio × 2,5)</span><span>'+fichaCampo(fichaSal(x.na),"g")+'</span></div>';
+  if(fichaNum(x.k)!=null)  h+='<div class="kv"><span>Potasio</span><span>'+fichaCampo(x.k,"mg")+'</span></div>';
+  if(fichaNum(x.fe)!=null) h+='<div class="kv"><span>Hierro</span><span>'+fichaCampo(x.fe,"mg")+'</span></div>';
+  if(fichaNum(x.tr)!=null) h+='<div class="kv"><span>Grasas trans</span><span>'+fichaCampo(x.tr,"g")+'</span></div>';
+  // semáforo FSA — REUTILIZA [CALIDAD-PURE] (calidadNutricional lee az/sat/na del view-model tal cual)
+  var cal=null; try{ cal=calidadNutricional(x); }catch(e){}
+  h+='<div class="eyebrow-lbl">Semáforo de calidad</div>';
+  h+= cal ? '<p class="hint" style="margin-top:4px">'+CALIDAD_ICO[cal.nivel]+' '+esc(cal.motivo)+'</p>'
+          : '<p class="hint" style="margin-top:4px">Sin datos de azúcar/saturadas/sodio — no se juzga a ciegas.</p>';
+  // porción declarada → macros POR PORCIÓN (regla de 3 null-safe)
+  var po=fichaPorcion(x.porc);
+  if(po){
+    h+='<div class="eyebrow-lbl">Por porción — '+esc(po.nombre)+' ('+po.g+' '+u+')</div>'
+      +'<div class="kv"><span>Calorías</span><span>'+fichaCampo(fichaPorPorcion(x.kcal,po.g),"kcal")+'</span></div>'
+      +'<div class="kv"><span>Proteína</span><span>'+fichaCampo(fichaPorPorcion(x.p,po.g),"g")+'</span></div>'
+      +'<div class="kv"><span>Carbohidratos</span><span>'+fichaCampo(fichaPorPorcion(x.c,po.g),"g")+'</span></div>'
+      +'<div class="kv"><span>Grasa</span><span>'+fichaCampo(fichaPorPorcion(x.f,po.g),"g")+'</span></div>';
+  }
+  // detalle OFF: solo con EAN válido, red y sin detalle ya cargado en esta sesión
+  if(d.length>=8 && navigator.onLine!==false && !x._detOFF){
+    h+='<button class="sec" type="button" id="ficha_btn_off" style="width:100%;margin-top:12px" onclick="fichaDetalleOFF()">🌍 Cargar detalle completo de OFF</button>';
+  }
+  h+='<button type="button" style="width:100%;margin-top:10px" onclick="fichaElegir()">Elegir este alimento</button>';
+  h+='<button class="sec" type="button" style="width:100%;margin-top:8px" onclick="fichaCerrar()">✕ Volver al buscador</button>';
+  box.innerHTML=h;
+  fichaFotoCarga(d);
+}
+// FOTO GRANDE: misma caché jvf_fotos_ean con clave ean+"_big" (la miniatura del buscador usa la
+// clave ean a secas). Mismo patrón honesto que fotoColaTira: 1 fetch, "no" también se cachea (OFF
+// ya dijo que no hay), el fallo de RED no se cachea (otra sesión reintenta). Offline o sin EAN →
+// se queda el icono grande de categoría (superIcono) que fichaRender ya pintó.
+function fichaFotoPinta(el, url){
+  if(!el || !url || url==="no") return;
+  var img=new Image();
+  img.onload=function(){ el.textContent=""; el.appendChild(img); };   // solo pisa el icono si la foto CARGÓ
+  img.alt=""; img.src=url;
+}
+function fichaFotoCarga(ean){
+  var el=$("ficha_foto"); if(!el) return;
+  var d=String(ean==null?"":ean).replace(/\D/g,"");
+  if(d.length<8 || navigator.onLine===false) return;
+  var big=fotoCacheGet(d+"_big");
+  if(big!==undefined){
+    if(big==="no") fichaFotoPinta(el, fotoCacheGet(d));   // sin grande: al menos la miniatura si la hay
+    else fichaFotoPinta(el, big);
+    return;
+  }
+  var mini=fotoCacheGet(d);
+  if(mini && mini!=="no") fichaFotoPinta(el, mini);       // placeholder mientras llega la grande
+  var url=fichaFotoURLGrande(d); if(!url) return;
+  fetch(url).then(function(r){ return r.ok?r.json():null; })
+    .then(function(j){
+      var u2=(j && j.product && j.product.image_front_url)||null;
+      fotoCachePut(d+"_big", u2);                          // "no" también se cachea
+      if(_fichaX && String(_fichaX.ean||"").replace(/\D/g,"")===d) fichaFotoPinta($("ficha_foto"), u2);
+    })
+    .catch(function(){});                                  // fallo de RED: no se cachea, se reintenta otro día
+}
+// «Cargar detalle completo de OFF»: 1 fetch al API v2 del EAN pidiendo nutriments; MISMA estrategia
+// de red que el buscador OFF (directo 8 s → proxy allorigins 12 s, superOFFFetch reutilizado).
+// El detalle SOLO rellena huecos (fichaRellena) y se cachea en RAM por ean para la sesión.
+function fichaDetalleOFF(){
+  var x=_fichaX; if(!x) return;
+  var d=String(x.ean||"").replace(/\D/g,""); if(d.length<8) return;
+  if(_fichaDet[d]){ _fichaX=fichaRellena(x,_fichaDet[d]); _fichaX._detOFF=true; fichaRender(); return; }
+  var btn=$("ficha_btn_off");
+  if(btn){ btn.disabled=true; btn.textContent="🌍 Pidiendo detalle a OFF…"; }
+  var url="https://world.openfoodfacts.org/api/v2/product/"+d+"?fields=nutriments";
+  function ok(j){
+    var det=fichaDeOFFNutriments(j && j.product && j.product.nutriments);
+    _fichaDet[d]=det;
+    if(!_fichaX || String(_fichaX.ean||"").replace(/\D/g,"")!==d) return;   // la ficha ya es otra
+    _fichaX=fichaRellena(_fichaX, det); _fichaX._detOFF=true; fichaRender();
+    if(!Object.keys(det).length) toast("OFF no tiene más detalle de este producto");
+  }
+  function ko(){
+    if(_fichaX && String(_fichaX.ean||"").replace(/\D/g,"")===d) fichaRender();   // re-pinta → re-habilita el botón
+    toast("No se pudo pedir el detalle a OFF (red lenta o caída) — no significa que no exista");
+  }
+  superOFFFetch(url, 8000, ok, function(){
+    superOFFFetch("https://api.allorigins.win/raw?url="+encodeURIComponent(url), 12000, ok, ko);
+  });
 }
 
 // [DBX-PURE-INICIO] — 🗄️ Base España completa (IndexedDB): tokenizador + parser + matcher PUROS
@@ -8716,7 +8970,7 @@ function resetTodo(){ if(!confirm("⚠️ Esto borra TODO: perfil, pesos, entren
 // Reemplazo total con confirmación. Reusa get/set, hoyLocal, toast, validar, render. NO toca motor ni gate.
 function exportarJSON(){ try{ set("jvf_last_export",hoyLocal()); }catch(e){}
   try{
-    var data={ app:"jvf", schema:1, app_version:"0.21.0", exportadoEl:new Date().toISOString(),
+    var data={ app:"jvf", schema:1, app_version:"0.22.0", exportadoEl:new Date().toISOString(),
       perfil:get(LS_P,null), pesos:get(LS_W,[]), entrenos:get(LS_E,[]), notas_ej:get("jvf_notas_ej",{}), comida:get("jvf_comida",[]), agua:get("jvf_agua",{}), suples_cfg:get("jvf_suples_cfg",null), suples_log:get("jvf_suples_log",{}),
       rutinas:get("jvf_rutinas",[]), meals:get("jvf_meals",[]), ent_start:get("jvf_ent_start",null),   // v0.10 · backup completo
       alimentos_propios:get("jvf_alimentos_propios",[]), barcode_cache:get("jvf_barcode_cache",{}),   // I5/I6 · también viajan en el backup
