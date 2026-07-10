@@ -456,7 +456,7 @@
 
 <header class="brandbar">
   <div class="logo"><span class="dot"></span>JV <b>Fitness</b></div>
-  <span class="tag">MVP v0.18.0 · motor v0.7</span>
+  <span class="tag">MVP v0.18.1 · motor v0.7</span>
 </header>
 <div class="statuschip"><span class="pulse"></span> cálculo science-based · ajustable · calibración real</div>
 
@@ -5567,12 +5567,22 @@ var MENU_SPLIT=[
   {key:"cena",    label:"Cena",    emoji:"🌙",pct:0.25,verdura:true }
 ];
 // Reparte el objetivo del día en las 4 comidas. obj = {cal, prot, carb, grasa} (mismas claves que window._obj).
-function menuReparto(obj){
+function menuReparto(obj, soloKeys){
   obj=obj||{};
   var cal=+obj.cal||0, P=+obj.prot||0, C=+obj.carb||0, G=+obj.grasa||0;
-  return MENU_SPLIT.map(function(m){
-    return {key:m.key, label:m.label, emoji:m.emoji, pct:m.pct, verdura:m.verdura,
-      kcal:cal*m.pct, p:P*m.pct, c:C*m.pct, f:G*m.pct};
+  // «Resto del día»: si se pasan soloKeys, reparte SOLO entre esas comidas y RENORMALIZA sus % para que
+  // sumen 100% (así lo que quede del objetivo se reparte entero). Sin soloKeys → las 4 de siempre, idéntico
+  // al original (renorm=1 ⇒ m.pct/1===m.pct, sin cambios de coma flotante).
+  var split=MENU_SPLIT, renorm=1;
+  if(soloKeys && soloKeys.length){
+    var keep={}; for(var i=0;i<soloKeys.length;i++) keep[soloKeys[i]]=1;
+    split=MENU_SPLIT.filter(function(m){ return keep[m.key]; });
+    renorm=split.reduce(function(a,m){ return a+m.pct; },0)||1;
+  }
+  return split.map(function(m){
+    var w=m.pct/renorm;
+    return {key:m.key, label:m.label, emoji:m.emoji, pct:w, verdura:m.verdura,
+      kcal:cal*w, p:P*w, c:C*w, f:G*w};
   });
 }
 // Clasifica un alimento (valores por 100 g) en su ROL de menú a partir de qué macro domina sus kcal.
@@ -5628,7 +5638,7 @@ function menuRedondear(g){ g=Math.round(g/5)*5; if(g<5) g=5; if(g>500) g=500; re
 // total ya no se dispara. Cada macro llega a su objetivo y el total cae dentro de tolerancia.
 // picks = {prot,carb,grasa,verdura}. Devuelve además `avisos`: si con tu base no se puede cubrir un
 // macro (p. ej. no hay ninguna proteína), se DICE — nada muere en silencio.
-function menuPorcionar(meal, picks){
+function menuPorcionar(meal, picks, restrisActiva){
   meal=meal||{}; picks=picks||{};
   var tot={kcal:0,p:0,c:0,f:0}, avisos=[];
   function mk(food,g){
@@ -5656,7 +5666,7 @@ function menuPorcionar(meal, picks){
   if(picks.grasa && +picks.grasa.f>0){ var needF=(+meal.f||0)-tot.f; if(needF>0) fItem=mk(picks.grasa, needF/(picks.grasa.f/100)); }
   // AVISOS · si la base no da para cubrir un macro, se avisa (no se infra-cubre en silencio)
   var objP2=(+meal.p||0), objK=(+meal.kcal||0), objF=(+meal.f||0);
-  if(!picks.prot)                              avisos.push("sin fuente de proteína en tu base para esta comida");
+  if(!picks.prot)                              avisos.push(restrisActiva ? "sin fuente de proteína compatible con tu restricción en la base" : "sin fuente de proteína en tu base para esta comida");
   else if(objP2>0 && tot.p < objP2*0.85)       avisos.push("proteína corta: ~"+Math.round(tot.p)+" de ~"+Math.round(objP2)+" g");
   if(!picks.grasa && objF>0 && tot.f<objF*0.6) avisos.push("sin fuente de grasa: la comida queda baja en grasa");
   if(objK>0 && tot.kcal < objK*0.80)           avisos.push("solo se llega a ~"+Math.round(tot.kcal)+" de ~"+Math.round(objK)+" kcal con tu base");
@@ -5665,7 +5675,7 @@ function menuPorcionar(meal, picks){
   return {items:items, total:{kcal:Math.round(tot.kcal), p:Math.round(tot.p), c:Math.round(tot.c), f:Math.round(tot.f)}, avisos:avisos};
 }
 // Arma UN ejemplo de comida para la variante v (0,1,2…): rota por cada pool para dar variedad.
-function menuComida(meal, cat, favSet, variante){
+function menuComida(meal, cat, favSet, variante, restrisActiva){
   var v=variante||0;
   var prots=menuOrdenar(cat.prot, favSet), carbs=menuOrdenar(cat.carb, favSet),
       gras =menuOrdenar(cat.grasa,favSet), verd =menuOrdenar(cat.verdura,favSet);
@@ -5675,19 +5685,121 @@ function menuComida(meal, cat, favSet, variante){
     grasa:   gras.length  ? gras[v%gras.length]   : null,
     verdura: (meal.verdura && verd.length) ? verd[v%verd.length] : null
   };
-  return menuPorcionar(meal, picks);
+  return menuPorcionar(meal, picks, restrisActiva);
 }
+// [MENU-FILTRO-PURE-INICIO] · 🥗 filtra la base de alimentos por las RESTRICCIONES del perfil (texto libre
+// de p.coach.restricciones: "vegetariano", "vegano", "sin gluten", "sin lactosa", "alergia al marisco"…).
+// Extraído tal cual por _tests/test-menu-filtro.node.js. NO tocar DOM/storage aquí (bloque puro).
+// CRITERIO (documentado): un alimento se EXCLUYE si su NOMBRE contiene una palabra clave de una restricción
+// activa y NO contiene una excepción de esa misma restricción. Conservador y honesto según el riesgo:
+//  · vegetariano/vegano = PREFERENCIA: ante la duda, EXCLUIR de más (mejor quitar un plato válido que colar
+//    carne/pescado/huevo/lácteo). La excepción solo rescata marcadores vegetales inequívocos ("vegetal",
+//    "vegano", "tofu", "de soja"…) para los análogos ("hamburguesa vegetal").
+//  · sin gluten / sin lactosa = SEGURIDAD: un falso negativo (colar gluten/lactosa) es peligroso → se excluye
+//    ante la MÍNIMA duda y la ÚNICA excepción es la etiqueta explícita en el nombre ("sin gluten",
+//    "sin lactosa"/"deslactosado"). En lactosa valen además los vegetales ("de soja", "de almendra"…) porque
+//    de verdad no llevan lactosa. Por prudencia la avena y las harinas se excluyen para celíacos salvo que
+//    digan "sin gluten" (contaminación cruzada real). Marisco y frutos secos = alergias frecuentes (estrictas).
+// Normaliza a minúsculas y sin acentos para casar con tolerancia ("Atún"→"atun", "jamón"→"jamon", "ñ"→"n").
+function menuRestricNorm(s){
+  s=(s==null?"":String(s)).toLowerCase();
+  try{ s=s.normalize("NFD").replace(/[̀-ͯ]/g,""); }catch(e){}
+  return s;
+}
+// A partir del texto libre decide qué restricciones REALES declara y devuelve sus categorías activas.
+// Cada categoría = {excl:[palabras que excluyen], keep:[excepciones que rescatan]}. (Todas las palabras ya
+// vienen normalizadas: sin acentos y con "ñ"→"n", para casar contra menuRestricNorm(nombre).)
+function menuRestricCats(restric){
+  var t=menuRestricNorm(restric); if(!t.replace(/\s/g,"")) return [];
+  var cats=[];
+  var CARNE=["carne","ternera","vacuno","buey","cerdo","cochinillo","cordero","lechazo","cabrito","conejo",
+    "pollo","pavo","pato","codorniz","perdiz","gallina","jamon","chorizo","salchich","fuet","longaniza",
+    "morcilla","salami","mortadela","chopped","fiambre","embutido","bacon","beicon","panceta","tocino","lomo",
+    "solomillo","secreto","costilla","chuleta","chuleton","entrecot","bistec","hamburguesa","albondiga","kebab",
+    "foie","higado","pate","callos","butifarra","cecina","sobrasada","lacon",
+    // 🌍 la base trae productos extranjeros (tanda internacional): nombres EN/FR/IT/DE de carne
+    "chicken","beef","pork","turkey","meat","steak","sausage","wurst","salchichon","pepperoni",
+    "poulet","jambon","boeuf","porc","dinde","canard","veau","lardons","chorizo","prosciutto","salame",
+    "speck","bratwurst","frankfurt","nugget","hot dog","burger"];
+  var PESCADO=["pescado","atun","bonito","salmon","merluza","bacalao","sardina","boqueron","anchoa","trucha",
+    "lubina","dorada","caballa","mero","rape","lenguado","gallo","panga","tilapia","emperador","pez espada",
+    "rodaballo","jurel","salmonete","congrio","anguila","caviar","hueva","surimi","palito de mar",
+    // 🌍 pescado en EN/FR/IT (caso real cazado en verificación: "Albacore (KIRKLAND)" = atún blanco)
+    "albacore","tuna","thon","cod","haddock","herring","mackerel","anchovy","sardine","seafood",
+    "fish","saumon","cabillaud","maquereau","tonno","acciughe","merluzzo"];
+  var MARISCO=["marisco","gamba","langostino","langosta","cigala","bogavante","cangrejo","necora","centollo",
+    "percebe","mejillon","almeja","berberecho","navaja","chirla","ostra","vieira","zamburina","calamar",
+    "chipiron","sepia","pulpo"];
+  var HUEVO=["huevo","clara de huevo","yema","mayonesa","alioli"];
+  var LACTEO=["leche","queso","yogur","yogurt","nata","mantequilla","cuajada","requeson","kefir","mozzarella",
+    "cheddar","parmesano","gouda","emmental","gruyere","manchego","brie","camembert","roquefort","gorgonzola",
+    "burgos","feta","ricotta","mascarpone","provolone","edam","batido","natillas","flan","bechamel","cuajo",
+    "dulce de leche","helado","suero de leche","lacteo"];
+  var MIEL=["miel","jalea real","polen","propoleo"];
+  var GLUTEN=["pan","panecillo","bocadillo","tostada","biscote","picos","colin","pasta","macarron","espagueti",
+    "spaghetti","tallarin","fideo","raviol","lasana","canelon","noqui","cuscus","couscous","bulgur","semola",
+    "trigo","espelta","kamut","cebada","centeno","malta","avena","gluten","harina","galleta","bizcocho",
+    "magdalena","croissant","cruasan","bolleria","bollo","muesli","granola","cereales","pizza","empanad",
+    "croqueta","rebozad","cerveza","gofre","crepe","tortita","roscon","pretzel","dona","donut","churro",
+    "ensaimada","napolitana","tarta","pastel","brownie","muffin","seitan","pan rallado"];
+  var FRUTOS=["almendra","nuez","nueces","avellana","anacardo","pistacho","pinon","macadamia","pecan",
+    "cacahuete","cacahuate","mani","nutella","praline","turron","mazapan","marcona"];
+  var KEEP_VEG=["vegetal","vegetarian","vegano","vegana","tofu","tempeh","seitan","heura","quorn","de soja",
+    "soja texturizada","veggie","sin carne","vegan","plant based","plant-based"];
+  var KEEP_VGN=["vegetal","vegano","vegana","tofu","tempeh","seitan","heura","quorn","de soja","soja texturizada",
+    "vegan","plant based","plant-based"];
+  var KEEP_GLU=["sin gluten","gluten free","libre de gluten","sin tacc","sin trigo"];
+  var KEEP_LAC=["sin lactosa","deslactosad","0% lactosa","libre de lactosa","de soja","de almendra","de avena",
+    "de coco","de arroz","de anacardo","de avellana","vegetal","vegano","vegana"];
+  var esVegano=/vegan/.test(t);
+  var esVeget=!esVegano && (/vegetarian/.test(t) || /\bsin carne\b/.test(t) || /no como carne/.test(t));
+  var esGluten=/gluten/.test(t) || /celiac/.test(t) || /\bsin tacc\b/.test(t);
+  var esLactosa=/lactosa/.test(t) || /lacteo/.test(t) || /\bsin leche\b/.test(t);
+  var esMarisco=/marisco/.test(t) || /crustaceo/.test(t) || /molusco/.test(t);
+  var esFrutos=/frutos secos/.test(t) || /fruto seco/.test(t) || (/alerg/.test(t) && /(nuez|nueces|almendr|cacahuet|avellan|anacard|pistach)/.test(t));
+  if(esVegano)      cats.push({excl:[].concat(CARNE,PESCADO,MARISCO,HUEVO,LACTEO,MIEL,["gelatina"]), keep:KEEP_VGN});
+  else if(esVeget)  cats.push({excl:[].concat(CARNE,PESCADO,MARISCO), keep:KEEP_VEG});
+  if(esGluten)      cats.push({excl:GLUTEN.slice(), keep:KEEP_GLU});
+  if(esLactosa)     cats.push({excl:LACTEO.slice(), keep:KEEP_LAC});
+  if(esMarisco)     cats.push({excl:MARISCO.slice(), keep:[]});
+  if(esFrutos)      cats.push({excl:FRUTOS.slice(), keep:[]});
+  return cats;
+}
+// Devuelve la base filtrada. Sin restricción (o no reconocida) → base intacta (copia, nunca muta el original).
+function menuFiltrarBase(base, restric){
+  var arr=(base && base.length)? base.slice() : [];
+  var cats=menuRestricCats(restric); if(!cats.length) return arr;
+  return arr.filter(function(f){
+    if(!f) return false;
+    var nn=menuRestricNorm(f.n!=null?f.n:(f.nombre!=null?f.nombre:""));
+    if(!nn) return true;                       // sin nombre → no puedo juzgar: lo dejo (no romper la base)
+    for(var i=0;i<cats.length;i++){
+      var c=cats[i], excluido=false, k;
+      for(k=0;k<c.excl.length;k++){ if(nn.indexOf(c.excl[k])>=0){ excluido=true; break; } }
+      if(excluido){
+        var rescatado=false;
+        for(k=0;k<c.keep.length;k++){ if(nn.indexOf(c.keep[k])>=0){ rescatado=true; break; } }
+        if(!rescatado) return false;           // excluido por esta restricción y sin excepción → fuera
+      }
+    }
+    return true;
+  });
+}
+// [MENU-FILTRO-PURE-FIN]
 // GENERA EL MENÚ COMPLETO del día: objetivo → 4 comidas, cada una con 2-3 ejemplos {alimento,gramos}
 // y el total kcal/macros de la comida. Determinista. Devuelve null si no hay objetivo válido.
-function generarMenu(obj, foods, favoritos){
+// restric = texto libre de restricciones (perfil); soloComidas = subconjunto de comidas para «el resto del día».
+function generarMenu(obj, foods, favoritos, restric, soloComidas){
   if(!obj || !(+obj.cal>0)) return null;
-  var reparto=menuReparto(obj), cat=menuCandidatos(foods), favSet=menuFavSet(favoritos);
+  var base=menuFiltrarBase(foods, restric);                     // 🥗 aplica las restricciones ANTES de elegir
+  var restrisActiva=menuRestricCats(restric).length>0;
+  var reparto=menuReparto(obj, soloComidas), cat=menuCandidatos(base), favSet=menuFavSet(favoritos);
   return {
     objetivo:{cal:Math.round(+obj.cal||0), prot:Math.round(+obj.prot||0), carb:Math.round(+obj.carb||0), grasa:Math.round(+obj.grasa||0)},
     comidas: reparto.map(function(m){
       var ejemplos=[], visto={}, avisos=[], vistoAv={};
       for(var v=0; v<8 && ejemplos.length<3; v++){
-        var e=menuComida(m, cat, favSet, v);
+        var e=menuComida(m, cat, favSet, v, restrisActiva);
         if(!e.items.length) continue;
         var sig=e.items.map(function(it){ return it.alimento+":"+it.gramos; }).join("|");
         if(visto[sig]) continue; visto[sig]=1; ejemplos.push(e);
@@ -5699,6 +5811,32 @@ function generarMenu(obj, foods, favoritos){
     })
   };
 }
+// [MENU-RESTO-PURE-INICIO] · 🍽️ «¿Qué como el RESTO del día?» — resta del objetivo lo YA comido hoy y decide
+// qué comidas quedan por delante según la HORA. Puro y auto-contenido (lo extrae _tests/test-menu-filtro.node.js).
+//   obj     = objetivo del día {cal,prot,carb,grasa} (window._obj).
+//   llevado = totales del diario de hoy {kcal,p,c,gr} (mismas claves que el `tot` de renderComida).
+// Devuelve:
+//   null                                             → si no hay objetivo válido.
+//   {cubierto:true,  restante:{…0}, comidas:[]}      → si ya se alcanzó/superó la kcal del día (nada que repartir).
+//   {cubierto:false, restante:{cal,prot,carb,grasa}, comidas:[keys]} → objetivo restante (clamp≥0) y comidas que faltan.
+// CORTE HORARIO (dictado): hora<12 → quedan comida+merienda+cena (3) · 12≤hora<17 → merienda+cena (2) ·
+//   hora≥17 → solo cena (1). El desayuno NUNCA entra en el "resto" (si recalculas, ya desayunaste). Los keys
+//   coinciden con MENU_SPLIT; se duplican aquí a propósito para que el bloque sea puro y auto-contenido.
+function menuRestante(obj, llevado, hora){
+  if(!obj || !(+obj.cal>0)) return null;
+  llevado=llevado||{};
+  var h=+hora; if(!(h>=0)) h=0; if(h>23) h=23;
+  var restCal=(+obj.cal||0)  -(+llevado.kcal||0);
+  var restP  =(+obj.prot||0) -(+llevado.p||0);
+  var restC  =(+obj.carb||0) -(+llevado.c||0);
+  var restG  =(+obj.grasa||0)-(+llevado.gr||0);
+  if(restCal<=0) return {cubierto:true, restante:{cal:0,prot:0,carb:0,grasa:0}, comidas:[]};
+  var comidas = (h<12) ? ["comida","merienda","cena"] : (h<17) ? ["merienda","cena"] : ["cena"];
+  return {cubierto:false,
+    restante:{cal:restCal, prot:Math.max(0,restP), carb:Math.max(0,restC), grasa:Math.max(0,restG)},
+    comidas:comidas};
+}
+// [MENU-RESTO-PURE-FIN]
 // [MENU-PURE-FIN]
 
 // 🧠 SPEC 1 · COACH NUTRICIONAL COMBINATORIO — estilo MyFitnessPal (avisos del día) pero DETERMINISTA
@@ -5941,20 +6079,72 @@ function menuGenerarHoy(){
     return;
   }
   var foods=(typeof apComoFoods==="function"?apComoFoods():[]).concat(typeof FOODS!=="undefined"?FOODS:[]);
-  var menu=generarMenu(obj, foods, get(LS_FAV,[]));
+  var _pf=get(LS_P,null); var _restric=(_pf&&_pf.coach&&_pf.coach.restricciones)||null;   // 🥗 restricciones del perfil
+  var menu=generarMenu(obj, foods, get(LS_FAV,[]), _restric);
   window._menuActual=menu;
   menuRender(menu);
 }
+// Botón "↻ Recalcular con lo que llevo" → «¿qué como el RESTO del día?». Resta del objetivo lo YA comido hoy
+// (lee el diario igual que renderComida) y arma el menú SOLO para lo que falta, repartido en las comidas que
+// quedan según la hora (menuRestante). Si ya te pasaste de kcal → mensaje honesto del coach, no un menú.
+function menuRecalcularResto(){
+  var box=$("menu_box"); if(!box) return;
+  var obj=window._obj||null;
+  if(!obj || !(+obj.cal>0)){
+    box.innerHTML="<div class='card' style='padding:12px;margin-top:4px'><div class='eyebrow-lbl'>🍽️ Resto del día</div>"
+      +"<p class='hint' style='margin:6px 0 0'>Primero calcula tu objetivo en <b>Plan</b> (rellena tu perfil).</p></div>";
+    return;
+  }
+  var fecha=($("com_fecha")&&$("com_fecha").value)||hoyLocal();
+  // Totales del diario de ese día (mismo filtro y mismas claves que renderComida)
+  var full=get(LS_COMIDA,[]), arr=full.filter(function(x){ return x.f===fecha; });
+  var llev={kcal:0,p:0,c:0,gr:0};
+  arr.forEach(function(x){ llev.kcal+=(+x.kcal||0); llev.p+=(+x.p||0); llev.c+=(+x.c||0); llev.gr+=(+x.gr||0); });
+  var hora=(fecha===hoyLocal()) ? (new Date()).getHours() : 23;   // un día pasado se evalúa como cierre → solo cena
+  var r=menuRestante(obj, llev, hora);
+  if(!r){ menuGenerarHoy(); return; }
+  if(r.cubierto){
+    var tono; try{ tono=flexCfg().tono; }catch(e){ tono="carinoso"; }
+    var msg=(tono==="cana")
+      ? "Ya has cubierto tus calorías de hoy. Si tienes hambre real: verdura o un caldo y a dormir — no necesitas más."
+      : (tono==="neutro")
+        ? "Ya cubriste tus calorías de hoy. Si te quedas con hambre, verdura o un caldo y a descansar."
+        : "¡Ya cubriste tus calorías de hoy! 🎉 Si te quedas con algo de hambre, tira de verdura o un caldito y a descansar.";
+    box.innerHTML="<div class='card' style='padding:12px;margin-top:4px'>"
+      +"<div class='eyebrow-lbl'>🍽️ Resto del día</div>"
+      +"<p class='hint' style='margin:6px 0 0;color:var(--jade);line-height:1.45'>"+esc(msg)+"</p>"
+      +"<div style='display:flex;gap:6px;margin:10px 0 0'>"
+      +"<button class='sec' type='button' style='width:auto;margin:0;padding:4px 10px' onclick='menuRecalcularResto()' title='Volver a calcular con lo que llevas'>↻ Recalcular con lo que llevo</button>"
+      +"<button class='sec' type='button' style='width:auto;margin:0;padding:4px 10px' onclick='menuGenerarHoy()' title='Ver el menú del día completo'>🍽️ Menú del día completo</button>"
+      +"<button class='sec' type='button' style='width:auto;margin:0;padding:4px 10px' onclick='menuQuitar()' title='Cerrar el menú'>✕ Quitar</button>"
+      +"</div></div>";
+    window._menuActual=null;
+    return;
+  }
+  var foods=(typeof apComoFoods==="function"?apComoFoods():[]).concat(typeof FOODS!=="undefined"?FOODS:[]);
+  var _pf=get(LS_P,null); var _restric=(_pf&&_pf.coach&&_pf.coach.restricciones)||null;   // 🥗 mismas restricciones
+  var menu=generarMenu(r.restante, foods, get(LS_FAV,[]), _restric, r.comidas);
+  window._menuActual=menu;
+  menuRender(menu, {resto:true});
+}
 // Pinta el menú generado. Cada comida enseña su objetivo y 2-3 ejemplos con gramos + total y un
 // botón para volcar ese ejemplo al diario (reutiliza comQuick, la misma alta que el buscador).
-function menuRender(menu){
+function menuRender(menu, opts){
+  opts=opts||{};
   var box=$("menu_box"); if(!box) return;
   if(!menu || !menu.comidas){ box.innerHTML=""; return; }
+  var esResto=!!opts.resto;
+  var titulo=esResto
+    ? "🍽️ Resto del día · te quedan "+menu.objetivo.cal+" kcal · P"+menu.objetivo.prot+" C"+menu.objetivo.carb+" G"+menu.objetivo.grasa
+    : "🍽️ Menú de hoy · "+menu.objetivo.cal+" kcal · P"+menu.objetivo.prot+" C"+menu.objetivo.carb+" G"+menu.objetivo.grasa;
+  var sub=esResto
+    ? "Lo que te falta para llegar a tu objetivo, repartido en las comidas que quedan según la hora (resta lo que ya llevas hoy en el diario)."
+    : "Repartido en 4 comidas a partir de tu objetivo del Plan. Sin IA: solo la base de alimentos + el reparto. Toca <b>“añadir al diario”</b> si te encaja.";
   var h="<div class='card' style='padding:12px;margin-top:4px'>"
-    +"<div class='eyebrow-lbl'>🍽️ Menú de hoy · "+menu.objetivo.cal+" kcal · P"+menu.objetivo.prot+" C"+menu.objetivo.carb+" G"+menu.objetivo.grasa+"</div>"
-    +"<p class='hint' style='margin:4px 0 10px'>Repartido en 4 comidas a partir de tu objetivo del Plan. Sin IA: solo la base de alimentos + el reparto. Toca <b>“añadir al diario”</b> si te encaja.</p>"
+    +"<div class='eyebrow-lbl'>"+titulo+"</div>"
+    +"<p class='hint' style='margin:4px 0 10px'>"+sub+"</p>"
     +"<div style='display:flex;gap:6px;margin:0 0 10px'>"
-    +"<button class='sec' type='button' style='width:auto;margin:0;padding:4px 10px' onclick='menuGenerarHoy()' title='Recalcular con lo que ya llevas hoy'>↻ Actualizar</button>"
+    +"<button class='sec' type='button' style='width:auto;margin:0;padding:4px 10px' onclick='menuRecalcularResto()' title='Resta lo que ya llevas hoy y calcula solo lo que falta'>↻ Recalcular con lo que llevo</button>"
     +"<button class='sec' type='button' style='width:auto;margin:0;padding:4px 10px' onclick='menuQuitar()' title='Cerrar el menú'>✕ Quitar</button>"
     +"</div>";
   menu.comidas.forEach(function(m, ci){
@@ -7476,7 +7666,7 @@ function resetTodo(){ if(!confirm("⚠️ Esto borra TODO: perfil, pesos, entren
 // Reemplazo total con confirmación. Reusa get/set, hoyLocal, toast, validar, render. NO toca motor ni gate.
 function exportarJSON(){ try{ set("jvf_last_export",hoyLocal()); }catch(e){}
   try{
-    var data={ app:"jvf", schema:1, app_version:"0.18.0", exportadoEl:new Date().toISOString(),
+    var data={ app:"jvf", schema:1, app_version:"0.18.1", exportadoEl:new Date().toISOString(),
       perfil:get(LS_P,null), pesos:get(LS_W,[]), entrenos:get(LS_E,[]), notas_ej:get("jvf_notas_ej",{}), comida:get("jvf_comida",[]), agua:get("jvf_agua",{}), suples_cfg:get("jvf_suples_cfg",null), suples_log:get("jvf_suples_log",{}),
       rutinas:get("jvf_rutinas",[]), meals:get("jvf_meals",[]), ent_start:get("jvf_ent_start",null),   // v0.10 · backup completo
       alimentos_propios:get("jvf_alimentos_propios",[]), barcode_cache:get("jvf_barcode_cache",{}),   // I5/I6 · también viajan en el backup
