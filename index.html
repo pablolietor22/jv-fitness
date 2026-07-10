@@ -188,6 +188,14 @@
   /* 🛒 Supermercado JV — buscador de alimentos a pantalla (casi) completa */
   #superModal{padding:8px}
   #superModal .modal-card{max-width:560px;height:92vh;max-height:92vh;display:flex;flex-direction:column}
+  /* ⚙️ HUB DE AJUSTES (tanda #22 · v0.21) — modal a pantalla completa, mismo patrón que superModal */
+  #hubModal{padding:8px}
+  #hubModal .modal-card{max-width:560px;height:92vh;max-height:92vh;display:flex;flex-direction:column;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+  .gearbtn{width:34px;height:34px;margin:0 0 0 8px;padding:0;flex:none;border-radius:10px;border:1px solid var(--line);
+    background:transparent;color:var(--mute);font-size:1rem;line-height:1;cursor:pointer}
+  .gearbtn:hover,.gearbtn:active{border-color:var(--jade);color:var(--bone)}
+  .hub-conector{border:1px solid var(--line-soft);border-radius:11px;padding:10px 12px;margin-top:8px}
+  .hub-conector.off{opacity:.55}
   #super_lista{flex:1;overflow-y:auto;margin-top:8px;min-height:60px;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
   .super-chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
   .super-chips.letras{flex-wrap:nowrap;overflow-x:auto;padding-bottom:4px;-webkit-overflow-scrolling:touch}
@@ -494,7 +502,11 @@
 
 <header class="brandbar">
   <div class="logo"><span class="dot"></span>JV <b>Fitness</b></div>
-  <span class="tag">MVP v0.20.0 · motor v0.7</span>
+  <div style="display:flex;align-items:center">
+    <span class="tag">MVP v0.21.0 · motor v0.7</span>
+    <!-- ⚙️ tanda #22 · hub de AJUSTES (no es pestaña): modal a pantalla completa -->
+    <button class="gearbtn" id="btn_hub" type="button" title="Ajustes" aria-label="Abrir ajustes" onclick="hubAbrir()">⚙️</button>
+  </div>
 </header>
 <div class="statuschip"><span class="pulse"></span> cálculo science-based · ajustable · calibración real</div>
 
@@ -505,8 +517,9 @@
   <button class="tab"        id="tab-registro" onclick="abrir('registro')">Peso</button>
   <button class="tab"        id="tab-entrenos" onclick="abrir('entrenos')">Entrenos</button>
   <button class="tab"        id="tab-calib"    onclick="abrir('calib')">Progreso</button>
+  <button class="tab"        id="tab-agua"     onclick="abrir('agua')">💧 Agua</button><!-- tanda #22 · el agua asciende a PESTAÑA -->
   <button class="tab"        id="tab-comida"   onclick="abrir('comida')">Comida</button>
-  <button class="tab"        id="tab-cerebro"  onclick="abrir('cerebro')">🧠 JARVIS</button>
+  <button class="tab"        id="tab-cerebro"  onclick="abrir('cerebro')">🧠 Jarvis</button>
   <button class="tab"        id="tab-lesiones" onclick="abrir('lesiones')">🩺 Fisio</button>
 </nav>
 
@@ -726,7 +739,9 @@
     <button class="btn-lg" style="margin-top:10px" onclick="planiCalc()">Ver si es realista</button>
     <div id="plani_out" style="margin-top:6px"></div>
   </details>
-  <button class="sec" onclick="editarPerfil()">Editar perfil</button>
+  <!-- ⚙️ tanda #22 · la EDICIÓN de tus respuestas vive en el hub («volver atrás es editar memoria»);
+       el Plan queda para el uso diario. El botón lleva al hub → 👤 Quién eres. -->
+  <button class="sec" onclick="hubAbrir()">👤 Editar mis respuestas — en ⚙️ Ajustes</button>
 </div>
 
 <!-- AJUSTES -->
@@ -754,50 +769,9 @@
   <label style="margin-top:10px">🏷️ ¿Cómo quieres que te llame Jarvis?</label>
   <input id="aj_apodo" maxlength="24" placeholder="tu nombre o apodo (ej. Pablito)" onchange="apodoSet(this.value)">
   <p class="hint" style="margin-top:4px">Se usa en los avisos («¡Pablito! Bebe agua…»). Vacío = el nombre de tu perfil.</p>
-  <!-- ⚖️ E10 · hora de levantarse → recordatorio de pesaje al abrir la app (ventana de 3 h) -->
-  <div class="row" style="gap:10px;margin-top:6px">
-    <div><label>⏰ ¿A qué hora te levantas entre semana?</label><input id="aj_lev_sem" type="time" value="07:30" onchange="levantarSet('semana', this.value)"></div>
-    <div><label>¿Y el fin de semana?</label><input id="aj_lev_finde" type="time" value="09:30" onchange="levantarSet('finde', this.value)"></div>
-  </div>
-  <p class="hint" style="margin-top:4px">La app avisa <b style="color:var(--soft)">al abrirla</b> por la mañana («⚖️ pésate ahora»). Para una notificación del móvil a hora exacta con la app cerrada, monta la receta gratis de MacroDroid (2 min) — ver guía.</p>
-  <!-- 🔔 Recordatorios in-app (honestos: sin backend no hay push con la app cerrada) -->
-  <div class="eyebrow-lbl" style="margin-top:14px">🔔 Recordatorios</div>
-  <p class="hint" style="margin-top:0">Avisos suaves <b style="color:var(--soft)">al abrir la app</b>. No son notificaciones del móvil: sin un servidor detrás, el navegador no puede avisarte con la app cerrada — eso sería otra fase.</p>
-  <label style="display:flex;align-items:center;gap:8px;cursor:pointer;margin-top:4px"><input type="checkbox" id="aj_notif_agua" checked onchange="notifSet('aguaVerano', this.checked)"> 🌡️ Recordarme beber agua en verano</label>
-  <!-- 🗄️ BASE ESPAÑA COMPLETA (IndexedDB, descarga opcional). La lógica vive en [DBX-*]; esto solo pinta.
-       Los datos (data/db/*.jsonl.gz) son públicos de Open Food Facts (ODbL): aquí no hay ningún secreto. -->
-  <div class="eyebrow-lbl" style="margin-top:14px">🗄️ Base España completa (176.150 alimentos · 4,8 MB)</div>
-  <p class="hint" style="margin-top:0">Se guarda EN tu móvil: buscar y escanear funcionan sin internet. <b style="color:var(--soft)">Se descarga y actualiza sola al abrir la app</b>; este panel es el estado + respaldo manual. Fuente: Open Food Facts (ODbL).</p>
-  <div id="dbx_estado" class="hint" style="margin-top:4px">no descargada</div>
-  <button class="sec" type="button" id="dbx_btn_descargar" onclick="dbxUIDescargar()">↻ Re-descargar</button>
-  <button class="sec hidden" type="button" id="dbx_btn_borrar" onclick="dbxUIBorrar()">🗑️ Borrar de este dispositivo</button>
-  <div id="dbx_prog" class="hint"></div>
-  <!-- 👟 SPEC 4 · SYNC AUTOMÁTICO DE PASOS (2026-07-09). La PWA solo LEE una URL RAW pública de GitHub:
-       el token de escritura vive SOLO en Tasker (móvil de Pablo) — aquí no hay ningún secreto.
-       Lógica de mezcla PURA en [PASOS-SYNC-PURE-*]; red/DOM en las funciones pasosSync*. -->
-  <div class="eyebrow-lbl" style="margin-top:14px">👟 Pasos automáticos (beta)</div>
-  <p class="hint" style="margin-top:0">Tu móvil publica tus pasos solo (Samsung Health → Health Connect → Tasker → GitHub) y la app los lee al abrir. <b style="color:var(--soft)">Sin backend y sin secretos en la app</b>: aquí solo se pega una URL pública de lectura. Tus apuntes a mano mandan: el dato automático <b style="color:var(--soft)">nunca pisa un valor tuyo mayor</b>.</p>
-  <label style="display:flex;align-items:center;gap:8px;cursor:pointer;margin-top:4px"><input type="checkbox" id="aj_pasos_sync" onchange="pasosSyncSet(this.checked)"> Sincronizar pasos automáticos</label>
-  <div id="aj_pasos_sync_box" style="display:none">
-    <label style="margin-top:8px">URL RAW de tu steps.json</label>
-    <input id="aj_pasos_sync_url" type="url" placeholder="https://raw.githubusercontent.com/TU-USUARIO/TU-REPO/data/steps.json" onchange="pasosSyncUrlGuardar(this.value)">
-    <button class="sec" type="button" style="width:100%;margin-top:6px" onclick="pasosSyncFetch(true)">↻ Probar ahora</button>
-    <div id="aj_pasos_sync_estado"></div>
-    <p class="hint" style="margin-top:6px">Honesto: GitHub cachea esta URL ~5 minutos, así que el dato puede llegar con ese retraso (por eso siempre te enseño la HORA del dato). Y si el repo es público, cualquiera con la URL puede ver tu número de pasos del día — solo ese número, nada más.</p>
-    <details style="margin-top:8px;border:1px solid var(--line);border-radius:12px;padding:10px 12px">
-      <summary style="cursor:pointer;color:var(--jade);font-weight:600">🖐️ Cómo montarlo en tu móvil (una sola vez)</summary>
-      <p class="hint" style="margin-top:8px">Esto son clicks TUYOS (🖐️) en paneles donde Claude no puede entrar. Se hace una vez y listo. Lo único que viajará es un número de pasos con fecha y hora.</p>
-      <ol style="margin:8px 0 0 18px;padding:0;font-size:.85rem;color:var(--mute);line-height:1.5">
-        <li><b>Tasker</b> 🖐️ — instálalo desde Play Store (app de pago, unos 4 €). Es el robot que leerá tus pasos en el móvil y los publicará.</li>
-        <li><b>Health Connect</b> 🖐️ — abre Samsung Health → Ajustes → Health Connect y activa compartir «Pasos». Ojo honesto: el nombre exacto del menú cambia según la versión; si no lo ves, busca «Health Connect» en los ajustes del propio móvil.</li>
-        <li><b>Permiso a Tasker</b> 🖐️ — la primera vez que el proyecto de Tasker intente leer pasos, Health Connect te pedirá permiso: concede SOLO «Pasos», nada más.</li>
-        <li><b>Token de GitHub</b> 🖐️ — en github.com: Settings → Developer settings → Personal access tokens → Fine-grained tokens → Generate new token. Acceso: SOLO el repositorio de datos de pasos. Permiso: Contents → Read and write. Ningún otro. Caducidad: la máxima que te deje (cuando caduque, los pasos dejarán de llegar — lo notarás porque la hora del último dato se queda congelada).</li>
-        <li><b>Pegar el token en Tasker</b> 🖐️ — en Tasker, pestaña Variables, crea la variable global <b>%JVF_TOKEN</b> y pega ahí el token. El token vive SOLO en tu móvil: JAMÁS lo pegues en esta app, ni en un chat, ni en ningún archivo del repo.</li>
-        <li><b>URL RAW</b> 🖐️ — pega arriba la dirección de tu steps.json (empieza por raw.githubusercontent.com y acaba en .json) y toca «↻ Probar ahora».</li>
-      </ol>
-      <p class="hint" style="margin-top:8px">Si un menú no aparece como aquí lo describo, no lo fuerces: los pasos 1–3 dependen de tu versión de Samsung Health y de Tasker. Díselo a Claude y lo miramos juntos.</p>
-    </details>
-  </div>
+  <!-- ⚙️ tanda #22 · lo que antes vivía aquí (recordatorios, base España, pasos automáticos) se MUDÓ
+       al hub de AJUSTES (engranaje arriba): esta pestaña queda para ajustar EL PLAN a tu gusto. -->
+  <p class="hint" style="margin-top:14px">🔔 Recordatorios, 🔌 conectores, 🗄️ bases de alimentos y 📦 copias de seguridad viven ahora en <b style="color:var(--soft)">⚙️ Ajustes</b> (el engranaje de arriba).</p>
 </div>
 
 <!-- REGISTRO -->
@@ -849,36 +823,12 @@
   <div id="fotos_sec"></div>
 </div>
 
-<!-- COMIDA (Fase 3 — diario de comida con base curada) -->
-<div id="comida" class="card hidden">
-  <h2>Diario de comida</h2>
-
-  <!-- 📅 v0.19-UI · FECHA lo primero y en grande (test de usuarios 10-07: estaba perdida a media
-       pantalla). El input date REAL va invisible encima del texto: tocar abre el picker nativo,
-       y comFechaSync() (llamada desde renderComida) mantiene el texto sincronizado. -->
-  <div class="fecha-hero" id="com_fecha_hero">
-    <div class="fh-txt">📅 <span id="com_fecha_txt">hoy</span><span class="fh-cambiar">✏️ cambiar</span></div>
-    <div class="fh-aviso hidden" id="com_fecha_aviso">⚠️ estás apuntando en otro día</div>
-    <input id="com_fecha" type="date" onchange="renderComida()" aria-label="Fecha del diario">
-  </div>
-  <div class="row" style="gap:6px;margin-top:8px">
-    <button class="sec" type="button" style="flex:1;width:auto;margin:0;padding:8px" onclick="comCopiarAyer()">⧉ Copiar ayer</button>
-  </div>
-
-  <!-- 💧 v0.19-UI · agua en UNA línea compacta (por defecto colapsada, jvf_agua_colapsada); la
-       tarjeta completa de siempre se expande con el toggle ▾. SOLO presentación: cero cambios
-       en la lógica del agua (objetivo, log, deshacer… intactos). -->
-  <div class="agua-mini" id="agua_mini">
-    <span class="am-txt" id="agua_mini_txt" onclick="aguaToggleCard()" title="Ver el detalle del agua">💧 —</span>
-    <button class="sec" type="button" onclick="aguaAdd(250)">+250</button>
-    <button class="sec" type="button" onclick="aguaAdd(500)">+500</button>
-    <button class="sec" type="button" id="agua_mini_tgl" onclick="aguaToggleCard()" title="Expandir o plegar la tarjeta del agua">▾</button>
-  </div>
-  <!-- 🗄️ E9 · mini-indicador discreto de la auto-descarga de la base ("🗄️ preparando base… 3/8");
-       lo pinta dbxAutoDescargar y desaparece solo al terminar. -->
-  <div id="dbx_mini" class="hint hidden" style="margin-top:6px;font-size:.72rem;text-align:center"></div>
-  <div class="card hidden" style="margin-top:8px;padding:12px" id="agua_card">
-    <div class="eyebrow-lbl">💧 Agua de hoy</div>
+<!-- 💧 AGUA (tanda #22 · v0.21) — el agua asciende a PESTAÑA propia. La tarjeta completa que vivía
+     plegada dentro de Comida se MUDA aquí tal cual (mismos ids, misma lógica: aguaAdd/renderAgua/
+     objetivo dinámico intactos). En Comida queda solo la mini-línea con link «ver Agua». -->
+<div id="agua" class="card hidden">
+  <h2>💧 Agua de hoy</h2>
+  <div id="agua_card">
     <div id="agua_resumen"></div>
     <div class="row" style="gap:6px;margin-top:8px">
       <button class="sec" type="button" style="flex:1;width:auto" onclick="aguaAdd(250)">+ Vaso 250</button>
@@ -895,7 +845,35 @@
       <button class="sec" type="button" style="flex:0 0 auto;width:auto;margin:0;padding:5px 12px" title="Deshace lo último que añadiste o quitaste hoy" onclick="aguaDeshacer()">↶ Deshacer último</button>
     </div>
     <p class="hint" style="margin-top:8px">Bebe antes, durante y después de entrenar: llegar deshidratado resta rendimiento (Savoie 2015). El objetivo es orientativo (~35 ml/kg/día); con calor o mucho entreno, más.</p>
+    <p class="hint" style="margin-top:4px">🌡️ El aviso de agua en verano (con el clima real de tu zona) se enciende o apaga en <b style="color:var(--soft)">⚙️ Ajustes → 🔔 Notificaciones</b>.</p>
   </div>
+</div>
+
+<!-- COMIDA (Fase 3 — diario de comida con base curada) -->
+<div id="comida" class="card hidden">
+  <h2>Diario de comida</h2>
+
+  <!-- 📅 v0.19-UI · FECHA lo primero y en grande (test de usuarios 10-07: estaba perdida a media
+       pantalla). El input date REAL va invisible encima del texto: tocar abre el picker nativo,
+       y comFechaSync() (llamada desde renderComida) mantiene el texto sincronizado. -->
+  <div class="fecha-hero" id="com_fecha_hero">
+    <div class="fh-txt">📅 <span id="com_fecha_txt">hoy</span><span class="fh-cambiar">✏️ cambiar</span></div>
+    <div class="fh-aviso hidden" id="com_fecha_aviso">⚠️ estás apuntando en otro día</div>
+    <input id="com_fecha" type="date" onchange="renderComida()" aria-label="Fecha del diario">
+  </div>
+  <div class="row" style="gap:6px;margin-top:8px">
+    <button class="sec" type="button" style="flex:1;width:auto;margin:0;padding:8px" onclick="comCopiarAyer()">⧉ Copiar ayer</button>
+  </div>
+
+  <!-- 💧 tanda #22 · el agua vive en SU PESTAÑA: aquí queda solo el mini-resumen con link «ver Agua»
+       (spec Pablo 10-07). Mismo dato (lo pinta renderAgua en #agua_mini_txt); cero lógica duplicada. -->
+  <div class="agua-mini" id="agua_mini">
+    <span class="am-txt" id="agua_mini_txt" onclick="abrir('agua')" title="Ir a la pestaña Agua">💧 —</span>
+    <button class="sec" type="button" onclick="abrir('agua')" title="Ir a la pestaña Agua">ver Agua →</button>
+  </div>
+  <!-- 🗄️ E9 · mini-indicador discreto de la auto-descarga de la base ("🗄️ preparando base… 3/8");
+       lo pinta dbxAutoDescargar y desaparece solo al terminar. -->
+  <div id="dbx_mini" class="hint hidden" style="margin-top:6px;font-size:.72rem;text-align:center"></div>
   <div id="com_favoritos"></div><div id="com_recientes"></div><div id="com_fav_sug"></div><div id="com_historial"></div>
   <!-- 🎚️ v0.19-UI · JERARQUÍA: escanear = LA acción primaria (grande, junto al buscador — los
        usuarios de prueba no la encontraban abajo del todo). -->
@@ -1101,13 +1079,112 @@
 
 <p class="foot">Estimación con base científica. NO es consejo médico.<br>
 Tus datos se guardan solo en este dispositivo.</p>
-<div class="row" style="margin-top:8px">
-  <button class="sec" style="flex:1" onclick="exportarJSON()">📥 Exportar datos</button>
-  <button class="sec" style="flex:1" onclick="importarJSON()">📤 Importar datos</button>
+<!-- ⚙️ tanda #22 · exportar/importar/empezar de cero viven ahora en el hub (⚙️ → 📦 Datos) -->
+<p class="foot" style="margin-top:6px">Copias de seguridad y borrado: en <a href="#" onclick="hubAbrir();return false;" style="color:var(--mute-2);text-decoration:underline">⚙️ Ajustes → 📦 Datos</a>.</p>
+
+<!-- ⚙️ MODAL: HUB DE AJUSTES (tanda #22 · v0.21) — pantalla completa, patrón superModal.
+     Los paneles existentes se MUEVEN aquí CON SUS IDS (la lógica no se toca: notifSet, levantarSet,
+     dbxUI*, pasosSync*, exportarJSON… siguen encontrando sus elementos por id). -->
+<div id="hubModal" class="modal hidden">
+  <div class="modal-card">
+    <button class="modal-x" type="button" title="Cerrar" aria-label="Cerrar" onclick="hubCerrar()">✕</button>
+    <h2>⚙️ Ajustes</h2>
+
+    <!-- 👤 QUIÉN ERES (editar memoria) — filas con el valor actual + ✏️ que salta DIRECTO a ese paso
+         del wizard en modo edición (editarPerfil + wizShow(n)): editas UNA respuesta, guardas y
+         Jarvis recalcula el plan con las funciones de siempre. Las pinta hubQuienRender(). -->
+    <div class="eyebrow-lbl">👤 Quién eres · editar memoria</div>
+    <p class="hint" style="margin-top:0">Lo que le contaste a Jarvis en la entrevista. <b style="color:var(--soft)">Volver atrás es editar memoria:</b> toca ✏️, cambia solo esa respuesta y guarda — el plan se recalcula solo.</p>
+    <div id="hub_quien"></div>
+
+    <!-- 🔌 CONECTORES -->
+    <div class="eyebrow-lbl" style="margin-top:16px">🔌 Conectores</div>
+    <div id="hub_conectores">
+      <div class="hub-conector off">
+        <b>🥗 MyFitnessPal (CSV)</b> <span class="hint" style="display:inline">· próximamente</span>
+        <p class="hint" style="margin-top:4px">Importar tu historial de MFP desde su export CSV. Aún no está construido — cuando llegue, se enchufará aquí.</p>
+      </div>
+      <div class="hub-conector off">
+        <b>🏋️ Hevy</b> <span class="hint" style="display:inline">· próximamente</span>
+        <p class="hint" style="margin-top:4px">Traer tus entrenos de Hevy. En cola — de momento la pestaña Entrenos ya registra al estilo Hevy.</p>
+      </div>
+      <div class="hub-conector">
+        <!-- 👟 SPEC 4 · SYNC AUTOMÁTICO DE PASOS (2026-07-09), MOVIDO desde la pestaña Ajustar (tanda #22).
+             La PWA solo LEE una URL RAW pública de GitHub: el token de escritura vive SOLO en Tasker
+             (móvil de Pablo) — aquí no hay ningún secreto. Lógica PURA en [PASOS-SYNC-PURE-*]. -->
+        <b>👟 Pasos automáticos (beta)</b>
+        <p class="hint" style="margin-top:4px">Tu móvil publica tus pasos solo (Samsung Health → Health Connect → Tasker → GitHub) y la app los lee al abrir. <b style="color:var(--soft)">Sin backend y sin secretos en la app</b>: aquí solo se pega una URL pública de lectura. Tus apuntes a mano mandan: el dato automático <b style="color:var(--soft)">nunca pisa un valor tuyo mayor</b>.</p>
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;margin-top:4px"><input type="checkbox" id="aj_pasos_sync" onchange="pasosSyncSet(this.checked)"> Sincronizar pasos automáticos</label>
+        <div id="aj_pasos_sync_box" style="display:none">
+          <label style="margin-top:8px">URL RAW de tu steps.json</label>
+          <input id="aj_pasos_sync_url" type="url" placeholder="https://raw.githubusercontent.com/TU-USUARIO/TU-REPO/data/steps.json" onchange="pasosSyncUrlGuardar(this.value)">
+          <button class="sec" type="button" style="width:100%;margin-top:6px" onclick="pasosSyncFetch(true)">↻ Probar ahora</button>
+          <div id="aj_pasos_sync_estado"></div>
+          <p class="hint" style="margin-top:6px">Honesto: GitHub cachea esta URL ~5 minutos, así que el dato puede llegar con ese retraso (por eso siempre te enseño la HORA del dato). Y si el repo es público, cualquiera con la URL puede ver tu número de pasos del día — solo ese número, nada más.</p>
+          <details style="margin-top:8px;border:1px solid var(--line);border-radius:12px;padding:10px 12px">
+            <summary style="cursor:pointer;color:var(--jade);font-weight:600">🖐️ Cómo montarlo en tu móvil (una sola vez)</summary>
+            <p class="hint" style="margin-top:8px">Esto son clicks TUYOS (🖐️) en paneles donde Claude no puede entrar. Se hace una vez y listo. Lo único que viajará es un número de pasos con fecha y hora.</p>
+            <ol style="margin:8px 0 0 18px;padding:0;font-size:.85rem;color:var(--mute);line-height:1.5">
+              <li><b>Tasker</b> 🖐️ — instálalo desde Play Store (app de pago, unos 4 €). Es el robot que leerá tus pasos en el móvil y los publicará.</li>
+              <li><b>Health Connect</b> 🖐️ — abre Samsung Health → Ajustes → Health Connect y activa compartir «Pasos». Ojo honesto: el nombre exacto del menú cambia según la versión; si no lo ves, busca «Health Connect» en los ajustes del propio móvil.</li>
+              <li><b>Permiso a Tasker</b> 🖐️ — la primera vez que el proyecto de Tasker intente leer pasos, Health Connect te pedirá permiso: concede SOLO «Pasos», nada más.</li>
+              <li><b>Token de GitHub</b> 🖐️ — en github.com: Settings → Developer settings → Personal access tokens → Fine-grained tokens → Generate new token. Acceso: SOLO el repositorio de datos de pasos. Permiso: Contents → Read and write. Ningún otro. Caducidad: la máxima que te deje (cuando caduque, los pasos dejarán de llegar — lo notarás porque la hora del último dato se queda congelada).</li>
+              <li><b>Pegar el token en Tasker</b> 🖐️ — en Tasker, pestaña Variables, crea la variable global <b>%JVF_TOKEN</b> y pega ahí el token. El token vive SOLO en tu móvil: JAMÁS lo pegues en esta app, ni en un chat, ni en ningún archivo del repo.</li>
+              <li><b>URL RAW</b> 🖐️ — pega arriba la dirección de tu steps.json (empieza por raw.githubusercontent.com y acaba en .json) y toca «↻ Probar ahora».</li>
+            </ol>
+            <p class="hint" style="margin-top:8px">Si un menú no aparece como aquí lo describo, no lo fuerces: los pasos 1–3 dependen de tu versión de Samsung Health y de Tasker. Díselo a Claude y lo miramos juntos.</p>
+          </details>
+        </div>
+      </div>
+    </div>
+
+    <!-- 🔔 NOTIFICACIONES — recordatorios existentes (agua-verano, pesaje) MOVIDOS desde Ajustar (tanda #22) -->
+    <div class="eyebrow-lbl" style="margin-top:16px">🔔 Notificaciones</div>
+    <div id="hub_notifs">
+      <p class="hint" style="margin-top:0">Avisos suaves <b style="color:var(--soft)">al abrir la app</b>. No son notificaciones del móvil: sin un servidor detrás, el navegador no puede avisarte con la app cerrada — eso sería otra fase.</p>
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer;margin-top:4px"><input type="checkbox" id="aj_notif_agua" checked onchange="notifSet('aguaVerano', this.checked)"> 🌡️ Recordarme beber agua en verano</label>
+      <!-- ⚖️ E10 · hora de levantarse → recordatorio de pesaje al abrir la app (ventana de 3 h) -->
+      <div class="row" style="gap:10px;margin-top:10px">
+        <div><label>⏰ ¿A qué hora te levantas entre semana?</label><input id="aj_lev_sem" type="time" value="07:30" onchange="levantarSet('semana', this.value)"></div>
+        <div><label>¿Y el fin de semana?</label><input id="aj_lev_finde" type="time" value="09:30" onchange="levantarSet('finde', this.value)"></div>
+      </div>
+      <p class="hint" style="margin-top:4px">La app avisa <b style="color:var(--soft)">al abrirla</b> por la mañana («⚖️ pésate ahora»). Para una notificación del móvil a hora exacta con la app cerrada, monta la receta gratis de MacroDroid (2 min) — ver guía.</p>
+    </div>
+
+    <!-- 🗄️ ALIMENTOS — panel de la base España MOVIDO desde Ajustar (tanda #22) + hueco base mundial (tarea #18) -->
+    <div class="eyebrow-lbl" style="margin-top:16px">🗄️ Alimentos</div>
+    <div id="hub_alimentos">
+      <!-- 🗄️ BASE ESPAÑA COMPLETA (IndexedDB, descarga opcional). La lógica vive en [DBX-*]; esto solo pinta.
+           Los datos (data/db/*.jsonl.gz) son públicos de Open Food Facts (ODbL): aquí no hay ningún secreto. -->
+      <b>🇪🇸 Base España completa (176.150 alimentos · 4,8 MB)</b>
+      <p class="hint" style="margin-top:4px">Se guarda EN tu móvil: buscar y escanear funcionan sin internet. <b style="color:var(--soft)">Se descarga y actualiza sola al abrir la app</b>; este panel es el estado + respaldo manual. Fuente: Open Food Facts (ODbL).</p>
+      <div id="dbx_estado" class="hint" style="margin-top:4px">no descargada</div>
+      <button class="sec" type="button" id="dbx_btn_descargar" onclick="dbxUIDescargar()">↻ Re-descargar</button>
+      <button class="sec hidden" type="button" id="dbx_btn_borrar" onclick="dbxUIBorrar()">🗑️ Borrar de este dispositivo</button>
+      <div id="dbx_prog" class="hint"></div>
+      <!-- 🌍 hueco preparado para la BASE MUNDIAL (tarea #18): cuando exista, su panel de estado/descarga
+           se enchufa aquí con el mismo patrón que la base España (id dbw_estado reservado). -->
+      <div class="hub-conector off" style="margin-top:10px">
+        <b>🌍 Base mundial</b> <span class="hint" style="display:inline">· no disponible todavía</span>
+        <div id="dbw_estado" class="hint" style="margin-top:4px">Llegará como descarga opcional aparte (tarea #18): productos de fuera de España para el escáner y el buscador.</div>
+      </div>
+    </div>
+
+    <!-- 📦 DATOS — export/import/borrar MOVIDOS desde el pie de la app (tanda #22). Mismas funciones. -->
+    <div class="eyebrow-lbl" style="margin-top:16px">📦 Datos</div>
+    <div id="hub_datos">
+      <p class="hint" style="margin-top:0">Copia de seguridad: descarga tus datos y restáuralos en otro móvil. Las fotos de progreso no viajan en el JSON (viven solo en este dispositivo).</p>
+      <div class="row" style="margin-top:8px">
+        <button class="sec" style="flex:1" onclick="exportarJSON()">📥 Exportar datos</button>
+        <button class="sec" style="flex:1" onclick="importarJSON()">📤 Importar datos</button>
+      </div>
+      <input type="file" id="impFile" accept="application/json,.json" hidden onchange="procesarImport(this.files[0]); this.value='';">
+      <p class="hint" style="margin-top:10px"><a href="#" onclick="resetTodo();return false;" style="color:var(--mute-2);text-decoration:underline">🗑️ Empezar de cero</a> — borra TODO (pide confirmación).</p>
+    </div>
+
+    <button class="sec" type="button" style="margin-top:14px" onclick="hubCerrar()">Cerrar</button>
+  </div>
 </div>
-<input type="file" id="impFile" accept="application/json,.json" hidden onchange="procesarImport(this.files[0]); this.value='';">
-<p class="foot" style="margin-top:6px">Copia de seguridad: descarga tus datos y restáuralos en otro móvil.</p>
-<p class="foot" style="margin-top:6px"><a href="#" onclick="resetTodo();return false;" style="color:var(--mute-2);text-decoration:underline">Empezar de cero</a></p>
 
 <!-- MODAL: "Otro" (texto libre para Jarvis) -->
 <div id="otroModal" class="modal hidden">
@@ -5036,15 +5113,13 @@ function comFechaSync(){
   var hero=$("com_fecha_hero"); if(hero) hero.classList.toggle("fh-otro", !esHoy);
   var av=$("com_fecha_aviso"); if(av) av.classList.toggle("hidden", esHoy);
 }
-// 💧 v0.19-UI · colapso de la tarjeta del agua (SOLO presentación; por defecto colapsada).
+// 💧 tanda #22 (v0.21) · el agua vive en SU PESTAÑA: ya no hay tarjeta colapsable dentro de Comida.
+// Estas tres se conservan como COMPATIBILIDAD (init y posibles referencias viejas las llaman):
+// solo presentación — la lógica del agua (objetivo, log, deshacer) sigue intacta más abajo.
 var LS_AGUA_COL="jvf_agua_colapsada";
-function aguaColapsada(){ return get(LS_AGUA_COL,true)!==false; }
-function aguaToggleCard(){ set(LS_AGUA_COL, !aguaColapsada()); aguaAplicarColapso(); }
-function aguaAplicarColapso(){
-  var col=aguaColapsada();
-  var card=$("agua_card"); if(card) card.classList.toggle("hidden", col);
-  var tgl=$("agua_mini_tgl"); if(tgl) tgl.textContent=col?"▾":"▴";
-}
+function aguaColapsada(){ return false; }
+function aguaToggleCard(){ abrir("agua"); }
+function aguaAplicarColapso(){}
 function comInit(){
   var d=$("com_fecha"); if(d && !d.value) d.value=hoyLocal();
   comFillDatalist();   // I6 · base curada + alimentos propios; se reconstruye por si acabas de crear uno
@@ -5901,7 +5976,7 @@ function pasosSyncHoraDe(ts){ var d=new Date(+ts); return isNaN(d.getTime())?"":
 // Estado honesto SIEMPRE con hora (lección del service worker: que un dato viejo nunca parezca fresco).
 function pasosSyncEstadoTxt(){
   var c=pasosSyncCfg(); if(!c.on) return "";
-  if(!pasosSyncUrlOk(c.url)) return "<p class='hint' style='margin-top:6px'>👟 Sync activado pero falta la URL RAW — pégala en Ajustes.</p>";
+  if(!pasosSyncUrlOk(c.url)) return "<p class='hint' style='margin-top:6px'>👟 Sync activado pero falta la URL RAW — pégala en ⚙️ Ajustes → 🔌 Conectores.</p>";
   var last=get(LS_PASOS_SYNC_LAST,null);
   if(!last || !last.ts) return "<p class='hint' style='margin-top:6px'>👟 Sync activado — aún sin lectura.</p>";
   var leido=pasosSyncHoraDe(last.ts);
@@ -8553,9 +8628,9 @@ function idiomaCambia(sel){ var v=(sel&&sel.value)||"es"; if(!I18N[v]){ if(sel) 
 
 // ======= PESTAÑAS + TOAST (UX v0.3) =======
 // Orden de las pestañas (única fuente de verdad; antes estaba duplicado en aplicarTab/render y lo usa el swipe).
-const TABS=["plan","ajustes","registro","entrenos","calib","comida","cerebro","lesiones"];
+const TABS=["plan","ajustes","registro","entrenos","calib","agua","comida","cerebro","lesiones"];   // ⚙️ tanda #22 · Agua asciende a pestaña (orden spec Pablo 10-07)
 let _tab="plan";
-function abrir(t){ _tab=t; aplicarTab(); if(t==="entrenos" && !$("ent_form").innerHTML.trim()) entInit(); if(t==="comida") comInit(); if(t==="cerebro") cbInit(); if(t==="calib"){ pfRefrescar(); pasosRender(); } if(t==="lesiones") lesInit(); window.scrollTo(0,0); }   // 📸 v0.13-C · Progreso pinta también la sección de fotos
+function abrir(t){ _tab=t; aplicarTab(); if(t==="entrenos" && !$("ent_form").innerHTML.trim()) entInit(); if(t==="comida") comInit(); if(t==="cerebro") cbInit(); if(t==="calib"){ pfRefrescar(); pasosRender(); } if(t==="lesiones") lesInit(); if(t==="agua") renderAgua(); window.scrollTo(0,0); }   // 📸 v0.13-C · Progreso pinta también fotos · 💧 tanda #22 · Agua repinta su resumen al entrar
 function aplicarTab(){
   TABS.forEach(function(s){
     show(s, s===_tab);
@@ -8617,7 +8692,7 @@ document.addEventListener('DOMContentLoaded',function(){
     if(chip&&typeof calcRacha==='function'){ var rc=calcRacha(); if(rc&&rc.dias7>0){ var s=document.createElement("span"); s.textContent="· 🔥 "+rc.dias7+" esta semana"; chip.appendChild(s); } }
     var ents=get(LS_E,[]); var lastExp=get("jvf_last_export",null);
     var _old=!lastExp || (Date.parse(hoyLocal()+'T12:00:00')-Date.parse(lastExp+'T12:00:00'))/864e5>14;
-    if(ents.length>20 && _old) setTimeout(function(){ toast("💾 Llevas tiempo sin copia de seguridad — toca Exportar en Ajustes"); }, 3500);
+    if(ents.length>20 && _old) setTimeout(function(){ toast("💾 Llevas tiempo sin copia de seguridad — toca Exportar en ⚙️ Ajustes → 📦 Datos"); }, 3500);
     notifSyncUI();   // 🔔 refleja la config del recordatorio en el checkbox de Ajustes
     notifCheck();    // 🔔 recordatorios in-app (p.ej. agua en verano) al abrir
     pasosSyncUI();          // 👟 spec 4 · refleja toggle+URL del sync de pasos en Ajustes
@@ -8641,7 +8716,7 @@ function resetTodo(){ if(!confirm("⚠️ Esto borra TODO: perfil, pesos, entren
 // Reemplazo total con confirmación. Reusa get/set, hoyLocal, toast, validar, render. NO toca motor ni gate.
 function exportarJSON(){ try{ set("jvf_last_export",hoyLocal()); }catch(e){}
   try{
-    var data={ app:"jvf", schema:1, app_version:"0.20.0", exportadoEl:new Date().toISOString(),
+    var data={ app:"jvf", schema:1, app_version:"0.21.0", exportadoEl:new Date().toISOString(),
       perfil:get(LS_P,null), pesos:get(LS_W,[]), entrenos:get(LS_E,[]), notas_ej:get("jvf_notas_ej",{}), comida:get("jvf_comida",[]), agua:get("jvf_agua",{}), suples_cfg:get("jvf_suples_cfg",null), suples_log:get("jvf_suples_log",{}),
       rutinas:get("jvf_rutinas",[]), meals:get("jvf_meals",[]), ent_start:get("jvf_ent_start",null),   // v0.10 · backup completo
       alimentos_propios:get("jvf_alimentos_propios",[]), barcode_cache:get("jvf_barcode_cache",{}),   // I5/I6 · también viajan en el backup
@@ -11015,6 +11090,65 @@ function aplicarDecision(delta){
   ov.cal_off=(ov.cal_off||0)+(+delta||0);
   p.ov=ov; set(LS_P,p); _tab="plan"; render();
   toast("✓ Plan ajustado "+(delta>0?"+":"")+delta+" kcal");
+}
+
+// ══════════ ⚙️ HUB DE AJUSTES (tanda #22 · v0.21) ══════════
+// [AJUSTES-PURE-INICIO] — lógica pura del hub (sin DOM, sin storage; _tests/test-ajustes.node.js la extrae y evalúa)
+// Orden CANÓNICO de pestañas (spec Pablo 10-07): Plan · Ajustar · Peso · Entrenos · Progreso · Agua · Comida · Jarvis · Fisio
+function hubTabsOrden(){ return ["plan","ajustes","registro","entrenos","calib","agua","comida","cerebro","lesiones"]; }
+// Secciones del hub, en su orden (ids de los contenedores reales del modal #hubModal)
+function hubSecciones(){
+  return [
+    {id:"hub_quien",      emoji:"👤", titulo:"Quién eres"},
+    {id:"hub_conectores", emoji:"🔌", titulo:"Conectores"},
+    {id:"hub_notifs",     emoji:"🔔", titulo:"Notificaciones"},
+    {id:"hub_alimentos",  emoji:"🗄️", titulo:"Alimentos"},
+    {id:"hub_datos",      emoji:"📦", titulo:"Datos"}
+  ];
+}
+// hubQuienFilas(p): perfil (objeto LS_P o null) → filas {paso, titulo, resumen} para «editar memoria».
+// paso = nº del wstep del wizard al que salta el ✏️. Sin perfil (null/no-objeto) → []. NUNCA toca DOM ni storage.
+function hubQuienFilas(p){
+  if(!p || typeof p!=="object") return [];
+  var c=(p.coach && typeof p.coach==="object")?p.coach:{};
+  function v(x,suf){ return (x===0||x)?(String(x)+(suf||"")):"—"; }
+  function corta(t,n){ t=String(t==null?"":t); return t.length>n ? t.slice(0,n)+"…" : (t||"—"); }
+  return [
+    {paso:1, titulo:"🎯 Objetivo",            resumen:v(p.objetivo)+((+p.intensidad_pct>0)?(" · "+p.intensidad_pct+"%"):"")},
+    {paso:2, titulo:"🪪 Quién eres",          resumen:v(p.nombre)+" · "+v(p.sexo)+" · "+v(p.edad," años")},
+    {paso:3, titulo:"📏 Tu cuerpo",           resumen:v(p.peso_kg," kg")+" · "+v(p.altura_cm," cm")+((p.grasa_pct===0||p.grasa_pct)?(" · "+p.grasa_pct+"% grasa"):"")},
+    {paso:4, titulo:"🚶 Actividad y deporte", resumen:v(p.actividad)+((+p.pasos>0)?(" · "+p.pasos+" pasos"):"")+((+p.deporte>0)?" · deporte extra ✓":"")},
+    {paso:5, titulo:"🏋️ Entrenamiento",      resumen:v(c.nivel)+(c.dias_sem?(" · "+c.dias_sem+" días/sem"):"")+(c.material?(" · "+corta(c.material,18)):"")},
+    {paso:6, titulo:"😴 Recuperación",        resumen:(c.sueno_h?(c.sueno_h+" h de sueño"):"—")+(c.estres?(" · estrés "+c.estres):"")},
+    {paso:7, titulo:"🍽️ Comida",             resumen:(c.comidas_dia?(c.comidas_dia+" comidas/día"):"—")+(c.restricciones?(" · "+corta(c.restricciones,24)):"")},
+    {paso:8, titulo:"💬 Sobre ti",            resumen:corta(c.sobre_mi,60)}
+  ];
+}
+// [AJUSTES-PURE-FIN]
+// Apertura/render del hub (impuro: DOM). Los paneles movidos (notifs, base España, pasos, datos) ya
+// viven en el HTML del modal con sus ids de SIEMPRE — aquí solo se pinta la sección «Quién eres».
+function hubAbrir(){ hubQuienRender(); show("hubModal", true); }
+function hubCerrar(){ show("hubModal", false); }
+function hubQuienRender(){
+  var el=$("hub_quien"); if(!el) return;
+  var filas=hubQuienFilas(get(LS_P));
+  if(!filas.length){ el.innerHTML="<p class='hint' style='margin-top:0'>Aún no hay perfil: pasa primero por la entrevista de Jarvis.</p>"; return; }
+  el.innerHTML=filas.map(function(f){
+    return "<div class='kv' style='align-items:center'><span style='min-width:0'>"+esc(f.titulo)
+      +"<br><span class='hint' style='display:inline'>"+esc(f.resumen)+"</span></span>"
+      +"<button class='sec' type='button' title='Editar esta respuesta' aria-label='Editar esta respuesta' style='width:auto;flex:none;margin:0;padding:6px 12px' onclick=\"hubEditarPaso("+JSON.stringify(+f.paso)+")\">✏️</button></div>";
+  }).join("");
+}
+// ✏️ «volver atrás es editar memoria»: salta DIRECTO al paso n del wizard en modo edición. Editas esa
+// respuesta y «💾 Guardar cambios» (wizGuardarDirecto → guardarPerfil) recalcula el plan con las
+// funciones de SIEMPRE — cero motor duplicado.
+function hubEditarPaso(n){
+  var p=get(LS_P);
+  if(!p){ hubCerrar(); toast("Aún no hay perfil — completa la entrevista primero"); return; }
+  hubCerrar();
+  abrir("plan");        // deja una sola pestaña activa antes del wizard (evita cards superpuestas)
+  editarPerfil();       // modo edición de siempre: rellena TODOS los campos + _wizEdit=true
+  wizShow(Math.max(1, Math.min(WIZ_MAX, +n||1)));   // y salta directo al paso pedido
 }
 
 function registrarPeso(){

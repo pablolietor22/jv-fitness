@@ -3,7 +3,8 @@
 ## ✅ ESTADO ACTUAL (2026-07-07, decisión de Pablo revertida): repo PÚBLICO + GitHub Pages
 - **URL VIVA:** https://pablolietor22.github.io/jv-fitness/ · contraseña del gate: `lietor`
 - El repo `jv-fitness` (SOLO el escaparate) se volvió a poner **público** para que Pages gratis lo sirva. El TALLER `jvfitness-dev` (master-file, motor, todo lo gordo) sigue PRIVADO. Escaneo de secretos previo: 0.
-- **Deploy = un push a `main`**: el flujo copia `app/jv-fitness-mvp.html` del taller → `index.html` aquí → `git push` → Pages reconstruye solo en ~1-2 min.
+- **Deploy = un push a `main`**: el flujo copia `app/jv-fitness-mvp.html` del taller → `index.html` aquí **Y `app/sw.js` → `sw.js`** → `git push` → Pages reconstruye solo en ~1-2 min.
+- ⚠️ **SIEMPRE copiar también `sw.js`** (service worker network-first): es lo que hace que la app se autoactualice en el móvil (sin él, se queda pegada en versiones viejas cacheadas — pasó el 09-07). Registro en el `<script>` final del HTML.
 - Lleva `manifest.json` + `icon.svg` (PWA): "Añadir a pantalla de inicio" en el móvil = icono como app nativa (pantalla completa).
 - La opción Netlify/privado de abajo queda como alternativa histórica (si algún día se quiere ocultar el historial).
 
