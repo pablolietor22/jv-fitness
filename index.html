@@ -531,7 +531,7 @@
 <header class="brandbar">
   <div class="logo"><span class="dot"></span>JV <b>Fitness</b></div>
   <div style="display:flex;align-items:center">
-    <span class="tag">MVP v0.23.1 · motor v0.7</span>
+    <span class="tag">MVP v0.24.0 · motor v0.7</span>
     <!-- ⚙️ tanda #22 · hub de AJUSTES (no es pestaña): modal a pantalla completa -->
     <button class="gearbtn" id="btn_hub" type="button" title="Ajustes" aria-label="Abrir ajustes" onclick="hubAbrir()">⚙️</button>
   </div>
@@ -796,13 +796,14 @@
   <p class="hint" style="margin-top:8px">Si <b style="color:var(--soft)">fijas los carbos</b>, las calorías = suma de tus macros. Si no, los carbos son "el resto" (altos) y mandas con el ajuste de calorías.</p>
   <button class="btn-lg" onclick="aplicarAjustes()">Aplicar mis ajustes</button>
   <button class="sec" onclick="resetAjustes()">Volver a lo recomendado</button>
-  <!-- M4 · tono de la capa FLEX (personalidad de Jarvis). «Caña» es opt-in con aviso. -->
+  <!-- A24 · tono del coach (personalidad de Jarvis). LS jvf_tono. «Sargento» es opt-in con aviso (insultos). -->
   <div class="eyebrow-lbl" style="margin-top:14px">🗣️ Cómo te habla Jarvis</div>
-  <p class="hint" style="margin-top:0">Cuando Jarvis nota un patrón (repites un alimento, racha de entrenos…) te lo dice con este tono. <b style="color:var(--soft)">«Caña»</b> es humor cariñoso y directo — opt-in, se activa con aviso.</p>
+  <p class="hint" style="margin-top:0">Cuando Jarvis nota un patrón (repites un alimento, racha de entrenos…) te lo dice con este tono. <b style="color:var(--soft)">😈 Sargento</b> te insulta para motivarte (humor tipo instructor militar) — es <b style="color:var(--soft)">opt-in</b>, se activa con aviso.</p>
   <select id="aj_flex_tono" class="flextono" style="width:auto" onchange="flexSetTono(this.value)">
-    <option value="carinoso">cariñoso (por defecto)</option>
-    <option value="neutro">neutro</option>
-    <option value="cana">caña 🌶️ (opt-in)</option>
+    <option value="amable">amable (por defecto)</option>
+    <option value="directo">directo</option>
+    <option value="motivador">motivador 💪</option>
+    <option value="sargento">sargento 😈 (opt-in · insultos)</option>
   </select>
   <!-- 🏷️ E7 · apodo: cómo te llama Jarvis en sus avisos (viaja en el backup) -->
   <label style="margin-top:10px">🏷️ ¿Cómo quieres que te llame Jarvis?</label>
@@ -1333,6 +1334,19 @@ Tus datos se guardan solo en este dispositivo.</p>
     <button class="modal-x" type="button" title="Cerrar" aria-label="Cerrar" onclick="explicaCerrar()">✕</button>
     <h3 id="explica_titulo" style="margin:0 34px 8px 0"></h3>
     <p id="explica_cuerpo" style="margin:0;color:var(--soft);line-height:1.5"></p>
+  </div>
+</div>
+
+<!-- A25 · MODAL: aceptación de PRIMER USO (aviso legal). Se muestra UNA vez (LS jvf_disclaimer_ok), antes del
+     onboarding, para usuarios nuevos Y existentes. SIN ✕: hay que aceptar (aceptación explícita con peso legal).
+     El aviso discreto sigue visible en el footer. -->
+<div id="disclaimerModal" class="modal hidden">
+  <div class="modal-card">
+    <h3 style="margin:0 0 10px">Antes de empezar</h3>
+    <p style="margin:0 0 10px;color:var(--soft);line-height:1.55"><b style="color:var(--bone)">JV Fitness te da estimaciones con base científica</b> para orientar tu entrenamiento y tu alimentación. Los cálculos son aproximados y de carácter <b style="color:var(--soft)">educativo</b>.</p>
+    <p style="margin:0 0 10px;color:var(--soft);line-height:1.55"><b style="color:var(--ember)">NO es consejo médico</b> ni sustituye a un profesional sanitario. Ante lesiones, dolor, patologías, embarazo, medicación o cualquier duda de salud, consulta a tu médico o fisioterapeuta. Usar la app es bajo tu responsabilidad.</p>
+    <p style="margin:0 0 14px;color:var(--soft);line-height:1.55">🔒 Tus datos se guardan <b style="color:var(--soft)">solo en tu dispositivo</b>.</p>
+    <button class="btn-lg" type="button" style="width:100%" onclick="disclaimerAceptar()">Entendido y acepto</button>
   </div>
 </div>
 
@@ -5456,6 +5470,38 @@ function calidadNutricional(f){
   return {nivel:"verde", motivo:"sin excesos de azúcar, saturadas ni sal por 100 g"};
 }
 // [CALIDAD-PURE-FIN]
+// [CALIDAD-MOTIVO-PURE-INICIO] — A26 · el PORQUÉ del semáforo, clicable. Dado un alimento (az/sat/na por
+// 100 g) devuelve TODOS los motivos que disparan color (no solo el primero, como calidadNutricional), para
+// explicarlo al CLICAR el puntito. PURO (sin DOM/storage): _tests/test-calidad-motivo.node.js lo evalúa.
+// Mismos umbrales FSA/OMS que [CALIDAD-PURE], POR 100 g: 🔴 az>22,5 · sat>5 · na>600 · 🟡 az>5 · sat>1,5 · na>300.
+// Devuelve {nivel, motivos:[{sev,nutriente,valor,umbral,txt}…]} o null si NO hay ningún dato (az/sat/na).
+// El `nivel` coincide con calidadNutricional (ambos deciden por el peor: rojo antes que ámbar).
+function calidadMotivos(f){
+  if(!f || typeof f!=="object") return null;
+  function num(v){ return (v==null || v==="" || !isFinite(+v)) ? null : +v; }
+  var az=num(f.az), sat=num(f.sat), na=num(f.na);
+  if(az==null && sat==null && na==null) return null;
+  var ms=[];
+  function add(sev,nut,val,umb,txt){ ms.push({sev:sev, nutriente:nut, valor:val, umbral:umb, txt:txt}); }
+  if(az!=null){
+    if(az>22.5) add("rojo","azucar",az,22.5,"🔴 Alto en azúcar: "+az+" g/100 g (corte 22,5)");
+    else if(az>5) add("ambar","azucar",az,5,"🟡 Azúcar moderado: "+az+" g/100 g (corte 5)");
+  }
+  if(sat!=null){
+    if(sat>5) add("rojo","saturada",sat,5,"🔴 Alto en grasa saturada: "+sat+" g/100 g (corte 5)");
+    else if(sat>1.5) add("ambar","saturada",sat,1.5,"🟡 Grasa saturada moderada: "+sat+" g/100 g (corte 1,5)");
+  }
+  if(na!=null){
+    if(na>600) add("rojo","sal",na,600,"🔴 Alto en sal: "+na+" mg de sodio/100 g (corte 600)");
+    else if(na>300) add("ambar","sal",na,300,"🟡 Sal moderada: "+na+" mg de sodio/100 g (corte 300)");
+  }
+  var nivel = ms.some(function(m){ return m.sev==="rojo"; }) ? "rojo"
+            : ms.some(function(m){ return m.sev==="ambar"; }) ? "ambar" : "verde";
+  if(!ms.length) add("verde",null,null,null,"🟢 Sin excesos de azúcar, grasa saturada ni sal por 100 g");
+  ms.sort(function(a,b){ var r={rojo:0,ambar:1,verde:2}; return r[a.sev]-r[b.sev]; });   // el más grave primero
+  return {nivel:nivel, motivos:ms};
+}
+// [CALIDAD-MOTIVO-PURE-FIN]
 // [ATWATER-PURE-INICIO] — ⚖️ coherencia energía⇄macros por 100 g (A22). PURO (sin DOM/red/storage):
 // _tests/test-atwater.node.js extrae este bloque y lo evalúa tal cual. MISMA tolerancia que el volcado
 // off_dump_es.js (est>5 && kcal fuera de 0,5×–1,7× de est). est = 4·p + 4·c + 9·g (kcal de Atwater).
@@ -5538,6 +5584,25 @@ function calidadToast(nombre){
   var c=calidadDeNombre(nombre); if(!c) return;
   toast(CALIDAD_ICO[c.nivel]+" "+c.motivo);
 }
+// A26 · resuelve el/los motivos [CALIDAD-MOTIVO-PURE] por NOMBRE (misma regla que calidadDeNombre).
+function calidadMotivosDeNombre(nombre){
+  var q=String(nombre||"").trim().toLowerCase(); if(!q) return null;
+  var base=baseFoods();
+  for(var i=0;i<base.length;i++){ if(base[i] && typeof base[i].n==="string" && base[i].n.toLowerCase()===q) return calidadMotivos(base[i]); }
+  return null;
+}
+// A26 · al CLICAR el puntito de color: explica el/los motivos CONCRETOS en el modal de explicador (reutilizado).
+function calidadModalMostrar(cal, titulo){
+  if(!cal) return;
+  var t=document.getElementById("explica_titulo"), c=document.getElementById("explica_cuerpo");
+  if(t) t.textContent=(CALIDAD_ICO[cal.nivel]||"")+" "+(titulo||"Calidad nutricional");
+  if(c){ c.style.whiteSpace="pre-line";
+    c.textContent=cal.motivos.map(function(m){ return m.txt; }).join("\n")
+      +"\n\nCortes del etiquetado frontal (FSA/OMS), por 100 g. «—» = sin dato para juzgarlo.";
+  }
+  show("explicaModal",true);
+}
+function calidadClic(nombre){ calidadModalMostrar(calidadMotivosDeNombre(nombre), String(nombre||"")); }
 // Deriva/actualiza el historial DESDE el diario. Merge (NO reemplaza): conserva los alimentos de
 // días ya borrados y, para cada alimento visto en el diario, guarda su ÚLTIMO gramaje/unidad/fecha.
 // Dedup por nombre (case-insensitive). Ignora items sin gramos (📷 foto / ⚡ rápido, g=0): no se
@@ -5575,7 +5640,7 @@ function renderHistorial(){
   if(!hist.length){ host.innerHTML=""; return; }
   if(!$("hist_lista")){
     host.innerHTML="<details class='hist-acc' style='margin-top:10px;border:1px solid var(--line);border-radius:12px;padding:10px 12px'>"
-      +"<summary style='cursor:pointer;color:var(--jade);font-weight:600'>🕑 Historial · <span id='hist_count'></span> alimentos <span style='color:var(--mute);font-weight:400'>· toca para re-añadir</span></summary>"
+      +"<summary style='cursor:pointer;color:var(--jade);font-weight:600'>🕑 Historial · <span id='hist_count'></span> alimentos <span style='color:var(--mute);font-weight:400'>· ⚡ añade rápido · 👁️ abre la ficha</span></summary>"
       +"<input id='hist_buscar' type='search' autocomplete='off' oninput='histFiltrar()' placeholder='Buscar en tu historial…' style='width:100%;margin:10px 0 0'>"
       +"<div id='hist_lista'></div>"
       +"</details>";
@@ -5597,13 +5662,19 @@ function histFiltrar(){
   }
   lista.innerHTML="<div class='wizchips' style='margin:8px 0 0'>"+res.map(function(h){
     var nJ=JSON.stringify(h.n).replace(/"/g,"&quot;");
-    // 👁️ v0.19-UI · puntito de calidad [CALIDAD-PURE]: solo si la base tiene los datos por-100.
-    // stopPropagation ANTES del toast: tocar el puntito explica el motivo, NO re-añade el alimento.
+    var u=(h.u==="ml"?"ml":"g");
+    // 👁️ v0.19-UI · puntito de calidad [CALIDAD-MOTIVO-PURE]: solo si la base tiene los datos por-100.
+    // stopPropagation ANTES del clic: tocar el puntito explica el motivo, NO re-añade el alimento.
     var cal=null; try{ cal=calidadDeNombre(h.n); }catch(e){}
-    var dot=cal?" <span onclick='event.stopPropagation();calidadToast("+nJ+")' title='Calidad nutricional — toca para ver por qué'>"+CALIDAD_ICO[cal.nivel]+"</span>":"";
-    // A1 · MISMO ojito 👁️ que el buscador (fichaOjoHist) — abre la ficha sin disparar el re-añadir
-    // (stopPropagation en el botón). inline-flex para que el ojito 30px alinee con el texto del chip.
-    return "<span class='wchip done' onclick='histReAdd("+nJ+")' title='Ajustar gramos y re-añadir "+escAttr(h.n)+"' style='display:inline-flex;align-items:center;gap:3px'>🕑 "+esc(h.n)+" "+h.g+(h.u==="ml"?"ml":"g")+dot+fichaOjoHist(h.n)+"</span>";
+    var dot=cal?" <span onclick='event.stopPropagation();calidadClic("+nJ+")' title='Calidad nutricional — toca para ver por qué' style='cursor:pointer'>"+CALIDAD_ICO[cal.nivel]+"</span>":"";
+    // A19 · DOS opciones limpias por alimento (nada de saltar directo al input de gramos):
+    //   ⚡ Añadir rápido → mismos gramos guardados, 1 toque (histReAddRapido → comQuick).
+    //   👁️ Abrir ficha  → foto + info + porción del envase, y ahí eliges gramos (histReAddFicha).
+    // La etiqueta 🕑 es solo texto (cursor:default); las acciones son los dos botones .ficha-ojo.
+    return "<span class='wchip done' style='display:inline-flex;align-items:center;gap:3px;cursor:default'>🕑 "+esc(h.n)+" "+h.g+u+dot
+      +"<button class='ficha-ojo' type='button' title='⚡ Añadir rápido con "+h.g+u+" (1 toque)' aria-label='Añadir rápido "+escAttr(h.n)+"' onclick='histReAddRapido("+nJ+")'>⚡</button>"
+      +"<button class='ficha-ojo' type='button' title='👁️ Abrir ficha (elegir gramos y porción)' aria-label='Abrir ficha "+escAttr(h.n)+"' onclick='histReAddFicha("+nJ+")'>👁️</button>"
+      +"</span>";
   }).join("")+"</div>";
 }
 // A19 · re-añadir del historial SIN re-meter a ciegas: en vez de añadir al instante, lleva el alimento al
@@ -5622,6 +5693,21 @@ function histReAdd(nombre){
   _superLlenando=false;
   toast("Ajusta los gramos y pulsa ➕ Añadir");
   setTimeout(function(){ try{ var g=$("com_gramos"); if(g){ g.focus(); if(g.select) g.select(); } }catch(e){} }, 60);   // foco + selección: teclear reemplaza
+}
+// A19 · ⚡ AÑADIR RÁPIDO: re-añade con los MISMOS gramos guardados, de un toque. Reutiliza comQuick (la misma
+// alta que el buscador: base → per-100×gramos; escaneado que no vive en la base → histCloneAdd reescala).
+function histReAddRapido(nombre){
+  var key=(nombre||"").toLowerCase();
+  var h=get(LS_HIST_ALIM,[]).filter(function(x){ return x && (x.n||"").toLowerCase()===key; })[0];
+  if(!h){ toast("No encuentro ese alimento en el historial"); return; }
+  comQuick(h.n, (+h.g>0?+h.g:100));   // 1 toque · comAdd limpia el input y hace toast "✓ Añadido"
+}
+// A19 · 👁️ ABRIR FICHA: abre el pop-up de ficha (foto + info + porción del envase) del alimento del historial,
+// con un CTA para elegir gramos y añadir. Reutiliza fichaVerNombreOItem (3er arg = re-añadir).
+function histReAddFicha(nombre){
+  var key=String(nombre||"").trim().toLowerCase();
+  var h=get(LS_HIST_ALIM,[]).filter(function(x){ return x && (x.n||"").toLowerCase()===key; })[0];
+  fichaVerNombreOItem(nombre, h||null, nombre);
 }
 // A19/B2 · alta de un escaneado del historial (NO vive en la base) CLONANDO sus macros guardados,
 // REESCALADOS de sus gramos guardados a `g` (los que Pablo dejó en el input). Devuelve true si añadió;
@@ -8793,7 +8879,10 @@ function superRender(){
     var atw=null; try{ atw=atwaterCheck(x); }catch(e){}
     var flag=(atw&&atw.ok===false)?' <span title="Revisar: la energía no cuadra con los macros" style="opacity:.8">⚠️</span>':'';
     var edit=x._edit?' <span title="Editado por ti" style="color:var(--jade)">✏️</span>':'';
-    return '<div class="bib-item" onclick="superElegir('+arg+')">'+superIcoHTML(x)+'<span style="flex:1">'+esc(x.n)+flag+edit
+    // A26 · puntito de calidad CLICABLE: toca el color y explica el porqué [CALIDAD-MOTIVO-PURE] (stopPropagation para no elegir el alimento).
+    var cal=null; try{ cal=calidadNutricional(x); }catch(e){}
+    var dot=cal?' <span onclick="event.stopPropagation();calidadClic('+arg+')" title="Calidad nutricional — toca para ver por qué" style="cursor:pointer">'+CALIDAD_ICO[cal.nivel]+'</span>':'';
+    return '<div class="bib-item" onclick="superElegir('+arg+')">'+superIcoHTML(x)+'<span style="flex:1">'+esc(x.n)+flag+edit+dot
       +'<span class="mus" style="display:block">'+Math.round(x.kcal)+" kcal / "+uni+tag+"</span></span>"+fichaOjoHTML("base",i)+"</div>";
   }).join("");
   if(!tot) h="<p class='hint'>Nada en la base con ese nombre.</p>";
@@ -9136,12 +9225,17 @@ function fichaMostrar(x){   // cola común de fichaVer: aplica detalle OFF cache
   x=aplicarOverride(x, ovrAll());   // A22 · tu corrección MANDA también en las fichas de historial/diario
   _fichaX=x; fichaRender(); show("fichaModal", true);
 }
-function fichaVerNombreOItem(nombre, fb){   // base por nombre → si no, view-model desde los totales del item fb
+function fichaVerNombreOItem(nombre, fb, reAdd){   // base por nombre → si no, view-model desde los totales del item fb
+  // A19 · reAdd (opcional): nombre del alimento del historial a re-añadir → la ficha muestra un CTA para
+  // elegir gramos y añadir (histReAdd). Sin reAdd (A1/A2) la ficha es de solo-lectura, como siempre.
   var b=fichaBasePorNombre(nombre);
-  if(b){ var xb=fichaXDeBase(b); xb._noBuscador=true; fichaMostrar(xb); return; }   // ficha de solo-lectura (sin «Elegir»)
+  if(b){ var xb=fichaXDeBase(b); xb._noBuscador=true; if(reAdd) xb._histReadd=reAdd; fichaMostrar(xb); return; }   // ficha de solo-lectura (sin «Elegir») salvo re-añadir
   var x=fichaPor100DeTotales(fb); if(!x){ toast("No tengo la ficha de este alimento"); return; }
-  x.src=null; x._noBuscador=true; fichaMostrar(x);
+  x.src=null; x._noBuscador=true; if(reAdd) x._histReadd=reAdd; fichaMostrar(x);
 }
+// A19 · desde la ficha del historial: cierra la ficha y lleva el alimento al input de gramos del buscador
+// (histReAdd rellena com_nombre/com_gramos + sincroniza los chips de porción del envase).
+function histReAddDesdeFicha(){ var n=_fichaX&&_fichaX._histReadd; fichaCerrar(); if(n) histReAdd(n); }
 function fichaVerHist(nombre){   // A1 · ojito de un chip del historial
   var key=String(nombre||"").trim().toLowerCase();
   var h=get(LS_HIST_ALIM,[]).filter(function(x){ return x && (x.n||"").toLowerCase()===key; })[0];
@@ -9160,8 +9254,12 @@ function fichaOjoDiario(id){ var aI=JSON.stringify(id).replace(/"/g,"&quot;");
   return '<button class="ficha-ojo" type="button" title="Ver ficha" aria-label="Ver ficha del alimento" onclick="event.stopPropagation();fichaVerDiario('+aI+')">👁️</button>'; }
 // 📖 Explicadores (i)/(?) reutilizables (A7/A21). infoTip devuelve el HTML del icono; explicaAbrir/Cerrar controlan el modal (mismo patrón que fichaModal).
 function infoTip(key){ if(!EXPLICACIONES[key]) return ""; return '<button type="button" class="infobtn" onclick="explicaAbrir(\''+key+'\')" aria-label="Qué es esto" title="Qué es esto">i</button>'; }
-function explicaAbrir(key){ var e=explicaTexto(key); if(!e) return; var t=document.getElementById("explica_titulo"), c=document.getElementById("explica_cuerpo"); if(t) t.textContent=e.titulo; if(c) c.textContent=e.cuerpo; show("explicaModal",true); }
+function explicaAbrir(key){ var e=explicaTexto(key); if(!e) return; var t=document.getElementById("explica_titulo"), c=document.getElementById("explica_cuerpo"); if(t) t.textContent=e.titulo; if(c){ c.style.whiteSpace="normal"; c.textContent=e.cuerpo; } show("explicaModal",true); }
 function explicaCerrar(){ show("explicaModal",false); }
+// A25 · aceptación de PRIMER USO del aviso legal. disclaimerGate se llama al arrancar: si no está aceptado,
+// muestra el modal (bloqueante, sin ✕). disclaimerAceptar persiste el OK (LS jvf_disclaimer_ok) y no vuelve.
+function disclaimerGate(){ try{ if(!get("jvf_disclaimer_ok",false)) show("disclaimerModal",true); }catch(e){} }
+function disclaimerAceptar(){ try{ set("jvf_disclaimer_ok",true); }catch(e){} show("disclaimerModal",false); }
 function fichaElegir(){
   var x=_fichaX; if(!x) return;
   fichaCerrar();
@@ -9206,10 +9304,11 @@ function fichaRender(){
   if(fichaNum(x.k)!=null)  h+='<div class="kv"><span>Potasio</span><span>'+fichaCampo(x.k,"mg")+'</span></div>';
   if(fichaNum(x.fe)!=null) h+='<div class="kv"><span>Hierro</span><span>'+fichaCampo(x.fe,"mg")+'</span></div>';
   if(fichaNum(x.tr)!=null) h+='<div class="kv"><span>Grasas trans</span><span>'+fichaCampo(x.tr,"g")+'</span></div>';
-  // semáforo FSA — REUTILIZA [CALIDAD-PURE] (calidadNutricional lee az/sat/na del view-model tal cual)
-  var cal=null; try{ cal=calidadNutricional(x); }catch(e){}
+  // semáforo FSA — REUTILIZA [CALIDAD-MOTIVO-PURE] (lee az/sat/na del view-model tal cual). A26: se listan
+  // TODOS los motivos que disparan color (no solo el primero), cada uno con su cifra y su corte.
+  var cal=null; try{ cal=calidadMotivos(x); }catch(e){}
   h+='<div class="eyebrow-lbl">Semáforo de calidad '+infoTip("calidad-semaforo")+'</div>';
-  h+= cal ? '<p class="hint" style="margin-top:4px">'+CALIDAD_ICO[cal.nivel]+' '+esc(cal.motivo)+'</p>'
+  h+= cal ? '<p class="hint" style="margin-top:4px;white-space:pre-line">'+esc(cal.motivos.map(function(m){ return m.txt; }).join("\n"))+'</p>'
           : '<p class="hint" style="margin-top:4px">Sin datos de azúcar/saturadas/sodio — no se juzga a ciegas.</p>';
   // ⚠️ A22 · aviso Atwater [ATWATER-PURE]: la energía no cuadra con los macros (posible error de unidad/aritmética).
   var atw=null; try{ atw=atwaterCheck(x); }catch(e){}
@@ -9247,6 +9346,9 @@ function fichaRender(){
   // ✏️ A22 · corregir los datos nutricionales a mano (tu valor MANDA y persiste); revertir si ya corregiste.
   h+='<button class="sec" type="button" style="width:100%;margin-top:10px" onclick="fichaCorregirAbrir()">✏️ Corregir datos</button>';
   if(x._edit) h+='<button class="sec" type="button" style="width:100%;margin-top:6px" onclick="fichaCorregirRevertir()">↩️ Volver al valor original</button>';
+  // A19 · abierta desde el historial para RE-AÑADIR (👁️ del chip): CTA para elegir gramos (y la porción del
+  // envase, arriba) y añadir. Va antes del «Cerrar»; convive con la ficha de solo-lectura.
+  if(x._histReadd) h+='<button type="button" style="width:100%;margin-top:10px" onclick="histReAddDesdeFicha()">➕ Elegir gramos y añadir</button>';
   // A1/A2 · abierta desde el historial o «lo que llevas» (_noBuscador) → ficha de solo-lectura: sin
   // «Elegir este alimento» (no hay buscador detrás que rellenar) y el cierre dice «Cerrar», no «Volver».
   if(!x._noBuscador) h+='<button type="button" style="width:100%;margin-top:10px" onclick="fichaElegir()">Elegir este alimento</button>';
@@ -9774,6 +9876,7 @@ document.addEventListener('visibilitychange',function(){
 });
 try{ navigator.storage&&navigator.storage.persist&&navigator.storage.persist(); }catch(e){}
 document.addEventListener('DOMContentLoaded',function(){
+  try{ disclaimerGate(); }catch(e){}   // A25 · aviso legal de primer uso (antes de nada, sobre la pantalla que toque)
   try{
     var chip=document.querySelector(".statuschip");
     if(chip&&typeof calcRacha==='function'){ var rc=calcRacha(); if(rc&&rc.dias7>0){ var s=document.createElement("span"); s.textContent="· 🔥 "+rc.dias7+" esta semana"; chip.appendChild(s); } }
@@ -9788,7 +9891,7 @@ document.addEventListener('DOMContentLoaded',function(){
     setTimeout(function(){ try{ dbxAutoProvision(); }catch(e){} }, 4000);   // 🗄️ E9 · auto-provisión/actualización de la base, tras el primer render
   }catch(e){}
 });
-function resetTodo(){ if(!confirm("⚠️ Esto borra TODO: perfil, pesos, entrenos, rutinas, comidas, alimentos propios, agua, suplementos, lo hablado con el Cerebro y las fotos de progreso. ¿Seguro?")) return; try{ localStorage.removeItem(LS_P); localStorage.removeItem(LS_W); localStorage.removeItem(LS_E); localStorage.removeItem("jvf_notas_ej"); localStorage.removeItem("jvf_comida"); localStorage.removeItem("jvf_agua"); localStorage.removeItem("jvf_agua_log"); localStorage.removeItem("jvf_suples_cfg"); localStorage.removeItem("jvf_suples_log"); localStorage.removeItem("jvf_rutinas"); localStorage.removeItem("jvf_ent_start"); localStorage.removeItem("jvf_meals"); localStorage.removeItem("jvf_alimentos_propios"); localStorage.removeItem("jvf_barcode_cache"); localStorage.removeItem("jvf_foto_ajustes"); localStorage.removeItem("jvf_warmup_stats"); localStorage.removeItem("jvf_plate_barra"); localStorage.removeItem("jvf_rest_seg"); localStorage.removeItem("jvf_cerebro_diario"); localStorage.removeItem("jvf_cerebro_norec"); localStorage.removeItem("jvf_fotos_consent"); localStorage.removeItem("jvf_fotos_meta"); localStorage.removeItem("jvf_flex_cfg"); localStorage.removeItem("jvf_flex_visto"); localStorage.removeItem("jvf_deporte_sesiones"); localStorage.removeItem("jvf_favoritos"); localStorage.removeItem("jvf_uso_alim"); localStorage.removeItem("jvf_hist_alim"); localStorage.removeItem("jvf_lesiones"); localStorage.removeItem("jvf_notif_cfg"); localStorage.removeItem("jvf_notif_shown"); localStorage.removeItem("jvf_pasos_log"); localStorage.removeItem("jvf_pasos_sync_cfg"); localStorage.removeItem("jvf_pasos_sync_last"); localStorage.removeItem("jvf_apodo"); localStorage.removeItem("jvf_clima"); localStorage.removeItem("jvf_agua_colapsada"); localStorage.removeItem("jvf_levantar_semana"); localStorage.removeItem("jvf_levantar_finde"); localStorage.removeItem("jvf_overrides"); }catch(e){} _mem={};
+function resetTodo(){ if(!confirm("⚠️ Esto borra TODO: perfil, pesos, entrenos, rutinas, comidas, alimentos propios, agua, suplementos, lo hablado con el Cerebro y las fotos de progreso. ¿Seguro?")) return; try{ localStorage.removeItem(LS_P); localStorage.removeItem(LS_W); localStorage.removeItem(LS_E); localStorage.removeItem("jvf_notas_ej"); localStorage.removeItem("jvf_comida"); localStorage.removeItem("jvf_agua"); localStorage.removeItem("jvf_agua_log"); localStorage.removeItem("jvf_suples_cfg"); localStorage.removeItem("jvf_suples_log"); localStorage.removeItem("jvf_rutinas"); localStorage.removeItem("jvf_ent_start"); localStorage.removeItem("jvf_meals"); localStorage.removeItem("jvf_alimentos_propios"); localStorage.removeItem("jvf_barcode_cache"); localStorage.removeItem("jvf_foto_ajustes"); localStorage.removeItem("jvf_warmup_stats"); localStorage.removeItem("jvf_plate_barra"); localStorage.removeItem("jvf_rest_seg"); localStorage.removeItem("jvf_cerebro_diario"); localStorage.removeItem("jvf_cerebro_norec"); localStorage.removeItem("jvf_fotos_consent"); localStorage.removeItem("jvf_fotos_meta"); localStorage.removeItem("jvf_flex_cfg"); localStorage.removeItem("jvf_flex_visto"); localStorage.removeItem("jvf_tono"); localStorage.removeItem("jvf_deporte_sesiones"); localStorage.removeItem("jvf_favoritos"); localStorage.removeItem("jvf_uso_alim"); localStorage.removeItem("jvf_hist_alim"); localStorage.removeItem("jvf_lesiones"); localStorage.removeItem("jvf_notif_cfg"); localStorage.removeItem("jvf_notif_shown"); localStorage.removeItem("jvf_pasos_log"); localStorage.removeItem("jvf_pasos_sync_cfg"); localStorage.removeItem("jvf_pasos_sync_last"); localStorage.removeItem("jvf_apodo"); localStorage.removeItem("jvf_clima"); localStorage.removeItem("jvf_agua_colapsada"); localStorage.removeItem("jvf_levantar_semana"); localStorage.removeItem("jvf_levantar_finde"); localStorage.removeItem("jvf_overrides"); }catch(e){} _mem={};
   // 📸 v0.13-C · las fotos viven en IndexedDB: se borra la base entera ANTES de recargar (con
   // timeout de seguridad — si el borrado se quedara bloqueado, la app no se cuelga: recarga igual
   // y el intento de borrado sigue en cola del navegador).
@@ -9803,7 +9906,7 @@ function resetTodo(){ if(!confirm("⚠️ Esto borra TODO: perfil, pesos, entren
 // Reemplazo total con confirmación. Reusa get/set, hoyLocal, toast, validar, render. NO toca motor ni gate.
 function exportarJSON(){ try{ set("jvf_last_export",hoyLocal()); }catch(e){}
   try{
-    var data={ app:"jvf", schema:1, app_version:"0.23.1", exportadoEl:new Date().toISOString(),
+    var data={ app:"jvf", schema:1, app_version:"0.24.0", exportadoEl:new Date().toISOString(),
       perfil:get(LS_P,null), pesos:get(LS_W,[]), entrenos:get(LS_E,[]), notas_ej:get("jvf_notas_ej",{}), comida:get("jvf_comida",[]), agua:get("jvf_agua",{}), suples_cfg:get("jvf_suples_cfg",null), suples_log:get("jvf_suples_log",{}),
       rutinas:get("jvf_rutinas",[]), meals:get("jvf_meals",[]), ent_start:get("jvf_ent_start",null),   // v0.10 · backup completo
       alimentos_propios:get("jvf_alimentos_propios",[]), barcode_cache:get("jvf_barcode_cache",{}),   // I5/I6 · también viajan en el backup
@@ -9815,6 +9918,7 @@ function exportarJSON(){ try{ set("jvf_last_export",hoyLocal()); }catch(e){}
       // aparte: PENDIENTE (documentado; de momento las fotos no se pueden migrar de dispositivo).
       fotos_meta:get("jvf_fotos_meta",[]),
       flex_cfg:get("jvf_flex_cfg",null), flex_visto:get("jvf_flex_visto",null),   // M · capa FLEX: tono elegido + descartes del día
+      tono:get("jvf_tono",null),   // A24 · «Cómo te habla Jarvis» (tono del coach; viaja en el backup)
       notif_cfg:get("jvf_notif_cfg",null),   // 🔔 config de recordatorios in-app
       apodo:get("jvf_apodo",""),   // 🏷️ E7 · cómo te llama Jarvis (viaja en el backup)
       levantar_semana:get("jvf_levantar_semana",null), levantar_finde:get("jvf_levantar_finde",null),   // ⚖️ E10 · horas de levantarse (recordatorio de pesaje)
@@ -9873,6 +9977,7 @@ function procesarImport(file){
     if(Array.isArray(data.cerebro_norec)) set("jvf_cerebro_norec", data.cerebro_norec.filter(function(x){ return x && x.q; }));
     // M · capa FLEX (los backups antiguos no la traen: se deja como está)
     if(data.flex_cfg && typeof data.flex_cfg==="object") set("jvf_flex_cfg", data.flex_cfg);
+    if(typeof data.tono==="string" && ["amable","directo","motivador","sargento"].indexOf(data.tono)>=0) set("jvf_tono", data.tono);   // A24 · tono del coach (backups antiguos no lo traen: se deja como está)
     if(data.notif_cfg && typeof data.notif_cfg==="object") set("jvf_notif_cfg", data.notif_cfg);   // 🔔 recordatorios
     if(typeof data.apodo==="string") set("jvf_apodo", data.apodo.slice(0,24));   // 🏷️ E7 · apodo (backups antiguos no lo traen: se deja como está)
     if(typeof data.levantar_semana==="string" && /^\d{1,2}:\d{2}$/.test(data.levantar_semana)) set("jvf_levantar_semana", data.levantar_semana);   // ⚖️ E10
@@ -11614,11 +11719,46 @@ function flexCtxBadges(ctx){
   return ctx.map(function(id){ return map[id]||""; }).filter(Boolean).join("");
 }
 // [FLEX-PURE-FIN]
+// [TONO-PURE-INICIO] — A24 · «Cómo te habla Jarvis»: reescribe un mensaje base del coach según el TONO
+// elegido. PURO (sin DOM/storage/red) y SIN Math.random: el adorno se elige por un HASH del propio mensaje
+// (determinista → el mismo mensaje da SIEMPRE el mismo resultado). _tests/test-tono.node.js lo evalúa.
+// tono ∈ {amable, directo, motivador, sargento}. 😈 «sargento» es OPT-IN (insultos motivacionales tipo
+// instructor militar) y SOLO sale si tono==="sargento"; cualquier otro valor (incl. ausente/desconocido)
+// cae en «amable» → NUNCA insulta por defecto. tonoAFlex mapea al tono interno de la FLEX (3 variantes ya
+// escritas) para reutilizar sus mensajes; encima, tonoAplica añade la personalidad (prefijos/sufijos).
+var TONOS_COACH=["amable","directo","motivador","sargento"];
+function _tonoHash(s){ var h=0, str=String(s==null?"":s); for(var i=0;i<str.length;i++){ h=((h<<5)-h+str.charCodeAt(i))|0; } return Math.abs(h); }
+function tonoAFlex(tono){ var m={amable:"carinoso", directo:"neutro", motivador:"carinoso", sargento:"cana"}; return m[tono]||"carinoso"; }
+var TONO_BANCO={
+  amable:   { pre:["", "Oye, ", "Tranqui — "], suf:["", " 🙂"] },
+  directo:  { pre:["", "Al grano: ", "Directo: "], suf:["", ""] },
+  motivador:{ pre:["¡Vamos! ", "¡Tú puedes! ", "¡Ánimo, crack! "], suf:[" 💪", " ¡A por ello!", " 🔥"] },
+  sargento: { pre:["¡Escúchame, recluta! ", "¡Firmes, soldado! ", "¡Sin excusas, blandengue! "], suf:[" ¡Y espabila!", " ¡Ya, que no tengo todo el día!", " ¡Ni una queja!"] }
+};
+function tonoAplica(base, tono, seed){
+  base=String(base==null?"":base).trim();
+  if(!base) return "";
+  if(TONOS_COACH.indexOf(tono)<0) tono="amable";           // ausente/desconocido → amable (jamás insulta)
+  var b=TONO_BANCO[tono]||TONO_BANCO.amable;
+  var idx=(seed==null?_tonoHash(base):(Math.abs(+seed)||0));
+  var pre=b.pre[idx % b.pre.length], suf=b.suf[idx % b.suf.length];
+  return (pre+base+suf).replace(/\s+/g," ").trim();
+}
+// [TONO-PURE-FIN]
 
 // ---- Capa IMPURA de la FLEX (DOM + storage): decide qué pintar y recuerda el descarte del día ----
 var _flexPesoCtxSel={};   // selección temporal de chips antes de guardar el peso
 var _flexActualId=null;   // id del hit que se está mostrando (para re-pintar al cambiar el tono)
-function flexCfg(){ var c=get("jvf_flex_cfg",{}); var t=(c&&c.tono)||"carinoso"; if(["carinoso","neutro","cana"].indexOf(t)<0) t="carinoso"; return {tono:t}; }
+// A24 · TONO del coach (LS jvf_tono). Fuente ÚNICA de la «voz de Jarvis». Si no está fijado, MIGRA del
+// viejo tono FLEX (jvf_flex_cfg): cariñoso→amable, neutro→directo, caña→motivador (NUNCA auto-sargento).
+var LS_TONO="jvf_tono";
+function tonoActual(){
+  var t=get(LS_TONO,null); if(TONOS_COACH.indexOf(t)>=0) return t;
+  var old=get("jvf_flex_cfg",{}), ot=(old&&old.tono)||"", map={carinoso:"amable", neutro:"directo", cana:"motivador"};
+  return map[ot]||"amable";
+}
+// flexCfg mantiene su contrato ({tono: <interno FLEX>}) para los detectores/coachAvisos, ahora derivado del tono del coach.
+function flexCfg(){ return {tono: tonoAFlex(tonoActual())}; }
 function flexVistoHoy(){ var v=get("jvf_flex_visto",{}); var h=hoyLocal(); if(!v||v.f!==h){ v={f:h,ids:[]}; } if(!Array.isArray(v.ids)) v.ids=[]; return v; }
 function flexMarcarVisto(id){ var v=flexVistoHoy(); if(v.ids.indexOf(id)<0) v.ids.push(id); set("jvf_flex_visto",v); }
 function flexDatos(){ return { comida:get(LS_COMIDA,[]), agua:get(LS_AGUA,{}), entrenos:get(LS_E,[]), pesos:get(LS_W,[]), suples_cfg:get(LS_SUP_CFG,{}), suples_log:get(LS_SUP_LOG,{}) }; }
@@ -11631,39 +11771,41 @@ function flexRefrescar(){
   flexMarcarVisto(pend[0].id);   // "no repetir el mismo el mismo día": se marca al mostrarse
 }
 function flexTonoSelectorHTML(){
-  var t=flexCfg().tono, o=function(v,l){ return "<option value='"+v+"'"+(t===v?" selected":"")+">"+l+"</option>"; };
-  return "<select class='flextono' onchange='flexSetTono(this.value)'>"+o("carinoso","cariñoso")+o("neutro","neutro")+o("cana","caña 🌶️")+"</select>";
+  var t=tonoActual(), o=function(v,l){ return "<option value='"+v+"'"+(t===v?" selected":"")+">"+l+"</option>"; };
+  return "<select class='flextono' onchange='flexSetTono(this.value)'>"+o("amable","amable")+o("directo","directo")+o("motivador","motivador 💪")+o("sargento","sargento 😈")+"</select>";
 }
 function flexPintarTarjeta(hit){
   var host=$("flex_host"); if(!host||!hit) return; _flexActualId=hit.id;
+  var msg=hit.txt; try{ msg=tonoAplica(hit.txt, tonoActual(), _tonoHash(hit.id)); }catch(e){}   // A24 · aplica la personalidad del tono al mensaje del coach
   host.innerHTML="<div class='flexcard' id='flexcard'>"
     +"<button class='flexx' type='button' title='Descartar por hoy' onclick=\"flexDescartar()\">✕</button>"
     +"<div class='flexhead'>"+esc(hit.emoji)+" <span>Jarvis nota…</span></div>"
-    +"<div class='flexmsg'>"+esc(hit.txt)+"</div>"
+    +"<div class='flexmsg'>"+esc(msg)+"</div>"
     +"<div class='flexfoot'>Tono: "+flexTonoSelectorHTML()+"</div>"
     +"</div>";
   try{ var c=$("flexcard"); c.classList.remove("flexin"); void c.offsetWidth; c.classList.add("flexin"); }catch(e){}
 }
 function flexDescartar(){ if(_flexActualId) flexMarcarVisto(_flexActualId); var h=$("flex_host"); if(h) h.innerHTML=""; _flexActualId=null; toast("Vale, lo dejo por hoy 👌"); }   // sin arg: usa _flexActualId → cero texto del usuario en el onclick (fix XSS verif. v0.13-F)
 function flexSetTono(v){
-  if(["carinoso","neutro","cana"].indexOf(v)<0) return;
-  if(v==="cana" && flexCfg().tono!=="cana"){
-    if(!confirm("Modo «caña» 🌶️: Jarvis te hablará MÁS directo, con pullas cariñosas. Es humor, JAMÁS para hacerte sentir mal — y lo quitas cuando quieras. ¿Lo activo?")){
-      try{ var s1=$("aj_flex_tono"); if(s1) s1.value=flexCfg().tono; var s2=document.querySelector('.flexcard .flextono'); if(s2) s2.value=flexCfg().tono; }catch(e){}
+  if(TONOS_COACH.indexOf(v)<0) return;
+  // 😈 sargento es OPT-IN: avisa (lenguaje duro/insultos motivacionales) antes de activarse.
+  if(v==="sargento" && tonoActual()!=="sargento"){
+    if(!confirm("Modo «Sargento» 😈: Jarvis te hablará DURO, con insultos motivacionales tipo instructor militar («recluta», «blandengue»…). Es humor para picarte, JAMÁS para hacerte sentir mal — y lo quitas cuando quieras. ¿Permites lenguaje duro / insultos motivacionales?")){
+      try{ var s1=$("aj_flex_tono"); if(s1) s1.value=tonoActual(); var s2=document.querySelector('.flexcard .flextono'); if(s2) s2.value=tonoActual(); }catch(e){}
       return;
     }
   }
-  set("jvf_flex_cfg",{tono:v});
+  set(LS_TONO, v);
   flexSyncAjustes();
   // re-pinta la MISMA tarjeta con el nuevo tono (sin volver a filtrar: el id ya está "visto")
   if(_flexActualId){
-    var hits=flexDetectarTodos(flexDatos(), hoyLocal(), v), cur=null;
+    var hits=flexDetectarTodos(flexDatos(), hoyLocal(), tonoAFlex(v)), cur=null;
     hits.forEach(function(h){ if(h.id===_flexActualId) cur=h; });
     if(cur) flexPintarTarjeta(cur); else flexRefrescar();
   }
-  toast("Tono: "+({carinoso:"cariñoso",neutro:"neutro",cana:"caña 🌶️"}[v]||v));
+  toast("Tono: "+({amable:"amable", directo:"directo", motivador:"motivador 💪", sargento:"sargento 😈"}[v]||v));
 }
-function flexSyncAjustes(){ var s=$("aj_flex_tono"); if(s) s.value=flexCfg().tono; }
+function flexSyncAjustes(){ var s=$("aj_flex_tono"); if(s) s.value=tonoActual(); }
 // M1 · chips de contexto en la pestaña Peso
 function flexPesoChipsRender(){
   var el=$("flex_peso_chips"); if(!el) return;
