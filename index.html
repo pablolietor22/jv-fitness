@@ -2007,119 +2007,119 @@ var _favSugDismiss={};   // descartes de la sugerencia (solo en memoria; no se p
 var LS_HIST_ALIM="jvf_hist_alim";
 var _histQuery="";   // último texto del buscador (solo en memoria; para sobrevivir a un renderComida)
 var FOODS=[
-  {n:"Pechuga de pollo",kcal:165,p:31,c:0,f:3.6,fib:0,az:0,sat:1},
-  {n:"Muslo de pollo",kcal:209,p:26,c:0,f:11,fib:0,az:0,sat:3},
+  {n:"Pechuga de pollo",kcal:165,p:31,c:0,f:3.6,fib:0,az:0,sat:1,na:65,mic:{ca:22.8,fe:1.5,mg:22.4,k:255}},
+  {n:"Muslo de pollo",kcal:209,p:26,c:0,f:11,fib:0,az:0,sat:3,na:82,mic:{ca:12.4,fe:1.5,mg:21,k:204,vc:1.7}},
   {n:"Ternera magra",kcal:175,p:26,c:0,f:8,fib:0,az:0,sat:3.2},
-  {n:"Lomo de cerdo",kcal:145,p:21,c:0,f:6,fib:0,az:0,sat:2.1},
+  {n:"Lomo de cerdo",kcal:145,p:21,c:0,f:6,fib:0,az:0,sat:2.1,na:63,mic:{ca:9,fe:0.9,mg:20,k:212}},
   {n:"Pavo (pechuga)",kcal:135,p:29,c:0,f:2,fib:0,az:0,sat:0.5},
-  {n:"Atún al natural",kcal:116,p:26,c:0,f:1,fib:0,az:0,sat:0.3,porc:"lata:52"},
-  {n:"Salmón",kcal:208,p:20,c:0,f:13,fib:0,az:0,sat:3},
-  {n:"Merluza",kcal:90,p:18,c:0,f:2,fib:0,az:0,sat:0.4},
-  {n:"Gambas",kcal:99,p:24,c:0,f:0.3,fib:0,az:0,sat:0.1},
-  {n:"Huevo entero",kcal:155,p:13,c:1.1,f:11,fib:0,az:0.4,sat:3.1,porc:"huevo:60"},
-  {n:"Clara de huevo",kcal:52,p:11,c:0.7,f:0.2,fib:0,az:0.7,sat:0.1,porc:"clara:33"},
-  {n:"Jamón serrano",kcal:241,p:31,c:1,f:12,fib:0,az:0,sat:4.4,porc:"loncha:15"},
+  {n:"Atún al natural",kcal:116,p:26,c:0,f:1,fib:0,az:0,sat:0.3,porc:"lata:52",na:320,mic:{ca:28,fe:1,mg:27,k:230}},
+  {n:"Salmón",kcal:208,p:20,c:0,f:13,fib:0,az:0,sat:3,na:98,mic:{ca:27,fe:0.7,mg:26,k:310}},
+  {n:"Merluza",kcal:90,p:18,c:0,f:2,fib:0,az:0,sat:0.4,na:101,mic:{ca:33.1,fe:1.1,mg:25.1,k:294}},
+  {n:"Gambas",kcal:99,p:24,c:0,f:0.3,fib:0,az:0,sat:0.1,na:305,mic:{ca:115,fe:3.3,mg:69,k:221}},
+  {n:"Huevo entero",kcal:155,p:13,c:1.1,f:11,fib:0,az:0.4,sat:3.1,porc:"huevo:60",na:140,mic:{ca:57,fe:1.9,mg:12,k:130}},
+  {n:"Clara de huevo",kcal:52,p:11,c:0.7,f:0.2,fib:0,az:0.7,sat:0.1,porc:"clara:33",na:160,mic:{ca:6,fe:0.1,mg:10,k:142}},
+  {n:"Jamón serrano",kcal:241,p:31,c:1,f:12,fib:0,az:0,sat:4.4,porc:"loncha:15",na:2130,mic:{ca:9,fe:1.7,mg:22,k:250}},
   {n:"Jamón cocido (pavo)",kcal:104,p:17,c:1.5,f:3,fib:0,az:1,sat:1,porc:"loncha:20"},
-  {n:"Leche entera",kcal:61,p:3.2,c:4.8,f:3.3,u:"ml",fib:0,az:4.8,sat:2},
-  {n:"Leche desnatada",kcal:35,p:3.4,c:5,f:0.1,u:"ml",fib:0,az:5,sat:0.1},
-  {n:"Yogur natural",kcal:61,p:3.5,c:4.7,f:3.3,fib:0,az:4.7,sat:2,porc:"yogur:125"},
-  {n:"Yogur griego",kcal:97,p:9,c:4,f:5,fib:0,az:4,sat:3.3,porc:"yogur:125"},
+  {n:"Leche entera",kcal:61,p:3.2,c:4.8,f:3.3,u:"ml",fib:0,az:4.8,sat:2,na:48,mic:{ca:124,fe:0.1,mg:11.6,k:157,vc:1.4}},
+  {n:"Leche desnatada",kcal:35,p:3.4,c:5,f:0.1,u:"ml",fib:0,az:5,sat:0.1,na:45,mic:{ca:112,fe:0.1,mg:10.5,k:174,vc:1}},
+  {n:"Yogur natural",kcal:61,p:3.5,c:4.7,f:3.3,fib:0,az:4.7,sat:2,porc:"yogur:125",na:43,mic:{ca:131,fe:0.1,mg:12,k:158,vc:1.1}},
+  {n:"Yogur griego",kcal:97,p:9,c:4,f:5,fib:0,az:4,sat:3.3,porc:"yogur:125",na:71,mic:{ca:150,fe:0.3,mg:12,k:150}},
   {n:"Queso batido 0%",kcal:47,p:8,c:4,f:0.2,fib:0,az:4,sat:0.1,porc:"tarrina:125"},
-  {n:"Requesón",kcal:98,p:11,c:3,f:4,fib:0,az:3,sat:2.5},
-  {n:"Queso curado",kcal:380,p:25,c:1.4,f:30,fib:0,az:0,sat:19,porc:"loncha:20"},
+  {n:"Requesón",kcal:98,p:11,c:3,f:4,fib:0,az:3,sat:2.5,na:230,mic:{ca:95,fe:0.3,mg:9,k:88}},
+  {n:"Queso curado",kcal:380,p:25,c:1.4,f:30,fib:0,az:0,sat:19,porc:"loncha:20",na:620,mic:{ca:848,fe:0.8,mg:33.5,k:82}},
   {n:"Arroz blanco cocido",kcal:130,p:2.7,c:28,f:0.3,fib:0.3,az:0.1,sat:0.08,porc:"vasito:125"},
-  {n:"Pasta cocida",kcal:158,p:5.8,c:31,f:0.9,fib:1.8,az:0.6,sat:0.17},
-  {n:"Avena",kcal:389,p:17,c:66,f:7,fib:10,az:1,sat:1.2},
-  {n:"Pan integral",kcal:247,p:9,c:41,f:3.4,fib:7,az:3.5,sat:0.5,porc:"rebanada:40"},
-  {n:"Pan blanco",kcal:265,p:9,c:49,f:3.2,fib:2.7,az:4,sat:0.7,porc:"rebanada:40"},
-  {n:"Patata cocida",kcal:87,p:1.9,c:20,f:0.1,fib:1.8,az:0.9,sat:0.03},
-  {n:"Boniato",kcal:86,p:1.6,c:20,f:0.1,fib:3,az:6,sat:0.02},
+  {n:"Pasta cocida",kcal:158,p:5.8,c:31,f:0.9,fib:1.8,az:0.6,sat:0.17,na:2,mic:{ca:10,fe:0.4,mg:12,k:23}},
+  {n:"Avena",kcal:389,p:17,c:66,f:7,fib:10,az:1,sat:1.2,na:2,mic:{ca:54,fe:4.7,mg:177,k:429}},
+  {n:"Pan integral",kcal:247,p:9,c:41,f:3.4,fib:7,az:3.5,sat:0.5,porc:"rebanada:40",na:530,mic:{ca:99,fe:3.8,mg:58,k:222,vc:0.3}},
+  {n:"Pan blanco",kcal:265,p:9,c:49,f:3.2,fib:2.7,az:4,sat:0.7,porc:"rebanada:40",na:650,mic:{ca:56,fe:1.6,mg:25,k:120}},
+  {n:"Patata cocida",kcal:87,p:1.9,c:20,f:0.1,fib:1.8,az:0.9,sat:0.03,na:7,mic:{ca:6.8,fe:0.7,mg:15.9,k:413.3,vc:12.2}},
+  {n:"Boniato",kcal:86,p:1.6,c:20,f:0.1,fib:3,az:6,sat:0.02,na:19,mic:{ca:22,fe:0.7,mg:13,k:300,vc:25}},
   {n:"Quinoa cocida",kcal:120,p:4.4,c:21,f:1.9,fib:2.8,az:0.9,sat:0.23},
-  {n:"Lentejas cocidas",kcal:116,p:9,c:20,f:0.4,fib:7.9,az:1.8,sat:0.05},
-  {n:"Garbanzos cocidos",kcal:164,p:9,c:27,f:2.6,fib:7.6,az:4.8,sat:0.27},
-  {n:"Alubias cocidas",kcal:127,p:9,c:23,f:0.5,fib:6.4,az:0.3,sat:0.07},
-  {n:"Plátano",kcal:89,p:1.1,c:23,f:0.3,fib:2.6,az:12,sat:0.1,porc:"unidad:120"},
-  {n:"Manzana",kcal:52,p:0.3,c:14,f:0.2,fib:2.4,az:10,sat:0.03,porc:"unidad:180"},
-  {n:"Naranja",kcal:47,p:0.9,c:12,f:0.1,fib:2.4,az:9,sat:0.02,porc:"unidad:150"},
-  {n:"Fresas",kcal:32,p:0.7,c:8,f:0.3,fib:2,az:4.9,sat:0.02},
-  {n:"Arándanos",kcal:57,p:0.7,c:14,f:0.3,fib:2.4,az:10,sat:0.03},
-  {n:"Aguacate",kcal:160,p:2,c:9,f:15,fib:6.7,az:0.7,sat:2.1,porc:"medio:100"},
-  {n:"Aceite de oliva",kcal:884,p:0,c:0,f:100,fib:0,az:0,sat:14},
-  {n:"Almendras",kcal:579,p:21,c:22,f:50,fib:12.5,az:4.4,sat:3.8,porc:"puñado:30"},
-  {n:"Nueces",kcal:654,p:15,c:14,f:65,fib:6.7,az:2.6,sat:6.1,porc:"puñado:30"},
-  {n:"Crema de cacahuete",kcal:588,p:25,c:20,f:50,fib:6,az:9,sat:10,porc:"cucharada:15"},
-  {n:"Brócoli",kcal:34,p:2.8,c:7,f:0.4,fib:2.6,az:1.7,sat:0.04},
-  {n:"Espinacas",kcal:23,p:2.9,c:3.6,f:0.4,fib:2.2,az:0.4,sat:0.06},
-  {n:"Tomate",kcal:18,p:0.9,c:3.9,f:0.2,fib:1.2,az:2.6,sat:0.03},
-  {n:"Lechuga",kcal:15,p:1.4,c:2.9,f:0.2,fib:1.3,az:0.8,sat:0.03},
-  {n:"Pimiento",kcal:31,p:1,c:6,f:0.3,fib:2,az:4.2,sat:0.06},
+  {n:"Lentejas cocidas",kcal:116,p:9,c:20,f:0.4,fib:7.9,az:1.8,sat:0.05,na:36,mic:{ca:70,fe:8.2,mg:74.8,k:670,vc:3.4}},
+  {n:"Garbanzos cocidos",kcal:164,p:9,c:27,f:2.6,fib:7.6,az:4.8,sat:0.27,na:6,mic:{ca:56,fe:2.8,mg:53,k:335}},
+  {n:"Alubias cocidas",kcal:127,p:9,c:23,f:0.5,fib:6.4,az:0.3,sat:0.07,na:3,mic:{ca:66,fe:2.5,mg:47,k:420,vc:1}},
+  {n:"Plátano",kcal:89,p:1.1,c:23,f:0.3,fib:2.6,az:12,sat:0.1,porc:"unidad:120",na:1,mic:{ca:9,fe:0.6,mg:38,k:350,vc:10}},
+  {n:"Manzana",kcal:52,p:0.3,c:14,f:0.2,fib:2.4,az:10,sat:0.03,porc:"unidad:180",na:2,mic:{ca:6,fe:0.4,mg:5,k:99,vc:3}},
+  {n:"Naranja",kcal:47,p:0.9,c:12,f:0.1,fib:2.4,az:9,sat:0.02,porc:"unidad:150",na:3,mic:{ca:36,fe:0.3,mg:12,k:200,vc:50}},
+  {n:"Fresas",kcal:32,p:0.7,c:8,f:0.3,fib:2,az:4.9,sat:0.02,na:2,mic:{ca:25,fe:0.8,mg:12,k:190,vc:60}},
+  {n:"Arándanos",kcal:57,p:0.7,c:14,f:0.3,fib:2.4,az:10,sat:0.03,na:1,mic:{ca:10,fe:0.7,mg:2.4,k:78,vc:22}},
+  {n:"Aguacate",kcal:160,p:2,c:9,f:15,fib:6.7,az:0.7,sat:2.1,porc:"medio:100",na:2,mic:{ca:16,fe:0.7,mg:41,k:400,vc:17}},
+  {n:"Aceite de oliva",kcal:884,p:0,c:0,f:100,fib:0,az:0,sat:14,na:0},
+  {n:"Almendras",kcal:579,p:21,c:22,f:50,fib:12.5,az:4.4,sat:3.8,porc:"puñado:30",na:10,mic:{ca:248.3,fe:3.6,mg:258.1,k:767.3}},
+  {n:"Nueces",kcal:654,p:15,c:14,f:65,fib:6.7,az:2.6,sat:6.1,porc:"puñado:30",na:3,mic:{ca:77,fe:2.3,mg:140,k:690}},
+  {n:"Crema de cacahuete",kcal:588,p:25,c:20,f:50,fib:6,az:9,sat:10,porc:"cucharada:15",na:313,mic:{ca:40,fe:2,mg:180,k:750}},
+  {n:"Brócoli",kcal:34,p:2.8,c:7,f:0.4,fib:2.6,az:1.7,sat:0.04,na:13,mic:{ca:93,fe:1.4,mg:25,k:370,vc:110}},
+  {n:"Espinacas",kcal:23,p:2.9,c:3.6,f:0.4,fib:2.2,az:0.4,sat:0.06,na:57,mic:{ca:119.7,fe:2.1,mg:46.4,k:458.9,vc:23.6}},
+  {n:"Tomate",kcal:18,p:0.9,c:3.9,f:0.2,fib:1.2,az:2.6,sat:0.03,na:18,mic:{ca:11,fe:0.5,mg:10,k:236,vc:19}},
+  {n:"Lechuga",kcal:15,p:1.4,c:2.9,f:0.2,fib:1.3,az:0.8,sat:0.03,na:3,mic:{ca:34.7,fe:1,mg:8.7,k:220,vc:12.2}},
+  {n:"Pimiento",kcal:31,p:1,c:6,f:0.3,fib:2,az:4.2,sat:0.06,na:6,mic:{ca:9,fe:0.4,mg:8,k:155,vc:152}},
   {n:"Proteína whey (polvo)",kcal:380,p:75,c:8,f:6,fib:0,az:6,sat:3.5,porc:"cazo:30"},
   {n:"Chocolate negro 85%",kcal:590,p:10,c:19,f:55,fib:11,az:7,sat:32,porc:"onza:10"},
-  {n:"Miel",kcal:304,p:0.3,c:82,f:0,fib:0,az:82,sat:0,porc:"cucharada:21"},
+  {n:"Miel",kcal:304,p:0.3,c:82,f:0,fib:0,az:82,sat:0,porc:"cucharada:21",na:23,mic:{ca:15,fe:0.7,mg:5,k:54,vc:2}},
   {n:"Sardinas en aceite (escurridas)",kcal:208,p:25,c:0,f:11,fib:0,az:0,sat:2.5,porc:"lata:60"},
   {n:"Atún en aceite (escurrido)",kcal:198,p:29,c:0,f:8,fib:0,az:0,sat:1.5,porc:"lata:52"},
-  {n:"Bacalao",kcal:82,p:18,c:0,f:0.7,fib:0,az:0,sat:0.14},
-  {n:"Dorada",kcal:100,p:20,c:0,f:2.5,fib:0,az:0,sat:0.6},
-  {n:"Lubina",kcal:97,p:19,c:0,f:2,fib:0,az:0,sat:0.45},
-  {n:"Caballa",kcal:205,p:19,c:0,f:14,fib:0,az:0,sat:3.3},
-  {n:"Boquerones",kcal:131,p:20,c:0,f:5,fib:0,az:0,sat:1.3},
-  {n:"Pulpo cocido",kcal:82,p:15,c:2,f:1,fib:0,az:0,sat:0.2},
-  {n:"Solomillo de cerdo",kcal:143,p:21,c:0,f:6,fib:0,az:0,sat:2},
+  {n:"Bacalao",kcal:82,p:18,c:0,f:0.7,fib:0,az:0,sat:0.14,na:68,mic:{ca:13,fe:0.1,mg:24,k:340}},
+  {n:"Dorada",kcal:100,p:20,c:0,f:2.5,fib:0,az:0,sat:0.6,na:73,mic:{ca:30,fe:0.9,mg:25,k:300}},
+  {n:"Lubina",kcal:97,p:19,c:0,f:2,fib:0,az:0,sat:0.45,na:69,mic:{ca:20,fe:1.1,mg:26,k:340}},
+  {n:"Caballa",kcal:205,p:19,c:0,f:14,fib:0,az:0,sat:3.3,na:84,mic:{ca:12,fe:1.2,mg:30,k:386}},
+  {n:"Boquerones",kcal:131,p:20,c:0,f:5,fib:0,az:0,sat:1.3,na:116,mic:{ca:30,fe:1,mg:29,k:331}},
+  {n:"Pulpo cocido",kcal:82,p:15,c:2,f:1,fib:0,az:0,sat:0.2,na:25,mic:{ca:30.4,fe:1.5,mg:30.5,k:215.3}},
+  {n:"Solomillo de cerdo",kcal:143,p:21,c:0,f:6,fib:0,az:0,sat:2,na:53,mic:{ca:8,fe:1.2,mg:25,k:420}},
   {n:"Carne picada mixta",kcal:250,p:17,c:0,f:20,fib:0,az:0,sat:8},
-  {n:"Chorizo",kcal:455,p:24,c:2,f:38,fib:0,az:1,sat:14,porc:"rodaja:10"},
-  {n:"Lomo embuchado",kcal:380,p:37,c:0,f:25,fib:0,az:0,sat:9,porc:"loncha:10"},
-  {n:"Fuet",kcal:470,p:25,c:2,f:40,fib:0,az:1,sat:15,porc:"trozo:30"},
-  {n:"Kéfir",kcal:60,p:3.3,c:4.5,f:3.2,fib:0,az:4.5,sat:2,porc:"vaso:200"},
+  {n:"Chorizo",kcal:455,p:24,c:2,f:38,fib:0,az:1,sat:14,porc:"rodaja:10",na:1060,mic:{ca:18.4,fe:2.1,mg:10.3,k:180}},
+  {n:"Lomo embuchado",kcal:380,p:37,c:0,f:25,fib:0,az:0,sat:9,porc:"loncha:10",na:1470,mic:{ca:20,fe:3.7,mg:20,k:230}},
+  {n:"Fuet",kcal:470,p:25,c:2,f:40,fib:0,az:1,sat:15,porc:"trozo:30",na:1180,mic:{ca:11,fe:1,mg:26,k:280}},
+  {n:"Kéfir",kcal:60,p:3.3,c:4.5,f:3.2,fib:0,az:4.5,sat:2,porc:"vaso:200",na:46,mic:{ca:127,fe:0.1,mg:14,k:160,vc:0.3}},
   {n:"Skyr",kcal:63,p:11,c:4,f:0.2,fib:0,az:4,sat:0.1,porc:"tarrina:150"},
   {n:"Queso fresco (Burgos)",kcal:174,p:12,c:3,f:13,fib:0,az:3,sat:8.5,porc:"tarrina:125"},
   {n:"Mozzarella",kcal:280,p:22,c:2.2,f:20,fib:0,az:1,sat:12,porc:"bola:125"},
   {n:"Queso de untar light",kcal:150,p:8,c:5,f:11,fib:0,az:4,sat:7,porc:"cucharada:15"},
-  {n:"Mantequilla",kcal:717,p:0.9,c:0.1,f:81,fib:0,az:0.1,sat:51,porc:"porcion:10"},
-  {n:"Nata para cocinar",kcal:195,p:2.5,c:4,f:19,fib:0,az:3.4,sat:12},
-  {n:"Tofu",kcal:76,p:8,c:1.9,f:4.8,fib:0.7,az:0.5,sat:0.7,porc:"taco:100"},
+  {n:"Mantequilla",kcal:717,p:0.9,c:0.1,f:81,fib:0,az:0.1,sat:51,porc:"porcion:10",mic:{ca:15,fe:0.2,mg:2,k:15}},
+  {n:"Nata para cocinar",kcal:195,p:2.5,c:4,f:19,fib:0,az:3.4,sat:12,na:45,mic:{ca:94,fe:0.2,mg:9,k:130,vc:1}},
+  {n:"Tofu",kcal:76,p:8,c:1.9,f:4.8,fib:0.7,az:0.5,sat:0.7,porc:"taco:100",na:7,mic:{ca:200,fe:1.7,mg:70,k:180}},
   {n:"Seitán",kcal:141,p:24,c:6,f:2,fib:1,az:0.5,sat:0.3,porc:"filete:100"},
   {n:"Soja texturizada (seca)",kcal:330,p:50,c:30,f:1,fib:13,az:9,sat:0.2},
   {n:"Tempeh",kcal:193,p:19,c:9,f:11,fib:6,az:1,sat:2.5,porc:"taco:100"},
   {n:"Proteína caseína (polvo)",kcal:370,p:78,c:6,f:2,fib:0,az:4,sat:1.3,porc:"cazo:30"},
-  {n:"Arroz integral cocido",kcal:111,p:2.6,c:23,f:0.9,fib:1.8,az:0.4,sat:0.2,porc:"vasito:125"},
+  {n:"Arroz integral cocido",kcal:111,p:2.6,c:23,f:0.9,fib:1.8,az:0.4,sat:0.2,porc:"vasito:125",na:5,mic:{ca:10,fe:0.5,mg:43,k:43}},
   {n:"Cuscús cocido",kcal:112,p:3.8,c:23,f:0.2,fib:1.4,az:0.1,sat:0.05,porc:"vasito:125"},
   {n:"Tortitas de arroz",kcal:388,p:8,c:82,f:3,fib:3,az:0.6,sat:0.6,porc:"tortita:7.2"},
   {n:"Copos de maíz",kcal:378,p:7,c:84,f:0.9,fib:3,az:8,sat:0.2,porc:"tazon:30"},
-  {n:"Galletas maría",kcal:436,p:7,c:75,f:12,fib:2.8,az:22,sat:5.5,porc:"galleta:5"},
-  {n:"Croissant",kcal:406,p:8,c:46,f:21,fib:2.5,az:8,sat:12,porc:"unidad:60"},
+  {n:"Galletas maría",kcal:436,p:7,c:75,f:12,fib:2.8,az:22,sat:5.5,porc:"galleta:5",na:217,mic:{ca:117.7,fe:2,mg:25,k:110}},
+  {n:"Croissant",kcal:406,p:8,c:46,f:21,fib:2.5,az:8,sat:12,porc:"unidad:60",na:492,mic:{ca:42,fe:1.2,mg:16,k:136}},
   {n:"Tortilla de patatas (aprox)",kcal:190,p:6,c:14,f:12,fib:1.2,az:1.5,sat:2.8,porc:"porcion:125"},
   {n:"Pizza margarita (aprox)",kcal:250,p:11,c:31,f:9,fib:2.3,az:3.5,sat:3.8,porc:"porcion:125"},
   {n:"Gazpacho (aprox)",kcal:44,p:0.8,c:4.5,f:2.6,fib:1.2,az:2.8,sat:0.4},
   {n:"Hummus",kcal:166,p:8,c:14,f:10,fib:6,az:0.4,sat:1.4},
   {n:"Maíz dulce",kcal:86,p:3.3,c:19,f:1.4,fib:2.4,az:6.3,sat:0.2,porc:"guarnicion:80"},
-  {n:"Guisantes",kcal:81,p:5.4,c:14,f:0.4,fib:5,az:5.7,sat:0.1},
-  {n:"Judías verdes",kcal:31,p:1.8,c:7,f:0.2,fib:3.4,az:3.3,sat:0.05},
-  {n:"Calabacín",kcal:17,p:1.2,c:3.1,f:0.3,fib:1,az:2.5,sat:0.1},
-  {n:"Berenjena",kcal:25,p:1,c:6,f:0.2,fib:3,az:3.5,sat:0.03},
-  {n:"Cebolla",kcal:40,p:1.1,c:9,f:0.1,fib:1.7,az:4.7,sat:0.04},
-  {n:"Zanahoria",kcal:41,p:0.9,c:10,f:0.2,fib:2.8,az:4.7,sat:0.03},
-  {n:"Champiñones",kcal:22,p:3.1,c:3.3,f:0.3,fib:1,az:2,sat:0.05},
-  {n:"Pepino",kcal:15,p:0.7,c:3.6,f:0.1,fib:0.5,az:1.7,sat:0.03},
-  {n:"Coliflor",kcal:25,p:1.9,c:5,f:0.3,fib:2,az:1.9,sat:0.1},
-  {n:"Calabaza",kcal:26,p:1,c:6.5,f:0.1,fib:1.1,az:2.8,sat:0.05},
-  {n:"Espárragos",kcal:20,p:2.2,c:3.9,f:0.1,fib:2.1,az:1.9,sat:0.03},
-  {n:"Kiwi",kcal:61,p:1.1,c:15,f:0.5,fib:3,az:9,sat:0.03,porc:"pieza:70"},
-  {n:"Pera",kcal:57,p:0.4,c:15,f:0.1,fib:3.1,az:9.8,sat:0.02,porc:"pieza:170"},
-  {n:"Uvas",kcal:69,p:0.7,c:18,f:0.2,fib:0.9,az:16,sat:0.05,porc:"puñado:80"},
-  {n:"Melón",kcal:34,p:0.8,c:8,f:0.2,fib:0.9,az:7.9,sat:0.05,porc:"rodaja:150"},
-  {n:"Sandía",kcal:30,p:0.6,c:8,f:0.2,fib:0.4,az:6.2,sat:0.02,porc:"rodaja:200"},
-  {n:"Mango",kcal:60,p:0.8,c:15,f:0.4,fib:1.6,az:13.7,sat:0.09,porc:"unidad:200"},
-  {n:"Piña",kcal:50,p:0.5,c:13,f:0.1,fib:1.4,az:9.9,sat:0.02,porc:"rodaja:80"},
-  {n:"Melocotón",kcal:39,p:0.9,c:10,f:0.3,fib:1.5,az:8.4,sat:0.02,porc:"unidad:150"},
-  {n:"Dátiles",kcal:282,p:2.5,c:75,f:0.4,fib:8,az:63,sat:0.03,porc:"unidad:8"},
+  {n:"Guisantes",kcal:81,p:5.4,c:14,f:0.4,fib:5,az:5.7,sat:0.1,mic:{ca:20,fe:1.5,mg:20,k:150,vc:8.8}},
+  {n:"Judías verdes",kcal:31,p:1.8,c:7,f:0.2,fib:3.4,az:3.3,sat:0.05,mic:{ca:34,fe:1.3,mg:20,k:143,vc:4.3}},
+  {n:"Calabacín",kcal:17,p:1.2,c:3.1,f:0.3,fib:1,az:2.5,sat:0.1,na:3,mic:{ca:19,fe:0.4,mg:18,k:230,vc:20}},
+  {n:"Berenjena",kcal:25,p:1,c:6,f:0.2,fib:3,az:3.5,sat:0.03,na:3,mic:{ca:10,fe:0.3,mg:13,k:262,vc:4}},
+  {n:"Cebolla",kcal:40,p:1.1,c:9,f:0.1,fib:1.7,az:4.7,sat:0.04,na:3,mic:{ca:25.4,fe:0.3,mg:4.2,k:162,vc:6.9}},
+  {n:"Zanahoria",kcal:41,p:0.9,c:10,f:0.2,fib:2.8,az:4.7,sat:0.03,na:70,mic:{ca:42,fe:0.3,mg:10,k:286,vc:7}},
+  {n:"Champiñones",kcal:22,p:3.1,c:3.3,f:0.3,fib:1,az:2,sat:0.05,na:5,mic:{ca:9,fe:1,mg:14,k:470,vc:4}},
+  {n:"Pepino",kcal:15,p:0.7,c:3.6,f:0.1,fib:0.5,az:1.7,sat:0.03,na:3,mic:{ca:19,fe:0.3,mg:12,k:150,vc:5}},
+  {n:"Coliflor",kcal:25,p:1.9,c:5,f:0.3,fib:2,az:1.9,sat:0.1,na:3,mic:{ca:16.2,fe:0.4,mg:9.6,k:87,vc:18.2}},
+  {n:"Calabaza",kcal:26,p:1,c:6.5,f:0.1,fib:1.1,az:2.8,sat:0.05,na:1,mic:{ca:18,fe:0.4,mg:10,k:304,vc:12}},
+  {n:"Espárragos",kcal:20,p:2.2,c:3.9,f:0.1,fib:2.1,az:1.9,sat:0.03,na:3,mic:{ca:27.7,fe:1.3,mg:12.5,k:207,vc:21.6}},
+  {n:"Kiwi",kcal:61,p:1.1,c:15,f:0.5,fib:3,az:9,sat:0.03,porc:"pieza:70",na:4,mic:{ca:25,fe:0.4,mg:15,k:290,vc:59}},
+  {n:"Pera",kcal:57,p:0.4,c:15,f:0.1,fib:3.1,az:9.8,sat:0.02,porc:"pieza:170",na:2,mic:{ca:12,fe:0.2,mg:7,k:130,vc:3}},
+  {n:"Uvas",kcal:69,p:0.7,c:18,f:0.2,fib:0.9,az:16,sat:0.05,porc:"puñado:80",na:2,mic:{ca:4,fe:0.3,mg:4,k:320,vc:4}},
+  {n:"Melón",kcal:34,p:0.8,c:8,f:0.2,fib:0.9,az:7.9,sat:0.05,porc:"rodaja:150",na:14,mic:{ca:14,fe:0.4,mg:17,k:320,vc:25}},
+  {n:"Sandía",kcal:30,p:0.6,c:8,f:0.2,fib:0.4,az:6.2,sat:0.02,porc:"rodaja:200",na:4,mic:{ca:7,fe:0.3,mg:11,k:120,vc:5}},
+  {n:"Mango",kcal:60,p:0.8,c:15,f:0.4,fib:1.6,az:13.7,sat:0.09,porc:"unidad:200",na:2,mic:{ca:20,fe:1.2,mg:9,k:150,vc:44}},
+  {n:"Piña",kcal:50,p:0.5,c:13,f:0.1,fib:1.4,az:9.9,sat:0.02,porc:"rodaja:80",na:2,mic:{ca:12,fe:0.5,mg:14,k:250,vc:20}},
+  {n:"Melocotón",kcal:39,p:0.9,c:10,f:0.3,fib:1.5,az:8.4,sat:0.02,porc:"unidad:150",na:3,mic:{ca:8,fe:0.4,mg:9,k:260,vc:8}},
+  {n:"Dátiles",kcal:282,p:2.5,c:75,f:0.4,fib:8,az:63,sat:0.03,porc:"unidad:8",na:3,mic:{ca:62,fe:3,mg:58,k:677,vc:2}},
   {n:"Pasas",kcal:299,p:3.1,c:79,f:0.5,fib:3.7,az:59,sat:0.06,porc:"puñado:30"},
   {n:"Cacahuetes",kcal:567,p:26,c:16,f:49,fib:8.5,az:4,sat:6.8,porc:"puñado:30"},
-  {n:"Anacardos",kcal:553,p:18,c:30,f:44,fib:3.3,az:5.9,sat:7.8,porc:"puñado:30"},
-  {n:"Pistachos",kcal:560,p:20,c:28,f:45,fib:10,az:7.7,sat:5.4,porc:"puñado:30"},
-  {n:"Avellanas",kcal:628,p:15,c:17,f:61,fib:9.7,az:4.3,sat:4.5,porc:"puñado:30"},
+  {n:"Anacardos",kcal:553,p:18,c:30,f:44,fib:3.3,az:5.9,sat:7.8,porc:"puñado:30",na:14,mic:{ca:31,fe:2.8,mg:267,k:552}},
+  {n:"Pistachos",kcal:560,p:20,c:28,f:45,fib:10,az:7.7,sat:5.4,porc:"puñado:30",na:16,mic:{ca:180,fe:7.2,mg:122,k:811}},
+  {n:"Avellanas",kcal:628,p:15,c:17,f:61,fib:9.7,az:4.3,sat:4.5,porc:"puñado:30",na:6,mic:{ca:226,fe:3.8,mg:156,k:636,vc:3}},
   {n:"Semillas de chía",kcal:486,p:17,c:42,f:31,fib:34,az:0,sat:3.3,porc:"cucharada:12"},
-  {n:"Semillas de lino",kcal:534,p:18,c:29,f:42,fib:27,az:1.5,sat:3.7,porc:"cucharada:10"},
-  {n:"Aceitunas",kcal:115,p:0.8,c:6,f:11,fib:3.3,az:0,sat:1.4,porc:"unidad:4"},
+  {n:"Semillas de lino",kcal:534,p:18,c:29,f:42,fib:27,az:1.5,sat:3.7,porc:"cucharada:10",na:30,mic:{ca:255,fe:5.7,mg:392,k:813,vc:0.6}},
+  {n:"Aceitunas",kcal:115,p:0.8,c:6,f:11,fib:3.3,az:0,sat:1.4,porc:"unidad:4",na:54,mic:{ca:64,fe:1.8,mg:22,k:432,vc:0.1}},
   {n:"Plátano macho frito (aprox)",kcal:252,p:1.5,c:41,f:9,fib:2.3,az:17,sat:3.5,porc:"racion:100"},
   {n:"Weider Rush (energética/pre-entreno)",kcal:2,p:0,c:0,f:0,u:"ml",fib:0,az:0,sat:0,porc:"lata:250",ean:"4044782317730"},
   {n:"5 Semillas Pan (Hacendado)",kcal:273,p:11,c:43,f:5.1,fib:6.2,az:2.6,sat:0.7,na:374,ean:"8480000096258"},
@@ -5173,27 +5173,27 @@ var FOODS_EAN={}; try{ FOODS.forEach(function(f){ if(f&&f.ean) FOODS_EAN[String(
 // Trazabilidad de cada registro (ids BEDCA) y decisiones (lenteja excluida, kcal Atwater en 2
 // casos) en data/README-alimentos.md. Generado el 2026-07-06; regenerable con regenerar-bedca.py.
 var FOODS_BEDCA=[
-  {n:"Aceitunas",kcal:120,p:1.3,c:1,f:12.5},{n:"Aceitunas negras (con hueso)",kcal:288,p:2,c:4,f:29.8},{n:"Albóndigas (en conserva)",kcal:141,p:6.8,c:6.8,f:9.7},
-  {n:"Almendras fritas saladas",kcal:590,p:19,c:4.5,f:56,porc:"puñado:30"},{n:"Anchoas en aceite (conserva)",kcal:203,p:28.9,c:0,f:9.7},{n:"Arroz con leche",kcal:92,p:3.3,c:16.4,f:1.3},
-  {n:"Bacalao salado (remojado)",kcal:109,p:26,c:0,f:0.4},{n:"Berenjena frita",kcal:298,p:1.2,c:2.7,f:31.9},{n:"Bizcocho",kcal:381,p:6.5,c:39.6,f:21.9},
-  {n:"Boquerones fritos",kcal:137,p:20.1,c:0.5,f:6},{n:"Butifarra",kcal:240,p:10,c:5.5,f:20},{n:"Calamar asado",kcal:81,p:16.6,c:0.5,f:1.3},
-  {n:"Cecina",kcal:242,p:39,c:0,f:9.5},{n:"Cerveza",kcal:42,p:0.5,c:3.1,f:0,u:"ml"},{n:"Chipirón",kcal:81,p:16.2,c:0.7,f:1.4},
-  {n:"Chorizo",kcal:322,p:27,c:1.9,f:23.1},{n:"Churro",kcal:358,p:4.6,c:40,f:20},{n:"Croquetas de pollo",kcal:154,p:5.8,c:20.4,f:5.3},
-  {n:"Cuajada",kcal:87,p:4.5,c:6.6,f:4.7},{n:"Empanada de carne",kcal:298,p:21.9,c:12,f:18.1},{n:"Empanadilla",kcal:247,p:4.8,c:29.7,f:12},
-  {n:"Ensaladilla rusa",kcal:110,p:2.7,c:9.8,f:6.7},{n:"Fabada asturiana",kcal:157,p:6.1,c:13.4,f:8.8},{n:"Flan de huevo",kcal:132,p:4.8,c:20.4,f:3.4,porc:"unidad:100"},
-  {n:"Fuet",kcal:473,p:19.5,c:5.5,f:42},{n:"Gambas hervidas",kcal:94,p:19.8,c:0,f:1.7},{n:"Garbanzos en conserva",kcal:133,p:7.2,c:14.1,f:2.9},
-  {n:"Gazpacho",kcal:34,p:0.6,c:1.6,f:2.8},{n:"Horchata",kcal:98,p:1.2,c:17,f:2.7,u:"ml"},{n:"Huevo frito",kcal:185,p:13.4,c:0.3,f:14.6,porc:"huevo:55"},
-  {n:"Huevo revuelto (con mantequilla)",kcal:228,p:10.2,c:0.8,f:20.7,porc:"huevo:55"},{n:"Jamón cocido (york)",kcal:113,p:21,c:0.4,f:3,porc:"loncha:20"},{n:"Jamón ibérico de bellota",kcal:333,p:33.2,c:0.5,f:22.2,porc:"loncha:15"},
-  {n:"Jamón ibérico de cebo",kcal:301,p:32.3,c:0.1,f:19.2,porc:"loncha:15"},{n:"Jamón serrano",kcal:318,p:28.8,c:0.2,f:22.6,porc:"loncha:15"},{n:"Leche condensada",kcal:334,p:8.5,c:53.6,f:9.2,u:"ml"},
-  {n:"Lomo embuchado",kcal:321,p:34,c:0,f:20.7},{n:"Magdalena",kcal:385,p:6.1,c:39.9,f:22.4,porc:"unidad:35"},{n:"Mejillones en escabeche",kcal:167,p:10.7,c:0,f:14},
-  {n:"Mejillón hervido",kcal:112,p:18.4,c:3.2,f:2.7},{n:"Merluza rebozada frita",kcal:149,p:10.7,c:3.5,f:10.3},{n:"Morcilla",kcal:323,p:11,c:3.2,f:30},
-  {n:"Morcilla frita",kcal:306,p:12.6,c:15,f:21.9},{n:"Mosto (zumo de uva)",kcal:62,p:0.4,c:15,f:0,u:"ml"},{n:"Natillas",kcal:104,p:3.7,c:15.5,f:2.9},
-  {n:"Paella",kcal:172,p:12.4,c:17.4,f:5.7},{n:"Paella marinera",kcal:122,p:3.5,c:25.1,f:0.6},{n:"Panceta frita",kcal:734,p:4.7,c:0,f:80.9},
-  {n:"Paté de hígado de cerdo",kcal:338,p:14,c:5,f:29.5},{n:"Pulpo hervido",kcal:69,p:13.4,c:1.4,f:0.9},{n:"Queso manchego",kcal:388,p:28.8,c:0.5,f:30.4,porc:"loncha:20"},
-  {n:"Rosquilla",kcal:349,p:7.8,c:49.3,f:13.2},{n:"Salchichón",kcal:420,p:25.8,c:2,f:34.7,porc:"loncha:10"},{n:"San Jacobo",kcal:237,p:4.1,c:25.2,f:13.3},
-  {n:"Sardina asada",kcal:255,p:16.7,c:0,f:21.2,porc:"unidad:40"},{n:"Sobrasada",kcal:595,p:12.9,c:0,f:61.4},{n:"Sofrito",kcal:209,p:1.1,c:4.7,f:21},
-  {n:"Tomate frito",kcal:84,p:1.5,c:5.2,f:6.4},{n:"Tortilla francesa",kcal:170,p:14.6,c:0.4,f:12.3,porc:"unidad:90"},{n:"Turrón (tipo Alicante)",kcal:484,p:13.1,c:44.9,f:28.1},
-  {n:"Vino tinto",kcal:70,p:0.2,c:0.3,f:0,u:"ml"}
+  {n:"Aceitunas",kcal:120,p:1.3,c:1,f:12.5,na:54,fib:4.8,mic:{ca:64,fe:1.8,mg:22,k:432,vc:0.1}},{n:"Aceitunas negras (con hueso)",kcal:288,p:2,c:4,f:29.8},{n:"Albóndigas (en conserva)",kcal:141,p:6.8,c:6.8,f:9.7},
+  {n:"Almendras fritas saladas",kcal:590,p:19,c:4.5,f:56,porc:"puñado:30",na:400,fib:15,mic:{ca:250,fe:4.2,mg:250,k:800}},{n:"Anchoas en aceite (conserva)",kcal:203,p:28.9,c:0,f:9.7},{n:"Arroz con leche",kcal:92,p:3.3,c:16.4,f:1.3,na:38,fib:0.1,mic:{ca:109,fe:0.2,mg:14,k:138}},
+  {n:"Bacalao salado (remojado)",kcal:109,p:26,c:0,f:0.4},{n:"Berenjena frita",kcal:298,p:1.2,c:2.7,f:31.9,na:2,fib:2.9,mic:{ca:8,fe:0.5,mg:8,k:170,vc:1}},{n:"Bizcocho",kcal:381,p:6.5,c:39.6,f:21.9,na:46,fib:0.8,mic:{ca:25,fe:0.9,mg:9,k:75}},
+  {n:"Boquerones fritos",kcal:137,p:20.1,c:0.5,f:6,na:104,fib:0,mic:{ca:26.8,fe:0.9,mg:26.6,k:331}},{n:"Butifarra",kcal:240,p:10,c:5.5,f:20,na:703,fib:0,mic:{ca:51,fe:1.9,mg:15,k:140}},{n:"Calamar asado",kcal:81,p:16.6,c:0.5,f:1.3,na:248,mic:{ca:17.6,fe:1.6,mg:32.3,k:83.3}},
+  {n:"Cecina",kcal:242,p:39,c:0,f:9.5,na:2100,fib:0,mic:{ca:48,fe:9.8,mg:39,k:62.2}},{n:"Cerveza",kcal:42,p:0.5,c:3.1,f:0,u:"ml",na:4,fib:0,mic:{ca:8,fe:0,mg:9.6,k:37}},{n:"Chipirón",kcal:81,p:16.2,c:0.7,f:1.4,na:110,fib:0,mic:{ca:144,fe:0.3,mg:37.8,k:280}},
+  {n:"Chorizo",kcal:322,p:27,c:1.9,f:23.1,na:1060,fib:0,mic:{ca:18.4,fe:2.1,mg:10.3,k:180}},{n:"Churro",kcal:358,p:4.6,c:40,f:20,na:2,fib:1.2,mic:{ca:7,fe:0.6,mg:14,k:146}},{n:"Croquetas de pollo",kcal:154,p:5.8,c:20.4,f:5.3,na:719,fib:2.45,mic:{ca:22.4,fe:1.1,mg:26.3,k:173.4}},
+  {n:"Cuajada",kcal:87,p:4.5,c:6.6,f:4.7,na:64,fib:0,mic:{ca:178,fe:0.1,mg:16,k:218}},{n:"Empanada de carne",kcal:298,p:21.9,c:12,f:18.1,na:598,fib:0.13,mic:{ca:37,fe:0.9,mg:23,k:347}},{n:"Empanadilla",kcal:247,p:4.8,c:29.7,f:12,na:713,fib:5.37,mic:{ca:30.1,fe:1.1,mg:24.7,k:204.3}},
+  {n:"Ensaladilla rusa",kcal:110,p:2.7,c:9.8,f:6.7,na:48,fib:2.27,mic:{ca:25.7,fe:0.9,mg:19.8,k:376.5,vc:15}},{n:"Fabada asturiana",kcal:157,p:6.1,c:13.4,f:8.8},{n:"Flan de huevo",kcal:132,p:4.8,c:20.4,f:3.4,porc:"unidad:100",na:63,mic:{ca:91,fe:0.7,mg:13,k:122}},
+  {n:"Fuet",kcal:473,p:19.5,c:5.5,f:42,na:1180,fib:0,mic:{ca:11,fe:1,mg:26,k:280}},{n:"Gambas hervidas",kcal:94,p:19.8,c:0,f:1.7,na:914,fib:0,mic:{ca:142,fe:1,mg:38.9,k:227.5}},{n:"Garbanzos en conserva",kcal:133,p:7.2,c:14.1,f:2.9,na:220,fib:4.1,mic:{ca:43,fe:2.8,mg:24,k:110}},
+  {n:"Gazpacho",kcal:34,p:0.6,c:1.6,f:2.8,na:303,fib:0.2,mic:{ca:10,fe:0.4,mg:3,k:92,vc:2.9}},{n:"Horchata",kcal:98,p:1.2,c:17,f:2.7,u:"ml",na:9,fib:0.1,mic:{ca:29,fe:1.2,mg:15,k:52,vc:0}},{n:"Huevo frito",kcal:185,p:13.4,c:0.3,f:14.6,porc:"huevo:55",na:277,fib:0,mic:{ca:58,fe:1.9,mg:12,k:136}},
+  {n:"Huevo revuelto (con mantequilla)",kcal:228,p:10.2,c:0.8,f:20.7,porc:"huevo:55"},{n:"Jamón cocido (york)",kcal:113,p:21,c:0.4,f:3,porc:"loncha:20"},{n:"Jamón ibérico de bellota",kcal:333,p:33.2,c:0.5,f:22.2,porc:"loncha:15",na:1935,fib:0,mic:{ca:6.8,fe:3.6,mg:37.6,k:655}},
+  {n:"Jamón ibérico de cebo",kcal:301,p:32.3,c:0.1,f:19.2,porc:"loncha:15",na:1942,fib:0,mic:{ca:10.2,fe:4.3,mg:37.2,k:701}},{n:"Jamón serrano",kcal:318,p:28.8,c:0.2,f:22.6,porc:"loncha:15",na:2130,fib:0,mic:{ca:9,fe:1.7,mg:22,k:250}},{n:"Leche condensada",kcal:334,p:8.5,c:53.6,f:9.2,u:"ml",na:125,fib:0,mic:{ca:289,fe:0.2,mg:28.4,k:370,vc:1.5}},
+  {n:"Lomo embuchado",kcal:321,p:34,c:0,f:20.7,na:1470,fib:0,mic:{ca:20,fe:3.7,mg:20,k:230}},{n:"Magdalena",kcal:385,p:6.1,c:39.9,f:22.4,porc:"unidad:35",na:211,fib:1,mic:{ca:25,fe:1.1,mg:9,k:88}},{n:"Mejillones en escabeche",kcal:167,p:10.7,c:0,f:14,na:0,fib:0,mic:{ca:45.3,fe:3.7,mg:20.4}},
+  {n:"Mejillón hervido",kcal:112,p:18.4,c:3.2,f:2.7,na:373,fib:0,mic:{ca:76.5,fe:7.4,mg:53,k:173}},{n:"Merluza rebozada frita",kcal:149,p:10.7,c:3.5,f:10.3,na:89,fib:0.15,mic:{ca:30.9,fe:1.1,mg:22,k:233.4,vc:0.5}},{n:"Morcilla",kcal:323,p:11,c:3.2,f:30,na:700,mic:{ca:40,fe:18,mg:11,k:150}},
+  {n:"Morcilla frita",kcal:306,p:12.6,c:15,f:21.9,na:908,fib:0.5,mic:{ca:33.3,fe:19,mg:14.8,k:112}},{n:"Mosto (zumo de uva)",kcal:62,p:0.4,c:15,f:0,u:"ml"},{n:"Natillas",kcal:104,p:3.7,c:15.5,f:2.9,na:81,mic:{ca:130,fe:0.1,mg:13,k:160,vc:1}},
+  {n:"Paella",kcal:172,p:12.4,c:17.4,f:5.7,na:48,fib:0.5,mic:{ca:27.2,fe:1.3,mg:21.2,k:123.8,vc:7.7}},{n:"Paella marinera",kcal:122,p:3.5,c:25.1,f:0.6,na:429,fib:2.03,mic:{ca:20.3,fe:0.7,mg:23.2,k:214.3,vc:2.8}},{n:"Panceta frita",kcal:734,p:4.7,c:0,f:80.9,na:420,mic:{ca:2.9,fe:0.7,mg:3.7,k:60}},
+  {n:"Paté de hígado de cerdo",kcal:338,p:14,c:5,f:29.5,na:738,fib:0,mic:{ca:23,fe:5.5,mg:12,k:173}},{n:"Pulpo hervido",kcal:69,p:13.4,c:1.4,f:0.9,na:25,fib:0,mic:{ca:30.4,fe:1.5,mg:30.5,k:215.3}},{n:"Queso manchego",kcal:388,p:28.8,c:0.5,f:30.4,porc:"loncha:20",na:670,fib:0,mic:{ca:765,fe:0.6,mg:36,k:100}},
+  {n:"Rosquilla",kcal:349,p:7.8,c:49.3,f:13.2,na:281,fib:2.7,mic:{ca:93,fe:2.7,mg:11,k:90}},{n:"Salchichón",kcal:420,p:25.8,c:2,f:34.7,porc:"loncha:10",na:1060,fib:0,mic:{ca:15,fe:2.4,mg:10,k:207}},{n:"San Jacobo",kcal:237,p:4.1,c:25.2,f:13.3,na:493,fib:4.52,mic:{ca:31.1,fe:1,mg:20.8,k:214.3}},
+  {n:"Sardina asada",kcal:255,p:16.7,c:0,f:21.2,porc:"unidad:40",na:58,fib:0,mic:{ca:83.3,fe:2.5,mg:23.9,k:18.5}},{n:"Sobrasada",kcal:595,p:12.9,c:0,f:61.4,na:1264,fib:0,mic:{ca:15,fe:1.9,mg:25,k:259}},{n:"Sofrito",kcal:209,p:1.1,c:4.7,f:21,na:493,fib:1.4,mic:{ca:21.7,fe:0.7,mg:14.4,k:253.5,vc:6.5}},
+  {n:"Tomate frito",kcal:84,p:1.5,c:5.2,f:6.4,na:340,fib:1.6,mic:{ca:12.6,fe:0.5,mg:12.5,k:280,vc:17.5}},{n:"Tortilla francesa",kcal:170,p:14.6,c:0.4,f:12.3,porc:"unidad:90",na:245,fib:0,mic:{ca:63,fe:2,mg:13,k:146}},{n:"Turrón (tipo Alicante)",kcal:484,p:13.1,c:44.9,f:28.1},
+  {n:"Vino tinto",kcal:70,p:0.2,c:0.3,f:0,u:"ml",na:4,fib:0,mic:{ca:7.6,fe:0.9,mg:11,k:93}}
 ];
 // v0.13 · L3 — tanda curada (~40): bebidas, kebab/fast-food común en España y básicos que
 // faltaban. Origen del encargo: la Coca-Cola Zero del kebab (dictado Pablo 07/07).
@@ -5214,8 +5214,8 @@ var FOODS_V013=[
   {n:"Café con leche entera (aprox)",kcal:32,p:1.6,c:2.5,f:1.7,u:"ml"},// aprox mitad café / mitad leche entera
   {n:"Té frío limón",kcal:30,p:0,c:7.2,f:0,u:"ml"},                    // OFF (tipo Nestea)
   {n:"Bebida energética (tipo Red Bull)",kcal:45,p:0,c:11,f:0,u:"ml"}, // OFF
-  {n:"Vino blanco",kcal:66,p:0.1,c:0.6,f:0,u:"ml"},                    // BEDCA
-  {n:"Leche semidesnatada",kcal:46,p:3.3,c:4.8,f:1.6,u:"ml"},          // BEDCA (faltaba: había entera y desnatada)
+  {n:"Vino blanco",kcal:66,p:0.1,c:0.6,f:0,u:"ml",na:2,fib:0,mic:{ca:9,fe:0.6,mg:10,k:82}},                    // BEDCA
+  {n:"Leche semidesnatada",kcal:46,p:3.3,c:4.8,f:1.6,u:"ml",na:46,fib:0,mic:{ca:114,fe:0,mg:10,k:166,vc:3}},          // BEDCA (faltaba: había entera y desnatada)
   // — Kebab / fast-food común · valores por 100 g —
   {n:"Dürüm de pollo (aprox)",kcal:215,p:11,c:21,f:9.5},               // OFF (media wraps kebab)
   {n:"Kebab en plato con ensalada (aprox)",kcal:145,p:11,c:7,f:8},     // aprox carne+ensalada+salsa
@@ -5230,15 +5230,15 @@ var FOODS_V013=[
   {n:"Perrito caliente completo (aprox)",kcal:290,p:10.5,c:24,f:17},   // USDA
   {n:"Sándwich mixto (aprox)",kcal:260,p:12.5,c:28,f:11},              // aprox pan molde+york+queso
   {n:"Lasaña de carne (aprox)",kcal:163,p:8.8,c:13.2,f:8.4},           // BEDCA
-  {n:"Ketchup",kcal:112,p:1.2,c:25.8,f:0.2},                           // USDA
-  {n:"Mayonesa",kcal:680,p:1.1,c:2.4,f:74.7},                          // USDA
+  {n:"Ketchup",kcal:112,p:1.2,c:25.8,f:0.2,na:910,fib:0.9,mic:{ca:19,fe:0.9,mg:19,k:480,vc:15}},                           // USDA
+  {n:"Mayonesa",kcal:680,p:1.1,c:2.4,f:74.7,na:580,fib:0,mic:{ca:12,fe:0.4,mg:4,k:18}},                          // USDA
   {n:"Alioli (aprox)",kcal:703,p:1.5,c:3,f:76},                        // OFF (media España)
-  {n:"Salchichas Frankfurt",kcal:250,p:11.5,c:3.5,f:21,porc:"salchicha:30"},               // OFF (media España)
+  {n:"Salchichas Frankfurt",kcal:250,p:11.5,c:3.5,f:21,porc:"salchicha:30",na:900,fib:0.1,mic:{ca:20,fe:1,mg:11,k:170}},               // OFF (media España)
   {n:"Bacon (crudo)",kcal:417,p:12.6,c:0.7,f:39.7},                    // USDA
   // — Básicos que faltaban · valores por 100 g —
   {n:"Azúcar blanco",kcal:400,p:0,c:100,f:0},                          // BEDCA
-  {n:"Chocolate con leche",kcal:535,p:7.6,c:58.7,f:29.9},              // USDA (solo había negro 85%)
-  {n:"Mermelada de fresa",kcal:250,p:0.4,c:60,f:0.1},                  // OFF (media)
+  {n:"Chocolate con leche",kcal:535,p:7.6,c:58.7,f:29.9,na:58,fib:0.8,mic:{ca:247,fe:1.7,mg:71,k:465}},              // USDA (solo había negro 85%)
+  {n:"Mermelada de fresa",kcal:250,p:0.4,c:60,f:0.1,na:10,fib:2.6,mic:{ca:39,fe:1,mg:30,k:344,vc:20}},                  // OFF (media)
   {n:"Helado de vainilla",kcal:207,p:3.5,c:23.6,f:11},                 // USDA
   {n:"Arroz blanco (crudo)",kcal:354,p:7.2,c:77.6,f:0.9},              // etiqueta típica España/OFF (solo había cocido)
   {n:"Pasta (cruda)",kcal:359,p:12.5,c:71.7,f:1.5},                    // etiqueta típica/OFF (solo había cocida)
@@ -5250,68 +5250,68 @@ var FOODS_V013=[
   // españoles que faltaban. Entra por el MISMO embudo de dedup (por eso 0 colisiones con lo previo).
   // Fuentes: BEDCA = bedca.net · OFF = Open Food Facts (ficha España) · USDA = FoodData Central.
   // — Carnes y pescados · por 100 g —
-  {n:"Conejo",kcal:133,p:22,c:0,f:5},                            // BEDCA
+  {n:"Conejo",kcal:133,p:22,c:0,f:5,na:67,fib:0,mic:{ca:22,fe:1,mg:25,k:360}},                            // BEDCA
   {n:"Pato (pechuga)",kcal:195,p:23,c:0,f:11},                   // USDA
   {n:"Cordero (pierna)",kcal:234,p:25,c:0,f:15},                 // BEDCA
-  {n:"Costillas de cerdo",kcal:277,p:20,c:0,f:21},               // USDA
+  {n:"Costillas de cerdo",kcal:277,p:20,c:0,f:21,na:75,fib:0,mic:{ca:7,fe:1,mg:22,k:260}},               // USDA
   {n:"Hígado de ternera",kcal:135,p:20,c:3.9,f:3.6},             // BEDCA
-  {n:"Trucha",kcal:148,p:21,c:0,f:7},                            // BEDCA
-  {n:"Rape",kcal:68,p:15,c:0,f:0.6},                             // BEDCA
-  {n:"Sepia",kcal:79,p:16,c:0.7,f:1},                            // BEDCA
-  {n:"Almejas",kcal:74,p:12,c:4,f:1},                            // BEDCA
-  {n:"Langostinos",kcal:96,p:21,c:0,f:1},                        // BEDCA
+  {n:"Trucha",kcal:148,p:21,c:0,f:7,na:58,fib:0,mic:{ca:26,fe:1,mg:28,k:250}},                            // BEDCA
+  {n:"Rape",kcal:68,p:15,c:0,f:0.6,na:41,mic:{ca:8,fe:0.3,mg:21,k:284}},                             // BEDCA
+  {n:"Sepia",kcal:79,p:16,c:0.7,f:1,na:378,fib:0,mic:{ca:38,fe:2.4,mg:32,k:427}},                            // BEDCA
+  {n:"Almejas",kcal:74,p:12,c:4,f:1,na:56,fib:0,mic:{ca:75,fe:24,mg:51,k:314}},                            // BEDCA
+  {n:"Langostinos",kcal:96,p:21,c:0,f:1,na:305,fib:0,mic:{ca:115,fe:3.3,mg:69,k:221}},                        // BEDCA
   {n:"Emperador (pez espada)",kcal:121,p:20,c:0,f:4.5},          // BEDCA
-  {n:"Salmón ahumado",kcal:117,p:20,c:0,f:4},                    // OFF (prot ~20 g: valor real, cuadra kcal — verif. v0.13-E)
+  {n:"Salmón ahumado",kcal:117,p:20,c:0,f:4,na:1880,fib:0,mic:{ca:19,fe:0.6,mg:32,k:420}},                    // OFF (prot ~20 g: valor real, cuadra kcal — verif. v0.13-E)
   {n:"Surimi (palitos de cangrejo)",kcal:95,p:8,c:12,f:1,porc:"palito:17"},       // OFF
-  {n:"Mortadela",kcal:311,p:16,c:3,f:26},                        // BEDCA
+  {n:"Mortadela",kcal:311,p:16,c:3,f:26,na:668,fib:0,mic:{ca:13,fe:2.2,mg:9,k:207}},                        // BEDCA
   // — Legumbres · por 100 g (cocidas) —
-  {n:"Habas cocidas",kcal:110,p:8,c:18,f:0.6},                   // BEDCA
+  {n:"Habas cocidas",kcal:110,p:8,c:18,f:0.6,na:4,fib:6.5,mic:{ca:24,fe:1,mg:18,k:210,vc:12}},                   // BEDCA
   {n:"Judías pintas cocidas",kcal:143,p:9,c:25,f:0.5},           // USDA
-  {n:"Soja cocida",kcal:173,p:17,c:10,f:9},                      // USDA
+  {n:"Soja cocida",kcal:173,p:17,c:10,f:9,na:1,fib:6.1,mic:{ca:83,fe:3,mg:63,k:510}},                      // USDA
   {n:"Edamame",kcal:121,p:12,c:9,f:5},                           // USDA
   // — Frutas · por 100 g —
-  {n:"Cerezas",kcal:63,p:1,c:16,f:0.2},                          // BEDCA
-  {n:"Ciruela",kcal:46,p:0.7,c:11,f:0.3},                        // BEDCA
-  {n:"Albaricoque",kcal:48,p:1.4,c:11,f:0.4},                    // BEDCA
-  {n:"Higos",kcal:74,p:0.8,c:19,f:0.3},                          // USDA
-  {n:"Granada",kcal:83,p:1.7,c:19,f:1.2},                        // USDA
-  {n:"Frambuesas",kcal:52,p:1.2,c:12,f:0.7},                     // USDA
-  {n:"Mandarina",kcal:53,p:0.8,c:13,f:0.3,porc:"unidad:70"},                      // BEDCA
-  {n:"Caqui",kcal:70,p:0.6,c:18,f:0.2},                          // USDA
+  {n:"Cerezas",kcal:63,p:1,c:16,f:0.2,na:2,fib:1.5,mic:{ca:16,fe:0.4,mg:11,k:255,vc:8}},                          // BEDCA
+  {n:"Ciruela",kcal:46,p:0.7,c:11,f:0.3,na:1,fib:2.3,mic:{ca:12.5,fe:0.5,mg:11.5,k:236.5,vc:6}},                        // BEDCA
+  {n:"Albaricoque",kcal:48,p:1.4,c:11,f:0.4,na:1,fib:2.1,mic:{ca:17,fe:0.5,mg:12,k:293,vc:7}},                    // BEDCA
+  {n:"Higos",kcal:74,p:0.8,c:19,f:0.3,na:2,fib:2.5,mic:{ca:38,fe:0.6,mg:20,k:270,vc:2}},                          // USDA
+  {n:"Granada",kcal:83,p:1.7,c:19,f:1.2,na:4,fib:3.5,mic:{ca:13,fe:1,mg:6,k:247,vc:20}},                        // USDA
+  {n:"Frambuesas",kcal:52,p:1.2,c:12,f:0.7,na:3,fib:6.7,mic:{ca:22,fe:0.7,mg:20,k:220,vc:25}},                     // USDA
+  {n:"Mandarina",kcal:53,p:0.8,c:13,f:0.3,porc:"unidad:70",na:2,fib:1.9,mic:{ca:36,fe:0.3,mg:11,k:160,vc:35}},                      // BEDCA
+  {n:"Caqui",kcal:70,p:0.6,c:18,f:0.2,na:2,fib:2.5,mic:{ca:21,fe:0.4,mg:9,k:171,vc:7}},                          // USDA
   {n:"Coco (fresco)",kcal:354,p:3.3,c:15,f:33},                  // USDA
   // — Verduras · por 100 g —
-  {n:"Acelga",kcal:19,p:1.8,c:3.7,f:0.2},                        // BEDCA
-  {n:"Alcachofa",kcal:47,p:3.3,c:11,f:0.2},                      // BEDCA
-  {n:"Puerro",kcal:61,p:1.5,c:14,f:0.3},                         // BEDCA
-  {n:"Apio",kcal:16,p:0.7,c:3,f:0.2},                            // USDA
-  {n:"Remolacha",kcal:43,p:1.6,c:10,f:0.2},                      // USDA
+  {n:"Acelga",kcal:19,p:1.8,c:3.7,f:0.2,na:170,fib:1,mic:{ca:80,fe:2.3,mg:81,k:378,vc:35}},                        // BEDCA
+  {n:"Alcachofa",kcal:47,p:3.3,c:11,f:0.2,na:15,fib:9.4,mic:{ca:44,fe:1,mg:27,k:300,vc:6}},                      // BEDCA
+  {n:"Puerro",kcal:61,p:1.5,c:14,f:0.3,na:12,fib:2.8,mic:{ca:31,fe:0.9,mg:11,k:256,vc:18}},                         // BEDCA
+  {n:"Apio",kcal:16,p:0.7,c:3,f:0.2,na:110,fib:2,mic:{ca:52,fe:0.5,mg:14,k:305,vc:8}},                            // USDA
+  {n:"Remolacha",kcal:43,p:1.6,c:10,f:0.2,fib:2.5,mic:{ca:19,fe:0.5,mg:13,k:190,vc:2.8}},                      // USDA
   {n:"Coles de Bruselas",kcal:43,p:3.4,c:9,f:0.3},               // USDA
-  {n:"Repollo",kcal:25,p:1.3,c:6,f:0.1},                         // BEDCA
+  {n:"Repollo",kcal:25,p:1.3,c:6,f:0.1,na:16,fib:3.1,mic:{ca:57,fe:0.6,mg:6,k:270,vc:49}},                         // BEDCA
   // — Lácteos y bebidas vegetales —
-  {n:"Queso parmesano",kcal:431,p:38,c:4,f:29,porc:"racion:15"},                  // USDA
-  {n:"Queso cheddar",kcal:402,p:25,c:1.3,f:33,porc:"loncha:20"},                  // USDA
-  {n:"Queso azul",kcal:353,p:21,c:2.3,f:29,porc:"racion:20"},                     // USDA
+  {n:"Queso parmesano",kcal:431,p:38,c:4,f:29,porc:"racion:15",na:839,mic:{ca:1275,fe:0.7,mg:46,k:113}},                  // USDA
+  {n:"Queso cheddar",kcal:402,p:25,c:1.3,f:33,porc:"loncha:20",na:700,fib:0,mic:{ca:740,fe:0.4,mg:28,k:100}},                  // USDA
+  {n:"Queso azul",kcal:353,p:21,c:2.3,f:29,porc:"racion:20",na:787,fib:0,mic:{ca:526,fe:0.2,mg:39,k:128}},                     // USDA
   {n:"Yogur desnatado",kcal:41,p:4.3,c:6,f:0.2,porc:"yogur:125"},                 // BEDCA
   {n:"Leche de avena",kcal:45,p:0.3,c:7,f:1.5,u:"ml"},           // OFF
-  {n:"Bebida de soja",kcal:42,p:3.3,c:2.5,f:1.8,u:"ml"},         // OFF
+  {n:"Bebida de soja",kcal:42,p:3.3,c:2.5,f:1.8,u:"ml",na:3,fib:1.3,mic:{ca:100,fe:0.8,mg:28,k:191}},         // OFF
   {n:"Bebida de almendras",kcal:22,p:0.5,c:3,f:1.1,u:"ml",porc:"vaso:200"},      // OFF
   // — Frutos secos y semillas · por 100 g —
-  {n:"Piñones",kcal:673,p:14,c:13,f:68},                         // USDA
+  {n:"Piñones",kcal:673,p:14,c:13,f:68,na:1,fib:8.5,mic:{ca:11,fe:5.6,mg:270,k:780,vc:2}},                         // USDA
   {n:"Nueces de macadamia",kcal:718,p:8,c:14,f:76,porc:"puñado:20"},              // USDA
   {n:"Semillas de calabaza",kcal:559,p:30,c:11,f:49},            // USDA
   {n:"Semillas de girasol",kcal:584,p:21,c:20,f:51},             // USDA
-  {n:"Semillas de sésamo",kcal:573,p:18,c:23,f:50},              // USDA
+  {n:"Semillas de sésamo",kcal:573,p:18,c:23,f:50,na:40,fib:11,mic:{ca:150,fe:9,mg:350,k:450}},              // USDA
   // — Panes y cereales · por 100 g —
-  {n:"Pan de centeno",kcal:259,p:9,c:48,f:3.3,porc:"rebanada:40"},                  // BEDCA
+  {n:"Pan de centeno",kcal:259,p:9,c:48,f:3.3,porc:"rebanada:40",na:523,fib:6.46,mic:{ca:29,fe:2.4,mg:35,k:244}},                  // BEDCA
   {n:"Bagel",kcal:250,p:10,c:48,f:1.5},                          // USDA
-  {n:"Muesli",kcal:363,p:10,c:66,f:6},                           // OFF
+  {n:"Muesli",kcal:363,p:10,c:66,f:6,na:200,fib:8,mic:{ca:50,fe:6.6,mg:70,k:400,vc:51}},                           // OFF
   {n:"Trigo sarraceno cocido",kcal:92,p:3.4,c:20,f:0.6},         // USDA
-  {n:"Pan rallado",kcal:395,p:13,c:72,f:5.5,porc:"cucharada:15"},                    // BEDCA
+  {n:"Pan rallado",kcal:395,p:13,c:72,f:5.5,porc:"cucharada:15",na:540,fib:3.5,mic:{ca:56,fe:1.6,mg:25.1,k:110}},                    // BEDCA
   // — Snacks y dulces · por 100 g —
   {n:"Crema de cacao y avellanas",kcal:539,p:6.3,c:57.5,f:30.9}, // OFF
   {n:"Donut glaseado",kcal:452,p:5,c:51,f:25},                   // USDA
-  {n:"Gominolas",kcal:343,p:6.9,c:79,f:0.2},                     // OFF
-  {n:"Barrita de cereales",kcal:380,p:6,c:68,f:9,porc:"barrita:25"},               // OFF
+  {n:"Gominolas",kcal:343,p:6.9,c:79,f:0.2,na:30,fib:1,mic:{ca:7,fe:0.2,mg:6,k:54,vc:0.9}},                     // OFF
+  {n:"Barrita de cereales",kcal:380,p:6,c:68,f:9,porc:"barrita:25",na:200,fib:1.5,mic:{ca:14,fe:11,mg:48.9,k:186.9,vc:1.1}},               // OFF
   // — Platos españoles · por 100 g —
   {n:"Salmorejo",kcal:80,p:1.8,c:7,f:5},                         // OFF
   {n:"Pisto",kcal:75,p:1.5,c:6,f:5},                             // BEDCA
