@@ -2,6 +2,13 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
+<!-- CSP acotada a los hosts que la app usa DE VERDAD en runtime (verificado 2026-07-12). Se entrega por
+     <meta> porque el sitio vive en GitHub Pages, que NO sirve el archivo _headers (comprobado: sus 5
+     cabeceras no llegan en vivo). Notas: 'unsafe-inline' es obligado (handlers onclick/onchange + estilos
+     inline por todo el HTML de un solo archivo); 'wasm-unsafe-eval' lo pide el lector de códigos ZXing/WASM;
+     data:/blob: los pide la foto de comida; jsdelivr = polyfill del escáner; NO se lista allorigins porque
+     se retiró (OFF sirve Access-Control-Allow-Origin:* → fetch directo, sin proxy ajeno). -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; form-action 'self'; img-src 'self' data: blob: https://world.openfoodfacts.org https://raw.githubusercontent.com; font-src 'self' https://fonts.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' https://cdn.jsdelivr.net; connect-src 'self' https://world.openfoodfacts.org https://api.open-meteo.com https://raw.githubusercontent.com https://cdn.jsdelivr.net; worker-src 'self' blob:; manifest-src 'self'">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -8926,11 +8933,13 @@ function superElegir(nombre){
   _superLlenando=false;
 }
 // 🌍 Búsqueda EN VIVO en Open Food Facts por NOMBRE (fase 17). Estrategia de red honesta, misma
-// filosofía que el escáner EAN (bcFetchCadena): 1) fetch DIRECTO con tope de 8 s (AbortController);
-// 2) si falla (CORS/red), reintento vía proxy público allorigins con tope de 12 s; 3) si ambos
-// fallan, mensaje honesto (fallo de red ≠ "no existe") + botón reintentar. Los resultados se
-// normalizan con bcNormalizarOFF (pura, YA testeada — no se duplica) y al elegir uno se guarda
-// como ALIMENTO PROPIO (jvf_alimentos_propios) para siempre: importación uno-a-uno, luego offline.
+// filosofía que el escáner EAN (bcFetchCadena, que ya va directo a OFF sin proxy): fetch DIRECTO
+// con tope de 8 s (AbortController) y, si falla, mensaje honesto (fallo de red ≠ "no existe") +
+// botón reintentar. OFF sirve Access-Control-Allow-Origin:* (CORS abierto, verificado 2026-07-12),
+// así que el navegador llega directo — se retiró el proxy ajeno api.allorigins.win, que veía cada
+// consulta y la IP del usuario y añadía un punto de fallo de tercero. Los resultados se normalizan
+// con bcNormalizarOFF (pura, YA testeada — no se duplica) y al elegir uno se guarda como ALIMENTO
+// PROPIO (jvf_alimentos_propios) para siempre: importación uno-a-uno, luego offline.
 var _superOFF=[];   // última tanda de resultados OFF normalizados (índice → superElegirOFF)
 function superOFFPinta(html){ var box=$("super_lista"); if(box) box.innerHTML=html; }
 function superOFFFetch(url, ms, ok, ko){
@@ -8954,12 +8963,8 @@ function superBuscarOFF(q){
   superOFFPinta("<p class='hint'>🌍 Buscando «"+esc(q)+"» en Open Food Facts…</p>");
   var urlOFF="https://world.openfoodfacts.org/cgi/search.pl?search_terms="+encodeURIComponent(q)+"&search_simple=1&action=process&json=1&page_size=20&fields=code,product_name,brands,nutriments,nutrition_data_per";
   superOFFFetch(urlOFF, 8000, function(j){ superOFFResultados(q, j); }, function(){
-    superOFFFetch("https://api.allorigins.win/raw?url="+encodeURIComponent(urlOFF), 12000,
-      function(j){ superOFFResultados(q, j); },
-      function(){
-        superOFFPinta("<p class='hint'>🌍 No se pudo conectar con Open Food Facts (red lenta o servicio caído). Ojo: el producto puede existir igual — esto NO es un «no está».</p>"
-          +'<button class="sec" type="button" style="width:100%;margin-top:8px" onclick="superBuscarOFF('+argQ+')">↻ Reintentar</button>');
-      });
+    superOFFPinta("<p class='hint'>🌍 No se pudo conectar con Open Food Facts (red lenta o servicio caído). Ojo: el producto puede existir igual — esto NO es un «no está».</p>"
+      +'<button class="sec" type="button" style="width:100%;margin-top:8px" onclick="superBuscarOFF('+argQ+')">↻ Reintentar</button>');
   });
 }
 function superOFFResultados(q, j){
@@ -9388,8 +9393,9 @@ function fichaFotoCarga(ean){
     .catch(function(){});                                  // fallo de RED: no se cachea, se reintenta otro día
 }
 // «Cargar detalle completo de OFF»: 1 fetch al API v2 del EAN pidiendo nutriments; MISMA estrategia
-// de red que el buscador OFF (directo 8 s → proxy allorigins 12 s, superOFFFetch reutilizado).
-// El detalle SOLO rellena huecos (fichaRellena) y se cachea en RAM por ean para la sesión.
+// de red que el buscador OFF (fetch directo 8 s → mensaje honesto si falla; OFF es CORS-abierto, sin
+// proxy ajeno — ver nota en superBuscarOFF). El detalle SOLO rellena huecos (fichaRellena) y se
+// cachea en RAM por ean para la sesión.
 function fichaDetalleOFF(){
   var x=_fichaX; if(!x) return;
   var d=String(x.ean||"").replace(/\D/g,""); if(d.length<8) return;
@@ -9412,9 +9418,7 @@ function fichaDetalleOFF(){
     if(_fichaX && String(_fichaX.ean||"").replace(/\D/g,"")===d) fichaRender();   // re-pinta → re-habilita el botón
     toast("No se pudo pedir el detalle a OFF (red lenta o caída) — no significa que no exista");
   }
-  superOFFFetch(url, 8000, ok, function(){
-    superOFFFetch("https://api.allorigins.win/raw?url="+encodeURIComponent(url), 12000, ok, ko);
-  });
+  superOFFFetch(url, 8000, ok, ko);
 }
 // ✏️ A4/A22 · Corregir datos: edición IN SITU de los campos nutricionales del alimento abierto en la ficha.
 // Guarda un "parche" en jvf_overrides (clave por EAN, o por nombre si no hay EAN) que MANDA sobre OFF/base

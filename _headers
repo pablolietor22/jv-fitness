@@ -1,9 +1,24 @@
 # Cabeceras HTTP para el sitio estático de JV Fitness.
 # Formato compatible con Netlify Y Cloudflare Pages (ambos leen este archivo).
-# La app es un único index.html con JS embebido; sin llamadas a APIs externas todavía.
+#
+# ⚠️ HOY el sitio se sirve en GitHub Pages, que NO lee este archivo _headers: estas cabeceras
+#    NO llegan al navegador en vivo (verificado 2026-07-12: de las de abajo, solo la HSTS aparece,
+#    y es la de GitHub por defecto, no la de aquí). La protección que SÍ se aplica hoy es la
+#    Content-Security-Policy entregada por <meta http-equiv> dentro de index.html. Este archivo
+#    queda listo para el día que el hosting pase a Netlify/Cloudflare Pages (entonces se activa,
+#    incluida frame-ancestors, que por <meta> se ignora).
+#
+# La app es un único index.html con JS embebido. SÍ hace llamadas a hosts externos en runtime:
+#   - world.openfoodfacts.org  (buscar alimentos por nombre/EAN + imágenes de producto)
+#   - api.open-meteo.com       (clima; usa geolocalización del navegador, sin guardar la posición)
+#   - raw.githubusercontent.com(imágenes de ejercicios + sync opcional de pasos desde tu steps.json)
+#   - fonts.googleapis.com / fonts.gstatic.com (tipografías)
+#   - cdn.jsdelivr.net         (polyfill del lector de códigos de barras)
+# La CSP de abajo está acotada EXACTAMENTE a esos hosts (misma lista que el <meta> de index.html).
 /*
   X-Frame-Options: SAMEORIGIN
   X-Content-Type-Options: nosniff
   Referrer-Policy: no-referrer
-  Permissions-Policy: geolocation=(), microphone=()
+  Permissions-Policy: geolocation=(self), microphone=()
   Strict-Transport-Security: max-age=31536000; includeSubDomains
+  Content-Security-Policy: default-src 'self'; base-uri 'self'; object-src 'none'; form-action 'self'; frame-ancestors 'self'; img-src 'self' data: blob: https://world.openfoodfacts.org https://raw.githubusercontent.com; font-src 'self' https://fonts.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' https://cdn.jsdelivr.net; connect-src 'self' https://world.openfoodfacts.org https://api.open-meteo.com https://raw.githubusercontent.com https://cdn.jsdelivr.net; worker-src 'self' blob:; manifest-src 'self'
