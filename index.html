@@ -531,7 +531,7 @@
 <header class="brandbar">
   <div class="logo"><span class="dot"></span>JV <b>Fitness</b></div>
   <div style="display:flex;align-items:center">
-    <span class="tag">MVP v0.23.0 · motor v0.7</span>
+    <span class="tag">MVP v0.23.1 · motor v0.7</span>
     <!-- ⚙️ tanda #22 · hub de AJUSTES (no es pestaña): modal a pantalla completa -->
     <button class="gearbtn" id="btn_hub" type="button" title="Ajustes" aria-label="Abrir ajustes" onclick="hubAbrir()">⚙️</button>
   </div>
@@ -1315,6 +1315,19 @@ Tus datos se guardan solo en este dispositivo.</p>
 
 <!-- MODAL: explicador (i)/(?) reutilizable (A7/A21) — un icono (i) abre una explicación breve
      bajo demanda, sin saturar la pantalla. Mismo patrón de modal que fichaModal. -->
+<!-- MODAL: 🌙 MODO TRASNOCHADOR · al registrar de madrugada, elige a qué día imputa (hoy vs ayer).
+     Sin ✕: es una decisión de 2 toques (y reversible desde el contador de agua con «cambiar»). Va ANTES
+     del explicaModal en el DOM para que la (i) explicadora quede por ENCIMA de esta hoja al abrirse. -->
+<div id="nightModal" class="modal hidden">
+  <div class="modal-card">
+    <h3 style="margin:0 0 4px 0">🌙 Es de madrugada <span id="night_info_slot"></span></h3>
+    <p class="hint" id="night_sub" style="margin:0 0 14px"></p>
+    <button class="sec" type="button" id="night_btn_hoy" style="width:100%;margin:0 0 8px;text-align:left;line-height:1.35;padding:12px" onclick="nightElegir('hoy')"></button>
+    <button class="sec" type="button" id="night_btn_ayer" style="width:100%;margin:0;text-align:left;line-height:1.35;padding:12px" onclick="nightElegir('ayer')"></button>
+    <p class="hint" style="margin:12px 0 0">Se recuerda tu elección hasta que amanezca; puedes cambiarla desde 💧 Agua.</p>
+  </div>
+</div>
+
 <div id="explicaModal" class="modal hidden">
   <div class="modal-card">
     <button class="modal-x" type="button" title="Cerrar" aria-label="Cerrar" onclick="explicaCerrar()">✕</button>
@@ -1905,6 +1918,7 @@ var EXPLICACIONES = {
   "grasa-corporal": {t:"% de grasa corporal", d:"El % de tu peso que es grasa. Casi nadie lo sabe con exactitud: si no lo sabes, déjalo en blanco y el plan se calcula igual."},
   "recordatorio-entreno": {t:"💪 Recordatorio de entreno", d:"Los días que marcas como entreno, la app te lanza un empujón motivacional al abrirla (por la mañana o la tarde, no de noche). Es un aviso EN LA APP, no una notificación del móvil con la app cerrada. Marca solo los días que de verdad entrenas: sin días marcados no te avisa."},
   "macros-restantes": {t:"📊 Macros que te faltan", d:"Al final de tu día, la app mira lo que has apuntado y te dice los gramos de proteína, carbos o grasa que aún te faltan para tu objetivo, por si te queda una comida para cuadrarlo. ¿Cuándo es 'el final'? Lo aprende de la hora a la que sueles hacer tu último registro de comida; hasta que tenga esos datos usa una hora por defecto (~21:30)."},
+  "modo-trasnochador": {t:"🌙 Modo trasnochador", d:"Si registras algo de madrugada (antes de las 6:00), la app te pregunta UNA vez si ese registro cuenta para HOY (te acabas de levantar) o para AYER (sigues despierto de anoche, tu día aún en curso). Se recuerda tu elección hasta que amanezca o cambie el día, así no te pregunta en cada botón — y puedes cambiarla cuando quieras desde el contador de agua. Aplica igual al agua y al diario de comida: lo de las tantas cae en el día que TÚ vives, no en el del calendario. Fuera de esa franja no cambia nada."},
   "pesaje": {t:"Cómo pesarte bien", d:"Para comparar peso con peso (y no ruido) pésate SIEMPRE igual: (1) a primera hora, nada más levantarte; (2) en ayunas, antes de beber o comer; (3) después de ir al baño, con vejiga e intestino vacíos (no haber meado ni cagado falsea el número); (4) desnudo, o siempre con la misma ropa; (5) misma báscula, misma superficie dura. Si te pesas con ropa interior, marca la opción que resta un aproximado — pero recuerda que es una ESTIMACIÓN, no una medida exacta."}
 };
 function explicaTexto(key){ var e = EXPLICACIONES[key]; return e ? {titulo:e.t, cuerpo:e.d} : null; }
@@ -5318,6 +5332,7 @@ function aguaToggleCard(){ abrir("agua"); }
 function aguaAplicarColapso(){}
 function comInit(){
   var d=$("com_fecha"); if(d && !d.value) d.value=hoyLocal();
+  try{ nightSyncComFecha(); }catch(e){}   // 🌙 si trasnochas y ya elegiste "ayer", el diario abre en el día correcto
   comFillDatalist();   // I6 · base curada + alimentos propios; se reconstruye por si acabas de crear uno
   aguaAplicarColapso();   // 💧 v0.19-UI · aplica el estado guardado del colapso del agua
   renderComida(); comRecientes(); renderFavoritos(); favSyncBtn(); favSugCerrar(); renderAgua(); renderSuples(); renderCiclo();
@@ -5341,6 +5356,10 @@ function comUnidadSync(){
 function comAdd(){
   var nombre=($("com_nombre").value||'').trim(), g=+$("com_gramos").value;
   if(!nombre || !(g>0)){ toast("Pon alimento y gramos"); return; }
+  // 🌙 modo trasnochador: mismo criterio de "día efectivo" que el agua. De madrugada, si aún no has decidido y el
+  // diario está en el día natural (no una fecha elegida a mano), pregunta hoy/ayer y aplaza el alta; al elegir,
+  // nightSyncComFecha() encaja com_fecha en el día efectivo y se re-ejecuta comAdd() con los inputs intactos.
+  if(nightNecesitaPreguntar() && _comFechaEsHoyNatural()){ nightAbrirHoja(comAdd); return; }
   var _q=nombre.toLowerCase();
   // I6 · los alimentos propios entran ANTES que la base curada (si el nombre coincide, el tuyo manda)
   var _base=baseFoods();
@@ -5832,6 +5851,36 @@ function aguaHistFilas(logDia){
 }
 // [AGUA-HIST-PURE-FIN]
 
+// [NIGHT-PURE-INICIO] — 🌙 MODO TRASNOCHADOR · atribución de "día efectivo" cuando registras de MADRUGADA.
+// Problema real de Pablo: trabaja de noche; lo que apunta a la 1:00 cae en la fecha NUEVA del calendario
+// cuando en su cabeza sigue siendo "ayer" (su día de anoche, aún en curso). Este bloque decide, de forma
+// PURA y DETERMINISTA (sin DOM, sin storage, sin Math.random, sin `new Date()` propio: recibe la hora),
+// dos cosas: (1) ¿estamos en la franja de madrugada? (2) dada la elección hoy/ayer, ¿qué FECHA destino?
+// El formato de fecha es idéntico a hoyLocal() ('YYYY-MM-DD' en hora LOCAL) para que las claves cuadren.
+function nightEsMadrugada(now, cutoff){                 // true si la hora local de `now` está en [0, cutoff)
+  cutoff = (cutoff==null ? 6 : Math.floor(+cutoff));
+  if(!(cutoff>=0)) cutoff = 6;                          // basura → 6:00 por defecto (franja 00:00–05:59)
+  var d = (now instanceof Date) ? now : new Date(now);
+  var h = d.getHours();
+  if(isNaN(h)) return false;                            // fecha inválida → nunca madrugada (retrocompat)
+  return h >= 0 && h < cutoff;
+}
+function nightFechaISO(d){                              // Date → 'YYYY-MM-DD' LOCAL (mismo molde que hoyLocal)
+  return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+}
+function nightFechas(now){                              // {hoy, ayer} en YYYY-MM-DD, para pintar el popup
+  var d = (now instanceof Date) ? now : new Date(now);
+  var ay = new Date(d.getFullYear(), d.getMonth(), d.getDate()-1);   // día-1 local: cruza mes/año sin líos de zona
+  return { hoy: nightFechaISO(d), ayer: nightFechaISO(ay) };
+}
+function nightDiaEfectivo(now, eleccion, cutoff){       // FECHA destino del registro según la elección del usuario
+  var d = (now instanceof Date) ? now : new Date(now);
+  var f = nightFechas(d);
+  if(!nightEsMadrugada(d, cutoff)) return f.hoy;        // fuera de la franja: SIEMPRE hoy (comportamiento idéntico al actual)
+  return (eleccion === "ayer") ? f.ayer : f.hoy;        // en madrugada: 'ayer' → día anterior · resto ('hoy'/null) → hoy
+}
+// [NIGHT-PURE-FIN]
+
 // [NOTIF-PURE-INICIO] — recordatorios in-app HONESTOS. Sin backend NO hay notificación con la app cerrada:
 // esto avisa al ABRIR la app. PURO (sin DOM ni storage): dado config + contexto, decide qué recordar hoy.
 // cfg.aguaVerano===false lo apaga. Reutiliza aguaEsVerano (bloque de arriba). Los tests lo extraen tal cual.
@@ -6183,9 +6232,57 @@ function notifDecidir(cfg, ctx, clima){
   shown[a.id]=hoyLocal(); set(LS_NOTIF_SHOWN,shown);
   setTimeout(function(){ try{ toastCard(a.ico, a.titulo, a.cuerpo); }catch(e){} }, 1800);
 }
-// Aplica un delta (±) al total de HOY, nunca por debajo de 0; devuelve el delta REAL aplicado (para el log).
+// ======= 🌙 MODO TRASNOCHADOR · envoltura de sesión (la decisión pura vive en [NIGHT-PURE]) =======
+// Recuerda la elección hoy/ayer SOLO en memoria de la sesión, atada al día natural en que se tomó, para NO
+// preguntar en cada botón. Al amanecer (fuera de la franja) o al cambiar el día natural, se vuelve a preguntar.
+// window.__nightNow es una costura para la verificación en navegador (forzar la hora); en producción es undefined.
+var _nightChoice = null;   // { natDay:'YYYY-MM-DD', val:'hoy'|'ayer' } — efímero (no se persiste; "para la sesión")
+var _nightThunk  = null;   // acción aplazada mientras se decide hoy/ayer (el alta de agua/comida que disparó el popup)
+function nightAhora(){ try{ return (typeof window!=="undefined" && window.__nightNow!=null) ? new Date(window.__nightNow) : new Date(); }catch(e){ return new Date(); } }
+function _nightVigente(){ return !!(_nightChoice && _nightChoice.natDay===hoyLocal()); }   // ¿hay elección válida para HOY natural?
+function nightModoAyer(){ return nightEsMadrugada(nightAhora()) && _nightVigente() && _nightChoice.val==="ayer"; }
+function nightNecesitaPreguntar(){ return nightEsMadrugada(nightAhora()) && !_nightVigente(); }   // madrugada sin elección → preguntar
+function nightDiaKey(){ return nightDiaEfectivo(nightAhora(), nightModoAyer() ? "ayer" : "hoy"); }  // día efectivo (== hoyLocal fuera de "ayer")
+function aguaDiaKey(){ return nightDiaKey(); }   // el agua imputa/lee sobre el día efectivo (hoy, o ayer si trasnochas)
+// Abre la hoja "🌙 ¿hoy o ayer?" y aplaza `thunk` (o null si solo vienes a cambiar la elección) hasta que elijas.
+function nightAbrirHoja(thunk){
+  _nightThunk = (typeof thunk==="function") ? thunk : null;
+  var f=nightFechas(nightAhora()), ahora=nightAhora();
+  var hh=String(ahora.getHours()).padStart(2,"0")+":"+String(ahora.getMinutes()).padStart(2,"0");
+  var slot=$("night_info_slot"); if(slot && !slot.innerHTML){ try{ slot.innerHTML=infoTip("modo-trasnochador"); }catch(e){} }
+  var sub=$("night_sub"); if(sub) sub.textContent="Son las "+hh+". ¿Este registro cuenta para tu día de hoy, o sigues despierto del de ayer?";
+  var bh=$("night_btn_hoy");  if(bh) bh.innerHTML="☀️ Cuenta para <b>HOY</b><br><span class='hint' style='display:block;margin-top:2px'>me acabo de levantar · "+comFechaTexto(f.hoy)+"</span>";
+  var ba=$("night_btn_ayer"); if(ba) ba.innerHTML="🌙 Cuenta para <b>AYER</b><br><span class='hint' style='display:block;margin-top:2px'>sigo despierto de anoche · "+comFechaTexto(f.ayer)+"</span>";
+  show("nightModal", true);
+}
+// Registra la elección para el día natural actual, cierra la hoja, encaja el diario de comida y ejecuta lo aplazado.
+function nightElegir(val){
+  _nightChoice = { natDay:hoyLocal(), val:(val==="ayer"?"ayer":"hoy") };
+  show("nightModal", false);
+  try{ nightSyncComFecha(); }catch(e){}
+  var t=_nightThunk; _nightThunk=null;
+  try{ renderAgua(); }catch(e){}
+  if(t) try{ t(); }catch(e){}
+  toast(val==="ayer" ? "🌙 Contando para AYER" : "☀️ Contando para HOY");
+}
+// Badge dentro del contador de agua: de madrugada, si ya elegiste, muestra a qué día imputa y deja cambiarlo.
+function nightBadgeHTML(){
+  if(!(nightEsMadrugada(nightAhora()) && _nightVigente())) return "";
+  var f=nightFechas(nightAhora()), ayer=(_nightChoice.val==="ayer");
+  return "<div class='hint' style='margin:0 0 6px;color:#b9a3ff'>🌙 De madrugada · contando para <b>"+(ayer?"AYER":"HOY")+"</b> ("+(ayer?f.ayer:f.hoy)+") "
+    +"<button class='sec' type='button' style='width:auto;margin:0 0 0 6px;padding:2px 8px' onclick=\"nightAbrirHoja(null)\">cambiar</button></div>";
+}
+// 🌙 Comida: encaja el input de fecha del diario en el día efectivo, PERO solo si está en el rango hoy/ayer
+// (no pisa una fecha que Pablo haya elegido a mano para apuntar en otro día distinto).
+function nightSyncComFecha(){
+  var d=$("com_fecha"); if(!d) return;
+  var f=nightFechas(nightAhora()), ef=nightDiaKey();
+  if(!d.value || d.value===f.hoy || d.value===f.ayer){ if(d.value!==ef){ d.value=ef; try{ comFechaSync(); }catch(e){} } }
+}
+function _comFechaEsHoyNatural(){ var d=$("com_fecha"); return !d || !d.value || d.value===hoyLocal(); }   // ¿el diario está en el día natural (no una fecha elegida a mano)?
+// Aplica un delta (±) al total del DÍA EFECTIVO (hoy, o ayer si trasnochas), nunca por debajo de 0; devuelve el delta REAL (para el log).
 function _aguaAplicar(delta){
-  var d=hoyLocal(), m=get(LS_AGUA,{}), antes=m[d]||0, despues=Math.max(0, antes+Math.round(delta));
+  var d=aguaDiaKey(), m=get(LS_AGUA,{}), antes=m[d]||0, despues=Math.max(0, antes+Math.round(delta));
   m[d]=despues; set(LS_AGUA,m); return despues-antes;
 }
 // Log de eventos de agua de HOY: sirve a la vez para "deshacer último" (añadir o quitar) y para el 📜 HISTORIAL
@@ -6194,13 +6291,18 @@ function _aguaAplicar(delta){
 // salud). Retrocompat: entradas viejas eran un número suelto; _aguaLogMl() las sigue entendiendo.
 function _aguaLogPush(delta){
   if(!delta) return;
-  var d=hoyLocal(), log=get(LS_AGUA_LOG,{}); (log[d]=log[d]||[]).push({ts:Date.now(), ml:Math.round(delta)});
+  var d=aguaDiaKey(), log=get(LS_AGUA_LOG,{}); (log[d]=log[d]||[]).push({ts:Date.now(), ml:Math.round(delta)});
   if(log[d].length>50) log[d]=log[d].slice(-50);
   set(LS_AGUA_LOG,log);
 }
 function aguaAdd(ml){
   ml=Math.round(+ml); if(!(ml>0)) return;
-  var antes=get(LS_AGUA,{})[hoyLocal()]||0;
+  // 🌙 modo trasnochador: de madrugada y sin decidir aún, pregunta hoy/ayer y APLAZA este alta hasta que elijas.
+  if(nightNecesitaPreguntar()){ nightAbrirHoja(function(){ _aguaAddCore(ml); }); return; }
+  _aguaAddCore(ml);
+}
+function _aguaAddCore(ml){   // cuerpo real del alta de agua (imputa sobre aguaDiaKey: hoy, o ayer si trasnochas)
+  var antes=get(LS_AGUA,{})[aguaDiaKey()]||0;
   var real=_aguaAplicar(ml); _aguaLogPush(real); renderAgua();
   var obj=aguaObjetivo();
   _aguaPulse(); // presentación pura: pulso suave al añadir
@@ -6212,8 +6314,8 @@ function aguaQuitar(ml){   // resta manual (corrección); nunca deja el total en
   var real=_aguaAplicar(-ml); _aguaLogPush(real); renderAgua();   // real será negativo (0 si ya estabas a 0)
   toast(real<0 ? real+" ml" : "Ya estás a 0 ml");
 }
-function aguaDeshacer(){    // deshace la ÚLTIMA acción de hoy (añadir o quitar)
-  var d=hoyLocal(), log=get(LS_AGUA_LOG,{}), lst=log[d]||[];
+function aguaDeshacer(){    // deshace la ÚLTIMA acción del día efectivo (añadir o quitar)
+  var d=aguaDiaKey(), log=get(LS_AGUA_LOG,{}), lst=log[d]||[];
   if(!lst.length){ toast("Nada que deshacer hoy"); return; }
   var last=lst.pop(); set(LS_AGUA_LOG,log);
   _aguaAplicar(-_aguaLogMl(last)); renderAgua();   // inverso del delta guardado (soporta {ts,ml} y el viejo número suelto)
@@ -6234,19 +6336,21 @@ function aguaQuitarManual(){
 }
 function renderAgua(){
   var el=$("agua_resumen"); if(!el) return;
-  var hoy=get(LS_AGUA,{})[hoyLocal()]||0, info=aguaObjetivoInfo(), obj=info.total;
+  var dia=aguaDiaKey();   // 🌙 día efectivo: hoy, o ayer si trasnochas y así lo elegiste
+  var hoy=get(LS_AGUA,{})[dia]||0, info=aguaObjetivoInfo(), obj=info.total;
   var pct=Math.round(Math.min(1, obj>0?hoy/obj:1)*100), falta=Math.max(0,obj-hoy);
   var comp="base "+info.base+" ml"+info.ajustes.map(function(a){ return " · "+a.emoji+" "+a.label+" +"+a.ml; }).join("");
-  el.innerHTML="<div class='kv'><span>"+hoy+" / "+obj+" ml</span><span>"+(falta>0?("te quedan "+falta+" ml"):"✓ objetivo cumplido")+"</span></div>"
+  el.innerHTML=nightBadgeHTML()   // 🌙 aviso "contando para HOY/AYER · cambiar" solo de madrugada tras elegir
+    +"<div class='kv'><span>"+hoy+" / "+obj+" ml</span><span>"+(falta>0?("te quedan "+falta+" ml"):"✓ objetivo cumplido")+"</span></div>"
     +"<div class='pbar'><i style='width:"+pct+"%;background:#74c7ff'></i></div>"
     +"<div class='hint' style='margin-top:6px'>🎯 Objetivo (estimación): "+comp+"</div>";
   // 💧 v0.19-UI · línea compacta (presentación del MISMO dato; formato es-ES con puntos de miles)
   var mini=$("agua_mini_txt");
   if(mini) mini.textContent="💧 "+hoy.toLocaleString("es-ES")+" / "+obj.toLocaleString("es-ES")+" ml"+(falta>0?"":" ✓");
-  // 📜 A9 · historial de hoy con hora (solo reescribe la lista interna; el <details> conserva abierto/cerrado)
+  // 📜 A9 · historial del día efectivo con hora (solo reescribe la lista interna; el <details> conserva abierto/cerrado)
   var hlist=$("agua_hist_list");
   if(hlist){
-    var filas=aguaHistFilas(get(LS_AGUA_LOG,{})[hoyLocal()]||[]);
+    var filas=aguaHistFilas(get(LS_AGUA_LOG,{})[dia]||[]);
     var hn=$("agua_hist_n"); if(hn) hn.textContent="· "+(filas.length?(filas.length+" registro"+(filas.length>1?"s":"")):"aún vacío");
     if(!filas.length){
       hlist.innerHTML="<p class='hint' style='margin-top:6px'>Cada vez que añadas o corrijas agua aparecerá aquí con la hora. Así no dudas si registraste la última botella.</p>";
@@ -9666,7 +9770,7 @@ function pesoStep(d){
 }
 document.addEventListener('visibilitychange',function(){
   if(document.hidden) return;
-  try{ var hh=hoyLocal(); ["r_fecha","com_fecha","ent_fecha"].forEach(function(id){ var el=$(id); if(el&&el.value&&el.value<hh) el.value=hh; }); if(typeof renderComida==='function'&&$("com_tot")) renderComida(); }catch(e){}
+  try{ var hh=hoyLocal(); ["r_fecha","com_fecha","ent_fecha"].forEach(function(id){ if(id==="com_fecha" && typeof nightModoAyer==="function" && nightModoAyer()) return; /* 🌙 respeta el día efectivo de madrugada */ var el=$(id); if(el&&el.value&&el.value<hh) el.value=hh; }); if(typeof renderComida==='function'&&$("com_tot")) renderComida(); }catch(e){}
 });
 try{ navigator.storage&&navigator.storage.persist&&navigator.storage.persist(); }catch(e){}
 document.addEventListener('DOMContentLoaded',function(){
@@ -9699,7 +9803,7 @@ function resetTodo(){ if(!confirm("⚠️ Esto borra TODO: perfil, pesos, entren
 // Reemplazo total con confirmación. Reusa get/set, hoyLocal, toast, validar, render. NO toca motor ni gate.
 function exportarJSON(){ try{ set("jvf_last_export",hoyLocal()); }catch(e){}
   try{
-    var data={ app:"jvf", schema:1, app_version:"0.23.0", exportadoEl:new Date().toISOString(),
+    var data={ app:"jvf", schema:1, app_version:"0.23.1", exportadoEl:new Date().toISOString(),
       perfil:get(LS_P,null), pesos:get(LS_W,[]), entrenos:get(LS_E,[]), notas_ej:get("jvf_notas_ej",{}), comida:get("jvf_comida",[]), agua:get("jvf_agua",{}), suples_cfg:get("jvf_suples_cfg",null), suples_log:get("jvf_suples_log",{}),
       rutinas:get("jvf_rutinas",[]), meals:get("jvf_meals",[]), ent_start:get("jvf_ent_start",null),   // v0.10 · backup completo
       alimentos_propios:get("jvf_alimentos_propios",[]), barcode_cache:get("jvf_barcode_cache",{}),   // I5/I6 · también viajan en el backup
