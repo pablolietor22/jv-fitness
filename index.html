@@ -88,12 +88,22 @@
   .coachline{color:var(--jade);font-weight:600;font-family:var(--display)}
   /* pestañas */
   .tabs{display:flex;gap:6px;margin:14px 0 4px;position:sticky;top:0;z-index:5;
+    overflow-x:auto;flex-wrap:nowrap;scrollbar-width:none;-webkit-overflow-scrolling:touch;
     background:var(--ink);padding:8px 0;border-bottom:1px solid var(--line-soft)}
-  .tab{flex:1;width:auto;margin:0;background:transparent;color:var(--mute);
-    border:1px solid var(--line-soft);border-radius:10px;padding:9px 2px;
-    font-family:var(--mono);font-size:.58rem;letter-spacing:.02em;text-transform:uppercase;
+  .tabs::-webkit-scrollbar{display:none}
+  .tab{flex:0 0 auto;width:auto;margin:0;background:transparent;color:var(--mute);
+    border:1px solid var(--line-soft);border-radius:10px;padding:9px 12px;white-space:nowrap;
+    font-family:var(--mono);font-size:.72rem;letter-spacing:.02em;text-transform:uppercase;
     font-weight:500;cursor:pointer;box-shadow:none;transition:.15s}
   .tab.activa{color:var(--ink);background:var(--jade);border-color:var(--jade);font-weight:700;box-shadow:0 4px 14px rgba(61,220,151,.25)}
+  /* icono (i)/(?) reutilizable — abre un explicador breve bajo demanda (A7/A21) */
+  .infobtn{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;min-width:16px;margin-left:5px;padding:0;border-radius:50%;border:1px solid var(--line-soft);background:transparent;color:var(--mute);font-family:var(--mono);font-size:.62rem;font-weight:700;font-style:italic;line-height:1;cursor:pointer;vertical-align:middle;box-shadow:none}
+  .infobtn:hover{color:var(--jade);border-color:var(--jade)}
+  /* 💪 A18 · selector de días de entreno (toca los días que entrenas) */
+  .dias-entreno{display:flex;gap:6px;flex-wrap:wrap;margin-top:2px}
+  .diachip{width:34px;height:34px;min-width:34px;padding:0;border-radius:10px;border:1px solid var(--line-soft);background:transparent;color:var(--mute);font-family:var(--mono);font-size:.72rem;font-weight:700;cursor:pointer;box-shadow:none;transition:.15s}
+  .diachip:hover{border-color:var(--jade);color:var(--soft)}
+  .diachip.on{background:var(--jade);border-color:var(--jade);color:var(--ink);box-shadow:0 3px 10px rgba(61,220,151,.22)}
   /* toast de confirmación · v0.19-UI: entrada slide-up + fade con rebote, salida suave. Solo CSS
      (transition, sin librerías); la regla global de @prefers-reduced-motion lo deja casi instantáneo. */
   .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(26px) scale(.94);
@@ -143,6 +153,17 @@
   .bib-thumb{width:46px;height:34px;object-fit:cover;border-radius:6px;flex:none;background:var(--ink-3)}
   /* miniatura del ejercicio en el formulario de entreno (petición Pablo 05/07: entreno MUY visual) */
   .ent-thumb{width:44px;height:44px;object-fit:cover;border-radius:8px;flex:0 0 44px;background:var(--ink-3);cursor:pointer;border:1px solid var(--line-soft)}
+  /* A6 v0.22 · más aire en el form de entreno (sobre todo en móvil): campos con altura de dedo,
+     nota de serie a ancho completo y filas menos apretadas. No cambia estructura ni ids. */
+  .ent-nota-serie{width:100%;margin-top:6px;font-size:.85rem}
+  .ent-notabtn.on{filter:none}
+  #ent_form input{min-height:40px}
+  #ent_form .ent-serie{padding:2px 0}
+  @media(max-width:480px){
+    #ent_form .ent-serie{margin-top:9px}
+    #ent_form input.ent-peso,#ent_form input.ent-reps,#ent_form input.ent-rir,#ent_form input.ent-nombre,#ent_form .ent-nota,#ent_form .ent-nota-serie{min-height:44px;font-size:1rem}
+    #ent_form .rirq-b{padding:6px 9px}
+  }
   .bib-item{display:flex;align-items:center;gap:10px}
   .bib-ver{width:auto;padding:4px 9px;margin:0;flex:none}
   .wizchips{display:flex;gap:6px;flex-wrap:wrap;margin:-6px 0 14px}
@@ -510,7 +531,7 @@
 <header class="brandbar">
   <div class="logo"><span class="dot"></span>JV <b>Fitness</b></div>
   <div style="display:flex;align-items:center">
-    <span class="tag">MVP v0.22.0 · motor v0.7</span>
+    <span class="tag">MVP v0.23.0 · motor v0.7</span>
     <!-- ⚙️ tanda #22 · hub de AJUSTES (no es pestaña): modal a pantalla completa -->
     <button class="gearbtn" id="btn_hub" type="button" title="Ajustes" aria-label="Abrir ajustes" onclick="hubAbrir()">⚙️</button>
   </div>
@@ -592,8 +613,19 @@
     <h2>¿Quién eres?</h2>
     <label>Nombre</label><input id="f_nombre" placeholder="Tu nombre">
     <div class="row">
-      <div><label>Sexo</label><select id="f_sexo"><option value="hombre">Hombre</option><option value="mujer">Mujer</option></select></div>
+      <div><label>Sexo</label><select id="f_sexo" onchange="cicloToggleOptin()"><option value="hombre">Hombre</option><option value="mujer">Mujer</option></select></div>
       <div><label>Edad</label><input id="f_edad" type="number" placeholder="años"></div>
+    </div>
+    <!-- A11 · opt-in "modo ciclo" — SOLO visible si sexo=mujer (lo controla cicloToggleOptin) -->
+    <div id="f_ciclo_wrap" class="hidden" style="margin-top:10px">
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+        <input type="checkbox" id="f_ciclo_activo" style="width:auto">
+        Activar modo ciclo menstrual (opcional)
+        <button type="button" class="infobtn" onclick="explicaAbrir('modo-ciclo')" aria-label="Qué es esto" title="Qué es esto">i</button>
+      </label>
+      <p class="hint" style="margin-top:4px">Registras tu regla y cómo te sientes cada día, y la app
+        ajusta el esfuerzo a tus sensaciones — <b style="color:var(--soft)">nunca te baja los kilos por
+        la fecha</b>. Puedes activarlo o quitarlo cuando quieras.</p>
     </div>
   </div>
 
@@ -604,7 +636,7 @@
       <div><label>Peso (kg)</label><input id="f_peso" type="number" step="0.1" placeholder="kg"></div>
       <div><label>Altura (cm)</label><input id="f_altura" type="number" placeholder="cm"></div>
     </div>
-    <label>% de grasa corporal (opcional)</label><input id="f_grasa" type="number" step="0.1" placeholder="ej. 15">
+    <label>% de grasa corporal (opcional)</label><button type="button" class="infobtn" onclick="explicaAbrir('grasa-corporal')" aria-label="Qué es esto" title="Qué es esto">i</button><input id="f_grasa" type="text" inputmode="decimal" placeholder="ej. 22, 22-25, ~23">
     <p class="hint">Si no lo sabes, <b style="color:var(--soft)">déjalo vacío</b> — uso una fórmula que no lo necesita. (Pronto pondré siluetas para estimarlo de un vistazo.)</p>
   </div>
 
@@ -643,7 +675,7 @@
   <!-- 5 · Tu entrenamiento -->
   <div class="wstep hidden" data-paso="5">
     <h2>Tu entrenamiento <span style="font-size:.6em;color:var(--mute);font-weight:500;letter-spacing:.05em;text-transform:uppercase;vertical-align:middle">· días y material obligatorios</span></h2>
-    <p class="hint" style="margin-top:0">A partir de aquí es <b style="color:var(--soft)">contexto para afinar</b>. Tu plan ya se puede generar; rellena lo que quieras o pulsa «continuar».</p>
+    <p class="hint" style="margin-top:0"><b style="color:var(--soft)">Cuanto más rellenes, mejor te conozco</b> y más fino sale tu plan. Solo el % de grasa puedes saltarlo sin problema; lo demás, aunque sea aproximado, ayuda. Puedes pulsar «continuar» cuando quieras.</p>
     <div class="row">
       <div><label>Nivel</label><select id="w_nivel" onchange="wizOtro(this,'w_nivel_otro')"><option value="">—</option><option>Principiante</option><option>Intermedio</option><option>Avanzado</option><option>No lo sé</option><option>Otro</option></select></div>
       <div><label>Años entrenando</label><input id="w_anios" placeholder="ej. 3, o 'más o menos 4'"></div>
@@ -788,8 +820,17 @@
     <div><label>Fecha</label><input id="r_fecha" type="date"></div>
     <div><label>Peso ayunas (kg)</label><input id="r_peso" type="number" step="0.1" placeholder="ej. 79.8"><div class="row" style="gap:6px;margin-top:6px"><button class="sec" type="button" style="flex:1;width:auto;padding:6px" onclick="pesoStep(-0.1)">−0,1</button><button class="sec" type="button" style="flex:1;width:auto;padding:6px" onclick="pesoStep(0.1)">+0,1</button></div></div>
   </div>
-  <!-- ⚖️ E10 · protocolo de pesaje en una línea, junto al input -->
-  <p class="hint" style="margin-top:6px">En ayunas: tras orinar y hacer de vientre, antes de beber o comer — siempre igual, así la báscula no miente.</p>
+  <!-- ⚖️ E10/A10 · guía de pesaje junto al input (breve; el protocolo completo en el (i) → infoTip('pesaje')) -->
+  <p class="hint" style="margin-top:6px">⚖️ Mejor a primera hora, en ayunas y <b style="color:var(--soft)">después de ir al baño</b> (vejiga e intestino vacíos), desnudo y siempre en las mismas condiciones — así comparas peso con peso. <span id="pesaje_info"></span></p>
+  <!-- ⚖️ A10 · opción "con ropa interior": resta un aproximado editable. Honesto: es una ESTIMACIÓN. -->
+  <label class="row" style="gap:8px;align-items:center;margin-top:8px;font-size:.82rem;cursor:pointer">
+    <input id="r_peso_ropa" type="checkbox" style="width:auto;flex:0 0 auto;margin:0" onchange="pesoRopaToggle()">
+    <span>Me peso con ropa interior — restar un aproximado</span>
+  </label>
+  <div id="r_peso_ropa_cfg" class="row hidden" style="gap:8px;margin-top:4px;align-items:flex-end">
+    <div style="flex:0 0 auto"><label style="font-size:.72rem">Restar (kg)</label><input id="r_peso_ropa_kg" type="number" step="0.05" min="0" max="2" style="width:96px" onchange="pesoRopaAjusteSet(this.value)"></div>
+    <span class="hint" style="flex:1;margin:0">Es una <b style="color:var(--soft)">estimación</b>, no una medida exacta. Lo ideal sigue siendo pesarte desnudo.</span>
+  </div>
   <!-- M1 · chips de contexto (opcional): capturan el "por qué" del día junto al peso. Los pinta flexPesoChipsRender() -->
   <div id="flex_peso_chips" class="flexchips"></div>
   <button class="btn-lg" onclick="registrarPeso()">Guardar peso</button>
@@ -851,6 +892,13 @@
     <div class="row" style="gap:6px;margin-top:6px">
       <button class="sec" type="button" style="flex:0 0 auto;width:auto;margin:0;padding:5px 12px" title="Deshace lo último que añadiste o quitaste hoy" onclick="aguaDeshacer()">↶ Deshacer último</button>
     </div>
+    <!-- 📜 A9 · HISTORIAL con hora (spec Pablo, audio ×2: mete agua a botellas y olvida si registró la última).
+         <details> nativo colapsable: renderAgua() solo reescribe #agua_hist_list, así el abierto/cerrado
+         sobrevive a cada "añadir". Filas "🕐 12:34 · +500 ml" del día de hoy (más reciente arriba). -->
+    <details id="agua_hist_box" style="margin-top:8px">
+      <summary style="cursor:pointer;color:var(--jade);font-weight:600;font-size:.85rem">📜 Historial de hoy <span id="agua_hist_n" class="hint" style="font-weight:400"></span></summary>
+      <div id="agua_hist_list"></div>
+    </details>
     <p class="hint" style="margin-top:8px">Bebe antes, durante y después de entrenar: llegar deshidratado resta rendimiento (Savoie 2015). El objetivo es orientativo (~35 ml/kg/día); con calor o mucho entreno, más.</p>
     <p class="hint" style="margin-top:4px">🌡️ El aviso de agua en verano (con el clima real de tu zona) se enciende o apaga en <b style="color:var(--soft)">⚙️ Ajustes → 🔔 Notificaciones</b>.</p>
   </div>
@@ -947,6 +995,12 @@
         <b style="color:#f4c04e">L-carnitina (evidencia DÉBIL/mixta)</b> — en personas sanas los estudios no muestran mejora clara ni de rendimiento ni de pérdida de grasa. Si viene dentro de tu pre-entreno no estorba, pero no la compres suelta esperando milagros.
       </div>
     </details>
+  </div>
+
+  <!-- 🩸 A11 · "Hoy y tu ciclo" — registro diario opt-in. SOLO se pinta si p.ciclo.activo && sexo=mujer (renderCiclo). -->
+  <div class="card hidden" style="margin-top:10px;padding:12px" id="ciclo_card">
+    <div class="eyebrow-lbl">🩸 Hoy y tu ciclo</div>
+    <div id="ciclo_body"></div>
   </div>
 </div>
 
@@ -1156,6 +1210,20 @@ Tus datos se guardan solo en este dispositivo.</p>
         <div><label>¿Y el fin de semana?</label><input id="aj_lev_finde" type="time" value="09:30" onchange="levantarSet('finde', this.value)"></div>
       </div>
       <p class="hint" style="margin-top:4px">La app avisa <b style="color:var(--soft)">al abrirla</b> por la mañana («⚖️ pésate ahora»). Para una notificación del móvil a hora exacta con la app cerrada, monta la receta gratis de MacroDroid (2 min) — ver guía.</p>
+      <!-- 💪 A18 · días de entreno → empujón motivacional al abrir la app -->
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer;margin-top:12px"><input type="checkbox" id="aj_notif_entreno" checked onchange="notifSet('entrenoAvisos', this.checked)"> 💪 Recordarme entrenar los días que toca <button type="button" class="infobtn" onclick="event.preventDefault();explicaAbrir('recordatorio-entreno')" aria-label="Qué es esto" title="Qué es esto">i</button></label>
+      <p class="hint" style="margin-top:6px;margin-bottom:6px">¿Qué días entrenas? Toca los que toque:</p>
+      <div id="aj_dias_entreno" class="dias-entreno">
+        <button type="button" class="diachip" id="aj_dia_1" onclick="diasEntrenoToggle(1)">L</button>
+        <button type="button" class="diachip" id="aj_dia_2" onclick="diasEntrenoToggle(2)">M</button>
+        <button type="button" class="diachip" id="aj_dia_3" onclick="diasEntrenoToggle(3)">X</button>
+        <button type="button" class="diachip" id="aj_dia_4" onclick="diasEntrenoToggle(4)">J</button>
+        <button type="button" class="diachip" id="aj_dia_5" onclick="diasEntrenoToggle(5)">V</button>
+        <button type="button" class="diachip" id="aj_dia_6" onclick="diasEntrenoToggle(6)">S</button>
+        <button type="button" class="diachip" id="aj_dia_0" onclick="diasEntrenoToggle(0)">D</button>
+      </div>
+      <!-- 📊 A20 · aviso de macros que faltan al cierre del día (aprende tu hora del último registro) -->
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer;margin-top:12px"><input type="checkbox" id="aj_notif_macros" checked onchange="notifSet('macroResto', this.checked)"> 📊 Avisarme al final del día de los macros que me faltan <button type="button" class="infobtn" onclick="event.preventDefault();explicaAbrir('macros-restantes')" aria-label="Qué es esto" title="Qué es esto">i</button></label>
     </div>
 
     <!-- 🗄️ ALIMENTOS — panel de la base España MOVIDO desde Ajustar (tanda #22) + hueco base mundial (tarea #18) -->
@@ -1242,6 +1310,16 @@ Tus datos se guardan solo en este dispositivo.</p>
   <div class="modal-card">
     <button class="modal-x" type="button" title="Cerrar" aria-label="Cerrar" onclick="fichaCerrar()">✕</button>
     <div id="ficha_cuerpo"></div>
+  </div>
+</div>
+
+<!-- MODAL: explicador (i)/(?) reutilizable (A7/A21) — un icono (i) abre una explicación breve
+     bajo demanda, sin saturar la pantalla. Mismo patrón de modal que fichaModal. -->
+<div id="explicaModal" class="modal hidden">
+  <div class="modal-card">
+    <button class="modal-x" type="button" title="Cerrar" aria-label="Cerrar" onclick="explicaCerrar()">✕</button>
+    <h3 id="explica_titulo" style="margin:0 34px 8px 0"></h3>
+    <p id="explica_cuerpo" style="margin:0;color:var(--soft);line-height:1.5"></p>
   </div>
 </div>
 
@@ -1586,6 +1664,78 @@ function factorDeporte(actividad, depDias){
   return d<=2?1.30 : d<=3?1.45 : d<=4?1.60 : 1.75;
 }
 // [DEPORTE-PURE-FIN]
+// [CICLO-PURE-INICIO] — Modo ciclo menstrual (OPT-IN, A11). Modula la PERCEPCIÓN del esfuerzo del día
+// (autorregulación por SÍNTOMAS), NUNCA la capacidad real (1RM) ni por la FECHA del calendario.
+// Espejo del protocolo "noche mala" (master-file Tema 27) + autorregulación RIR. Consenso McNulty 2020
+// (Sports Med, DOI 10.1007/s40279-020-01319-3): efecto de la fase TRIVIAL e individual → el motor NO
+// codifica penalización por fase. Umbrales = REGLA DE LA CASA provisional (como [DEPORTE-PURE]), pendiente
+// de validación adversarial. PURO (sin DOM ni storage): _tests/test-ciclo.node.js lo extrae y evalúa.
+var CICLO_SEV_LEVE = 4;   // severidad 4-6 → autorregulación leve (REGLA DE LA CASA, espejo Tema 27; NO de la fase)
+var CICLO_SEV_ALTA = 7;   // severidad >=7 → autorregulación mayor (REGLA DE LA CASA, Tema 27; SIGUE sin tocar kilos por fecha)
+function _cicloNum(x){ return (typeof x==="number" && isFinite(x)) ? Math.max(0,Math.min(10,x)) : null; }
+// severidad = el PEOR síntoma reportado hoy (0-10). Ausente = sin señal. Todos ausentes = sin registro.
+function cicloSeveridad(s){
+  s = (s && typeof s==="object") ? s : {};
+  var vals = [_cicloNum(s.fatiga), _cicloNum(s.dolor), _cicloNum(s.esfuerzo)].filter(function(v){return v!==null;});
+  if(!vals.length) return { severidad:0, sinRegistro:true };
+  return { severidad: Math.max.apply(null, vals), sinRegistro:false };
+}
+// Nudges informativos (no cambian carga). Hierro por SÍNTOMA (sangrado), no por fecha; térmico en lútea.
+function cicloNudges(s, fase){
+  s = (s && typeof s==="object") ? s : {}; var out=[];
+  if(s.sangrado==="abundante") out.push({ id:"hierro", emoji:"🩸",
+    txt:"Con sangrado abundante pierdes más hierro. Prioriza hoy alimentos ricos en hierro (lentejas, "+
+        "espinacas, carne roja magra, almejas/berberechos, tofu); con algo de vitamina C se absorbe mejor. "+
+        "Si notas fatiga o mareo repetidos, coméntalo con tu médico." });
+  if(fase==="lutea") out.push({ id:"temp-lutea", emoji:"🌡️",
+    txt:"En la segunda mitad del ciclo puede que notes algo más de calor o que el esfuerzo se sienta "+
+        "mayor: es normal. Guíate por cómo te sientes hoy, no por la fecha." });
+  return out;
+}
+// Decisión del día. NUNCA baja el 1RM por fecha; NUNCA fuerza subidas. Sólo modo + tope RPE + accesorias.
+function cicloModulador(sintomas, fase){
+  var sev = cicloSeveridad(sintomas);
+  var nudges = cicloNudges(sintomas, fase);
+  var _regla = "Autorregulación por SÍNTOMAS del día, no por la fase (McNulty 2020: efecto de fase "+
+               "trivial e individual). Nunca reduce carga/1RM por la fecha.";
+  if(sev.sinRegistro || sev.severidad < CICLO_SEV_LEVE){
+    return { modo:"porcentaje", rpeTope:null, ajusteSeries:0, severidad:sev.severidad,
+      sinRegistro:sev.sinRegistro, nudges:nudges, _regla:_regla,
+      nota:"Hoy seguimos con tu plan normal. Ajustamos a cómo te sientes, no a la fecha." };
+  }
+  if(sev.severidad < CICLO_SEV_ALTA){
+    return { modo:"tope_rpe", rpeTope:8, ajusteSeries:-1, severidad:sev.severidad,   // RPE 8 / −1 accesoria = REGLA DE LA CASA (Tema 27), NO de la fase
+      sinRegistro:false, nudges:nudges, _regla:_regla,
+      nota:"Hoy te noto algo cargada. Mantén tus ejercicios grandes, pero para cada serie con ~2 repes "+
+           "en la recámara (RPE 8) y quita 1 serie accesoria. No bajamos los kilos por la fecha: sólo "+
+           "escuchamos cómo te sientes." };
+  }
+  return { modo:"tope_rpe", rpeTope:7, ajusteSeries:-2, severidad:sev.severidad,   // RPE 7 / −2 accesorias = REGLA DE LA CASA (Tema 27), NO de la fase
+    sinRegistro:false, nudges:nudges, _regla:_regla,
+    nota:"Hoy toca cuidarse. Puedes entrenar igual, pero deja ~3 repes en la recámara (RPE 7) y quita "+
+         "1-2 series accesorias. Los básicos pesados se quedan; nada de récords hoy. Esto no es un fallo "+
+         "tuyo ni de tu cuerpo — es autorregular." };
+}
+// cicloFaseDesdeInicio(logs, hoy): deriva la fase SOLO para habilitar el nudge térmico (C131). La fase
+// JAMÁS cambia carga. Busca el último inicioRegla<=hoy; sin registro → null (sin nudge de fase).
+function cicloFaseDesdeInicio(logs, hoy){
+  if(!logs || typeof logs!=="object" || Array.isArray(logs)) return null;
+  var tHoy = Date.parse(String(hoy)+"T12:00:00"); if(isNaN(tHoy)) return null;
+  var mejor=null;
+  for(var k in logs){
+    if(!Object.prototype.hasOwnProperty.call(logs,k)) continue;
+    if(!(logs[k] && logs[k].inicioRegla===true)) continue;
+    var tk=Date.parse(String(k)+"T12:00:00"); if(isNaN(tk) || tk>tHoy) continue;
+    if(mejor===null || tk>mejor) mejor=tk;
+  }
+  if(mejor===null) return null;
+  var dia = Math.floor((tHoy-mejor)/864e5) + 1;   // día 1 = el propio inicioRegla
+  if(dia<=5) return "menstrual";
+  if(dia<=11) return "folicular";
+  if(dia<=16) return "ovulacion";   // ~día 14 ±2
+  return "lutea";
+}
+// [CICLO-PURE-FIN]
 // [PLANI-PURE-INICIO] — Planificador de objetivo con PROBABILIDAD (anti-humo). Función PURA (sin DOM ni
 // storage): los tests de node la extraen y ejecutan tal cual. "Quiero cambiar X kg en N semanas" → la app
 // dice si es realista, el plan y la PROBABILIDAD. Ritmos sanos = tu ciencia (Garthe 2011 + master file):
@@ -1730,6 +1880,35 @@ function nivelDetalle(p){
   return { nivel:n, explicar:n!=="pro", extra:n==="novato" };
 }
 // [NIVEL-PURE-FIN]
+
+// [EXPLICA-PURE-INICIO] — 📖 diccionario de explicaciones (los "temas a explicar"). PURO: _tests/test-explica.node.js lo extrae y evalúa. Cada término se explica bajo demanda con un icono (i), sin saturar la pantalla.
+var EXPLICACIONES = {
+  "rpe": {t:"RPE — Esfuerzo percibido", d:"Escala subjetiva del 6 al 10 de lo duro que se te hizo la serie. 10 = no podías hacer ni una repe más; 8 = te quedaban unas 2. Regula la carga por sensaciones, no solo por kilos."},
+  "rir": {t:"RIR — Repeticiones en reserva", d:"Cuántas repeticiones te quedaban al acabar la serie. RIR 0 = fallo total; RIR 2 = podrías haber hecho 2 más. Es el RPE al revés (RIR 2 ≈ RPE 8)."},
+  "peso-anadido": {t:"Peso añadido (lastre)", d:"El peso EXTRA que te cuelgas además de tu cuerpo (un disco, mancuerna o cinturón de lastre). En dominadas o fondos aquí va SOLO el lastre; tu peso corporal no cuenta como carga añadida."},
+  "peso-corporal": {t:"Ejercicio de peso corporal", d:"Se hace moviendo tu propio cuerpo, sin peso externo (flexiones, dominadas, fondos). Si le añades lastre, apúntalo aparte en 'peso añadido'."},
+  "serie-warmup": {t:"Serie de aproximación (warm-up)", d:"Series ligeras previas para calentar y ajustar la técnica antes de las series fuertes. No cuentan para el volumen ni la progresión."},
+  "serie-efectiva": {t:"Serie efectiva", d:"Serie cerca del fallo (RIR bajo) que genera el estímulo de crecimiento/fuerza. Son las que cuentan para tu progreso."},
+  "previous": {t:"Columna 'anterior'", d:"Lo que levantaste la última vez en esa misma serie de ese ejercicio. Tu referencia para intentar mejorar (sobrecarga progresiva)."},
+  "sobrecarga": {t:"Sobrecarga progresiva", d:"Ir subiendo poco a poco (más peso, más reps o mejor técnica) para que el músculo siga teniendo motivo para adaptarse. Sin progreso, no hay mejora."},
+  "calidad-semaforo": {t:"Semáforo de calidad", d:"Etiquetado por 100 g: 🟢 bien, 🟡 moderado, 🔴 alto en azúcar, grasa saturada o sal. '—' = no hay dato para juzgarlo (no lo inventamos)."},
+  "sal-sodio": {t:"Sal y sodio", d:"Las etiquetas suelen dar el sodio; la sal = sodio × 2,5. La app hace la cuenta por ti."},
+  "revisar-atwater": {t:"⚠️ Revisar (energía vs macros)", d:"Las calorías deberían cuadrar con los macros: ~4 kcal por gramo de proteína, ~4 por carbo y ~9 por grasa. Si el número declarado se aleja muchísimo (más del 70% arriba o por debajo de la mitad), suele ser un error de la etiqueta o de quien la subió — por ejemplo kJ metidos como kcal, o un decimal corrido. Es solo un AVISO para que lo mires: no bloquea nada y no juzga si el producto está bien identificado, solo si la aritmética cuadra."},
+  "editado-por-ti": {t:"✏️ Editado por ti", d:"Corregiste este alimento a mano, así que TUS valores mandan sobre los de la base o de Open Food Facts, aquí y en el buscador. Se guardan en tu móvil y viajan en la copia de seguridad. Puedes volver al valor original cuando quieras."},
+  "micros": {t:"Vitaminas y minerales", d:"Micronutrientes que trae la ficha cuando la fuente los da (sobre todo en productos fortificados: bebidas con vitaminas, cereales, proteínas). Si no aparecen es que no hay dato fiable — no lo inventamos."},
+  "ingredientes": {t:"Ingredientes", d:"La lista de ingredientes tal cual la publica el fabricante en Open Food Facts. Útil para pillar un producto mal identificado: si esperabas un pan SIN gluten y la lista dice harina de trigo, el dato es de otro producto — corrígelo."},
+  "porcion": {t:"Porción", d:"La ración habitual (una lata, un vaso, una rebanada) con sus gramos. Al elegirla, se recalculan los macros por regla de tres."},
+  "deficit": {t:"Déficit calórico", d:"Comer algo menos de lo que gastas para perder grasa. La app lo ajusta a tu ritmo sin pasarse (un déficit agresivo hace perder músculo)."},
+  "tdee": {t:"TDEE — Gasto total", d:"Las calorías que quemas al día en total: metabolismo basal + actividad + entreno + pasos. La base de tu plan."},
+  "neat": {t:"NEAT — Actividad diaria", d:"Calorías que quemas moviéndote fuera del gimnasio (andar, tareas, gestos). Suele pesar más que el propio entreno; por eso cuentan tus pasos."},
+  "modo-ciclo": {t:"Modo ciclo menstrual", d:"Ajuste opcional para mujeres: registras ciclo y síntomas, y la app regula el esfuerzo del día por cómo te sientes, sin bajarte los kilos 'por la fecha'. El ciclo no baja el rendimiento de forma fija."},
+  "grasa-corporal": {t:"% de grasa corporal", d:"El % de tu peso que es grasa. Casi nadie lo sabe con exactitud: si no lo sabes, déjalo en blanco y el plan se calcula igual."},
+  "recordatorio-entreno": {t:"💪 Recordatorio de entreno", d:"Los días que marcas como entreno, la app te lanza un empujón motivacional al abrirla (por la mañana o la tarde, no de noche). Es un aviso EN LA APP, no una notificación del móvil con la app cerrada. Marca solo los días que de verdad entrenas: sin días marcados no te avisa."},
+  "macros-restantes": {t:"📊 Macros que te faltan", d:"Al final de tu día, la app mira lo que has apuntado y te dice los gramos de proteína, carbos o grasa que aún te faltan para tu objetivo, por si te queda una comida para cuadrarlo. ¿Cuándo es 'el final'? Lo aprende de la hora a la que sueles hacer tu último registro de comida; hasta que tenga esos datos usa una hora por defecto (~21:30)."},
+  "pesaje": {t:"Cómo pesarte bien", d:"Para comparar peso con peso (y no ruido) pésate SIEMPRE igual: (1) a primera hora, nada más levantarte; (2) en ayunas, antes de beber o comer; (3) después de ir al baño, con vejiga e intestino vacíos (no haber meado ni cagado falsea el número); (4) desnudo, o siempre con la misma ropa; (5) misma báscula, misma superficie dura. Si te pesas con ropa interior, marca la opción que resta un aproximado — pero recuerda que es una ESTIMACIÓN, no una medida exacta."}
+};
+function explicaTexto(key){ var e = EXPLICACIONES[key]; return e ? {titulo:e.t, cuerpo:e.d} : null; }
+// [EXPLICA-PURE-FIN]
 // #3 · Jarvis explica el PORQUÉ citando el master-file (conocimiento ESTÁTICO embebido: cita, no calcula).
 function porqueHTML(p, rec, pgkg, ggkg){
   var nd=nivelDetalle(p);   // 🎚️ SPEC 3: mismo cálculo, distinta cantidad de letra
@@ -5141,7 +5320,7 @@ function comInit(){
   var d=$("com_fecha"); if(d && !d.value) d.value=hoyLocal();
   comFillDatalist();   // I6 · base curada + alimentos propios; se reconstruye por si acabas de crear uno
   aguaAplicarColapso();   // 💧 v0.19-UI · aplica el estado guardado del colapso del agua
-  renderComida(); comRecientes(); renderFavoritos(); favSyncBtn(); favSugCerrar(); renderAgua(); renderSuples();
+  renderComida(); comRecientes(); renderFavoritos(); favSyncBtn(); favSugCerrar(); renderAgua(); renderSuples(); renderCiclo();
 }
 // v0.13a-fix · la ENTRADA también habla ml para líquidos (verificación: «la salida es honesta;
 // la entrada miente»): al teclear/elegir un alimento con u:"ml", el label, el placeholder y los
@@ -5164,15 +5343,25 @@ function comAdd(){
   if(!nombre || !(g>0)){ toast("Pon alimento y gramos"); return; }
   var _q=nombre.toLowerCase();
   // I6 · los alimentos propios entran ANTES que la base curada (si el nombre coincide, el tuyo manda)
-  var _base=apComoFoods().concat(FOODS);
+  var _base=baseFoods();
   var fd=_base.filter(function(x){ return x.n.toLowerCase()===_q; })[0];
   if(!fd){ var _cand=_base.filter(function(x){ return x.n.toLowerCase().indexOf(_q)>=0; }); if(_cand.length===1) fd=_cand[0]; else if(_cand.length>1){ toast("Hay "+_cand.length+" que encajan — elige uno de la lista"); return; } }
-  if(!fd){ toast("No está en la base — elige de la lista, escanea el código o crea un alimento propio"); return; }
+  if(!fd){
+    // A19/B2 · ¿es un escaneado que re-añades desde el historial? No vive en la base (por eso el lookup
+    // falla), pero el historial guardó sus macros: los reescala a los gramos elegidos y los añade.
+    if(histCloneAdd(nombre, g)){
+      $("com_nombre").value=""; $("com_gramos").value=""; try{ favSyncBtn(); }catch(e){}
+      renderComida(); toast("✓ Añadido");
+      return;
+    }
+    toast("No está en la base — elige de la lista, escanea el código o crea un alimento propio"); return;
+  }
   var k=g/100, arr=get(LS_COMIDA,[]);
   var _item={id:Date.now().toString(36)+Math.random().toString(36).slice(2,6), f:($("com_fecha").value||hoyLocal()), n:fd.n, g:g, kcal:Math.round(fd.kcal*k), p:+(fd.p*k).toFixed(1), c:+(fd.c*k).toFixed(1), gr:+(fd.f*k).toFixed(1), fib:+((fd.fib||0)*k).toFixed(1), az:+((fd.az||0)*k).toFixed(1), sat:+((fd.sat||0)*k).toFixed(1), na:Math.round(((fd.na||0)*k))};
   // v0.13 · L3: las bebidas de la base local van por 100 ml (u:"ml") → la unidad viaja al diario
   // y comUnidad la pinta bien ("330 ml"). Los sólidos siguen sin u = gramos, como siempre.
   if(fd.u==="ml") _item.u="ml";
+  _item.ts=Date.now();   // 📊 A20 · marca de tiempo del registro → "aprende" tu hora de cierre (macroRestoHoraTipica). Retrocompat: items viejos sin ts se ignoran para eso.
   arr.push(_item);
   var _obj=window._obj||null, _f=($("com_fecha").value||hoyLocal());
   var _pAntes=get(LS_COMIDA,[]).filter(function(x){return x.f===_f;}).reduce(function(a,x){return a+x.p;},0);
@@ -5248,11 +5437,80 @@ function calidadNutricional(f){
   return {nivel:"verde", motivo:"sin excesos de azúcar, saturadas ni sal por 100 g"};
 }
 // [CALIDAD-PURE-FIN]
+// [ATWATER-PURE-INICIO] — ⚖️ coherencia energía⇄macros por 100 g (A22). PURO (sin DOM/red/storage):
+// _tests/test-atwater.node.js extrae este bloque y lo evalúa tal cual. MISMA tolerancia que el volcado
+// off_dump_es.js (est>5 && kcal fuera de 0,5×–1,7× de est). est = 4·p + 4·c + 9·g (kcal de Atwater).
+// Devuelve {ok, ratio, est[, motivo]} o null cuando NO hay con qué juzgar: faltan macros, o est<=5
+// (agua, café solo, refresco light). HONESTIDAD: NO caza identidad de producto ni cifras mal tecleadas
+// por la comunidad (el "pan 5 semillas" cuadra en aritmética y aun así puede estar mal mapeado) — solo
+// errores de UNIDAD/aritmética (kJ metidos como kcal, decimal corrido…). Ausencia de macros ≠ error.
+function atwaterCheck(f){
+  if(!f || typeof f!=="object") return null;
+  function num(v){ return (v==null || v==="" || !isFinite(+v)) ? null : +v; }
+  var kcal=num(f.kcal), p=num(f.p), c=num(f.c), g=num(f.f);
+  if(kcal==null || p==null || c==null || g==null) return null;   // sin los 4 macros no se juzga (cero falso positivo)
+  var est=4*p+4*c+9*g;
+  if(est<=5) return null;                                        // acalórico: nada con qué comparar (honesto)
+  var ratio=kcal/est;
+  if(kcal>est*1.7 || kcal<est*0.5)
+    return {ok:false, ratio:+ratio.toFixed(2), est:Math.round(est),
+            motivo:"la energía ("+kcal+" kcal) no cuadra con los macros (~"+Math.round(est)+" kcal): revisa la etiqueta"};
+  return {ok:true, ratio:+ratio.toFixed(2), est:Math.round(est)};
+}
+// [ATWATER-PURE-FIN]
+// [OVR-PURE-INICIO] — ✏️ capa de CORRECCIÓN del usuario (A4/A22): un "parche" que se aplica ENCIMA de la
+// base y MANDA. PURO (sin DOM/red/storage): _tests/test-atwater.node.js extrae este bloque. La clave es
+// "ean:<solo dígitos>" si el alimento trae EAN, si no "nom:<nombre normalizado>". aplicarOverride devuelve
+// una COPIA con los campos del parche sobrescritos + _edit/_fuente/_base; SIN parche devuelve el MISMO
+// objeto (retrocompat: base sin overrides ⇒ comportamiento idéntico). Nunca copia claves internas (_…).
+function ovrNorm(s){ return String(s==null?"":s).trim().toLowerCase().replace(/\s+/g," "); }
+function ovrKey(f){
+  if(!f || typeof f!=="object") return null;
+  var e=(f.ean!=null)?String(f.ean).replace(/\D/g,""):"";
+  return e ? ("ean:"+e) : ("nom:"+ovrNorm(f.n));
+}
+function aplicarOverride(f, ovr){
+  if(!f || typeof f!=="object" || !ovr || typeof ovr!=="object") return f;
+  var k=ovrKey(f); if(!k) return f;
+  var patch=ovr[k]; if(!patch || typeof patch!=="object") return f;
+  var out={}, c;
+  for(c in f){ if(Object.prototype.hasOwnProperty.call(f,c)) out[c]=f[c]; }
+  for(c in patch){
+    if(!Object.prototype.hasOwnProperty.call(patch,c)) continue;
+    if(c.charAt(0)==="_") continue;                 // _ts/_fuente del parche: metadatos, no datos nutricionales
+    if(patch[c]!=null) out[c]=patch[c];
+  }
+  out._edit=true; out._fuente="editado por ti"; out._base=(f._base||f);   // _base = ORIGINAL limpio (para revertir)
+  return out;
+}
+// [OVR-PURE-FIN]
+// ✏️ A4 · store + resolutor del override (IMPURO: usa get/set). LS_OVR = { clave: {campos…, _ts, _fuente} }.
+var LS_OVR="jvf_overrides";
+function ovrAll(){ var o=get(LS_OVR,{}); return (o && typeof o==="object" && !Array.isArray(o))?o:{}; }
+function ovrVacio(o){ o=o||ovrAll(); for(var k in o){ if(Object.prototype.hasOwnProperty.call(o,k)) return false; } return true; }
+// Override por EAN o por nombre (lo usa el escáner, que trabaja por código): devuelve el parche o null.
+function ovrPorClave(ean, nombre){
+  var o=ovrAll();
+  var e=(ean!=null)?String(ean).replace(/\D/g,""):"";
+  if(e && o["ean:"+e]) return o["ean:"+e];
+  if(nombre && o["nom:"+ovrNorm(nombre)]) return o["nom:"+ovrNorm(nombre)];
+  return null;
+}
+// 🍎 Resolutor ÚNICO de "toda la base de alimentos" (propios + FOODS) con las correcciones del usuario
+// aplicadas ENCIMA. Sustituye el viejo idiom apComoFoods().concat(FOODS). Sin overrides ⇒ MISMO array
+// (mismas referencias) que antes: coste cero y retrocompat total. Los propios ya van primero ("lo tuyo manda").
+function baseFoods(){
+  var propios=(typeof apComoFoods==="function"?apComoFoods():[]);
+  var base=(typeof FOODS!=="undefined" && FOODS)?FOODS:[];
+  var ovr=ovrAll();
+  if(ovrVacio(ovr)) return propios.concat(base);
+  return propios.concat(base.map(function(f){ return aplicarOverride(f, ovr); }));
+}
 // Envoltura: resuelve el alimento por NOMBRE EXACTO en la base (tus propios + la curada) y da su
 // semáforo. Los propios no guardan az/sat/na → null → sin puntito (honesto, no se inventa).
 function calidadDeNombre(nombre){
   var q=String(nombre||"").trim().toLowerCase(); if(!q) return null;
-  var base=(typeof apComoFoods==="function"?apComoFoods():[]).concat(typeof FOODS!=="undefined"?FOODS:[]);
+  var base=baseFoods();
   for(var i=0;i<base.length;i++){ if(base[i] && typeof base[i].n==="string" && base[i].n.toLowerCase()===q) return calidadNutricional(base[i]); }
   return null;
 }
@@ -5279,13 +5537,13 @@ function histSync(){
   prev.forEach(function(h){
     if(!h || typeof h.n!=="string" || !h.n) return;
     var key=h.n.toLowerCase(); if(seen[key]) return; seen[key]=1;
-    if(ult[key]) out.push({ n:ult[key].n, g:ult[key].g, u:ult[key].u, fecha:ult[key].fecha, kcal:ult[key].kcal, p:ult[key].p, c:ult[key].c, gr:ult[key].gr, fib:ult[key].fib, az:ult[key].az, sat:ult[key].sat });
+    if(ult[key]) out.push({ n:ult[key].n, g:ult[key].g, u:ult[key].u, fecha:ult[key].fecha, kcal:ult[key].kcal, p:ult[key].p, c:ult[key].c, gr:ult[key].gr, fib:ult[key].fib, az:ult[key].az, sat:ult[key].sat, na:ult[key].na });   // A19 · el sodio también viaja al historial (antes se perdía → re-añadir lo ponía a 0)
     else out.push({ n:h.n, g:(+h.g>0?+h.g:100), u:(h.u==="ml"?"ml":"g"), fecha:h.fecha||"", kcal:+h.kcal||0, p:+h.p||0, c:+h.c||0, gr:+h.gr||0, fib:+h.fib||0, az:+h.az||0, sat:+h.sat||0, na:+h.na||0 });
   });
   // 2) añade al final los alimentos nuevos del diario (por orden de aparición)
   Object.keys(ult).sort(function(a,b){ return ult[a].rank-ult[b].rank; }).forEach(function(key){
     if(seen[key]) return; seen[key]=1;
-    out.push({ n:ult[key].n, g:ult[key].g, u:ult[key].u, fecha:ult[key].fecha, kcal:ult[key].kcal, p:ult[key].p, c:ult[key].c, gr:ult[key].gr, fib:ult[key].fib, az:ult[key].az, sat:ult[key].sat });
+    out.push({ n:ult[key].n, g:ult[key].g, u:ult[key].u, fecha:ult[key].fecha, kcal:ult[key].kcal, p:ult[key].p, c:ult[key].c, gr:ult[key].gr, fib:ult[key].fib, az:ult[key].az, sat:ult[key].sat, na:ult[key].na });   // A19 · el sodio también viaja al historial (antes se perdía → re-añadir lo ponía a 0)
   });
   set(LS_HIST_ALIM,out);
   return out;
@@ -5324,29 +5582,52 @@ function histFiltrar(){
     // stopPropagation ANTES del toast: tocar el puntito explica el motivo, NO re-añade el alimento.
     var cal=null; try{ cal=calidadDeNombre(h.n); }catch(e){}
     var dot=cal?" <span onclick='event.stopPropagation();calidadToast("+nJ+")' title='Calidad nutricional — toca para ver por qué'>"+CALIDAD_ICO[cal.nivel]+"</span>":"";
-    return "<span class='wchip done' onclick='histReAdd("+nJ+")' title='Añadir "+escAttr(h.n)+"'>🕑 "+esc(h.n)+" "+h.g+(h.u==="ml"?"ml":"g")+dot+"</span>";
+    // A1 · MISMO ojito 👁️ que el buscador (fichaOjoHist) — abre la ficha sin disparar el re-añadir
+    // (stopPropagation en el botón). inline-flex para que el ojito 30px alinee con el texto del chip.
+    return "<span class='wchip done' onclick='histReAdd("+nJ+")' title='Ajustar gramos y re-añadir "+escAttr(h.n)+"' style='display:inline-flex;align-items:center;gap:3px'>🕑 "+esc(h.n)+" "+h.g+(h.u==="ml"?"ml":"g")+dot+fichaOjoHist(h.n)+"</span>";
   }).join("")+"</div>";
 }
-// B2 · re-añade desde el historial CLONANDO los macros guardados (funciona con productos escaneados por código de
-// barras, que NO están en la base y por eso fallaban con comQuick). Si el item es antiguo y no tiene macros → alta por nombre.
+// A19 · re-añadir del historial SIN re-meter a ciegas: en vez de añadir al instante, lleva el alimento al
+// MISMO input de gramos del buscador (pre-rellenado con los gramos guardados) para que Pablo los AJUSTE y
+// confirme con «➕ Añadir». Reutiliza el flujo de superElegir (rellenar com_nombre + foco en com_gramos).
+// El alta la resuelve comAdd: base → recalcula per-100×gramos; escaneado que no vive en la base →
+// histCloneAdd reescala los macros guardados a los gramos elegidos (mantiene B2, ahora editable).
 function histReAdd(nombre){
   var key=(nombre||"").toLowerCase();
   var h=get(LS_HIST_ALIM,[]).filter(function(x){ return x && (x.n||"").toLowerCase()===key; })[0];
   if(!h){ toast("No encuentro ese alimento en el historial"); return; }
-  if(+h.kcal>0 || +h.p>0 || +h.c>0 || +h.gr>0){
-    var arr=get(LS_COMIDA,[]);
-    var it={id:Date.now().toString(36)+Math.random().toString(36).slice(2,6), f:(($("com_fecha")||{}).value||hoyLocal()), n:h.n, g:+h.g||0, kcal:+h.kcal||0, p:+h.p||0, c:+h.c||0, gr:+h.gr||0, fib:+h.fib||0, az:+h.az||0, sat:+h.sat||0, na:+h.na||0};
-    if(h.u==="ml") it.u="ml";
-    arr.push(it); set(LS_COMIDA,arr); renderComida(); toast("✓ Añadido");
-  } else {
-    comQuick(h.n, h.g);   // legado sin macros (base curada, café…) → alta por nombre como siempre
-  }
+  _superLlenando=true;   // E1 · el rellenado programático no debe re-abrir el popup del buscador
+  var el=$("com_nombre"); if(el) el.value=h.n;
+  var gi=$("com_gramos"); if(gi) gi.value=(+h.g>0?h.g:"");
+  try{ comUnidadSync(); favSyncBtn(); comPorcSync(); }catch(e){}   // mismos syncs que superElegir
+  _superLlenando=false;
+  toast("Ajusta los gramos y pulsa ➕ Añadir");
+  setTimeout(function(){ try{ var g=$("com_gramos"); if(g){ g.focus(); if(g.select) g.select(); } }catch(e){} }, 60);   // foco + selección: teclear reemplaza
+}
+// A19/B2 · alta de un escaneado del historial (NO vive en la base) CLONANDO sus macros guardados,
+// REESCALADOS de sus gramos guardados a `g` (los que Pablo dejó en el input). Devuelve true si añadió;
+// sin gramos guardados o sin macros → false (que comAdd siga con la base / su mensaje). Con g == gramos
+// guardados el factor es 1 → idéntico a B2; distinto → regla de 3 sobre TODOS los macros y micros.
+function histCloneAdd(nombre, g){
+  var key=(nombre||"").trim().toLowerCase(); if(!key || !(+g>0)) return false;
+  var h=get(LS_HIST_ALIM,[]).filter(function(x){ return x && (x.n||"").toLowerCase()===key; })[0];
+  if(!h) return false;
+  var og=+h.g; if(!(og>0)) return false;
+  if(!(+h.kcal>0 || +h.p>0 || +h.c>0 || +h.gr>0)) return false;   // legado sin macros → deja que comAdd pruebe la base
+  var f=(+g)/og, arr=get(LS_COMIDA,[]);
+  var it={id:Date.now().toString(36)+Math.random().toString(36).slice(2,6), f:(($("com_fecha")||{}).value||hoyLocal()), n:h.n, g:+g,
+    kcal:Math.round((+h.kcal||0)*f), p:+((+h.p||0)*f).toFixed(1), c:+((+h.c||0)*f).toFixed(1), gr:+((+h.gr||0)*f).toFixed(1),
+    fib:+((+h.fib||0)*f).toFixed(1), az:+((+h.az||0)*f).toFixed(1), sat:+((+h.sat||0)*f).toFixed(1), na:Math.round((+h.na||0)*f)};
+  if(h.u==="ml") it.u="ml";
+  it.ts=Date.now();   // 📊 A20 · marca de tiempo (igual que comAdd) para aprender la hora de cierre
+  arr.push(it); set(LS_COMIDA,arr);
+  return true;
 }
 // ======= ⭐ FAVORITOS · UI (fila de acceso rápido + toggle en el buscador + sugerencia) =======
 // Resuelve el texto tecleado al nombre canónico de la base (MISMA regla que comAdd).
 function favResolverNombre(nombre){
   var _q=(nombre||"").trim().toLowerCase(); if(!_q) return null;
-  var _base=(typeof apComoFoods==="function"?apComoFoods():[]).concat(typeof FOODS!=="undefined"?FOODS:[]);
+  var _base=baseFoods();
   var fd=_base.filter(function(x){ return x.n.toLowerCase()===_q; })[0];
   if(!fd){ var c=_base.filter(function(x){ return x.n.toLowerCase().indexOf(_q)>=0; }); if(c.length===1) fd=c[0]; }
   return fd?fd.n:null;
@@ -5421,7 +5702,7 @@ function comGr(g){ var el=$("com_gramos"); if(el) el.value=g; if((($("com_nombre
 function comPorcSync(){
   var box=$("com_porc"); if(!box) return; box.innerHTML="";
   var q=(($("com_nombre")||{}).value||"").trim().toLowerCase(); if(!q) return;
-  var base=(typeof apComoFoods==="function"?apComoFoods():[]).concat(typeof FOODS!=="undefined"?FOODS:[]);
+  var base=baseFoods();
   var fd=base.filter(function(x){ return x.n.toLowerCase()===q; })[0];
   if(!fd){ var c=base.filter(function(x){ return x.n.toLowerCase().indexOf(q)>=0; }); if(c.length===1) fd=c[0]; }
   if(!fd || !fd.porc) return;
@@ -5465,7 +5746,7 @@ function comSanarItem(it){
   if(!it || !it.n || !(+it.g>0)) return false;
   if(it.fib!=null && it.az!=null && it.sat!=null && it.na!=null) return false;
   var q=String(it.n).trim().toLowerCase();
-  var base=(typeof apComoFoods==="function"?apComoFoods():[]).concat(typeof FOODS!=="undefined"?FOODS:[]);
+  var base=baseFoods();
   var fd=base.filter(function(x){ return x.n.toLowerCase()===q; })[0];
   if(!fd) return false;
   if(comUnidad(it)!==(fd.u==="ml"?"ml":"g")) return false;
@@ -5510,6 +5791,7 @@ function mediaKcalDiario(dias){
 }
 // ======= AGUA + SUPLEMENTOS (04/07) — autocontenido; conocimiento del coach aplicado =======
 var LS_AGUA="jvf_agua", LS_SUP_CFG="jvf_suples_cfg", LS_SUP_LOG="jvf_suples_log", LS_AGUA_LOG="jvf_agua_log";
+var LS_CICLO_LOG="jvf_ciclo_log";   // A11 · {"YYYY-MM-DD": {fatiga,dolor,esfuerzo (0-10), sangrado:"normal"|"abundante", inicioRegla:true}} — datos de salud, SOLO localStorage
 // [AGUA-OBJETIVO-PURE-INICIO] — objetivo de agua ORIENTATIVO y dinámico. Puro y determinista (sin DOM ni
 // storage): los tests extraen este bloque y lo evalúan tal cual. Base = peso×35 ml/día (redondeada a 100).
 // Ajustes ADITIVOS: 🌡️ verano/calor (mes jun–sep) +750 ml · 🏀 deporte de hoy +500 ml por sesión (ACSM
@@ -5533,6 +5815,22 @@ function aguaObjetivoDinamico(pesoKg, mes, deporteHoy, creatina){
            extra:extra, total:base+extra, ajustes:ajustes };
 }
 // [AGUA-OBJETIVO-PURE-FIN]
+// [AGUA-HIST-PURE-INICIO] — 📜 A9 · historial de agua del día CON HORA. Normaliza el log (entradas NUEVAS
+// {ts,ml} o VIEJAS numéricas de usuarios previos) a filas mostrables {hora, ml, signo}, más reciente primero.
+// PURO: sin DOM ni storage. Retrocompat: una entrada vieja (número suelto) no tiene ts → hora "" (se muestra
+// sin hora, honesto). Deltas 0 se descartan. ml = valor absoluto; el signo (+ añadido, − corrección) lo separa.
+function _aguaLogMl(e){ return (e && typeof e==="object") ? +e.ml : +e; }                                  // valor real del delta
+function _aguaLogTs(e){ return (e && typeof e==="object" && isFinite(+e.ts)) ? +e.ts : null; }             // marca de tiempo (o null)
+function aguaHoraFmt(ts){ if(ts==null) return ""; var d=new Date(+ts); return isNaN(d.getTime())?"":String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0"); }
+function aguaHistFilas(logDia){
+  var arr=Array.isArray(logDia)?logDia:[], filas=[];
+  for(var i=arr.length-1;i>=0;i--){                       // más reciente arriba
+    var ml=_aguaLogMl(arr[i]); if(!isFinite(ml)||ml===0) continue;
+    filas.push({ hora:aguaHoraFmt(_aguaLogTs(arr[i])), ml:Math.abs(Math.round(ml)), signo:(ml<0?"−":"+") });
+  }
+  return filas;
+}
+// [AGUA-HIST-PURE-FIN]
 
 // [NOTIF-PURE-INICIO] — recordatorios in-app HONESTOS. Sin backend NO hay notificación con la app cerrada:
 // esto avisa al ABRIR la app. PURO (sin DOM ni storage): dado config + contexto, decide qué recordar hoy.
@@ -5619,6 +5917,89 @@ function pesajeToca(hora, esFinde, hLevSem, hLevFinde, yaPesado){
   return ahora>=lev && ahora<=lev+PESAJE_VENTANA_MIN;
 }
 // [PESAJE-PURE-FIN]
+// [PESO-ROPA-PURE-INICIO] — ⚖️ A10 · "me peso con ropa interior": resta un aproximado editable al peso bruto.
+// PURO (sin DOM ni storage). Honesto: es una ESTIMACIÓN, no una medida exacta. Reglas: sin ropa marcada →
+// devuelve el bruto tal cual (no toca nada). Ajuste inválido/negativo → default 0,3 kg. Bruto no usable (no es un
+// peso >0: '', null, NaN, ≤0) → se devuelve tal cual, nunca un peso negativo fantasma (la validación 30–300 vive
+// en registrarPeso). Redondea a 1 decimal (como el resto de pesos de la app).
+var PESO_ROPA_AJUSTE_DEF=0.3;
+function pesoAjustaRopa(pesoBruto, conRopa, ajusteKg){
+  var w=+pesoBruto; if(!(w>0)) return pesoBruto;
+  if(!conRopa) return w;
+  var a=+ajusteKg; if(!(a>=0)) a=PESO_ROPA_AJUSTE_DEF;
+  return Math.round((w-a)*10)/10;
+}
+// [PESO-ROPA-PURE-FIN]
+// [MOTIVA-PURE-INICIO] — 💪 A18 · recordatorio motivacional los días de ENTRENO. PURO (sin DOM ni
+// storage): _tests/test-motiva.node.js extrae este bloque tal cual. Dos piezas: (1) un BANCO de
+// mensajes y un selector DETERMINISTA por índice de día (nada de Math.random, que rompería el test);
+// (2) motivaEntrenoAviso(cfg,ctx) decide si HOY toca el empujón. Reglas honestas: sin días de entreno
+// configurados NO inventa (devuelve null); solo dispara en un día marcado; y no da la brasa de noche
+// (a partir de MOTIVA_HORA_TOPE ya no tiene sentido "ve a entrenar"). cfg.entrenoAvisos===false lo apaga.
+// El mensaje es autocontenido; el título con tono/apodo lo pone la capa impura (notifMotivaCheck).
+var MOTIVA_MSGS = [
+  "Hoy toca entreno. Levanta el culo: tu objetivo no se va a conseguir solo. 💪",
+  "Día de entreno. El músculo crece por lo que HACES hoy, no por lo que ibas a hacer. ¡Al lío!",
+  "Toca sesión. El mejor entreno es el que ocurre — media hora tuya vale más que el plan perfecto que no haces.",
+  "Hoy entrenas. No hace falta que sea épico: hazlo, apúntalo aquí y suma un día más hacia tu meta.",
+  "Día de pesas. La constancia gana a la motivación: preséntate, que el resto viene solo.",
+  "Toca darle. Cada sesión es un ladrillo — hoy pones otro. Tu yo de dentro de tres meses te lo agradece.",
+  "Hoy es de entrenar. Nadie ha mejorado desde el sofá; ponte las zapatillas y lo demás se ordena.",
+  "Sesión hoy. No busques ganas, busca la puerta del gimnasio: las ganas llegan en la segunda serie."
+];
+function motivaPick(idx){
+  var n = MOTIVA_MSGS.length; if(!n) return "";
+  var i = Math.floor(+idx); if(!isFinite(i)) i = 0;
+  i = ((i % n) + n) % n;   // índice seguro para negativos y fuera de rango (determinista, sin Math.random)
+  return MOTIVA_MSGS[i];
+}
+var MOTIVA_HORA_TOPE = 21;   // a partir de las 21h ya no se recuerda "ve a entrenar" (no da la brasa de noche)
+function motivaEntrenoAviso(cfg, ctx){
+  cfg = cfg || {}; ctx = ctx || {};
+  if(cfg.entrenoAvisos === false) return null;              // apagado por el usuario
+  var dias = ctx.diasEntreno;
+  if(!Array.isArray(dias) || !dias.length) return null;     // sin días marcados: no se inventa un patrón
+  var dow = Math.round(+ctx.diaSemana);
+  if(!(dow >= 0 && dow <= 6)) return null;                  // día de la semana inválido
+  if(dias.indexOf(dow) < 0) return null;                    // hoy no entrena
+  var h = +ctx.hora;
+  if(isFinite(h) && h >= MOTIVA_HORA_TOPE) return null;      // ya es tarde para el empujón de hoy
+  return { id:"entreno-motiva", emoji:"💪", txt: motivaPick(ctx.diaIdx) };
+}
+// [MOTIVA-PURE-FIN]
+// [MACRORESTO-PURE-INICIO] — 📊 A20 · aviso inteligente de MACROS que faltan al final del día. PURO
+// (sin DOM ni storage): _tests/test-macroresto.node.js extrae este bloque tal cual. Dado el presupuesto
+// de macros del día {prot,carb,grasa}, lo consumido {prot,carb,grasa}, la hora actual (decimal, 21.5 =
+// 21:30) y la hora TÍPICA del último registro de comida (la "hora de cierre" APRENDIDA por la capa
+// impura), decide si avisar AHORA y compone el texto. Reglas honestas:
+//   · muy pronto (aún hay margen antes de tu hora de cierre) → no molesta (todavía puedes comer)
+//   · ya cubierto (nada relevante por debajo del objetivo) → no molesta
+//   · sin hora actual válida → no avisa (no inventa)
+//   · sin hora típica → cae a MACRORESTO_HORA_DEF (21:30) y marca aprendido:false (honesto: no finge un patrón)
+// Umbral MACRORESTO_MIN_G: por debajo de 8 g que falten NO cuenta (no dar la brasa por 3 g de nada).
+var MACRORESTO_MIN_G = 8, MACRORESTO_MARGEN_H = 1.0, MACRORESTO_HORA_DEF = 21.5;
+function macroRestoDecidir(presupuesto, consumido, horaActual, horaTipicaUltimoRegistro){
+  presupuesto = presupuesto || {}; consumido = consumido || {};
+  var faltaP = Math.round((+presupuesto.prot  || 0) - (+consumido.prot  || 0));
+  var faltaC = Math.round((+presupuesto.carb  || 0) - (+consumido.carb  || 0));
+  var faltaG = Math.round((+presupuesto.grasa || 0) - (+consumido.grasa || 0));
+  var falta = { prot:faltaP, carb:faltaC, grasa:faltaG };
+  var h = +horaActual;
+  var aprendido = (horaTipicaUltimoRegistro != null && isFinite(+horaTipicaUltimoRegistro));   // null/undefined/NaN → no aprendido (ojo: +null es 0, hay que descartarlo aparte)
+  var ht = aprendido ? +horaTipicaUltimoRegistro : MACRORESTO_HORA_DEF;   // fallback documentado, marcado como no-aprendido
+  if(!isFinite(h)) return { avisar:false, motivo:"sin-hora", aprendido:aprendido, falta:falta };
+  if(h < ht - MACRORESTO_MARGEN_H) return { avisar:false, motivo:"muy-pronto", aprendido:aprendido, falta:falta };
+  var partes = [];
+  if(faltaP >= MACRORESTO_MIN_G) partes.push(faltaP + " g de proteína");
+  if(faltaC >= MACRORESTO_MIN_G) partes.push(faltaC + " g de carbos");
+  if(faltaG >= MACRORESTO_MIN_G) partes.push(faltaG + " g de grasa");
+  if(!partes.length) return { avisar:false, motivo:"cubierto", aprendido:aprendido, falta:falta };
+  var lista = partes.length === 1 ? partes[0]
+            : partes.slice(0,-1).join(", ") + " y " + partes[partes.length-1];
+  var texto = "Se acaba tu día y te faltan " + lista + " para tu objetivo. Si te queda una comida, aprovéchala.";
+  return { avisar:true, motivo:"faltan", aprendido:aprendido, falta:falta, texto:texto };
+}
+// [MACRORESTO-PURE-FIN]
 // ⚖️ E10 · hora de levantarse (Ajustes): jvf_levantar_semana / jvf_levantar_finde ("HH:MM").
 var LS_LEV_SEM="jvf_levantar_semana", LS_LEV_FINDE="jvf_levantar_finde";
 function levantarGet(finde){
@@ -5657,7 +6038,91 @@ function aguaObjetivo(){ return aguaObjetivoInfo().total; }
 var LS_NOTIF_CFG="jvf_notif_cfg", LS_NOTIF_SHOWN="jvf_notif_shown";
 function notifCfg(){ var c=get(LS_NOTIF_CFG,{}); return (c&&typeof c==="object")?c:{}; }
 function notifSet(id,on){ var c=notifCfg(); c[id]=!!on; set(LS_NOTIF_CFG,c); }
-function notifSyncUI(){ var el=document.getElementById("aj_notif_agua"); if(el) el.checked = notifCfg().aguaVerano!==false; }
+function notifSyncUI(){
+  var el=document.getElementById("aj_notif_agua"); if(el) el.checked = notifCfg().aguaVerano!==false;
+  var el2=document.getElementById("aj_notif_entreno"); if(el2) el2.checked = notifCfg().entrenoAvisos!==false;   // 💪 A18
+  var el3=document.getElementById("aj_notif_macros"); if(el3) el3.checked = notifCfg().macroResto!==false;        // 📊 A20
+  try{ diasEntrenoSyncUI(); }catch(e){}
+}
+// 💪 A18 · días de la semana en que entrenas (0=domingo … 6=sábado, orden JS getDay()). Config MÍNIMA y
+// opcional: alimenta SOLO el recordatorio motivacional [MOTIVA-PURE]; no toca el motor ni el plan. Viaja en el backup.
+var LS_DIAS_ENTRENO="jvf_dias_entreno";
+function diasEntrenoGet(){
+  var v=get(LS_DIAS_ENTRENO,null);
+  if(!Array.isArray(v)) return [];
+  return v.filter(function(d){ return d>=0 && d<=6; }).map(Number);
+}
+function diasEntrenoToggle(dow){
+  dow=Math.round(+dow); if(!(dow>=0 && dow<=6)) return;
+  var arr=diasEntrenoGet(), i=arr.indexOf(dow);
+  if(i>=0) arr.splice(i,1); else arr.push(dow);
+  arr.sort(function(a,b){ return a-b; });
+  set(LS_DIAS_ENTRENO,arr); diasEntrenoSyncUI();
+  toast(arr.length ? "💪 Días de entreno guardados" : "Sin días de entreno marcados");
+}
+function diasEntrenoSyncUI(){
+  var arr=diasEntrenoGet();
+  for(var d=0; d<7; d++){ var el=$("aj_dia_"+d); if(el) el.classList.toggle("on", arr.indexOf(d)>=0); }
+}
+// 📊 A20 · "aprende" tu hora de cierre: media simple de la HORA del ÚLTIMO registro de comida de cada
+// día, sobre los últimos MACRORESTO_DIAS días CON marca de tiempo (items nuevos llevan ts). Honesto: si
+// aún no hay datos con hora, devuelve {hora:null} y el bloque puro cae a su fallback marcándolo.
+var MACRORESTO_DIAS=14;
+function macroRestoHoraTipica(){
+  try{
+    var arr=get(LS_COMIDA,[]); if(!Array.isArray(arr)) return {hora:null, aprendido:false, dias:0};
+    var lastByDay={};
+    arr.forEach(function(x){
+      if(!x || !x.f) return; var ts=+x.ts; if(!isFinite(ts)) return;
+      if(!lastByDay[x.f] || ts>lastByDay[x.f]) lastByDay[x.f]=ts;
+    });
+    var dias=Object.keys(lastByDay).sort().slice(-MACRORESTO_DIAS);
+    if(!dias.length) return {hora:null, aprendido:false, dias:0};
+    var sum=0;
+    dias.forEach(function(f){ var d=new Date(lastByDay[f]); sum += d.getHours()+d.getMinutes()/60; });
+    return {hora: sum/dias.length, aprendido:true, dias:dias.length};
+  }catch(e){ return {hora:null, aprendido:false, dias:0}; }
+}
+// 💪 A18 · empujón motivacional los días de entreno, al abrir la app. Máx 1/día (jvf_notif_shown).
+// La decisión PURA vive en [MOTIVA-PURE]; aquí solo se reúnen los datos reales y se pinta. → true si mostró.
+function notifMotivaCheck(){
+  try{
+    var hoy=hoyLocal(), shown=get(LS_NOTIF_SHOWN,{});
+    if(shown["entreno-motiva"]===hoy) return false;
+    var d=new Date();
+    var _ini=new Date(d.getFullYear(),0,0), _diaAno=Math.floor((d-_ini)/86400000);   // 1..366, para rotar el banco
+    var av=motivaEntrenoAviso(notifCfg(), { diasEntreno:diasEntrenoGet(), diaSemana:d.getDay(), hora:d.getHours(), diaIdx:_diaAno });
+    if(!av) return false;
+    shown["entreno-motiva"]=hoy; set(LS_NOTIF_SHOWN,shown);
+    var tono=flexCfg().tono, ap=apodo();
+    var t=(tono==="neutro" ? "Día de entreno" : (tono==="cana" ? "¡"+ap+", hoy toca!" : ap+", hoy toca 💪"));
+    setTimeout(function(){ try{ toastCard(av.emoji, t, av.txt); }catch(e){} }, 1800);
+    return true;
+  }catch(e){ return false; }
+}
+// 📊 A20 · aviso de macros que faltan al final del día. La decisión PURA vive en [MACRORESTO-PURE];
+// aquí se reúne el presupuesto (window._obj) + lo consumido hoy + la hora típica aprendida. → true si mostró.
+function notifMacroRestoCheck(){
+  try{
+    var hoy=hoyLocal(), shown=get(LS_NOTIF_SHOWN,{});
+    if(shown["macro-resto"]===hoy) return false;
+    if(notifCfg().macroResto===false) return false;
+    var obj=window._obj; if(!obj || !(+obj.prot>0 || +obj.carb>0 || +obj.grasa>0)) return false;
+    var arr=get(LS_COMIDA,[]).filter(function(x){ return x && x.f===hoy; });
+    if(!arr.length) return false;   // nada apuntado hoy: no sabe nada, no molesta
+    var con={prot:0,carb:0,grasa:0};
+    arr.forEach(function(x){ con.prot+=(+x.p||0); con.carb+=(+x.c||0); con.grasa+=(+x.gr||0); });
+    var d=new Date(), h=d.getHours()+d.getMinutes()/60;
+    var ht=macroRestoHoraTipica();
+    var r=macroRestoDecidir({prot:obj.prot, carb:obj.carb, grasa:obj.grasa}, con, h, ht.hora);
+    if(!r || !r.avisar) return false;
+    shown["macro-resto"]=hoy; set(LS_NOTIF_SHOWN,shown);
+    var tono=flexCfg().tono, ap=apodo();
+    var t=(tono==="neutro" ? "Macros del día" : (tono==="cana" ? "¡"+ap+", cierra tus macros!" : ap+", cierra el día 📊"));
+    setTimeout(function(){ try{ toastCard("📊", t, r.texto); }catch(e){} }, 1800);
+    return true;
+  }catch(e){ return false; }
+}
 // v0.19-UI + E8 · el aviso de agua sale como toastCard y, si hay CLIMA REAL, con los grados de
 // verdad, el TONO FLEX y el APODO. Solo se pide la geolocalización cuando el aviso PODRÍA saltar
 // (config encendida, tarde, agua por debajo de la mitad) — si no, ni permiso ni red.
@@ -5685,6 +6150,8 @@ function notifPesajeCheck(){
 function notifCheck(){
   try{
     if(notifPesajeCheck()) return;   // ⚖️ E10 · el pesaje (mañana) manda; si salta, no se encadena otro toast encima
+    if(notifMotivaCheck()) return;   // 💪 A18 · empujón de entreno (mañana/tarde de un día marcado)
+    if(notifMacroRestoCheck()) return;   // 📊 A20 · macros que faltan al cierre del día
     var d=new Date(), ctx={ mes:d.getMonth()+1, hora:d.getHours(),
       aguaHoy:(get(LS_AGUA,{})[hoyLocal()]||0), objetivoAgua:(typeof aguaObjetivo==="function"?aguaObjetivo():0) };
     if(get(LS_NOTIF_SHOWN,{})["agua-verano"]===hoyLocal()) return;   // ya avisado hoy: ni geolocalización
@@ -5721,11 +6188,13 @@ function _aguaAplicar(delta){
   var d=hoyLocal(), m=get(LS_AGUA,{}), antes=m[d]||0, despues=Math.max(0, antes+Math.round(delta));
   m[d]=despues; set(LS_AGUA,m); return despues-antes;
 }
-// Historial de deltas de HOY para "deshacer último" (añadir o quitar). Ephemeral: se limpia en reset; no viaja
-// en el backup (corrección inmediata, no dato de salud). Guardamos el delta REAL aplicado, así deshacer es exacto.
+// Log de eventos de agua de HOY: sirve a la vez para "deshacer último" (añadir o quitar) y para el 📜 HISTORIAL
+// con hora (A9). Cada evento guarda {ts, ml} = marca de tiempo + delta REAL aplicado, así deshacer es exacto y el
+// historial sabe la hora. Ephemeral: se limpia en reset; no viaja en el backup (corrección inmediata, no dato de
+// salud). Retrocompat: entradas viejas eran un número suelto; _aguaLogMl() las sigue entendiendo.
 function _aguaLogPush(delta){
   if(!delta) return;
-  var d=hoyLocal(), log=get(LS_AGUA_LOG,{}); (log[d]=log[d]||[]).push(delta);
+  var d=hoyLocal(), log=get(LS_AGUA_LOG,{}); (log[d]=log[d]||[]).push({ts:Date.now(), ml:Math.round(delta)});
   if(log[d].length>50) log[d]=log[d].slice(-50);
   set(LS_AGUA_LOG,log);
 }
@@ -5747,7 +6216,7 @@ function aguaDeshacer(){    // deshace la ÚLTIMA acción de hoy (añadir o quit
   var d=hoyLocal(), log=get(LS_AGUA_LOG,{}), lst=log[d]||[];
   if(!lst.length){ toast("Nada que deshacer hoy"); return; }
   var last=lst.pop(); set(LS_AGUA_LOG,log);
-  _aguaAplicar(-last); renderAgua();   // inverso del delta guardado
+  _aguaAplicar(-_aguaLogMl(last)); renderAgua();   // inverso del delta guardado (soporta {ts,ml} y el viejo número suelto)
   toast("↶ Deshecho");
 }
 function aguaAddManual(){
@@ -5774,6 +6243,20 @@ function renderAgua(){
   // 💧 v0.19-UI · línea compacta (presentación del MISMO dato; formato es-ES con puntos de miles)
   var mini=$("agua_mini_txt");
   if(mini) mini.textContent="💧 "+hoy.toLocaleString("es-ES")+" / "+obj.toLocaleString("es-ES")+" ml"+(falta>0?"":" ✓");
+  // 📜 A9 · historial de hoy con hora (solo reescribe la lista interna; el <details> conserva abierto/cerrado)
+  var hlist=$("agua_hist_list");
+  if(hlist){
+    var filas=aguaHistFilas(get(LS_AGUA_LOG,{})[hoyLocal()]||[]);
+    var hn=$("agua_hist_n"); if(hn) hn.textContent="· "+(filas.length?(filas.length+" registro"+(filas.length>1?"s":"")):"aún vacío");
+    if(!filas.length){
+      hlist.innerHTML="<p class='hint' style='margin-top:6px'>Cada vez que añadas o corrijas agua aparecerá aquí con la hora. Así no dudas si registraste la última botella.</p>";
+    } else {
+      hlist.innerHTML="<div style='margin-top:6px'>"+filas.map(function(f){
+        return "<div class='kv' style='font-size:.82rem'><span>"+(f.hora?("🕐 "+f.hora):"· (sin hora)")+"</span>"
+          +"<span style='color:"+(f.signo==="−"?"var(--ember)":"var(--soft)")+"'>"+f.signo+f.ml+" ml</span></div>";
+      }).join("")+"</div>";
+    }
+  }
 }
 var SUPLES=[
   {id:"creatina", n:"Creatina · ~1 g por 10 kg/día (monohidrato Creapure)", ev:"ALTA", diario:true},
@@ -5816,6 +6299,49 @@ function renderSuples(){
       +"</div>"+(on?aviso:"");
   }).join("");
   el.innerHTML=shopBanner+h;
+}
+
+// ======= 🩸 A11 · MODO CICLO — envoltura DOM/storage (la matemática vive en [CICLO-PURE]) =======
+// Registro diario de ciclo/síntomas en LS_CICLO_LOG[hoy] (patrón espejo de supCheck). SIN registro,
+// el motor no asume nada por fase. Todo dato es de salud → SOLO localStorage del dispositivo.
+function cicloLog(){ var l=get(LS_CICLO_LOG,{}); return (l && typeof l==="object" && !Array.isArray(l))?l:{}; }
+function cicloHoy(){ var l=cicloLog(), d=hoyLocal(); return (l[d] && typeof l[d]==="object")?l[d]:{}; }
+function cicloActivo(){ var p=get(LS_P,null); return !!(p && p.sexo==="mujer" && p.ciclo && p.ciclo.activo); }
+function cicloSet(campo,valor){   // setter null-safe: escribe/borra un campo del día de hoy y re-pinta
+  var l=cicloLog(), d=hoyLocal(); l[d]=(l[d] && typeof l[d]==="object")?l[d]:{};
+  if(valor===null || valor===undefined) delete l[d][campo]; else l[d][campo]=valor;
+  set(LS_CICLO_LOG,l); renderCiclo();
+}
+function cicloInicioRegla(){ var on=cicloHoy().inicioRegla===true; cicloSet("inicioRegla", on?null:true); if(!on) toast("🩸 Apuntado: hoy inicio de regla"); }
+function cicloSangrado(v){ var cur=cicloHoy().sangrado; cicloSet("sangrado", cur===v?null:v); }
+function cicloSintoma(campo,v){ var cur=cicloHoy()[campo]; cicloSet(campo, cur===v?null:v); }   // volver a pulsar el mismo chip = quitar
+function _cicloChips(campo,label){
+  var h=cicloHoy(), opts=[["Baja",2],["Media",5],["Alta",8]];
+  var btns=opts.map(function(o){ var on=h[campo]===o[1];
+    return "<button type='button' class='sec' style='width:auto;padding:4px 10px;margin:0 4px 0 0"+(on?";border-color:var(--jade);color:var(--jade)":"")+"' onclick=\"cicloSintoma('"+campo+"',"+o[1]+")\">"+o[0]+"</button>"; }).join("");
+  return "<div class='kv' style='align-items:center'><span>"+label+"</span><span>"+btns+"</span></div>";
+}
+function renderCiclo(){
+  var card=$("ciclo_card"); if(!card) return;
+  if(!cicloActivo()){ card.classList.add("hidden"); return; }
+  card.classList.remove("hidden");
+  var body=$("ciclo_body"); if(!body) return;
+  var h=cicloHoy(), fase=cicloFaseDesdeInicio(cicloLog(), hoyLocal()), out=cicloModulador(h, fase);
+  var reglaOn=h.inicioRegla===true;
+  var reglaBtn="<button type='button' class='sec' style='width:auto;padding:4px 10px;margin:0"+(reglaOn?";border-color:var(--jade);color:var(--jade)":"")+"' onclick='cicloInicioRegla()'>"+(reglaOn?"✓ Hoy me vino la regla":"Hoy me ha venido la regla")+"</button>";
+  var sangreBtns=[["Normal","normal"],["Abundante","abundante"]].map(function(o){ var on=h.sangrado===o[1];
+    return "<button type='button' class='sec' style='width:auto;padding:4px 10px;margin:0 4px 0 0"+(on?";border-color:var(--jade);color:var(--jade)":"")+"' onclick=\"cicloSangrado('"+o[1]+"')\">"+o[0]+"</button>"; }).join("");
+  var salida="<div class='hint' style='margin-top:10px;color:var(--soft)'>"+esc(out.nota)+"</div>";
+  if(out.modo==="tope_rpe"){ salida+="<div class='hint' style='margin-top:4px'>Consejo de hoy: para cada serie en RPE "+out.rpeTope+" "+infoTip('rpe')+" y quita "+Math.abs(out.ajusteSeries)+" serie(s) accesoria(s); las compuestas pesadas se quedan.</div>"; }
+  out.nudges.forEach(function(n){ salida+="<div class='hint' style='margin-top:4px'>"+n.emoji+" "+esc(n.txt)+"</div>"; });
+  body.innerHTML=
+    "<p class='hint' style='margin-top:0'>Apunta cómo te sientes hoy (todo opcional). Ajustamos el esfuerzo a tus sensaciones, <b style='color:var(--soft)'>nunca los kilos por la fecha</b>.</p>"
+    +"<div class='kv' style='align-items:center'><span>Regla</span><span>"+reglaBtn+"</span></div>"
+    +"<div class='kv' style='align-items:center'><span>Sangrado</span><span>"+sangreBtns+"</span></div>"
+    +_cicloChips("fatiga","Fatiga")
+    +_cicloChips("dolor","Dolor")
+    +_cicloChips("esfuerzo","Esfuerzo percibido hoy")
+    +salida;
 }
 
 // ======= 🏀 PRESUPUESTO DE HOY (deporte por sesión → objetivo del día · diseño de Pablo "las dos") =======
@@ -6569,7 +7095,10 @@ function renderComida(){
     var idx=full.indexOf(x);
     // v0.10 · los items sin gramos (📷 foto, ⚡ rápido) no enseñan "· 0 g"
     // Fix ml · comUnidad(x): los escaneados en ml enseñan "ml"; los antiguos sin u siguen en "g"
-    return "<div class='kv'><span>"+esc(x.n)+(x.g>0?" · "+x.g+" "+comUnidad(x):"")+"</span><span style='font-variant-numeric:tabular-nums'>"+x.kcal+" kcal · P"+Math.round(x.p)+" C"+Math.round(x.c)+" G"+Math.round(x.gr)+" "+((x.id&&x.g>0)?"<button class='sec' type='button' style='width:auto;margin:0 0 0 6px;padding:4px 9px' title='Editar gramos' onclick='comEditar("+JSON.stringify(x.id)+")'>✏️</button>":"")+"<button class='sec' type='button' style='width:auto;margin:0 0 0 6px;padding:4px 9px' onclick='comDel("+(x.id?JSON.stringify(x.id):idx)+")'>✕</button></span></div>";
+    // A2 · MISMO ojito 👁️ que el buscador (fichaOjoDiario) junto a ✏️/✕, sin interferir con ellos. El
+    // span de valor pasa a display:flex para que el ojito (.ficha-ojo es display:flex) alinee inline en
+    // vez de saltar de línea. Se muestra en las filas con id y gramos (mismo gate que ✏️).
+    return "<div class='kv'><span>"+esc(x.n)+(x.g>0?" · "+x.g+" "+comUnidad(x):"")+"</span><span style='display:flex;align-items:center;font-variant-numeric:tabular-nums'>"+x.kcal+" kcal · P"+Math.round(x.p)+" C"+Math.round(x.c)+" G"+Math.round(x.gr)+" "+((x.id&&x.g>0)?fichaOjoDiario(x.id):"")+((x.id&&x.g>0)?"<button class='sec' type='button' style='width:auto;margin:0 0 0 6px;padding:4px 9px' title='Editar gramos' onclick='comEditar("+JSON.stringify(x.id)+")'>✏️</button>":"")+"<button class='sec' type='button' style='width:auto;margin:0 0 0 6px;padding:4px 9px' onclick='comDel("+(x.id?JSON.stringify(x.id):idx)+")'>✕</button></span></div>";
   }).join("");
   try{ renderMeals(); }catch(e){}   // F4 · el botón "guardar día" y "Mis comidas" dependen del día mostrado
 }
@@ -6585,7 +7114,7 @@ function menuGenerarHoy(){
       +"<p class='hint' style='margin:6px 0 0'>Primero calcula tu objetivo en <b>Plan</b> (rellena tu perfil). El menú se arma a partir de tus kcal y macros del día.</p></div>";
     return;
   }
-  var foods=(typeof apComoFoods==="function"?apComoFoods():[]).concat(typeof FOODS!=="undefined"?FOODS:[]);
+  var foods=baseFoods();
   var _pf=get(LS_P,null); var _restric=(_pf&&_pf.coach&&_pf.coach.restricciones)||null;   // 🥗 restricciones del perfil
   var menu=generarMenu(obj, foods, get(LS_FAV,[]), _restric);
   window._menuActual=menu;
@@ -6628,7 +7157,7 @@ function menuRecalcularResto(){
     window._menuActual=null;
     return;
   }
-  var foods=(typeof apComoFoods==="function"?apComoFoods():[]).concat(typeof FOODS!=="undefined"?FOODS:[]);
+  var foods=baseFoods();
   var _pf=get(LS_P,null); var _restric=(_pf&&_pf.coach&&_pf.coach.restricciones)||null;   // 🥗 mismas restricciones
   var menu=generarMenu(r.restante, foods, get(LS_FAV,[]), _restric, r.comidas);
   window._menuActual=menu;
@@ -7650,6 +8179,18 @@ function bcConfirmar(prod){
     prod.uMotivo="es agua: 0 kcal y por ml (corrígelo si tu etiqueta dice otra cosa)";
   }
   if(prod.u!=="ml") prod.u="g";                    // saneo: cualquier camino sin unidad clara = gramos
+  // ✏️ A4/A22 · si ya corregiste este producto (en su ficha), tu dato MANDA también al escanear. Aditivo y
+  // guardado: sin override no cambia nada. Traduce los nombres de campo de la ficha (kcal/p/c/f…) a los del escáner.
+  try{
+    var _ov=ovrPorClave(prod.ean, prod.nombre);
+    if(_ov){
+      if(_ov.kcal!=null) prod.kcal100=_ov.kcal; if(_ov.p!=null) prod.p100=_ov.p;
+      if(_ov.c!=null) prod.c100=_ov.c;         if(_ov.f!=null) prod.g100=_ov.f;
+      if(_ov.fib!=null) prod.fib100=_ov.fib;   if(_ov.az!=null) prod.az100=_ov.az;
+      if(_ov.sat!=null) prod.sat100=_ov.sat;   if(_ov.na!=null) prod.na100=_ov.na;
+      prod._edit=true;
+    }
+  }catch(e){}
   _bcUnidadIn=prod.u;                              // la cantidad se pregunta en LA UNIDAD del producto
   var res=$("bc_res"); if(!res) return;
   var falta=(prod.kcal100==null || prod.p100==null);
@@ -7878,7 +8419,7 @@ function apComoFoods(){
 // Datalist del buscador de Comida: primero tus alimentos (los usas más), luego la base curada.
 function comFillDatalist(){
   var dl=$("com-foods"); if(!dl) return;
-  dl.innerHTML=apComoFoods().concat(FOODS).map(function(x){ return "<option value=\""+escAttr(x.n)+"\"></option>"; }).join("");
+  dl.innerHTML=baseFoods().map(function(x){ return "<option value=\""+escAttr(x.n)+"\"></option>"; }).join("");
 }
 
 // [SUPER-PURE-INICIO] — 🛒 Supermercado JV: categorizador + matcher PUROS (sin DOM ni storage).
@@ -8126,7 +8667,7 @@ function superPintaNegocios(lista){
 function superRender(){
   var box=$("super_lista"); if(!box) return;
   var q=(($("super_buscar")||{}).value||"").trim();
-  var base=(typeof apComoFoods==="function"?apComoFoods():[]).concat(typeof FOODS!=="undefined"?FOODS:[]);
+  var base=baseFoods();
   var res0=base.filter(function(x){
     if(q && !superMatch(q, x.n)) return false;
     if(_superLetra && otroNorm(x.n).charAt(0).toUpperCase()!==_superLetra) return false;
@@ -8144,7 +8685,11 @@ function superRender(){
     var arg=JSON.stringify(x.n).replace(/"/g,"&quot;");
     var uni=(x.u==="ml")?"100 ml":"100 g";
     var tag=x.propio?' · <span style="color:var(--jade)">tuyo</span>':'';
-    return '<div class="bib-item" onclick="superElegir('+arg+')">'+superIcoHTML(x)+'<span style="flex:1">'+esc(x.n)
+    // A22 · marcas DISCRETAS: ⚠️ energía⇄macros no cuadra [ATWATER-PURE] · ✏️ corregido por ti (abre la ficha para verlo/arreglarlo)
+    var atw=null; try{ atw=atwaterCheck(x); }catch(e){}
+    var flag=(atw&&atw.ok===false)?' <span title="Revisar: la energía no cuadra con los macros" style="opacity:.8">⚠️</span>':'';
+    var edit=x._edit?' <span title="Editado por ti" style="color:var(--jade)">✏️</span>':'';
+    return '<div class="bib-item" onclick="superElegir('+arg+')">'+superIcoHTML(x)+'<span style="flex:1">'+esc(x.n)+flag+edit
       +'<span class="mus" style="display:block">'+Math.round(x.kcal)+" kcal / "+uni+tag+"</span></span>"+fichaOjoHTML("base",i)+"</div>";
   }).join("");
   if(!tot) h="<p class='hint'>Nada en la base con ese nombre.</p>";
@@ -8322,13 +8867,15 @@ function fichaCampo(v, unidad){
   var s=(r%1===0)?String(r):String(r).replace(".",",");
   return s+(unidad?" "+unidad:"");
 }
-// Origen del dato por FLAGS que pone el caller (fichaVer): tuyo > OFF > Base España > BEDCA > curada.
+// Origen del dato por FLAGS que pone el caller (fichaVer): editado por ti > tuyo > OFF > Base España > BEDCA > curada.
 function fichaFuente(x){
   if(!x || typeof x!=="object") return "base curada";
+  if(x._edit) return "editado por ti";   // A22 · tu corrección MANDA sobre cualquier fuente
   if(x.propio) return "tuyo";
   if(x.off) return "Open Food Facts";
   if(x.dbx) return "Base España";
   if(x.bedca) return "BEDCA";
+  if(x.diario) return "de tu registro";   // A2/A19 · ficha derivada de un item del diario (escaneado sin base)
   return "base curada";
 }
 // URL del API v2 para la foto GRANDE (image_front_url) — espejo de superFotoURL (que pide miniatura).
@@ -8337,9 +8884,20 @@ function fichaFotoURLGrande(ean){
   if(d.length<8) return null;
   return "https://world.openfoodfacts.org/api/v2/product/"+d+"?fields=image_front_url";
 }
+// A22 · cola larga de micros (§2 del plan): [clave en mic, campo OFF *_100g, factor g→unidad casa, máximo
+// razonable en unidad casa para descartar basura de OFF]. Unidad casa: mg salvo se/va/b9/b12/biot en µg.
+var MIC_MAP=[
+  ["mg","magnesium_100g",1000,1500],   ["zn","zinc_100g",1000,60],      ["p","phosphorus_100g",1000,3000],
+  ["se","selenium_100g",1e6,2000],     ["cu","copper_100g",1000,60],    ["mn","manganese_100g",1000,60],
+  ["va","vitamin-a_100g",1e6,20000],   ["ve","vitamin-e_100g",1000,600],
+  ["b1","vitamin-b1_100g",1000,200],   ["b2","vitamin-b2_100g",1000,200], ["b6","vitamin-b6_100g",1000,200],
+  ["b9","vitamin-b9_100g",1e6,10000],  ["b12","vitamin-b12_100g",1e6,5000],
+  ["b3","vitamin-pp_100g",1000,600],   ["b5","pantothenic-acid_100g",1000,600], ["biot","biotin_100g",1e6,20000]
+];
 // nutriments del API v2 de OFF → campos de la casa (por 100 g/ml). OFF da sodio/potasio/hierro en
 // GRAMOS → aquí se pasan a mg (unidad de la casa); si no hay sodio pero sí sal, sodio = sal/2,5.
-// Solo devuelve campos que OFF trae DE VERDAD (ausente ≠ 0).
+// Solo devuelve campos que OFF trae DE VERDAD (ausente ≠ 0). A22 · añade azúcares añadidos (azadd) y
+// el objeto mic{} (micros/vitaminas), cada uno con cordura de rango (descarta valores absurdos de OFF).
 function fichaDeOFFNutriments(nu){
   if(!nu || typeof nu!=="object") return {};
   var out={};
@@ -8356,20 +8914,52 @@ function fichaDeOFFNutriments(nu){
   var pot=fichaNum(nu["potassium_100g"]);    if(pot!=null)  out.k=Math.round(pot*1000);
   var fe=fichaNum(nu["iron_100g"]);          if(fe!=null)   out.fe=Math.round(fe*10000)/10;
   var tr=fichaNum(nu["trans-fat_100g"]);     if(tr!=null)   out.tr=tr;
+  var azadd=fichaNum(nu["added-sugars_100g"]); if(azadd!=null && azadd>=0 && azadd<=100) out.azadd=Math.round(azadd*10)/10;
+  var mic={};
+  for(var mi=0; mi<MIC_MAP.length; mi++){
+    var row=MIC_MAP[mi], raw=fichaNum(nu[row[1]]);
+    if(raw==null || raw<0) continue;
+    var val=raw*row[2];
+    if(val>row[3]) continue;                 // cordura de rango: fuera del máximo razonable = basura de OFF, se descarta
+    mic[row[0]]=Math.round(val*100)/100;
+  }
+  if(Object.keys(mic).length) out.mic=mic;
   return out;
 }
 // Rellena SOLO los HUECOS de x con el detalle det (jamás pisa un dato ya presente — el 0 declarado
-// también se respeta). Devuelve COPIA (no muta x).
+// también se respeta). Devuelve COPIA (no muta x). A22 · azadd (número) + ing (texto) rellenan huecos;
+// mic{} se FUSIONA micro a micro (sin pisar los que ya tenía x).
 function fichaRellena(x, det){
   var out={}, cpo;
   for(cpo in x) out[cpo]=x[cpo];
   if(!det || typeof det!=="object") return out;
-  var campos=["kcal","p","c","f","fib","az","sat","na","k","fe","tr"];
+  var campos=["kcal","p","c","f","fib","az","sat","na","k","fe","tr","azadd"];
   for(var i=0;i<campos.length;i++){
     cpo=campos[i];
     if(fichaNum(out[cpo])==null && det[cpo]!=null) out[cpo]=det[cpo];
   }
+  if((out.ing==null || out.ing==="") && det.ing!=null && det.ing!=="") out.ing=det.ing;
+  if(det.mic && typeof det.mic==="object"){
+    var mm={}, a;
+    if(out.mic && typeof out.mic==="object"){ for(a in out.mic){ if(Object.prototype.hasOwnProperty.call(out.mic,a)) mm[a]=out.mic[a]; } }
+    for(a in det.mic){ if(Object.prototype.hasOwnProperty.call(det.mic,a) && fichaNum(mm[a])==null && det.mic[a]!=null) mm[a]=det.mic[a]; }
+    if(Object.keys(mm).length) out.mic=mm;
+  }
   return out;
+}
+// A2/A19 · item del diario/historial (macros TOTALES para g gramos) → view-model POR 100 g/ml (regla de
+// 3). Lo usa el 👁️ ojito cuando el alimento NO vive en la base (escaneados por código de barras): la
+// base ya da per-100 directo; esto lo deriva de los totales guardados. PURO. Sin g>0 → null (no se puede
+// normalizar sin cantidad: foto/⚡ rápido no llevan gramos). El campo de grasa del diario es `gr` → aquí
+// pasa a `f` (nombre que espera fichaRender). Honestidad: campo ausente = null → la ficha pinta "—";
+// diario:true marca el origen (fichaFuente → "de tu registro", no finge "base curada").
+function fichaPor100DeTotales(it){
+  if(!it || typeof it!=="object") return null;
+  var g=fichaNum(it.g); if(g==null || g<=0) return null;
+  function p100(v){ var n=fichaNum(v); return n==null?null:Math.round(n*100/g*10)/10; }
+  return { n:it.n, u:(it.u==="ml"?"ml":"g"), diario:true,
+    kcal:p100(it.kcal), p:p100(it.p), c:p100(it.c), f:p100(it.gr),
+    fib:p100(it.fib), az:p100(it.az), sat:p100(it.sat), na:p100(it.na) };
 }
 // [FICHA-PURE-FIN]
 
@@ -8393,10 +8983,11 @@ function fichaVer(src, i){
   var x=null;
   if(src==="base"){
     var b=_superRes[i]; if(!b) return;
-    x={n:b.n, marca:superNegocio(b.n), ean:(b.ean?String(b.ean):null), u:(b.u==="ml"?"ml":"g"),
-       kcal:b.kcal, p:b.p, c:b.c, f:b.f, fib:b.fib, az:b.az, sat:b.sat, na:b.na, k:b.k, fe:b.fe, tr:b.tr,
-       porc:(b.porc||null), propio:!!b.propio,
-       bedca:(typeof FOODS_BEDCA!=="undefined" && FOODS_BEDCA.indexOf(b)>=0)};   // identidad de objeto: la fusión (dedup) mete las MISMAS referencias en FOODS
+    var b0=b._base||b;   // A22 · si la fila ya venía con corrección aplicada, parte del ORIGINAL limpio (para poder revertir)
+    x={n:b0.n, marca:superNegocio(b0.n), ean:(b0.ean?String(b0.ean):null), u:(b0.u==="ml"?"ml":"g"),
+       kcal:b0.kcal, p:b0.p, c:b0.c, f:b0.f, fib:b0.fib, az:b0.az, sat:b0.sat, na:b0.na, k:b0.k, fe:b0.fe, tr:b0.tr,
+       azadd:b0.azadd, mic:b0.mic, ing:b0.ing, porc:(b0.porc||null), propio:!!b0.propio,
+       bedca:(typeof FOODS_BEDCA!=="undefined" && FOODS_BEDCA.indexOf(b0)>=0)};   // identidad de objeto: la fusión (dedup) mete las MISMAS referencias en FOODS
   } else if(src==="dbx"){
     var e=_superDBX[i]; if(!e) return;
     x={n:e.n, marca:superNegocio(e.n), ean:(e.ean?String(e.ean):null), u:(e.u==="ml"?"ml":"g"),
@@ -8410,11 +9001,63 @@ function fichaVer(src, i){
   x.src=src; x.idx=i;
   var d=String(x.ean||"").replace(/\D/g,"");
   if(d && _fichaDet[d]){ x=fichaRellena(x,_fichaDet[d]); x._detOFF=true; }   // detalle ya pedido esta sesión
+  x=aplicarOverride(x, ovrAll());   // A22 · tu corrección MANDA (encima de base y de OFF); sin parche = x tal cual
   _fichaX=x;
   fichaRender();
   show("fichaModal", true);
 }
 function fichaCerrar(){ show("fichaModal", false); _fichaX=null; }
+// ── 👁️ Ficha REUTILIZADA fuera del buscador (A1 · historial · A2 «lo que llevas»). MISMO modal y misma
+// pinta (fichaRender), disparada por NOMBRE o por id del diario en vez de por índice de tanda. Si el
+// alimento vive en la base (propio/curada) → ficha completa (foto, micros, porción, semáforo); si es un
+// escaneado que NO está en la base → view-model derivado de los totales guardados [FICHA-PURE].
+function fichaBasePorNombre(nombre){
+  var q=String(nombre||"").trim().toLowerCase(); if(!q) return null;
+  var base=baseFoods();
+  for(var i=0;i<base.length;i++){ if(base[i] && typeof base[i].n==="string" && base[i].n.toLowerCase()===q) return base[i]; }
+  return null;
+}
+function fichaXDeBase(b){   // MISMO view-model que la rama "base" de fichaVer (per-100 + micros + porción + flags)
+  var b0=b._base||b;   // A22 · parte del ORIGINAL limpio si la entrada ya venía corregida
+  return {n:b0.n, marca:superNegocio(b0.n), ean:(b0.ean?String(b0.ean):null), u:(b0.u==="ml"?"ml":"g"),
+    kcal:b0.kcal, p:b0.p, c:b0.c, f:b0.f, fib:b0.fib, az:b0.az, sat:b0.sat, na:b0.na, k:b0.k, fe:b0.fe, tr:b0.tr,
+    azadd:b0.azadd, mic:b0.mic, ing:b0.ing, porc:(b0.porc||null), propio:!!b0.propio,
+    bedca:(typeof FOODS_BEDCA!=="undefined" && FOODS_BEDCA.indexOf(b0)>=0), src:"base"};
+}
+function fichaMostrar(x){   // cola común de fichaVer: aplica detalle OFF cacheado, guarda, pinta y abre
+  if(!x) return;
+  if(x.idx==null) x.idx=-1;
+  var d=String(x.ean||"").replace(/\D/g,"");
+  if(d && _fichaDet[d]){ x=fichaRellena(x,_fichaDet[d]); x._detOFF=true; }
+  x=aplicarOverride(x, ovrAll());   // A22 · tu corrección MANDA también en las fichas de historial/diario
+  _fichaX=x; fichaRender(); show("fichaModal", true);
+}
+function fichaVerNombreOItem(nombre, fb){   // base por nombre → si no, view-model desde los totales del item fb
+  var b=fichaBasePorNombre(nombre);
+  if(b){ var xb=fichaXDeBase(b); xb._noBuscador=true; fichaMostrar(xb); return; }   // ficha de solo-lectura (sin «Elegir»)
+  var x=fichaPor100DeTotales(fb); if(!x){ toast("No tengo la ficha de este alimento"); return; }
+  x.src=null; x._noBuscador=true; fichaMostrar(x);
+}
+function fichaVerHist(nombre){   // A1 · ojito de un chip del historial
+  var key=String(nombre||"").trim().toLowerCase();
+  var h=get(LS_HIST_ALIM,[]).filter(function(x){ return x && (x.n||"").toLowerCase()===key; })[0];
+  fichaVerNombreOItem(nombre, h||null);
+}
+function fichaVerDiario(id){   // A2 · ojito de una fila de «lo que llevas»
+  var it=get(LS_COMIDA,[]).filter(function(x){ return x && x.id===id; })[0];
+  if(!it){ toast("No encuentro ese alimento"); return; }
+  fichaVerNombreOItem(it.n, it);
+}
+// Markup del ojito: MISMA clase .ficha-ojo y mismo 👁️ que fichaOjoHTML del buscador (mismo icono/tamaño);
+// event.stopPropagation() para no robar el tap de la fila — el ojito solo abre la ficha.
+function fichaOjoHist(nombre){ var aN=JSON.stringify(nombre).replace(/"/g,"&quot;");
+  return '<button class="ficha-ojo" type="button" title="Ver ficha" aria-label="Ver ficha del alimento" onclick="event.stopPropagation();fichaVerHist('+aN+')">👁️</button>'; }
+function fichaOjoDiario(id){ var aI=JSON.stringify(id).replace(/"/g,"&quot;");
+  return '<button class="ficha-ojo" type="button" title="Ver ficha" aria-label="Ver ficha del alimento" onclick="event.stopPropagation();fichaVerDiario('+aI+')">👁️</button>'; }
+// 📖 Explicadores (i)/(?) reutilizables (A7/A21). infoTip devuelve el HTML del icono; explicaAbrir/Cerrar controlan el modal (mismo patrón que fichaModal).
+function infoTip(key){ if(!EXPLICACIONES[key]) return ""; return '<button type="button" class="infobtn" onclick="explicaAbrir(\''+key+'\')" aria-label="Qué es esto" title="Qué es esto">i</button>'; }
+function explicaAbrir(key){ var e=explicaTexto(key); if(!e) return; var t=document.getElementById("explica_titulo"), c=document.getElementById("explica_cuerpo"); if(t) t.textContent=e.titulo; if(c) c.textContent=e.cuerpo; show("explicaModal",true); }
+function explicaCerrar(){ show("explicaModal",false); }
 function fichaElegir(){
   var x=_fichaX; if(!x) return;
   fichaCerrar();
@@ -8422,6 +9065,13 @@ function fichaElegir(){
   else if(x.src==="dbx") superElegirDBX(x.idx);
   else if(x.src==="off") superElegirOFF(x.idx);
 }
+// A22 · etiquetas + unidad de cada micro de mic{} para pintarlo en la ficha (impuro: solo display).
+var MIC_LBL={
+  mg:["Magnesio","mg"], zn:["Zinc","mg"], p:["Fósforo","mg"], se:["Selenio","µg"], cu:["Cobre","mg"], mn:["Manganeso","mg"],
+  va:["Vitamina A","µg"], ve:["Vitamina E","mg"], b1:["Vitamina B1","mg"], b2:["Vitamina B2","mg"], b6:["Vitamina B6","mg"],
+  b9:["Folato (B9)","µg"], b12:["Vitamina B12","µg"], b3:["Niacina (B3)","mg"], b5:["Á. pantoténico (B5)","mg"], biot:["Biotina","µg"]
+};
+var MIC_ORDEN=["va","b1","b2","b3","b5","b6","b9","b12","biot","ve","mg","zn","p","se","cu","mn"];
 function fichaRender(){
   var box=$("ficha_cuerpo"), x=_fichaX; if(!box||!x) return;
   var u=(x.u==="ml")?"ml":"g";
@@ -8434,6 +9084,7 @@ function fichaRender(){
   sub.push(esc(fichaFuente(x)));
   if(d) sub.push("EAN "+esc(d));
   h+='<p class="hint" style="margin-top:2px">'+sub.join(" · ")+'</p>';
+  if(x._edit) h+='<p class="hint" style="margin-top:2px"><span style="color:var(--jade)">✏️ editado por ti</span> '+infoTip("editado-por-ti")+'</p>';
   // macros por 100 g/ml
   h+='<div class="eyebrow-lbl">Por 100 '+u+'</div>'
     +'<div class="kv"><span>Calorías</span><span>'+fichaCampo(x.kcal,"kcal")+'</span></div>'
@@ -8443,8 +9094,9 @@ function fichaRender(){
   // detalle (siempre visible: "—" honesto si la fuente no lo trae) + micros SOLO si existen
   h+='<div class="eyebrow-lbl">Detalle</div>'
     +'<div class="kv"><span>Fibra</span><span>'+fichaCampo(x.fib,"g")+'</span></div>'
-    +'<div class="kv"><span>Azúcares</span><span>'+fichaCampo(x.az,"g")+'</span></div>'
-    +'<div class="kv"><span>Grasas saturadas</span><span>'+fichaCampo(x.sat,"g")+'</span></div>'
+    +'<div class="kv"><span>Azúcares</span><span>'+fichaCampo(x.az,"g")+'</span></div>';
+  if(fichaNum(x.azadd)!=null) h+='<div class="kv"><span>· de ellos añadidos</span><span>'+fichaCampo(x.azadd,"g")+'</span></div>';
+  h+='<div class="kv"><span>Grasas saturadas</span><span>'+fichaCampo(x.sat,"g")+'</span></div>'
     +'<div class="kv"><span>Sodio</span><span>'+fichaCampo(x.na,"mg")+'</span></div>'
     +'<div class="kv"><span>Sal (sodio × 2,5)</span><span>'+fichaCampo(fichaSal(x.na),"g")+'</span></div>';
   if(fichaNum(x.k)!=null)  h+='<div class="kv"><span>Potasio</span><span>'+fichaCampo(x.k,"mg")+'</span></div>';
@@ -8452,9 +9104,29 @@ function fichaRender(){
   if(fichaNum(x.tr)!=null) h+='<div class="kv"><span>Grasas trans</span><span>'+fichaCampo(x.tr,"g")+'</span></div>';
   // semáforo FSA — REUTILIZA [CALIDAD-PURE] (calidadNutricional lee az/sat/na del view-model tal cual)
   var cal=null; try{ cal=calidadNutricional(x); }catch(e){}
-  h+='<div class="eyebrow-lbl">Semáforo de calidad</div>';
+  h+='<div class="eyebrow-lbl">Semáforo de calidad '+infoTip("calidad-semaforo")+'</div>';
   h+= cal ? '<p class="hint" style="margin-top:4px">'+CALIDAD_ICO[cal.nivel]+' '+esc(cal.motivo)+'</p>'
           : '<p class="hint" style="margin-top:4px">Sin datos de azúcar/saturadas/sodio — no se juzga a ciegas.</p>';
+  // ⚠️ A22 · aviso Atwater [ATWATER-PURE]: la energía no cuadra con los macros (posible error de unidad/aritmética).
+  var atw=null; try{ atw=atwaterCheck(x); }catch(e){}
+  if(atw && atw.ok===false){
+    h+='<p class="hint" style="margin-top:4px;color:var(--ember)">⚠️ Revisar — '+esc(atw.motivo)+' '+infoTip("revisar-atwater")+'</p>';
+  }
+  // 💊 A22 · vitaminas y minerales de mic{} (solo los que existan; "—" honesto = no se pinta nada si no hay)
+  if(x.mic && typeof x.mic==="object"){
+    var micRows="";
+    for(var _mi=0; _mi<MIC_ORDEN.length; _mi++){
+      var _mk=MIC_ORDEN[_mi]; if(fichaNum(x.mic[_mk])==null) continue;
+      var _lb=MIC_LBL[_mk]||[_mk,""];
+      micRows+='<div class="kv"><span>'+esc(_lb[0])+'</span><span>'+fichaCampo(x.mic[_mk],_lb[1])+'</span></div>';
+    }
+    if(micRows) h+='<div class="eyebrow-lbl">Vitaminas y minerales '+infoTip("micros")+'</div>'+micRows;
+  }
+  // 🧾 A22 · ingredientes de OFF (clave para pillar un producto mal identificado, p.ej. el "pan sin gluten" que sí lo lleva)
+  if(x.ing && typeof x.ing==="string" && x.ing.trim()){
+    h+='<div class="eyebrow-lbl">Ingredientes '+infoTip("ingredientes")+'</div>';
+    h+='<p class="hint" style="margin-top:4px;white-space:pre-wrap">'+esc(x.ing)+'</p>';
+  }
   // porción declarada → macros POR PORCIÓN (regla de 3 null-safe)
   var po=fichaPorcion(x.porc);
   if(po){
@@ -8468,8 +9140,13 @@ function fichaRender(){
   if(d.length>=8 && navigator.onLine!==false && !x._detOFF){
     h+='<button class="sec" type="button" id="ficha_btn_off" style="width:100%;margin-top:12px" onclick="fichaDetalleOFF()">🌍 Cargar detalle completo de OFF</button>';
   }
-  h+='<button type="button" style="width:100%;margin-top:10px" onclick="fichaElegir()">Elegir este alimento</button>';
-  h+='<button class="sec" type="button" style="width:100%;margin-top:8px" onclick="fichaCerrar()">✕ Volver al buscador</button>';
+  // ✏️ A22 · corregir los datos nutricionales a mano (tu valor MANDA y persiste); revertir si ya corregiste.
+  h+='<button class="sec" type="button" style="width:100%;margin-top:10px" onclick="fichaCorregirAbrir()">✏️ Corregir datos</button>';
+  if(x._edit) h+='<button class="sec" type="button" style="width:100%;margin-top:6px" onclick="fichaCorregirRevertir()">↩️ Volver al valor original</button>';
+  // A1/A2 · abierta desde el historial o «lo que llevas» (_noBuscador) → ficha de solo-lectura: sin
+  // «Elegir este alimento» (no hay buscador detrás que rellenar) y el cierre dice «Cerrar», no «Volver».
+  if(!x._noBuscador) h+='<button type="button" style="width:100%;margin-top:10px" onclick="fichaElegir()">Elegir este alimento</button>';
+  h+='<button class="sec" type="button" style="width:100%;margin-top:8px" onclick="fichaCerrar()">'+(x._noBuscador?"✕ Cerrar":"✕ Volver al buscador")+'</button>';
   box.innerHTML=h;
   fichaFotoCarga(d);
 }
@@ -8513,9 +9190,13 @@ function fichaDetalleOFF(){
   if(_fichaDet[d]){ _fichaX=fichaRellena(x,_fichaDet[d]); _fichaX._detOFF=true; fichaRender(); return; }
   var btn=$("ficha_btn_off");
   if(btn){ btn.disabled=true; btn.textContent="🌍 Pidiendo detalle a OFF…"; }
-  var url="https://world.openfoodfacts.org/api/v2/product/"+d+"?fields=nutriments";
+  var url="https://world.openfoodfacts.org/api/v2/product/"+d+"?fields=nutriments,ingredients_text,ingredients_text_es";
   function ok(j){
-    var det=fichaDeOFFNutriments(j && j.product && j.product.nutriments);
+    var prod=(j && j.product)||null;
+    var det=fichaDeOFFNutriments(prod && prod.nutriments);
+    // A22 · ingredientes (es preferente) → clave para detectar productos mal identificados (el "pan sin gluten" con trigo)
+    var ing=prod ? (prod.ingredients_text_es || prod.ingredients_text || "") : "";
+    if(typeof ing==="string" && ing.trim()) det.ing=ing.trim().slice(0,600);
     _fichaDet[d]=det;
     if(!_fichaX || String(_fichaX.ean||"").replace(/\D/g,"")!==d) return;   // la ficha ya es otra
     _fichaX=fichaRellena(_fichaX, det); _fichaX._detOFF=true; fichaRender();
@@ -8528,6 +9209,54 @@ function fichaDetalleOFF(){
   superOFFFetch(url, 8000, ok, function(){
     superOFFFetch("https://api.allorigins.win/raw?url="+encodeURIComponent(url), 12000, ok, ko);
   });
+}
+// ✏️ A4/A22 · Corregir datos: edición IN SITU de los campos nutricionales del alimento abierto en la ficha.
+// Guarda un "parche" en jvf_overrides (clave por EAN, o por nombre si no hay EAN) que MANDA sobre OFF/base
+// y persiste (viaja en el backup). Reutiliza fichaRender como "cerrar" (repinta la ficha ya resuelta).
+function fichaCorregirAbrir(){
+  var x=_fichaX; if(!x) return;
+  var box=$("ficha_cuerpo"); if(!box) return;
+  var u=(x.u==="ml")?"ml":"g";
+  function fld(id,lbl,v,unidad){
+    var val=(fichaNum(v)==null)?"":fichaNum(v);
+    return "<div style='display:flex;align-items:center;justify-content:space-between;gap:8px;padding:7px 10px;border-bottom:1px solid var(--line-soft)'>"
+      +"<span style='color:var(--soft)'>"+lbl+(unidad?" <span class='hint'>("+unidad+")</span>":"")+"</span>"
+      +"<input id='"+id+"' type='number' inputmode='decimal' min='0' style='width:104px;flex:none;margin:0;text-align:right;padding:7px 9px' value=\""+escAttr(val)+"\"></div>";
+  }
+  var h="<div class='eyebrow-lbl' style='margin-top:0'>✏️ Corregir «"+esc(x.n)+"»</div>";
+  h+="<p class='hint' style='margin:2px 0 8px'>Corrige lo que no cuadre con tu etiqueta (por 100 "+u+"). Lo que dejes vacío usa el valor original. Tu corrección MANDA aquí y en el buscador, y se guarda en tu móvil.</p>";
+  h+=fld("cor_kcal","Calorías",x.kcal,"kcal")+fld("cor_p","Proteína",x.p,"g")+fld("cor_c","Carbohidratos",x.c,"g")+fld("cor_f","Grasa",x.f,"g");
+  h+=fld("cor_fib","Fibra",x.fib,"g")+fld("cor_az","Azúcares",x.az,"g")+fld("cor_sat","Saturadas",x.sat,"g")+fld("cor_na","Sodio",x.na,"mg");
+  h+="<button type='button' style='width:100%;margin-top:12px' onclick='fichaCorregirGuardar()'>💾 Guardar corrección</button>";
+  h+="<button class='sec' type='button' style='width:100%;margin-top:8px' onclick='fichaRender()'>✕ Cancelar</button>";
+  box.innerHTML=h;
+}
+function fichaCorregirGuardar(){
+  var x=_fichaX; if(!x) return;
+  function rd(id){ var el=$(id); if(!el) return null; var s=(el.value||"").trim(); if(s==="") return null; var n=+String(s).replace(",","."); return (isFinite(n)&&n>=0)?n:null; }
+  var campos={kcal:rd("cor_kcal"), p:rd("cor_p"), c:rd("cor_c"), f:rd("cor_f"), fib:rd("cor_fib"), az:rd("cor_az"), sat:rd("cor_sat"), na:rd("cor_na")};
+  var patch={}, algo=false, kk;
+  for(kk in campos){ if(campos[kk]!=null){ patch[kk]=campos[kk]; algo=true; } }
+  if(!algo){ toast("Escribe al menos un valor para corregir"); return; }
+  var limpio=x._base||x;                          // ORIGINAL (sin override) — la clave y el revert parten de aquí
+  var key=ovrKey(limpio); if(!key){ toast("No puedo identificar este alimento para guardar la corrección"); return; }
+  patch._ts=Date.now(); patch._fuente="editado por ti";
+  var all=ovrAll(); all[key]=patch; set(LS_OVR, all);
+  var xo=aplicarOverride(limpio, ovrAll());       // re-resuelve: tu parche gana y Atwater/semáforo recomputan
+  xo.src=x.src; xo.idx=x.idx; if(x._noBuscador) xo._noBuscador=true; if(x._detOFF) xo._detOFF=true;
+  _fichaX=xo; fichaRender();
+  toast("✓ Corregido — tu dato manda ahora (aquí y en el buscador)");
+}
+function fichaCorregirRevertir(){
+  var x=_fichaX; if(!x) return;
+  var limpio=x._base||x;
+  var key=ovrKey(limpio);
+  if(key){ var all=ovrAll(); if(all[key]){ delete all[key]; set(LS_OVR, all); } }
+  var xo={}, c; for(c in limpio){ if(Object.prototype.hasOwnProperty.call(limpio,c)) xo[c]=limpio[c]; }
+  delete xo._edit; delete xo._fuente; delete xo._base;
+  xo.src=x.src; xo.idx=x.idx; if(x._noBuscador) xo._noBuscador=true; if(x._detOFF) xo._detOFF=true;
+  _fichaX=xo; fichaRender();
+  toast("↩️ Restaurado el valor original");
 }
 
 // [DBX-PURE-INICIO] — 🗄️ Base España completa (IndexedDB): tokenizador + parser + matcher PUROS
@@ -8884,7 +9613,7 @@ function idiomaCambia(sel){ var v=(sel&&sel.value)||"es"; if(!I18N[v]){ if(sel) 
 // Orden de las pestañas (única fuente de verdad; antes estaba duplicado en aplicarTab/render y lo usa el swipe).
 const TABS=["plan","ajustes","registro","entrenos","calib","agua","comida","cerebro","lesiones"];   // ⚙️ tanda #22 · Agua asciende a pestaña (orden spec Pablo 10-07)
 let _tab="plan";
-function abrir(t){ _tab=t; aplicarTab(); if(t==="entrenos" && !$("ent_form").innerHTML.trim()) entInit(); if(t==="comida") comInit(); if(t==="cerebro") cbInit(); if(t==="calib"){ pfRefrescar(); pasosRender(); } if(t==="lesiones") lesInit(); if(t==="agua") renderAgua(); window.scrollTo(0,0); }   // 📸 v0.13-C · Progreso pinta también fotos · 💧 tanda #22 · Agua repinta su resumen al entrar
+function abrir(t){ _tab=t; aplicarTab(); var _ta=document.getElementById('tab-'+t); if(_ta&&_ta.scrollIntoView) _ta.scrollIntoView({inline:'center',block:'nearest'}); if(t==="entrenos" && !$("ent_form").innerHTML.trim()) entInit(); if(t==="comida") comInit(); if(t==="cerebro") cbInit(); if(t==="calib"){ pfRefrescar(); pasosRender(); } if(t==="lesiones") lesInit(); if(t==="agua") renderAgua(); window.scrollTo(0,0); }   // 📸 v0.13-C · Progreso pinta también fotos · 💧 tanda #22 · Agua repinta su resumen al entrar
 function aplicarTab(){
   TABS.forEach(function(s){
     show(s, s===_tab);
@@ -8955,7 +9684,7 @@ document.addEventListener('DOMContentLoaded',function(){
     setTimeout(function(){ try{ dbxAutoProvision(); }catch(e){} }, 4000);   // 🗄️ E9 · auto-provisión/actualización de la base, tras el primer render
   }catch(e){}
 });
-function resetTodo(){ if(!confirm("⚠️ Esto borra TODO: perfil, pesos, entrenos, rutinas, comidas, alimentos propios, agua, suplementos, lo hablado con el Cerebro y las fotos de progreso. ¿Seguro?")) return; try{ localStorage.removeItem(LS_P); localStorage.removeItem(LS_W); localStorage.removeItem(LS_E); localStorage.removeItem("jvf_notas_ej"); localStorage.removeItem("jvf_comida"); localStorage.removeItem("jvf_agua"); localStorage.removeItem("jvf_agua_log"); localStorage.removeItem("jvf_suples_cfg"); localStorage.removeItem("jvf_suples_log"); localStorage.removeItem("jvf_rutinas"); localStorage.removeItem("jvf_ent_start"); localStorage.removeItem("jvf_meals"); localStorage.removeItem("jvf_alimentos_propios"); localStorage.removeItem("jvf_barcode_cache"); localStorage.removeItem("jvf_foto_ajustes"); localStorage.removeItem("jvf_warmup_stats"); localStorage.removeItem("jvf_plate_barra"); localStorage.removeItem("jvf_rest_seg"); localStorage.removeItem("jvf_cerebro_diario"); localStorage.removeItem("jvf_cerebro_norec"); localStorage.removeItem("jvf_fotos_consent"); localStorage.removeItem("jvf_fotos_meta"); localStorage.removeItem("jvf_flex_cfg"); localStorage.removeItem("jvf_flex_visto"); localStorage.removeItem("jvf_deporte_sesiones"); localStorage.removeItem("jvf_favoritos"); localStorage.removeItem("jvf_uso_alim"); localStorage.removeItem("jvf_hist_alim"); localStorage.removeItem("jvf_lesiones"); localStorage.removeItem("jvf_notif_cfg"); localStorage.removeItem("jvf_notif_shown"); localStorage.removeItem("jvf_pasos_log"); localStorage.removeItem("jvf_pasos_sync_cfg"); localStorage.removeItem("jvf_pasos_sync_last"); localStorage.removeItem("jvf_apodo"); localStorage.removeItem("jvf_clima"); localStorage.removeItem("jvf_agua_colapsada"); localStorage.removeItem("jvf_levantar_semana"); localStorage.removeItem("jvf_levantar_finde"); }catch(e){} _mem={};
+function resetTodo(){ if(!confirm("⚠️ Esto borra TODO: perfil, pesos, entrenos, rutinas, comidas, alimentos propios, agua, suplementos, lo hablado con el Cerebro y las fotos de progreso. ¿Seguro?")) return; try{ localStorage.removeItem(LS_P); localStorage.removeItem(LS_W); localStorage.removeItem(LS_E); localStorage.removeItem("jvf_notas_ej"); localStorage.removeItem("jvf_comida"); localStorage.removeItem("jvf_agua"); localStorage.removeItem("jvf_agua_log"); localStorage.removeItem("jvf_suples_cfg"); localStorage.removeItem("jvf_suples_log"); localStorage.removeItem("jvf_rutinas"); localStorage.removeItem("jvf_ent_start"); localStorage.removeItem("jvf_meals"); localStorage.removeItem("jvf_alimentos_propios"); localStorage.removeItem("jvf_barcode_cache"); localStorage.removeItem("jvf_foto_ajustes"); localStorage.removeItem("jvf_warmup_stats"); localStorage.removeItem("jvf_plate_barra"); localStorage.removeItem("jvf_rest_seg"); localStorage.removeItem("jvf_cerebro_diario"); localStorage.removeItem("jvf_cerebro_norec"); localStorage.removeItem("jvf_fotos_consent"); localStorage.removeItem("jvf_fotos_meta"); localStorage.removeItem("jvf_flex_cfg"); localStorage.removeItem("jvf_flex_visto"); localStorage.removeItem("jvf_deporte_sesiones"); localStorage.removeItem("jvf_favoritos"); localStorage.removeItem("jvf_uso_alim"); localStorage.removeItem("jvf_hist_alim"); localStorage.removeItem("jvf_lesiones"); localStorage.removeItem("jvf_notif_cfg"); localStorage.removeItem("jvf_notif_shown"); localStorage.removeItem("jvf_pasos_log"); localStorage.removeItem("jvf_pasos_sync_cfg"); localStorage.removeItem("jvf_pasos_sync_last"); localStorage.removeItem("jvf_apodo"); localStorage.removeItem("jvf_clima"); localStorage.removeItem("jvf_agua_colapsada"); localStorage.removeItem("jvf_levantar_semana"); localStorage.removeItem("jvf_levantar_finde"); localStorage.removeItem("jvf_overrides"); }catch(e){} _mem={};
   // 📸 v0.13-C · las fotos viven en IndexedDB: se borra la base entera ANTES de recargar (con
   // timeout de seguridad — si el borrado se quedara bloqueado, la app no se cuelga: recarga igual
   // y el intento de borrado sigue en cola del navegador).
@@ -8970,7 +9699,7 @@ function resetTodo(){ if(!confirm("⚠️ Esto borra TODO: perfil, pesos, entren
 // Reemplazo total con confirmación. Reusa get/set, hoyLocal, toast, validar, render. NO toca motor ni gate.
 function exportarJSON(){ try{ set("jvf_last_export",hoyLocal()); }catch(e){}
   try{
-    var data={ app:"jvf", schema:1, app_version:"0.22.0", exportadoEl:new Date().toISOString(),
+    var data={ app:"jvf", schema:1, app_version:"0.23.0", exportadoEl:new Date().toISOString(),
       perfil:get(LS_P,null), pesos:get(LS_W,[]), entrenos:get(LS_E,[]), notas_ej:get("jvf_notas_ej",{}), comida:get("jvf_comida",[]), agua:get("jvf_agua",{}), suples_cfg:get("jvf_suples_cfg",null), suples_log:get("jvf_suples_log",{}),
       rutinas:get("jvf_rutinas",[]), meals:get("jvf_meals",[]), ent_start:get("jvf_ent_start",null),   // v0.10 · backup completo
       alimentos_propios:get("jvf_alimentos_propios",[]), barcode_cache:get("jvf_barcode_cache",{}),   // I5/I6 · también viajan en el backup
@@ -8991,6 +9720,8 @@ function exportarJSON(){ try{ set("jvf_last_export",hoyLocal()); }catch(e){}
       favoritos:get("jvf_favoritos",[]), uso_alim:get("jvf_uso_alim",{}),   // ⭐ v0.13.9 · favoritos + contador de uso por alimento
       hist_alim:get("jvf_hist_alim",[]),   // 🕑 v0.14.2 · historial de alimentos (deriva del diario; viaja en el backup)
       lesiones:get("jvf_lesiones",[]),   // 🩹 2B · lesiones activas (viajan en el backup)
+      ciclo_log:get(LS_CICLO_LOG,{}),   // 🩸 A11 · registro diario de ciclo/síntomas (dato de salud; SOLO viaja en el backup que inicia la usuaria)
+      overrides:get(LS_OVR,{}),   // ✏️ A22 · tus correcciones de datos nutricionales (parches por EAN/nombre) — viajan en el backup
       fotos_aviso:"Las fotos de progreso NO van en este JSON: viven solo en el dispositivo (IndexedDB). Exportarlas aparte esta pendiente." };
     var blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
     var url=URL.createObjectURL(blob);
@@ -9053,6 +9784,8 @@ function procesarImport(file){
     // 🕑 v0.14.2 · historial de alimentos (los backups antiguos no lo traen: se deja como está)
     if(Array.isArray(data.hist_alim)) set("jvf_hist_alim", data.hist_alim.filter(function(h){ return h && h.n; }).map(function(h){ return { n:String(h.n), g:(+h.g>0?+h.g:100), u:(h.u==="ml"?"ml":"g"), fecha:(typeof h.fecha==="string"?h.fecha:"") }; }));
     if(Array.isArray(data.lesiones)) set("jvf_lesiones", data.lesiones.filter(function(l){ return l && l.id; }));   // 🩹 2B · lesiones activas
+    if(data.ciclo_log && typeof data.ciclo_log==="object" && !Array.isArray(data.ciclo_log)) set(LS_CICLO_LOG, data.ciclo_log);   // 🩸 A11 · registro de ciclo (backups antiguos no lo traen: se deja como está)
+    if(data.overrides && typeof data.overrides==="object" && !Array.isArray(data.overrides)) set(LS_OVR, data.overrides);   // ✏️ A22 · correcciones (backups antiguos no las traen: se dejan como están)
     render();
     toast("✓ Datos importados");
   };
@@ -10987,10 +11720,18 @@ function wizGuardarDirecto(){
   else { toast("🔓 libre: guardando tal cual (caza-bugs)"); }
   show("f_err",false); _wizEdit=false; guardarPerfil();
 }
+// A11 · muestra el opt-in "modo ciclo" SOLO si sexo=mujer; si no, oculta y NO deja el flag colgado.
+function cicloToggleOptin(){
+  var wrap=$("f_ciclo_wrap"); if(!wrap) return;
+  var esMujer = (($("f_sexo")||{}).value === "mujer");
+  show("f_ciclo_wrap", esMujer);
+  if(!esMujer && $("f_ciclo_activo")) $("f_ciclo_activo").checked=false;
+}
 function wizShow(n){
   _wiz=n; if(n>_wizSeen) _wizSeen=n;
   var pasos=document.querySelectorAll('#onboarding .wstep');
   [].forEach.call(pasos,function(el){ el.classList.toggle("hidden", +el.getAttribute("data-paso")!==n); });
+  cicloToggleOptin();   // A11 · al pintar cualquier paso, refresca la visibilidad del opt-in (paso 2)
   $("wiz_fill").style.width=Math.round(n/WIZ_MAX*100)+"%";
   $("wiz_atras").style.visibility = n===0 ? "hidden" : "visible";
   $("wiz_sig").textContent = n===WIZ_MAX ? "Generar mi plan" : (n===0 ? "Empezar" : "Siguiente");
@@ -11045,10 +11786,30 @@ function wizNext(){
   show("f_err",false);
   if(_wiz<WIZ_MAX) wizShow(_wiz+1); else guardarPerfil();
 }
+// [GRASA-PURE-INICIO] — 🩹 A5 · intérprete del campo "% de grasa corporal" (bug Raúl: casi nadie
+// sabe su % exacto, quería meter "entre 22 y 25"). PURO (sin DOM/storage): _tests/test-grasa.node.js
+// extrae este bloque y lo evalúa tal cual. Acepta texto flexible: "22" → 22; "22-25"/"22 a 25"/
+// "22–25" → punto medio 23.5; "~22"/"22%" → 22; "22,5" → 22.5. Devuelve un número dentro del rango
+// fisiológico 3–60, o null si está vacío, es basura o cae fuera de rango (el campo sigue siendo
+// OPCIONAL: null NO bloquea el wizard; retrocompatible con perfiles que ya guardaron un número).
+function grasaParse(txt){
+  if(txt==null) return null;
+  var t=String(txt).trim();
+  if(t==="") return null;
+  var nums=[], m, re=/\d+(?:[.,]\d+)?/g;
+  while((m=re.exec(t))) nums.push(parseFloat(m[0].replace(",",".")));
+  if(!nums.length) return null;                                                 // sin cifras ("abc") → null
+  var v = nums.length>=2 ? (Math.min.apply(null,nums)+Math.max.apply(null,nums))/2 : nums[0];   // rango → punto medio
+  if(!isFinite(v)) return null;
+  v = Math.round(v*100)/100;                                                    // evita ruido de coma flotante
+  if(v<3 || v>60) return null;                                                  // fuera del rango fisiológico → null
+  return v;
+}
+// [GRASA-PURE-FIN]
 function wizValida(n){
   if(n===1 && !$("f_obj").value) return "Elige un objetivo.";
   if(n===2){ if(!$("f_nombre").value.trim()) return "¿Cómo te llamas?"; if(!(+$("f_edad").value>=14 && +$("f_edad").value<=100)) return "Pon una edad válida (14-100)."; }
-  if(n===3){ var _pw=+$("f_peso").value, _ph=+$("f_altura").value, _pg=$("f_grasa").value; if(!(_pw>=30&&_pw<=300)) return "El peso debe estar entre 30 y 300 kg."; if(!(_ph>=120&&_ph<=230)) return "La altura debe estar entre 120 y 230 cm."; if(_pg!=="" && !(+_pg>=3&&+_pg<=60)) return "El % de grasa debe estar entre 3 y 60 (o déjalo vacío)."; }
+  if(n===3){ var _pw=+$("f_peso").value, _ph=+$("f_altura").value, _pg=$("f_grasa").value.trim(); if(!(_pw>=30&&_pw<=300)) return "El peso debe estar entre 30 y 300 kg."; if(!(_ph>=120&&_ph<=230)) return "La altura debe estar entre 120 y 230 cm."; if(_pg!=="" && grasaParse(_pg)===null) return "El % de grasa debe estar entre 3 y 60 (puedes poner un rango, p.ej. 22-25, o dejarlo vacío)."; }
   // Obligatorios del paso Entreno (decisión Pablo 04/07): sin días y material el plan de
   // entrenos no puede personalizarse. El resto del contexto coach (5-8) sigue siendo opcional.
   if(n===4 && !$("f_act").value) return "Elige tu actividad real de ahora (sé honesto: se puede cambiar luego).";
@@ -11263,7 +12024,7 @@ function guardarPerfil(){ _wizEdit=false;
   try{ if(get(LS_SUP_CFG,null)==null){ var _sv=(($("w_suples")||{}).value||"").toLowerCase(); var _sc={};
     if(/creatin/.test(_sv))_sc.creatina=true; if(/cafe|pre.?entren/.test(_sv))_sc.cafeina=true;
     if(/prote/.test(_sv))_sc.proteina=true; if(/carnitin/.test(_sv))_sc.carnitina=true; set(LS_SUP_CFG,_sc); } }catch(e){}
-  const grasaRaw=$("f_grasa").value.trim();
+  const grasaVal=grasaParse($("f_grasa").value);   // 🩹 A5 · acepta rango/aprox; null si vacío o inválido (opcional, retrocompat)
   const prev=get(LS_P);
   // C v0.12 · los "Otro" pasan por interpretarOtro: se guarda la INTERPRETACIÓN como valor (lo
   // que leen motor/coach/rutinaSugerida) y el texto original aparte (X_txt). Ambos, como se dictó.
@@ -11277,13 +12038,14 @@ function guardarPerfil(){ _wizEdit=false;
   const p={
     nombre:$("f_nombre").value.trim()||"Tú",
     sexo:$("f_sexo").value, edad:+$("f_edad").value, peso_kg:+$("f_peso").value,
-    altura_cm:+$("f_altura").value, grasa_pct: grasaRaw===""?null:+grasaRaw,
+    altura_cm:+$("f_altura").value, grasa_pct: grasaVal,
     actividad: ($("f_act").value==="Otro" ? ((_actInt&&_actInt.valor)||"activo") : $("f_act").value), objetivo:$("f_obj").value, intensidad_pct:+$("f_int").value,
     pasos: +$("f_pasos").value||null,
     deporte: deporteValor(),   // O2 v0.13.4 · si el select es "Otro", el número sale de la nota (silencioso)
     deportes: ($("f_deportes")&&$("f_deportes").value.trim())||null,   // 🩹 2B · deportes del usuario (metadata para lesiones; NO entra al cálculo del motor)
     horario: (($("f_horario")||{}).value)||null,   // ⏰ SPEC 3 · franja habitual de entreno ("manana"|"tarde"|"variable"); solo alimenta el aviso de especificidad horaria, NO entra al motor
     nivel: ((($("w_nivelapp")||{}).value)||"novato"),   // 🎚️ SPEC 3 · cuánto se explica ("novato"|"medio"|"pro"); NO entra al motor
+    ciclo: { activo: ($("f_sexo").value==="mujer") && !!($("f_ciclo_activo") && $("f_ciclo_activo").checked) },   // A11 · opt-in modo ciclo (SOLO mujer; blindaje: no-mujer ⇒ false, no deja flag colgado)
     coach:{
       actividad_nota: _actTxt,
       deporte_nota: $("w_deporte_nota").value.trim()||null,
@@ -11306,6 +12068,8 @@ function guardarPerfil(){ _wizEdit=false;
 }
 function editarPerfil(){ const p=get(LS_P); if(p){
   $("f_nombre").value=p.nombre; $("f_sexo").value=p.sexo; $("f_edad").value=p.edad;
+  if($("f_ciclo_activo")) $("f_ciclo_activo").checked = !!(p.ciclo && p.ciclo.activo);   // A11 · restaura opt-in modo ciclo
+  cicloToggleOptin();   // A11 · muestra/oculta el bloque según sexo (no deja flag colgado si no es mujer)
   $("f_peso").value=p.peso_kg; $("f_altura").value=p.altura_cm; $("f_grasa").value=(p.grasa_pct==null?"":p.grasa_pct);
   $("f_obj").value=p.objetivo; $("f_int").value=p.intensidad_pct;
   $("f_pasos").value=p.pasos||"";
@@ -11369,7 +12133,7 @@ function hubQuienFilas(p){
   function corta(t,n){ t=String(t==null?"":t); return t.length>n ? t.slice(0,n)+"…" : (t||"—"); }
   return [
     {paso:1, titulo:"🎯 Objetivo",            resumen:v(p.objetivo)+((+p.intensidad_pct>0)?(" · "+p.intensidad_pct+"%"):"")},
-    {paso:2, titulo:"🪪 Quién eres",          resumen:v(p.nombre)+" · "+v(p.sexo)+" · "+v(p.edad," años")},
+    {paso:2, titulo:"🪪 Quién eres",          resumen:v(p.nombre)+" · "+v(p.sexo)+" · "+v(p.edad," años")+(p.sexo==="mujer" ? (" · modo ciclo "+((p.ciclo&&p.ciclo.activo)?"ON":"OFF")) : "")},   // A11 · estado del opt-in (solo mujer); editar/quitar = ✏️ salta al paso 2
     {paso:3, titulo:"📏 Tu cuerpo",           resumen:v(p.peso_kg," kg")+" · "+v(p.altura_cm," cm")+((p.grasa_pct===0||p.grasa_pct)?(" · "+p.grasa_pct+"% grasa"):"")},
     {paso:4, titulo:"🚶 Actividad y deporte", resumen:v(p.actividad)+((+p.pasos>0)?(" · "+p.pasos+" pasos"):"")+((+p.deporte>0)?" · deporte extra ✓":"")},
     {paso:5, titulo:"🏋️ Entrenamiento",      resumen:v(c.nivel)+(c.dias_sem?(" · "+c.dias_sem+" días/sem"):"")+(c.material?(" · "+corta(c.material,18)):"")},
@@ -11405,19 +12169,27 @@ function hubEditarPaso(n){
   wizShow(Math.max(1, Math.min(WIZ_MAX, +n||1)));   // y salta directo al paso pedido
 }
 
+// ⚖️ A10 · opción "peso con ropa interior": la resta pura vive en [PESO-ROPA-PURE]; aquí solo el estado en LS y la UI.
+var LS_PESO_ROPA="jvf_peso_ropa_ajuste";
+function pesoRopaAjuste(){ var v=+get(LS_PESO_ROPA,PESO_ROPA_AJUSTE_DEF); return (isFinite(v)&&v>=0&&v<=2)?v:PESO_ROPA_AJUSTE_DEF; }
+function pesoRopaAjusteSet(v){ var n=Math.round((+String(v==null?"":v).replace(",","."))*100)/100; if(!(n>=0&&n<=2)) n=PESO_ROPA_AJUSTE_DEF; set(LS_PESO_ROPA,n); var i=$("r_peso_ropa_kg"); if(i) i.value=n; }
+function pesoRopaToggle(){ var on=!!($("r_peso_ropa")&&$("r_peso_ropa").checked); var cfg=$("r_peso_ropa_cfg"); if(cfg) cfg.classList.toggle("hidden",!on); var i=$("r_peso_ropa_kg"); if(i&&!i.value) i.value=pesoRopaAjuste(); }
 function registrarPeso(){
-  const f=$("r_fecha").value, w=+$("r_peso").value;
-  if(!f||!(w>=30&&w<=300)){ toast("Pon la fecha y un peso válido (30-300 kg, ej. 79.8)"); return; }
+  const f=$("r_fecha").value, wBruto=+$("r_peso").value;
+  if(!f||!(wBruto>=30&&wBruto<=300)){ toast("Pon la fecha y un peso válido (30-300 kg, ej. 79.8)"); return; }
+  // ⚖️ A10 · si se pesó con ropa interior, resta el aproximado ANTES de guardar; deja traza en _entry.ropa
+  var _conRopa=!!($("r_peso_ropa")&&$("r_peso_ropa").checked), _ajRopa=pesoRopaAjuste();
+  var w=pesoAjustaRopa(wBruto,_conRopa,_ajRopa);
   var _prev=get(LS_W,[]); var _ult=_prev.length?_prev[_prev.length-1]:null;
   if(_ult&&Math.abs(w-_ult.w)>_ult.w*0.08 && !confirm("¿Seguro? Tu último peso fue "+(+_ult.w).toFixed(1)+" kg y esto es un salto grande.")) return;
   const ws=get(LS_W,[]).filter(x=>x.f!==f);
   // M1 · adjunta el contexto (chips) elegido junto al peso; si no hay chips, la entrada queda como siempre {f,w}
   var _ctx=Object.keys(_flexPesoCtxSel).filter(function(k){ return _flexPesoCtxSel[k]; });
-  var _entry={f,w}; if(_ctx.length) _entry.ctx=_ctx;
+  var _entry={f,w}; if(_ctx.length) _entry.ctx=_ctx; if(_conRopa) _entry.ropa=_ajRopa;   // .w ya corregido (retrocompat); .ropa = kg restados (trazable)
   ws.push(_entry); ws.sort((a,b)=>a.f<b.f?-1:1);
   set(LS_W,ws); $("r_peso").value=""; _flexPesoCtxSel={}; render();
   var btn=document.querySelector('#registro button[onclick="registrarPeso()"]'); okFlash(btn); popEl(btn);
-  toast("✓ Peso guardado");
+  toast(_conRopa ? ("✓ "+w.toFixed(1)+" kg (−"+_ajRopa+" ropa, aprox.)") : "✓ Peso guardado");
 }
 function mediaSemana(ws,offsetDias){
   if(!ws.length) return null;
@@ -11457,8 +12229,10 @@ function entSync(){
       nombre: el.querySelector('.ent-nombre').value,
       desc: (descEl?descEl.value:''),
       ss: el.getAttribute('data-ss')==='1',
+      bw: el.getAttribute('data-bw')==='1',   // A8 · flag de peso corporal (peso = lastre añadido)
       series: [].map.call(el.querySelectorAll('.ent-serie'),function(s){
-        return {peso:String(s.querySelector('.ent-peso').value).replace(",","."), reps:s.querySelector('.ent-reps').value, rir:s.querySelector('.ent-rir').value, t:(s.getAttribute('data-t')||'')};
+        var nEl=s.querySelector('.ent-nota-serie');   // A12 · nota opcional por serie
+        return {peso:String(s.querySelector('.ent-peso').value).replace(",","."), reps:s.querySelector('.ent-reps').value, rir:s.querySelector('.ent-rir').value, t:(s.getAttribute('data-t')||''), nota:(nEl?nEl.value:'')};
       })
     };
   });
@@ -11485,6 +12259,23 @@ function entSSToggle(i){
   ej.ss=!ej.ss;
   renderEntForm();
 }
+// [BW-PURE-INICIO] — A8 · ¿el peso de este ejercicio es LASTRE añadido (no carga absoluta)?
+// GENERALIZADO por equipo: un ejercicio es de PESO CORPORAL si su ficha del catálogo tiene
+// eq==="Peso corporal" (dominadas, fondos, flexiones, abdominales…). En esos, el número que
+// mete el usuario en "peso" es el LASTRE (0 = solo tu cuerpo). NO se hardcodea ningún nombre.
+// Retrocompatible: si el ejercicio no está en el catálogo → false (carga normal, como hasta hoy).
+// PURO: _tests/test-bw.node.js extrae este bloque y lo evalúa con un catálogo de prueba.
+function esPesoCorporal(nombre, catalogo){
+  var cat = catalogo || (typeof EJERCICIOS!=="undefined" ? EJERCICIOS : []);
+  var n = String(nombre==null?"":nombre).trim().toLowerCase();
+  if(!n || !cat || !cat.length) return false;
+  for(var i=0;i<cat.length;i++){
+    var e=cat[i];
+    if(e && String(e.n||"").trim().toLowerCase()===n) return e.eq==="Peso corporal";
+  }
+  return false;
+}
+// [BW-PURE-FIN]
 function renderEntForm(){
   // D v0.12 · superseries: cadena = ejercicios unidos con 🔗 ("unir con el siguiente"). Un ejercicio
   // está en cadena si él enlaza al siguiente (ss) o el anterior enlaza con él. Cada cadena tiene su
@@ -11498,7 +12289,9 @@ function renderEntForm(){
   $("ent_form").innerHTML=_ent.ejercicios.map(function(ej,i){
     // placeholder de peso = peso de la última vez de este ejercicio (guía, no rellena el dato).
     var prevS=ultimasSeries(ej.nombre);
-    var phPeso = (prevS && prevS.length && prevS[0].peso!=null) ? (prevS[0].peso+"") : "kg";
+    // A8 · ¿ejercicio de peso corporal? → el campo de peso es LASTRE añadido (0 = solo tu cuerpo).
+    var _bw = esPesoCorporal(ej.nombre);
+    var phPeso = _bw ? "+kg" : ((prevS && prevS.length && prevS[0].peso!=null) ? (prevS[0].peso+"") : "kg");
     var sets=ej.series.map(function(s,j){
       // D v0.12 · tipo de serie estilo Hevy: tocar el "1ª" cicla normal → W → F → D. Colores fijos
       // (W naranja / F rojo / D azul); el estado vive en data-t para que entSync lo lea del DOM.
@@ -11507,15 +12300,21 @@ function renderEntForm(){
                  w:{txt:'W', col:'#f4a950', tip:'calentamiento — no cuenta en stats salvo que actives el toggle de abajo · toca para ciclar'},
                  f:{txt:'F', col:'#ff5555', tip:'al fallo — toca para ciclar'},
                  d:{txt:'D', col:'#74c7ff', tip:'dropset — toca para ciclar'} };
-      // gap 4px y paddings mínimos: la fila gana el tipo de serie y el 🏋️ SIN desbordar en 375px
-      return '<div class="ent-serie row" style="gap:4px;align-items:center;margin-top:6px" data-t="'+_t+'">'
+      // gap 4px y paddings mínimos: la fila gana el tipo de serie y el 🏋️ SIN desbordar en 375px.
+      // A12 · .ent-serie pasa a ser un CONTENEDOR de bloque: fila de inputs + nota opcional debajo.
+      var _nota = s.nota||'';
+      return '<div class="ent-serie" data-t="'+_t+'" style="margin-top:6px">'
+        +'<div class="row" style="gap:4px;align-items:center">'
         +'<button type="button" class="ent-tipo" title="'+escAttr(TIPO[_t].tip)+'" onclick="entTipoCiclar('+i+','+j+')" style="width:auto;min-width:24px;margin:0;padding:6px 0;background:transparent;border:0;box-shadow:none;font-family:var(--mono);font-weight:700;font-size:.8rem;color:'+TIPO[_t].col+';cursor:pointer">'+TIPO[_t].txt+'</button>'
-        +'<input class="ent-peso" type="number" inputmode="decimal" step="0.5" placeholder="'+escAttr(phPeso)+'" value="'+escAttr(s.peso)+'">'
+        +'<input class="ent-peso" type="number" inputmode="decimal" step="0.5" placeholder="'+escAttr(phPeso)+'" value="'+escAttr(s.peso)+'"'+(_bw?' title="Peso corporal: escribe SOLO el lastre añadido (0 = solo tu cuerpo)"':'')+'>'
         +'<button type="button" title="Calculadora de discos para este peso" onclick="plateAbrir(this)" style="width:auto;margin:0;padding:6px 0;background:transparent;border:0;box-shadow:none;font-size:.85rem;cursor:pointer">🏋️</button>'
         +'<input class="ent-reps" type="number" inputmode="numeric" placeholder="reps" value="'+escAttr(s.reps)+'">'
         +'<input class="ent-rir" type="number" inputmode="numeric" step="1" placeholder="RIR" value="'+escAttr(s.rir)+'" style="max-width:64px" title="RIR — 0 = al límite (ninguna completa más); fallo = la siguiente no sale; negativo = más allá del fallo">'
         +'<span class="rirq">'+[0,1,2,3].map(function(v){ return '<button type="button" class="rirq-b'+(String(s.rir)===String(v)?' on':'')+'" onclick="entRirSet(this,'+v+')">'+v+'</button>'; }).join('')+'</span>'
+        +'<button type="button" class="ent-notabtn'+(_nota?' on':'')+'" title="Nota de esta serie" onclick="entNotaToggle(this)" style="width:auto;margin:0;padding:6px 4px;background:transparent;border:0;box-shadow:none;font-size:.85rem;cursor:pointer;opacity:'+(_nota?'1':'.5')+'">📝</button>'
         +'<button class="sec" type="button" style="width:auto;margin:0;padding:8px 8px" onclick="entDelSerie('+i+','+j+')">✕</button>'
+        +'</div>'
+        +'<input class="ent-nota-serie" placeholder="📝 Nota de la serie (straps, ROM, dolor, técnica…)" value="'+escAttr(_nota)+'"'+(_nota?'':' style="display:none"')+'>'
         +'</div>';
     }).join('');
     var nota=escAttr(notaEjercicio(ej.nombre));
@@ -11536,6 +12335,8 @@ function renderEntForm(){
     // B v0.12 · objetivo de la rutina cargada (reps/RIR/descanso del catálogo); el porqué, en el title.
     var _meta=_entMeta[ej.nombre];
     var metaHtml=_meta?'<div class="hint" style="margin:4px 0 0;color:var(--jade)" title="'+escAttr(_meta.nota)+'">🎯 objetivo: '+esc(_meta.txt)+'</div>':'';
+    // A8 · aviso de semántica del peso para ejercicios de peso corporal (el (i) reutiliza 'peso-anadido').
+    var bwLbl=_bw?'<div class="hint ent-bw-lbl" style="margin:6px 0 0">＋ kg = <b style="color:var(--soft)">lastre añadido</b> · 0 = solo tu peso corporal '+infoTip('peso-anadido')+'</div>':'';
     // Miniatura del ejercicio (si está en la biblioteca con foto): entreno visual para principiantes.
     // Toca la foto -> ficha visual (cómo se hace + músculos). Sale también en las rutinas sugeridas.
     var _src=imgDe(ej.nombre);
@@ -11546,7 +12347,7 @@ function renderEntForm(){
     var ssBtn=(i<_ent.ejercicios.length-1)
       ? '<button class="sec" type="button" style="flex:1;width:auto'+(ej.ss?';border-color:'+_ssCol+';color:'+_ssCol:'')+'" onclick="entSSToggle('+i+')" title="Superserie: unir con el ejercicio de abajo (el ⏱ no arranca entre miembros)">🔗 '+(ej.ss?'unido ✓':'unir con ↓')+'</button>'
       : '';
-    return '<div class="ent-ej" data-ss="'+(ej.ss?'1':'0')+'" style="border:1px solid var(--line-soft);border-radius:12px;padding:12px;margin-top:10px'+(_ssCol?';border-left:3px solid '+_ssCol:'')+'">'
+    return '<div class="ent-ej" data-ss="'+(ej.ss?'1':'0')+'" data-bw="'+(_bw?'1':'0')+'" style="border:1px solid var(--line-soft);border-radius:12px;padding:14px;margin-top:12px'+(_ssCol?';border-left:3px solid '+_ssCol:'')+'">'
       +ssLabel
       +'<div class="row" style="gap:6px;align-items:center">'
       +thumb
@@ -11554,11 +12355,13 @@ function renderEntForm(){
       +'<button class="sec" type="button" title="Biblioteca" style="width:auto;margin:0;padding:8px 11px" onclick="abrirBiblio(this)">📚</button>'
       +'<button class="sec" type="button" title="¿Qué es el RIR? Toca para saberlo" style="width:auto;margin:0;padding:8px 11px;font-size:.7rem;font-family:var(--mono);letter-spacing:.03em" onclick="rirAbrir()">RIR ⓘ</button>'
       +'<button class="sec" type="button" style="width:auto;margin:0;padding:8px 11px" onclick="entDelEjercicio('+i+')">🗑</button>'
-      +'</div>'+ultHtml+metaHtml+estHtml+sets
-      +'<div class="hint" style="margin:6px 0 0;font-size:.68rem">RIR: <b style="color:var(--soft)">0 = al límite</b> (ninguna completa más) · <b style="color:var(--soft)">fallo</b> = intentas otra y no sale · negativo (−1, −2) = más allá del fallo (parciales/ayuda)</div>'
-      +'<input class="ent-nota" placeholder="📝 Nota: RIR, técnica, sensaciones… (se guarda y vuelve la próxima sesión)" value="'+nota+'" oninput="guardarNotaEjercicio(this,'+i+')" style="margin-top:8px">'
+      +'</div>'
+      // A6 · nota del ejercicio ARRIBA (bajo el nombre), con más aire; persiste entre sesiones.
+      +'<input class="ent-nota" placeholder="📝 Nota del ejercicio: técnica, sensaciones… (se guarda y vuelve la próxima sesión)" value="'+nota+'" oninput="guardarNotaEjercicio(this,'+i+')" style="margin-top:8px">'
+      +ultHtml+metaHtml+estHtml+bwLbl+sets
+      +'<div class="hint" style="margin:8px 0 0;font-size:.68rem">'+infoTip('rir')+' RIR: <b style="color:var(--soft)">0 = al límite</b> (ninguna completa más) · <b style="color:var(--soft)">fallo</b> = intentas otra y no sale · negativo (−1, −2) = más allá del fallo (parciales/ayuda)</div>'
       // D v0.12 · descanso PROPIO del ejercicio en segundos (opcional): el ⏱ lo usa; vacío = global
-      +'<div class="row" style="margin-top:8px;gap:6px"><button class="sec" type="button" style="flex:2" onclick="entAddSerie('+i+')">+ Serie</button>'
+      +'<div class="row" style="margin-top:10px;gap:6px"><button class="sec" type="button" style="flex:2" onclick="entAddSerie('+i+')">+ Serie</button>'
       +'<input class="ent-desc" type="number" inputmode="numeric" min="10" max="900" placeholder="seg" value="'+escAttr(ej.desc==null?'':ej.desc)+'" title="Descanso de ESTE ejercicio en segundos (lo usa el ⏱; vacío = el global)" style="flex:0 0 64px;width:64px;margin:0">'
       +'<button class="sec" type="button" style="flex:1" onclick="restStartEj('+i+')" title="Temporizador de descanso (usa los segundos de este ejercicio si los pones)">⏱ Descanso</button>'
       +ssBtn
@@ -11650,6 +12453,16 @@ function entNombreCambia(input, i){
 // ----- Explicador RIR -----
 function rirAbrir(){ show("rirModal", true); }
 function rirCerrar(){ show("rirModal", false); }
+// A12 · muestra/oculta la nota de UNA serie (estilo Hevy: iconito 📝 que despliega el campo).
+// Toggle por estilo inline (no re-renderiza): así no se pierde lo tecleado en otras series.
+function entNotaToggle(btn){
+  var fila=btn.closest && btn.closest(".ent-serie"); if(!fila) return;
+  var inp=fila.querySelector(".ent-nota-serie"); if(!inp) return;
+  var oculto=(inp.style.display==="none");
+  inp.style.display = oculto ? "block" : "none";
+  if(oculto){ btn.classList.add("on"); btn.style.opacity="1"; try{ inp.focus(); }catch(e){} }
+  else { btn.classList.remove("on"); btn.style.opacity=(inp.value&&inp.value.trim())?"1":".5"; }
+}
 // [PLATE-PURE-INICIO] — D v0.12 · calculadora de discos, función PURA (los tests de node la
 // extraen tal cual). Greedy de mayor a menor con el juego estándar por LADO; si el objetivo no se
 // puede clavar con discos estándar, devuelve lo máximo alcanzable SIN pasarse y el resto honesto.
@@ -11744,12 +12557,15 @@ function guardarEntreno(){
   var fecha=$("ent_fecha").value;
   var ejs=_ent.ejercicios.map(function(ej){
     var o={ nombre:(ej.nombre||'').trim(),
-      series: ej.series.filter(function(s){ return (+s.reps>0) && (s.peso===''||+s.peso>=0); }).map(function(s){ return {peso:(s.peso===''?'0':s.peso), reps:s.reps, rir:s.rir, t:s.t}; })
-                       .map(function(s){ var o2={reps:+s.reps, peso:+s.peso}; if(s.rir!=='' && s.rir!=null && !isNaN(+s.rir)){ o2.rir=+s.rir; } if(s.t==='w'||s.t==='f'||s.t==='d'){ o2.t=s.t; } return o2; }) };
+      series: ej.series.filter(function(s){ return (+s.reps>0) && (s.peso===''||+s.peso>=0); }).map(function(s){ return {peso:(s.peso===''?'0':s.peso), reps:s.reps, rir:s.rir, t:s.t, nota:s.nota}; })
+                       .map(function(s){ var o2={reps:+s.reps, peso:+s.peso}; if(s.rir!=='' && s.rir!=null && !isNaN(+s.rir)){ o2.rir=+s.rir; } if(s.t==='w'||s.t==='f'||s.t==='d'){ o2.t=s.t; } if(s.nota && String(s.nota).trim()){ o2.nota=String(s.nota).trim(); } return o2; }) };
     // D v0.12 · SOLO se AÑADEN campos (la validación de arriba no se toca): t=tipo de serie,
     // desc=descanso propio en segundos, ss=unido en superserie con el siguiente.
+    // A8 · bw=peso corporal (peso=lastre). Derivado del catálogo por NOMBRE (fuente de verdad,
+    // inequívoco); ausente en datos viejos → se comportan como carga normal (retrocompatible).
     var _ds=parseInt(ej.desc,10); if(_ds>=10 && _ds<=900) o.desc=_ds;
     if(ej.ss) o.ss=true;
+    if(esPesoCorporal(o.nombre)) o.bw=true;
     return o;
   }).filter(function(ej){ return ej.nombre && ej.series.length; });
   if(!fecha || !ejs.length){ toast("Añade ejercicio con reps y peso"); return; }
@@ -12300,7 +13116,7 @@ function repetirEntreno(id){
   _ent={ejercicios:(w.ejercicios||[]).map(function(ej){
     // D v0.12 · tipo de serie, descanso propio y superserie también se repiten
     return { nombre:ej.nombre||'', desc:(ej.desc!=null?String(ej.desc):''), ss:!!ej.ss, series:(ej.series||[]).map(function(s){
-      return {peso:(s.peso!=null?String(s.peso):''), reps:(s.reps!=null?String(s.reps):''), rir:(s.rir!=null?String(s.rir):''), t:(s.t==='w'||s.t==='f'||s.t==='d')?s.t:''};
+      return {peso:(s.peso!=null?String(s.peso):''), reps:(s.reps!=null?String(s.reps):''), rir:(s.rir!=null?String(s.rir):''), t:(s.t==='w'||s.t==='f'||s.t==='d')?s.t:'', nota:(s.nota!=null?String(s.nota):'')};
     }) };
   })};
   if(!_ent.ejercicios.length) _ent.ejercicios=[{nombre:'',series:[{peso:'',reps:'',rir:''}]}];
@@ -12757,15 +13573,18 @@ function renderEntHistorial(){
       var record="";
       if(ej._recordPeso){ record="<div class='hint' style='margin:0 0 6px;color:var(--jade)'>🏆 ¡Nuevo récord! Peso máximo: "+top.peso+" kg</div>"; }
       else if(ej._recordVol){ record="<div class='hint' style='margin:0 0 6px;color:var(--jade)'>🏆 ¡Nuevo récord! Volumen: "+Math.round(ej._vol)+"</div>"; }
-      // D v0.12 · las series marcadas enseñan su tipo (W/F/D) delante
-      var sets=ej.series.map(function(s){ var fr=fmtRir(s.rir); return (s.t?s.t.toUpperCase()+"·":"")+s.peso+"kg×"+s.reps+(fr?" @"+fr:""); }).join("  ·  ");
+      // D v0.12 · las series marcadas enseñan su tipo (W/F/D) delante.
+      // A8/A12 · peso corporal → "+Xkg" (lastre) o "PC" (0 lastre); 📝 marca las series con nota.
+      var _bwEj=!!ej.bw;
+      function _pk(p){ return _bwEj ? (+p>0?"+"+p+"kg":"PC") : (p+"kg"); }
+      var sets=ej.series.map(function(s){ var fr=fmtRir(s.rir); return (s.t?s.t.toUpperCase()+"·":"")+_pk(s.peso)+"×"+s.reps+(fr?" @"+fr:"")+(s.nota&&String(s.nota).trim()?" 📝":""); }).join("  ·  ");
       var b1=entMejor1RM(ej);
       var rm = b1.peso>0 ? "  ·  1RM≈"+Math.round(b1.e)+"kg" : "";
       // D5 · barra de volumen vs mejor previo (visual, llena al 100% en récord)
       var pbar = "<div class='pbar'><i style='width:"+Math.round(Math.min(1,ej._volPct)*100)+"%'></i></div>";
       return "<div class='kv'><span>"+esc(ej.nombre)+"</span><span>"+arrow+"</span></div>"
         +record+pbar
-        +"<div class='hint' style='margin:2px 0 8px'>"+sets+"  ·  vol "+Math.round(ej._vol)+"  ·  top "+top.peso+"kg×"+top.reps+rm+"</div>";
+        +"<div class='hint' style='margin:2px 0 8px'>"+sets+"  ·  vol "+Math.round(ej._vol)+"  ·  top "+_pk(top.peso)+"×"+top.reps+rm+"</div>";
     }).join("");
     // F1 v0.10 · si la sesión tiene hora/duración del crono, se enseña junto a la fecha
     var durTxt=(w.durMin>0)?" <span class='hint' style='display:inline;font-weight:400'>🕐 "+(w.hIni?esc(w.hIni)+" · ":"")+w.durMin+" min</span>":"";
@@ -14020,6 +14839,8 @@ function planiCalc(){
 }
 
 try{ $("r_fecha").value=hoyLocal(); }catch(e){}
+// ⚖️ A10 · (i) del pesaje (reutiliza infoTip) + valor por defecto del ajuste "ropa interior"
+try{ var _pi=$("pesaje_info"); if(_pi) _pi.innerHTML=infoTip('pesaje'); var _rk=$("r_peso_ropa_kg"); if(_rk) _rk.value=pesoRopaAjuste(); }catch(e){}
 // Al abrir: PERSISTE el perfil (como una app real). Si ya hiciste el onboarding (perfil
 // guardado en ESTE dispositivo) -> directo a la app, sin volver a pedir kilos/altura.
 // Si es la primera vez (sin perfil) -> onboarding. Compartir el archivo NO filtra tus datos:
