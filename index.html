@@ -12340,6 +12340,9 @@ function guardarPerfil(){ _wizEdit=false;
     }
   };
   if(prev && prev.ov) p.ov=prev.ov;
+  // fix 12-07 (bug de Pablo): si cambia el OBJETIVO pero sobrevive un ajuste con carbos fijados,
+  // las kcal mostradas NO se moverán (rama "suma de macros") — avisar en vez de callar.
+  var _avisaOvObj = !!(prev && prev.ov && prev.ov.carb_gkg!=null && prev.objetivo!==p.objetivo);
   const e=validar(p);
   if(e.length){ $("f_err").textContent="Revisa: "+e.join("; "); show("f_err",true); return; }
   // Aviso adolescente (14-17) + déficit: fórmulas de adulto; en pleno desarrollo conviene NO restringir calorías.
@@ -12348,6 +12351,7 @@ function guardarPerfil(){ _wizEdit=false;
     if(!ok) return;
   }
   show("f_err",false); set(LS_P,p); _tab="plan"; render(); window.scrollTo(0,0);
+  if(_avisaOvObj) toastCard("🔒","Objetivo cambiado, kcal fijas","Tus carbohidratos fijados mantienen las calorías — el objetivo nuevo no las mueve. Libéralos en Ajustar → «Volver a lo recomendado».");
 }
 function editarPerfil(){ const p=get(LS_P); if(p){
   $("f_nombre").value=p.nombre; $("f_sexo").value=p.sexo; $("f_edad").value=p.edad;
@@ -12377,11 +12381,41 @@ function editarPerfil(){ const p=get(LS_P); if(p){
   if($("w_nivelapp")) $("w_nivelapp").value=(NIVELES_APP.indexOf(p.nivel)>=0?p.nivel:"novato");   // 🎚️ SPEC 3 · perfiles viejos → novato
 } _wizEdit=true; _wizSeen=WIZ_MAX; _tab="plan"; show("tabs",false); show("bienvenida",false); show("onboarding",true); show("plan",false); show("ajustes",false); show("registro",false); show("calib",false); wizShow(0); window.scrollTo(0,0); }
 
+// [OVDEPURA-PURE-INICIO] — fix del "ajuste que congela las calorías" (bug cazado por Pablo 12-07).
+// Los inputs de Ajustar vienen PRE-RELLENADOS con los valores actuales → antes, un solo clic en
+// «Aplicar» fijaba los TRES macros (aunque solo quisieras tocar el ±kcal) y el plan entraba para
+// siempre en la rama "carbos fijados" (cal = suma de macros), que IGNORA el objetivo: cambiar
+// recomp→ganar_musculo no movía las kcal. ovDepura compara cada valor con el RECOMENDADO y solo
+// guarda como override lo que DIFIERE de verdad (tolerancia 0.05 = el redondeo a 1 decimal del
+// prefill). PURO (sin DOM ni storage): _tests/test-ovdepura.node.js lo extrae y evalúa.
+function ovDepura(raw, rec){
+  raw=raw||{}; rec=rec||{};
+  function num(v){ return (v==null||v===""||!isFinite(+v))?null:+v; }
+  function dif(a,b){ return a!=null && (b==null || Math.abs(a-b)>0.05); }
+  var prot=num(raw.prot), grasa=num(raw.grasa), carb=num(raw.carb), off=num(raw.off)||0;
+  var ov={
+    prot_gkg:(prot!=null&&prot>0&&dif(prot,num(rec.pgkg)))?prot:null,
+    grasa_gkg:(grasa!=null&&grasa>0&&dif(grasa,num(rec.ggkg)))?grasa:null,
+    carb_gkg:(carb!=null&&carb>0&&dif(carb,num(rec.carb_gkg)))?carb:null,
+    cal_off:off
+  };
+  ov.vacio = ov.prot_gkg==null && ov.grasa_gkg==null && ov.carb_gkg==null && ov.cal_off===0;
+  return ov;
+}
+// [OVDEPURA-PURE-FIN]
 function aplicarAjustes(){
   const p=get(LS_P); if(!p) return;
-  const prot=+$("aj_prot").value, grasa=+$("aj_grasa").value, carb=+$("aj_carb").value, off=+$("aj_cal").value||0;
-  p.ov={prot_gkg: prot>0?prot:null, grasa_gkg: grasa>0?grasa:null, carb_gkg: carb>0?carb:null, cal_off: off};
-  set(LS_P,p); _tab="plan"; render(); toast("✓ Ajustes aplicados");
+  // recomendado ACTUAL (mismo cálculo que render, incluida la lesión activa)
+  var _lesion=false; try{ _lesion=lesionesGet().length>0; }catch(e){}
+  const rec=plan(_lesion?Object.assign({},p,{lesionActiva:true}):p);
+  const carbRec=Math.round((rec.m.carb/p.peso_kg)*10)/10;
+  const ov=ovDepura(
+    {prot:$("aj_prot").value, grasa:$("aj_grasa").value, carb:$("aj_carb").value, off:$("aj_cal").value},
+    {pgkg:rec.m.pgkg, ggkg:rec.m.ggkg, carb_gkg:carbRec});
+  if(ov.vacio){ delete p.ov; set(LS_P,p); _tab="plan"; render(); toast("✓ Sin cambios respecto a lo recomendado"); return; }
+  delete ov.vacio; p.ov=ov;
+  set(LS_P,p); _tab="plan"; render();
+  toast(ov.carb_gkg!=null ? "✓ Ajustes aplicados — con carbos fijados, las kcal = tus macros" : "✓ Ajustes aplicados");
 }
 function resetAjustes(){ const p=get(LS_P); if(!p) return; delete p.ov; set(LS_P,p); _tab="plan"; render(); toast("↩ Vuelto a lo recomendado"); }
 // #5 · aplicar la decisión de la Capa 2 al plan con un toque (ajusta el offset de kcal del motor).
@@ -14996,6 +15030,7 @@ function render(){
   var _ndPlan=nivelDetalle(p);   // 🎚️ SPEC 3 · solo cambia el TEXTO del hint, jamás los números
   $("o_ovnote").innerHTML = ajustado
     ? "✏️ <b style='color:var(--soft)'>Plan ajustado por ti.</b> Recomendado: "+rec.cal+" kcal · P"+rec.m.prot+" G"+rec.m.gr+" C"+rec.m.carb+". La app vigilará si progresas con tu ajuste."
+      +(ov.carb_gkg!=null?"<div style='margin-top:6px;color:#f4c04e'>🔒 Con los <b>carbohidratos fijados</b>, tus calorías = la suma de tus macros — <b>cambiar el objetivo NO las moverá</b>. «Volver a lo recomendado» las libera.</div>":"")
     : (_ndPlan.explicar
         ? "Science-based · "+rec.m.nota+". Ajústalo en la pestaña «Ajustar»."
         : "Science-based · "+rec.m.nota+".");
