@@ -131,6 +131,14 @@
   .toast.tcard .tc-ico{font-size:1.9rem;line-height:1.1;flex:none;filter:drop-shadow(0 3px 8px rgba(0,0,0,.4))}
   .toast.tcard .tc-tit{display:block;font-family:var(--display);font-weight:700;font-size:.98rem;color:var(--bone)}
   .toast.tcard .tc-body{display:block;font-family:var(--body);font-weight:400;font-size:.85rem;color:var(--soft);line-height:1.45;margin-top:2px}
+  /* 🎯 v0.26.1 · botón «Voy» dentro del aviso: lleva DIRECTO a la vista donde se hace la acción.
+     Tap ≥44px (móvil), jade sobre tinta como los CTA de la capa dopamina; el resto de la tarjeta
+     conserva su cierre al tocar. */
+  .toast.tcard .tc-voy{display:block;width:100%;min-height:44px;margin-top:10px;padding:10px 16px;
+    border:none;border-radius:12px;background:var(--jade);color:var(--ink);cursor:pointer;
+    font-family:var(--display);font-weight:700;font-size:.95rem;
+    box-shadow:0 4px 14px rgba(61,220,151,.28);transition:transform .12s ease}
+  .toast.tcard .tc-voy:active{transform:scale(.97)}
   /* 📅 v0.19-UI · fecha del diario en grande, lo PRIMERO de la pestaña Comida. El input date real
      va invisible ENCIMA del texto bonito: tocar cualquier parte abre el date-picker nativo. */
   .fecha-hero{position:relative;margin-top:10px;border:1px solid var(--line);border-radius:14px;
@@ -501,6 +509,10 @@
   .pf-fade{position:relative;border-radius:12px;overflow:hidden;border:1px solid var(--line-soft);margin-top:10px}
   .pf-fade img{width:100%;display:block;aspect-ratio:3/4;object-fit:cover}
   .pf-fade img.top{position:absolute;inset:0;width:100%;height:100%}
+  /* ======= NIVEL v0.14 · explorador por nivel (reutiliza .rutcard; sin keyframes nuevos) ======= */
+  .expniv-chip{display:inline-block;background:var(--ink-3);border:1px solid var(--line-soft);color:var(--soft);border-radius:999px;padding:3px 10px;font-size:.78rem;margin:2px 6px 2px 0}
+  .expniv-sub{color:var(--mute);font-size:.85rem;margin:2px 0 10px}
+  .expniv-porque{color:var(--mute);font-size:.85rem;margin:6px 0 8px}
 </style>
 </head>
 <body>
@@ -538,7 +550,7 @@
 <header class="brandbar">
   <div class="logo"><span class="dot"></span>JV <b>Fitness</b></div>
   <div style="display:flex;align-items:center">
-    <span class="tag">MVP v0.24.0 · motor v0.7</span>
+    <span class="tag">MVP v0.26.1 · motor v0.7</span>
     <!-- ⚙️ tanda #22 · hub de AJUSTES (no es pestaña): modal a pantalla completa -->
     <button class="gearbtn" id="btn_hub" type="button" title="Ajustes" aria-label="Abrir ajustes" onclick="hubAbrir()">⚙️</button>
   </div>
@@ -865,6 +877,7 @@
       <div style="flex:1"><label style="font-size:.72rem">Pasos exactos (los de tu reloj/móvil)</label><input id="pasos_manual" type="number" inputmode="numeric" min="0" step="100" placeholder="ej. 9500" onkeydown="if(event.key==='Enter'){event.preventDefault();pasosAddManual();}"></div>
       <button class="sec" type="button" style="flex:0 0 auto;width:auto;margin:0" onclick="pasosAddManual()">✓ Apuntar</button>
     </div>
+    <button class="sec" type="button" style="width:100%;margin-top:6px" onclick="pasosImpAbrir()">📥 Importar pasos (CSV / varios días)</button><!-- 👟 v0.26 · enganche al importador [PASOS-CSV-PURE] -->
     <div id="pasos_stats" style="margin-top:8px"></div>
     <div id="pasos_aviso"></div>
     <div id="pasos_sync_estado"></div><!-- 👟 spec 4 · "🔄 auto: N pasos — actualizado a las HH:MM" (lo pinta pasosSyncEstadoRender) -->
@@ -974,6 +987,26 @@
       <div><label>C (g)</label><input id="qa_c" type="number" inputmode="decimal" placeholder="—"></div>
       <div><label>G (g)</label><input id="qa_g" type="number" inputmode="decimal" placeholder="—"></div>
     </div>
+    <!-- 🔬 v0.26 · micros sueltos: corrige el día cuando un alimento no traía el dato. Amplía el #109
+         (que dejó badges/ficha informativos) con REGISTRO: az/fib/sat/na entran al total del día (el
+         acumulador ya los suma) y las vitaminas/minerales viajan en mic{} (mismas claves que la ficha). -->
+    <details id="qa_micros" style="margin-top:8px;border:1px solid var(--line-soft);border-radius:11px;padding:8px 10px">
+      <summary style="cursor:pointer;color:var(--jade);font-weight:600">🔬 Micros sueltos (opcional) — corregir el día</summary>
+      <p class="hint" style="margin:6px 0 0">Para cuando un alimento no traía el dato (azúcar, sal…). Con kcal vacías se apunta a 0 kcal: solo corriges el desglose del día.</p>
+      <div class="row" style="gap:6px;margin-top:8px">
+        <div><label>Azúcar (g)</label><input id="qa_az" type="number" inputmode="decimal" placeholder="—"></div>
+        <div><label>Fibra (g)</label><input id="qa_fib" type="number" inputmode="decimal" placeholder="—"></div>
+        <div><label>Sat. (g)</label><input id="qa_sat" type="number" inputmode="decimal" placeholder="—"></div>
+        <div><label>Sodio (mg)</label><input id="qa_na" type="number" inputmode="decimal" placeholder="—"></div>
+      </div>
+      <div class="row" style="gap:6px;margin-top:8px;align-items:flex-end">
+        <div style="flex:2"><label>Vitamina / mineral</label><select id="qa_mic_k" style="width:100%;margin:0"></select></div>
+        <div style="flex:1"><label>Cantidad</label><input id="qa_mic_v" type="number" inputmode="decimal" placeholder="—" style="margin:0"></div>
+        <button class="sec" type="button" style="flex:0 0 auto;width:auto;margin:0" onclick="qaMicAdd()">＋</button>
+      </div>
+      <div id="qa_mic_lista" style="margin-top:6px"></div>
+      <p class="hint" style="margin-top:6px">Copia la cantidad de TU etiqueta (ej. el multivitamínico). Honesto: aquí no se inventa nada — solo entra lo que escribas.</p>
+    </details>
     <div class="row" style="gap:6px;margin-top:8px">
       <button class="sec" type="button" style="flex:1;width:auto;margin:0" onclick="qaCerrar()">Cancelar</button>
       <button type="button" style="flex:2;width:auto;margin:0" onclick="qaAdd()">⚡ Añadir</button>
@@ -1071,6 +1104,8 @@
     <!-- v0.12.2 · catálogo recomendado (antes CTA encima del form; lo rellena entCtaRutina()) -->
     <div id="ent_lesiones_aviso"></div>
     <div id="ent_recomendadas"></div>
+    <!-- NIVEL v0.14 · explorador del catálogo por nivel (TODO-i18n); el contador lo rellena expNivBtnSync() desde RUTINAS -->
+    <button class="sec" type="button" id="expniv_btn" style="margin-top:8px" onclick="expNivIr()">🗂️ Ver todas las rutinas por nivel</button>
     <!-- 🏀 v0.13.7 · Estimador de sesión de deporte (MET · Compendium Ainsworth). COMPLEMENTARIO y
          standalone: NO toca el motor ni el factor por DÍAS (deporte_extra). Solo estima + registra + muestra. -->
     <div class="eyebrow-lbl" style="margin-top:18px">🏀 Sesión de deporte</div>
@@ -1142,6 +1177,8 @@
     <button class="sec" type="button" onclick="rutEdCancelar()">Cancelar</button>
     <p class="hint">Se guarda solo la plantilla: ejercicios y nº de series, <b style="color:var(--soft)">sin pesos</b>. Los pesos van en cada entreno.</p>
   </div>
+  <!-- ===== VISTA EXPLORAR POR NIVEL (NIVEL v0.14 · 4º estado de entVista; lo pinta expNivRender) ===== -->
+  <div id="ent_v_explorar" class="hidden"></div>
 </div>
 <!-- Autocompletado del input de ejercicio: se rellena dinámicamente desde EJERCICIOS en bibInit() -->
 <datalist id="ent-ejercicios"></datalist>
@@ -1232,6 +1269,12 @@ Tus datos se guardan solo en este dispositivo.</p>
       </div>
       <!-- 📊 A20 · aviso de macros que faltan al cierre del día (aprende tu hora del último registro) -->
       <label style="display:flex;align-items:center;gap:8px;cursor:pointer;margin-top:12px"><input type="checkbox" id="aj_notif_macros" checked onchange="notifSet('macroResto', this.checked)"> 📊 Avisarme al final del día de los macros que me faltan <button type="button" class="infobtn" onclick="event.preventDefault();explicaAbrir('macros-restantes')" aria-label="Qué es esto" title="Qué es esto">i</button></label>
+      <!-- 👟 v0.26 · recordatorio nocturno de pasos (idea de Pablo): si HOY no hay pasos apuntados, al abrir la app desde la hora elegida -->
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer;margin-top:12px"><input type="checkbox" id="aj_notif_pasos" checked onchange="notifSet('pasosNoche', this.checked)"> 👟 Recordarme apuntar los pasos por la noche</label>
+      <div class="row" style="gap:10px;margin-top:6px">
+        <div><label>⏰ ¿A partir de qué hora?</label><input id="aj_pasos_noche_hora" type="time" value="22:30" onchange="pasosNocheHoraSet(this.value)"></div>
+      </div>
+      <p class="hint" style="margin-top:4px">Aviso <b style="color:var(--soft)">al abrir la app</b> a partir de esa hora si el día sigue sin pasos; si ya los apuntaste, no salta. Tocar el aviso abre el importador.</p>
     </div>
 
     <!-- 🗄️ ALIMENTOS — panel de la base España MOVIDO desde Ajustar (tanda #22) + hueco base mundial (tarea #18) -->
@@ -1606,10 +1649,40 @@ Tus datos se guardan solo en este dispositivo.</p>
       <div><label>C (g)</label><input id="ap_c" type="number" inputmode="decimal" placeholder="—"></div>
       <div><label>G (g)</label><input id="ap_g" type="number" inputmode="decimal" placeholder="—"></div>
     </div>
+    <!-- 🍬 v0.26 · desglose OPCIONAL al crear: sin él, el total de azúcar del día no podía sumar este
+         alimento (bug real de Pablo, «Eneryeti de coco»). Vacío = sin dato (honesto, no se inventa un 0). -->
+    <div class="row" style="gap:6px;margin-top:6px">
+      <div><label>Fibra (g)</label><input id="ap_fib" type="number" inputmode="decimal" placeholder="—"></div>
+      <div><label>Azúcar (g)</label><input id="ap_az" type="number" inputmode="decimal" placeholder="—"></div>
+      <div><label>Sat. (g)</label><input id="ap_sat" type="number" inputmode="decimal" placeholder="—"></div>
+      <div><label>Sodio (mg)</label><input id="ap_na" type="number" inputmode="decimal" placeholder="—"></div>
+    </div>
     <div class="row" style="margin-top:12px">
       <button class="sec" type="button" onclick="apCerrar()" style="flex:1;width:auto">Cancelar</button>
       <button type="button" onclick="apGuardar()" style="flex:2;width:auto">Guardar alimento</button>
     </div>
+  </div>
+</div>
+
+<!-- MODAL: 📥 IMPORTAR PASOS (v0.26) · pegar texto/CSV o elegir fichero → parsea ([PASOS-CSV-PURE],
+     parser verificado por Codex 18/18) → DEDUPLICA por fecha (lo tuyo manda) → resumen → confirmar
+     guarda. Honesto: semi-automático (tú traes el CSV); guía en _pasos-auto/GUIA-IMPORTAR-PASOS.md. -->
+<div id="pasosImpModal" class="modal hidden">
+  <div class="modal-card">
+    <button class="modal-x" type="button" title="Cerrar" aria-label="Cerrar" onclick="pasosImpCerrar()">✕</button>
+    <h2>📥 Importar pasos</h2>
+    <div class="row" style="gap:6px;align-items:flex-end">
+      <div style="flex:1"><label>👟 Pasos de HOY (atajo)</label><input id="pimp_hoy" type="number" inputmode="numeric" min="0" step="100" placeholder="ej. 9500" onkeydown="if(event.key==='Enter'){event.preventDefault();pasosImpHoy();}"></div>
+      <button type="button" style="flex:0 0 auto;width:auto;margin:0" onclick="pasosImpHoy()">✓ Guardar</button>
+    </div>
+    <p class="hint" style="margin-top:10px">O trae varios días de golpe: Samsung Health (y casi cualquier app) exporta un CSV con fecha y pasos. Pégalo aquí o elige el fichero — se detecta solo el formato.</p>
+    <label>Pega el CSV / texto</label>
+    <textarea id="pimp_texto" rows="5" placeholder="Date,Steps&#10;2026-07-10,8432&#10;2026-07-11,10250" style="width:100%"></textarea>
+    <label style="margin-top:8px">…o elige el fichero</label>
+    <input id="pimp_file" type="file" accept=".csv,.txt,text/csv,text/plain" onchange="pasosImpFichero(this)">
+    <button type="button" style="width:100%;margin-top:10px" onclick="pasosImpAnalizar()">🔍 Analizar</button>
+    <div id="pimp_resumen" style="margin-top:8px"></div>
+    <p class="hint" style="margin-top:8px">Honesto: esto es semi-automático (el CSV lo traes tú). El 100% automático ya existe como beta con Tasker (app de pago) en ⚙️ Ajustes → 🔌 Conectores; la lectura directa de Samsung Health llegará con la app nativa. Guía en cristiano: <b style="color:var(--soft)">_pasos-auto/GUIA-IMPORTAR-PASOS.md</b>.</p>
   </div>
 </div>
 
@@ -3175,7 +3248,7 @@ var FOODS=[
   {n:"Ketchup envase 430 g (Hellmann's)",kcal:100,p:1,c:23,f:0.5,fib:0,az:23,sat:0.1,na:880,ean:"8712566166480"},
   {n:"Ketchup zero (Heinz)",kcal:44,p:1.6,c:5.4,f:0.1,fib:0,az:4.4,sat:0,na:20,ean:"8715700120799"},
   {n:"Kettle Cooked Potato Chips (Cape Cod)",kcal:464,p:7.1,c:64.3,f:21.4,fib:7.1,az:0,sat:0,na:446,tr:0,k:1536,ca:36,fe:1.4,ean:"0020685000294",mic:{ca:35.7,fe:14.3,k:1535.7}},
-  {n:"Krinkle Cut Himalayan Salt Potato Chips (Kirkland Signature)",kcal:536,p:7.1,c:53.6,f:32.1,fib:7.1,az:0,sat:3.6,na:393,tr:0,k:1268,fe:3.6,ean:"0096619615162",mic:{fe:35.7,k:1267.9}},
+  {n:"Krinkle Cut Himalayan Salt Potato Chips (Kirkland Signature)",kcal:536,p:7.1,c:53.6,f:32.1,fib:7.1,az:0,sat:3.6,na:393,tr:0,k:1268,fe:3.6,ean:"0096619615162"},
   {n:"Krit Crackers Cuetara (Cuétara)",kcal:466,p:7.6,c:65,f:19,fib:2.4,az:5.9,sat:5.1,na:800,ean:"8434165503618"},
   {n:"Krit original (Cuétara)",kcal:499,p:6,c:61,f:25,fib:0,az:10,sat:5.3,na:920,ean:"8434165466111"},
   {n:"Krunchy joy cocoa (barnhouse)",kcal:460,p:9.5,c:63,f:17,fib:8.3,az:12,sat:5.2,na:96,ean:"4021234103400"},
@@ -3310,7 +3383,7 @@ var FOODS=[
   {n:"Nuggets con salsa barbacoa (La Cocinera)",kcal:241,p:8.8,c:26,f:11,fib:1.4,az:4.4,sat:1.3,na:480,ean:"8434702001676"},
   {n:"Nuggets de pollo (eroski)",kcal:201,p:14,c:19,f:7.7,fib:0,az:0,sat:1.3,na:480,ean:"8480010035957"},
   {n:"Nuggets de pollo (Monissa)",kcal:200,p:11.5,c:16.5,f:13,fib:1.6,az:1.5,sat:2.1,na:408,ean:"20951313"},
-  {n:"Nut Thins Hint of Sea Salt (Blue Diamond Almonds)",kcal:433,p:10,c:80,f:8.3,fib:3.3,az:0,sat:0,na:183,tr:0,k:167,ca:67,fe:1.3,porc:"ración:30",ean:"0041570052785",mic:{ca:66.7,fe:13.3,k:166.7}},
+  {n:"Nut Thins Hint of Sea Salt (Blue Diamond Almonds)",kcal:433,p:10,c:80,f:8.3,fib:3.3,az:0,sat:0,na:183,tr:0,k:167,ca:67,fe:1.3,porc:"ración:30",ean:"0041570052785"},
   {n:"Nutella (Ferrero)",kcal:539,p:6.3,c:57.5,f:30.9,fib:0,az:56.3,sat:10.6,na:43,porc:"ración:15",ean:"80809180"},
   {n:"Nutritional shake mix (Herbalife)",kcal:398,p:35,c:33,f:9.7,fib:18,az:23,sat:1.6,na:480,k:1420,ca:460,fe:22,vc:119,vd:7.9,porc:"ración:100",ean:"00004466",mic:{ca:460,fe:220,k:1420,mg:431,vc:119}},
   {n:"Oli d'oliva suau (Bonpreu)",kcal:900,p:0,c:0,f:100,fib:0,az:0,sat:16,na:0,ean:"8422410844722"},
@@ -3386,7 +3459,7 @@ var FOODS=[
   {n:"Pétalos de chocolate (Eroski)",kcal:388,p:9.1,c:75,f:4.4,fib:6.4,az:24,sat:1,na:80,fe:12,vc:68,vd:4.3,ean:"8480010197471"},
   {n:"Pick Mini Crackers (Gullón)",kcal:491,p:7,c:65,f:22,fib:0,az:10,sat:10,na:880,ean:"8410376013658"},
   {n:"Picoteo (Tosfrit)",kcal:515,p:5.2,c:61.4,f:27.2,fib:2,az:4.4,sat:3.2,na:880,ean:"8422114730901"},
-  {n:"Pillows (Dia)",kcal:430,p:8.2,c:68,f:12.8,fib:5.5,az:32.3,sat:4.3,na:256,fe:7,ean:"8480017371843",mic:{fe:70}},
+  {n:"Pillows (Dia)",kcal:430,p:8.2,c:68,f:12.8,fib:5.5,az:32.3,sat:4.3,na:256,fe:7,ean:"8480017371843"},
   {n:"Pimientos del Piquillo Asados (Carrefour)",kcal:30,p:1.5,c:5.4,f:0.5,fib:1.4,az:4.5,sat:0,na:200,ean:"8431876008159"},
   {n:"Pimientos del Piquillo Asados y con ajo (Carrefour)",kcal:30,p:1.5,c:5.4,f:0,fib:1.4,az:4.5,sat:0,na:200,ean:"8431876012347"},
   {n:"Pimientos del Piquillo Enteros (Carrefour)",kcal:43,p:0.9,c:8.3,f:0,fib:1.2,az:7.3,sat:0,na:200,ean:"3560070874637"},
@@ -3434,7 +3507,7 @@ var FOODS=[
   {n:"Quesitos Original (Bel)",kcal:179,p:11,c:5.5,f:12.5,fib:0,az:5.5,sat:8.5,na:760,ca:310,porc:"ración:15.6",ean:"8410259101069"},
   {n:"Queso Crema Finas Hierbas (Hacendado)",kcal:167,p:5.9,c:6.4,f:13,fib:0,az:5,sat:9.2,na:640,porc:"ración:30",ean:"8480000512086"},
   {n:"Queso Crema Sin Lactosa (Hacendado)",kcal:288,p:4.1,c:2.6,f:29,fib:0,az:2.6,sat:21,na:360,porc:"ración:30",ean:"8480000512123"},
-  {n:"Queso fresco 0 % M.G. (Carrefour BIO)",kcal:47,p:8.4,c:3.3,f:0,fib:0,az:3.3,sat:0,na:40,ca:120,ean:"3560071242107",mic:{ca:120}},
+  {n:"Queso fresco 0 % M.G. (Carrefour BIO)",kcal:47,p:8.4,c:3.3,f:0,fib:0,az:3.3,sat:0,na:40,ca:120,ean:"3560071242107"},
   {n:"Queso original para untar (Milbona)",kcal:246,p:5,c:4.5,f:23,fib:0.5,az:0,sat:0,na:393,ean:"4335619025844"},
   {n:"Queso para untar finas hierbas (Milbona)",kcal:232,p:5.4,c:3.1,f:21.8,fib:0.5,az:2.9,sat:15.3,na:393,porc:"ración:100",ean:"20103347"},
   {n:"Quinoa blanca y roja (brillante)",kcal:160,p:6,c:24,f:3.6,fib:3.7,az:1.2,sat:0.5,na:200,porc:"ración:125",ean:"8410184030137"},
@@ -3564,7 +3637,7 @@ var FOODS=[
   {n:"Tortellini carne (Hacendado)",kcal:267,p:11,c:38,f:7,fib:0,az:0.7,sat:2.2,na:580,ean:"8480000061423"},
   {n:"Tortilla Chips Nachos (Liven)",kcal:523,p:7.7,c:61.2,f:26,fib:0,az:2.2,sat:3.1,na:320,ean:"8411778164252"},
   {n:"Tortilla de patata (Chef Select)",kcal:158,p:4.6,c:13,f:9.3,fib:0,az:1.3,sat:1.5,na:360,ean:"4056489043942"},
-  {n:"Tortilla de patata con cebolla (Chef Select)",kcal:158,p:5.5,c:11,f:9.9,fib:0,az:1.5,sat:3.7,na:400,k:261,ca:28,vd:0.5,ean:"20657284",mic:{ca:27.7,k:260.8}},
+  {n:"Tortilla de patata con cebolla (Chef Select)",kcal:158,p:5.5,c:11,f:9.9,fib:0,az:1.5,sat:3.7,na:400,k:261,ca:28,vd:0.5,ean:"20657284"},
   {n:"Tortilla nachos (Carrefour)",kcal:472,p:6.6,c:64,f:20,fib:4,az:0.8,sat:2,na:280,ean:"8431876066913"},
   {n:"Tortilla Patata con chorizo (Hacendado)",kcal:226,p:7.1,c:15,f:15,fib:0,az:2.1,sat:2.8,na:480,ean:"8480000807731"},
   {n:"Tortilla sin huevo (Vemondo)",kcal:146,p:3.3,c:17,f:6.8,fib:2,az:1.3,sat:0.8,na:304,ean:"20079253"},
@@ -3689,7 +3762,7 @@ var FOODS=[
   {n:"Actimel (Danone)",kcal:66,p:3.1,c:9.9,f:1.5,fib:0,az:9.9,sat:1,na:40,ca:120,fe:2.1,vd:1.5,ean:"8410500010485",mic:{ca:120,fe:21}},
   {n:"Actimel fresa plátano (Danone)",kcal:67,p:2.8,c:10.5,f:1.5,fib:0,az:10,sat:1,na:40,ean:"8410500028480"},
   {n:"Actimel natural (Danone)",kcal:73,p:3,c:10.8,f:1.6,fib:0,az:10.8,sat:1.1,na:44,ca:120,fe:2.1,vd:0.8,ean:"84105554",mic:{ca:120,fe:21}},
-  {n:"activia chia y almendras (Activa)",kcal:63,p:5,c:7.3,f:0.8,fib:1.9,az:6.1,sat:0.1,na:60,ca:100,ean:"8410500024574",mic:{ca:100}},
+  {n:"activia chia y almendras (Activa)",kcal:63,p:5,c:7.3,f:0.8,fib:1.9,az:6.1,sat:0.1,na:60,ca:100,ean:"8410500024574"},
   {n:"Activia con bífidus naturales (natural) (Danone)",kcal:66,p:3.3,c:3.9,f:3.8,fib:0,az:3.9,sat:2.3,na:40,ca:120,ean:"8410500001438",mic:{ca:120}},
   {n:"Activia cremoso lima limón (Danone)",kcal:98,p:4.1,c:13.6,f:3,fib:0,az:13.4,sat:2,na:48,ca:145,ean:"8410500017712",mic:{ca:145}},
   {n:"activia por ocho natural edulcorado (Danone)",kcal:39,p:4,c:4.8,f:0.4,fib:0,az:4.8,sat:0.2,na:80,ca:120,ean:"8410500014421"},
@@ -3707,7 +3780,7 @@ var FOODS=[
   {n:"Agua mineral natural (Monte Pinos)",kcal:0,p:0,c:0,f:0,u:"ml",fib:0,az:0,sat:0,ean:"8414932001257"},
   {n:"Agua mineral natural (Naturis)",kcal:0,p:0,c:0,f:0,u:"ml",fib:0,az:0,sat:0,ean:"20264970"},
   {n:"Agua mineral natural de mineralización muy débil garrafa (Bezo",kcal:0,p:0,c:0,f:0,u:"ml",fib:0,az:0,sat:0,ean:"8410128160074"},
-  {n:"Aia salchichas de pavo y pollo sin gluten sin lactosa",kcal:240,p:15,c:0,f:20,fib:0,az:0,sat:6.1,ean:"8008110002213",na:1280},
+  {n:"Aia salchichas de pavo y pollo sin gluten sin lactosa",kcal:240,p:15,c:0,f:20,fib:0,az:0,sat:6.1,ean:"8008110002213"},
   {n:"Alitas de pollo (Hacendado)",kcal:240,p:17,c:2.1,f:18,fib:0,az:0.5,sat:3.9,ean:"2380849003416",na:480},
   {n:"All Bran Fibra Plus (Kellogg's)",kcal:334,p:14,c:48,f:3.5,fib:27,az:18,sat:0.7,ean:"5059319007731",na:360},
   {n:"All-Bran Choco",kcal:392,p:10,c:65,f:8,fib:10,az:19,sat:4.5,ean:"5053827140003"},
@@ -3731,7 +3804,7 @@ var FOODS=[
   {n:"AOVE (Goya)",kcal:824,p:0,c:7,f:91.6,fib:0,az:0,sat:13,ean:"8426967010173"},
   {n:"AOVE (Minerva)",kcal:824,p:0,c:0,f:92,fib:0,az:0,sat:14,ean:"8411342003215"},
   {n:"Aove dop priego de córdoba (De nuestra tierra)",kcal:900,p:0,c:0,f:100,fib:0,az:0,sat:13,ean:"8431876275995"},
-  {n:"Apero Toasts (Carrefour)",kcal:383,p:16,c:62,f:5.9,fib:8.5,az:3,sat:2,porc:"ración:20",ean:"3560071014230",na:600},
+  {n:"Apero Toasts (Carrefour)",kcal:383,p:16,c:62,f:5.9,fib:8.5,az:3,sat:2,porc:"ración:20",ean:"3560071014230"},
   {n:"Appletiser",kcal:46,p:0,c:10.8,f:0,fib:0,az:10.2,sat:0,ean:"90399541"},
   {n:"Arándanos (La Vieja Fábrica)",kcal:220,p:0.7,c:52,f:0,fib:0,az:52,sat:0,ean:"8410134019922"},
   {n:"Arándanos de temporada (Hero)",kcal:229,p:0.5,c:56,f:0,fib:0,az:50,sat:0,ean:"8410175066916"},
@@ -3750,7 +3823,7 @@ var FOODS=[
   {n:"Arroz bomba (Consum)",kcal:340,p:7.5,c:75,f:0.9,fib:0.9,az:0,sat:0.2,ean:"8414807523235"},
   {n:"Arroz cocido Basmati (Carrefour)",kcal:144,p:4,c:29,f:1,fib:1.7,az:0.2,sat:0.1,porc:"ración:150",ean:"3560070699094",na:200},
   {n:"Arroz cocido basmati (Hacendado)",kcal:147,p:3.2,c:27,f:2.7,fib:1.1,az:1.1,sat:0.4,porc:"ración:125",ean:"8480000050090",na:240},
-  {n:"Arroz cocido redondo (La Villa)",kcal:141,p:2.6,c:27.4,f:2.3,fib:0,az:0.1,sat:0.4,porc:"ración:125",ean:"2000000020475",na:344},
+  {n:"Arroz cocido redondo (La Villa)",kcal:141,p:2.6,c:27.4,f:2.3,fib:0,az:0.1,sat:0.4,porc:"ración:125",ean:"2000000020475"},
   {n:"Arroz con mucho pavo (Alinut)",kcal:117,p:6.3,c:19,f:1.5,fib:0,az:0.8,sat:0.5,ean:"8420321691855",na:332},
   {n:"Arroz con pollo asado (Hacendado)",kcal:106,p:4.6,c:20,f:0.6,fib:1.1,az:1.6,sat:0.1,ean:"8480000613035",na:396},
   {n:"Arroz El Cazador",kcal:351,p:7,c:79.7,f:0.8,fib:2.4,az:0.1,sat:0.1,ean:"8412305123063"},
@@ -3759,7 +3832,7 @@ var FOODS=[
   {n:"Arroz inflado con chocolate (Harrisons)",kcal:395,p:5.5,c:85,f:2.5,fib:2.5,az:32,sat:1.3,ean:"3353150603193"},
   {n:"Arroz integral con chía, quinoa, espelta y lino (brillante)",kcal:204,p:5.1,c:34,f:4.5,fib:4.2,az:0.4,sat:0.6,porc:"ración:125",ean:"8410184033749",na:216},
   {n:"Arroz integral con quinoa (Nomen)",kcal:238,p:4,c:46.8,f:3.4,fib:1.8,az:0.7,sat:0.6,porc:"ración:140",ean:"8411495116688",na:80},
-  {n:"Arroz integral redondo (Hacendado)",kcal:347,p:8.4,c:71,f:2.5,fib:3.4,az:1.2,sat:0.5,ean:"8480000050144",mic:{mg:85.1}},
+  {n:"Arroz integral redondo (Hacendado)",kcal:347,p:8.4,c:71,f:2.5,fib:3.4,az:1.2,sat:0.5,ean:"8480000050144"},
   {n:"Arroz integral redondo (Margabio)",kcal:352,p:8,c:70,f:2.7,fib:7.7,az:0,sat:0.8,ean:"8429651502015"},
   {n:"Arroz jazmin thai (Carrefour)",kcal:355,p:7,c:79,f:0.8,fib:0,az:0,sat:0.2,ean:"3560070826285"},
   {n:"Arroz largo (Carrefour)",kcal:351,p:8.3,c:76,f:1.2,fib:1.6,az:0,sat:0.3,ean:"3560070794164"},
@@ -3794,7 +3867,7 @@ var FOODS=[
   {n:"Babybel",kcal:308,p:23,c:0.5,f:24,fib:0,az:0.5,sat:16,ean:"3073781014129"},
   {n:"Bacalao Dorado (Hacendado)",kcal:263,p:9.3,c:17,f:17,fib:2.7,az:1.8,sat:2,ean:"8480000630230",na:284},
   {n:"Bagel (Hacendado)",kcal:289,p:11,c:53,f:2.7,fib:4,az:11,sat:0.4,porc:"ración:75",ean:"8480000238436",na:287},
-  {n:"Bagels clássico (Bimbo)",kcal:286,p:11,c:53,f:2.7,fib:4,az:11,sat:0.4,porc:"ración:75",ean:"8412600018316",na:287},
+  {n:"Bagels clássico (Bimbo)",kcal:286,p:11,c:53,f:2.7,fib:4,az:11,sat:0.4,porc:"ración:75",ean:"8412600018316"},
   {n:"Bagies chocolate (Eroski)",kcal:450,p:7.4,c:62.6,f:17.2,fib:0,az:35.3,sat:2.4,ean:"8480010000221",na:160},
   {n:"Barquillos bañados de chocolate (Carrefour)",kcal:539,p:6.5,c:53,f:33,fib:4.9,az:38,sat:25,porc:"ración:100",ean:"3560071049799",na:68},
   {n:"Barra campesina (O Forno de Mercadona)",kcal:268,p:8.9,c:54.3,f:1,fib:3.3,az:2.5,sat:0.2,porc:"ración:100",ean:"8480000828309"},
@@ -3803,7 +3876,7 @@ var FOODS=[
   {n:"Barritas de barquillo con relleno de avellana (Hacendado)",kcal:573,p:7.9,c:50,f:37,fib:0,az:41,sat:18,porc:"ración:20.5",ean:"8402001023750"},
   {n:"Barritas de chocolate con leche Relleno fondant de leche (Carr",kcal:539,p:6,c:60,f:30,u:"ml",fib:1.9,az:40,sat:15,ean:"3560071231057",na:132},
   {n:"Basic gaseosa (Eroski)",kcal:0,p:0,c:0,f:0,fib:0,az:0,sat:0,ean:"8480010023237"},
-  {n:"Batatas fritas mediterrânicas (Lay's)",kcal:511,p:5.6,c:58,f:28,fib:2.3,az:0.3,sat:3.2,ean:"8410199026767",na:680},
+  {n:"Batatas fritas mediterrânicas (Lay's)",kcal:511,p:5.6,c:58,f:28,fib:2.3,az:0.3,sat:3.2,ean:"8410199026767"},
   {n:"Belgas 18% mantequilla (Hacendado)",kcal:473,p:5.7,c:75,f:17,fib:0.5,az:41,sat:11,na:490,porc:"ración:30",ean:"8480000145819"},
   {n:"Berberechos al natural M (Hacendado)",kcal:65,p:14,c:0,f:1,fib:0,az:0,sat:0.3,na:600,ean:"8480000185648"},
   {n:"Berenjena de Almagro aliñada (Rioverde)",kcal:30,p:0.5,c:2.1,f:2.2,fib:4.2,az:0,sat:0.4,na:560,ean:"8410954002180"},
@@ -3961,7 +4034,7 @@ var FOODS=[
   {n:"Cocktail de frutos secos (Facundo)",kcal:539,p:18,c:34,f:35,fib:8.1,az:0.5,sat:4.2,na:72,k:498,porc:"ración:100",ean:"8413671026552"},
   {n:"Cocktail de frutos secos tostados y salados (Carrefour)",kcal:657,p:25,c:5.6,f:58,fib:7.3,az:4.3,sat:8.5,na:296,porc:"ración:25",ean:"3560070713615"},
   {n:"Coco Krispies (Kellogg's)",kcal:377,p:9,c:75,f:2.5,fib:5,az:27,sat:0.9,na:312,fe:8,vd:8.3,ean:"5053827201124",mic:{fe:80}},
-  {n:"Coco pops (Kellogg's)",kcal:382,p:6.3,c:84,f:1.9,fib:3.8,az:17,sat:0.9,na:260,fe:8,vd:8.4,porc:"ración:30",ean:"5053827192699",mic:{fe:80}},
+  {n:"Coco pops (Kellogg's)",kcal:382,p:6.3,c:84,f:1.9,fib:3.8,az:17,sat:0.9,na:260,fe:8,vd:8.4,porc:"ración:30",ean:"5053827192699"},
   {n:"Coco rallado (Eroski)",kcal:632,p:7,c:7,f:64,fib:0,az:7,sat:57,na:36,ean:"8480010193466"},
   {n:"Coco rallado (Vahiné)",kcal:670,p:6.9,c:7.4,f:65,fib:0,az:7.4,sat:57,na:36,ean:"3179142054886"},
   {n:"Cóctel ensalada crudo natural (Consum)",kcal:454,p:12,c:46.8,f:26.9,fib:5.4,az:37,sat:2,na:40,ean:"8414807554765"},
@@ -4005,7 +4078,7 @@ var FOODS=[
   {n:"Corn Flakes Chocolate (Nestlé)",kcal:393,p:6.1,c:81.7,f:3.7,fib:4,az:27.3,sat:1,na:532,porc:"ración:30",ean:"5900020027368"},
   {n:"Cottage (El Ventero)",kcal:100,p:9.8,c:1.6,f:6,fib:0,az:1,sat:4.4,na:320,porc:"ración:30",ean:"8410285102818"},
   {n:"Cottage cheese (Arla)",kcal:50,p:14,c:1.7,f:4,fib:0,az:1.7,sat:2.6,na:323,porc:"ración:100",ean:"5760466401043"},
-  {n:"COUSCOUS MIX Roasted Garlic & Olive Oil (Near East)",kcal:446,p:12.5,c:71.4,f:1.8,fib:3.6,az:0,sat:0,na:893,tr:0,k:232,ca:18,fe:5.4,vc:18,vd:0.2,porc:"ración:56",ean:"0072251001556",mic:{ca:17.9,fe:53.6,k:232.1,vc:17.9}},
+  {n:"COUSCOUS MIX Roasted Garlic & Olive Oil (Near East)",kcal:446,p:12.5,c:71.4,f:1.8,fib:3.6,az:0,sat:0,na:893,tr:0,k:232,ca:18,fe:5.4,vc:18,vd:0.2,porc:"ración:56",ean:"0072251001556"},
   {n:"Cracker (Gullón)",kcal:473,p:6.7,c:70,f:18,fib:2.2,az:6,sat:1.6,na:800,ean:"8410376037319"},
   {n:"Crackers fibra y sésamo (Mastrigo)",kcal:388,p:10,c:50,f:12,fib:0,az:2.7,sat:1.8,na:400,ean:"8414139006840"},
   {n:"Crema al queso de cabra para untar (Lactalis)",kcal:299,p:12,c:2,f:27,fib:0,az:2,sat:19,na:440,ean:"3228024020126"},
@@ -4055,7 +4128,7 @@ var FOODS=[
   {n:"D.O.P San Simon da Costa (Don Santiago)",kcal:372,p:23.3,c:1.7,f:30.3,fib:0,az:0.5,sat:18.1,na:272,ean:"8428485010154"},
   {n:"Dados de Gouda & Mimolette (Carrefour)",kcal:340,p:24,c:0,f:27,fib:0,az:0,sat:18,na:800,ean:"3560070570898"},
   {n:"Dairy milk wholenut (Cadbury)",kcal:552,p:8.6,c:49,f:35,fib:3.3,az:48,sat:15,na:79,k:100,ca:40,porc:"ración:20",ean:"7622201149574",mic:{ca:40,k:100,mg:15}},
-  {n:"Danacol Natural (Danone)",kcal:40,p:3.2,c:4.4,f:1.1,fib:0,az:4.1,sat:0.1,na:52,ca:120,ean:"8410500012878",mic:{ca:120}},
+  {n:"Danacol Natural (Danone)",kcal:40,p:3.2,c:4.4,f:1.1,fib:0,az:4.1,sat:0.1,na:52,ca:120,ean:"8410500012878"},
   {n:"danonino para llevar (Danone)",kcal:82,p:3.6,c:11.6,f:2.3,fib:0,az:9.9,sat:1.5,na:44,ca:180,vd:1.3,ean:"8410500020453",mic:{ca:180}},
   {n:"Danonino sabor fresa y plátano (Danone)",kcal:88,p:5.9,c:11.3,f:2.1,fib:0,az:9.9,sat:1.5,na:35,ca:194,vd:1.3,porc:"ración:50",ean:"8410500015794",mic:{ca:194}},
   {n:"Dark Chocolate (Kellogg's)",kcal:424,p:8.2,c:81,f:6.1,fib:6,az:17,sat:3.2,na:256,porc:"ración:30",ean:"5050083313509"},
@@ -5601,15 +5674,18 @@ function ovrPorClave(ean, nombre){
 // 🍎 Resolutor ÚNICO de "toda la base de alimentos" (propios + FOODS) con las correcciones del usuario
 // aplicadas ENCIMA. Sustituye el viejo idiom apComoFoods().concat(FOODS). Sin overrides ⇒ MISMO array
 // (mismas referencias) que antes: coste cero y retrocompat total. Los propios ya van primero ("lo tuyo manda").
+// 🍬 v0.26 FIX azúcar (caso «Eneryeti de coco»): el parche del ✏️ se aplica TAMBIÉN a tus propios —
+// antes solo a la curada, así que la ficha enseñaba tu corrección pero comAdd no la sumaba al día.
 function baseFoods(){
   var propios=(typeof apComoFoods==="function"?apComoFoods():[]);
   var base=(typeof FOODS!=="undefined" && FOODS)?FOODS:[];
   var ovr=ovrAll();
   if(ovrVacio(ovr)) return propios.concat(base);
-  return propios.concat(base.map(function(f){ return aplicarOverride(f, ovr); }));
+  return propios.concat(base).map(function(f){ return aplicarOverride(f, ovr); });
 }
 // Envoltura: resuelve el alimento por NOMBRE EXACTO en la base (tus propios + la curada) y da su
-// semáforo. Los propios no guardan az/sat/na → null → sin puntito (honesto, no se inventa).
+// semáforo. Propios SIN az/sat/na declarados → null → sin puntito (honesto, no se inventa); desde
+// v0.26 pueden traerlos (modal de crear) o heredarlos de tu corrección ✏️ (override sobre propios).
 function calidadDeNombre(nombre){
   var q=String(nombre||"").trim().toLowerCase(); if(!q) return null;
   var base=baseFoods();
@@ -6215,6 +6291,7 @@ function notifSyncUI(){
   var el2=document.getElementById("aj_notif_entreno"); if(el2) el2.checked = notifCfg().entrenoAvisos!==false;   // 💪 A18
   var el3=document.getElementById("aj_notif_macros"); if(el3) el3.checked = notifCfg().macroResto!==false;        // 📊 A20
   try{ diasEntrenoSyncUI(); }catch(e){}
+  try{ pasosNocheSyncUI(); }catch(e){}   // 👟 v0.26 · recordatorio nocturno de pasos — enganche 1 línea
 }
 // 💪 A18 · días de la semana en que entrenas (0=domingo … 6=sábado, orden JS getDay()). Config MÍNIMA y
 // opcional: alimenta SOLO el recordatorio motivacional [MOTIVA-PURE]; no toca el motor ni el plan. Viaja en el backup.
@@ -6268,7 +6345,7 @@ function notifMotivaCheck(){
     shown["entreno-motiva"]=hoy; set(LS_NOTIF_SHOWN,shown);
     var tono=flexCfg().tono, ap=apodo();
     var t=(tono==="neutro" ? "Día de entreno" : (tono==="cana" ? "¡"+ap+", hoy toca!" : ap+", hoy toca 💪"));
-    setTimeout(function(){ try{ toastCard(av.emoji, t, av.txt); }catch(e){} }, 1800);
+    setTimeout(function(){ try{ toastCard(av.emoji, t, av.txt); avisoVoyInyecta("entreno-motiva"); }catch(e){} }, 1800);   // 🎯 v0.26.1 · botón «Voy» — enganche 1 línea
     return true;
   }catch(e){ return false; }
 }
@@ -6291,7 +6368,7 @@ function notifMacroRestoCheck(){
     shown["macro-resto"]=hoy; set(LS_NOTIF_SHOWN,shown);
     var tono=flexCfg().tono, ap=apodo();
     var t=(tono==="neutro" ? "Macros del día" : (tono==="cana" ? "¡"+ap+", cierra tus macros!" : ap+", cierra el día 📊"));
-    setTimeout(function(){ try{ toastCard("📊", t, r.texto); }catch(e){} }, 1800);
+    setTimeout(function(){ try{ toastCard("📊", t, r.texto); avisoVoyInyecta("macro-resto"); }catch(e){} }, 1800);   // 🎯 v0.26.1 · botón «Voy» — enganche 1 línea
     return true;
   }catch(e){ return false; }
 }
@@ -6315,7 +6392,7 @@ function notifPesajeCheck(){
     if(tono==="cana"){ t="¡"+ap+", pésate AHORA!"; c="Después de mear y hacer de vientre, ANTES de beber o comer nada. 10 segundos, chiquillo."; }
     else if(tono==="neutro"){ t="Pesaje"; c="Momento óptimo: tras orinar y hacer de vientre, antes de beber o comer. 10 segundos."; }
     else { t=ap+", buenos días 🌞"; c="Pésate ahora: después de mear y hacer de vientre, antes de beber o comer nada. 10 segundos y listo."; }
-    setTimeout(function(){ try{ toastCard("⚖️", t, c); }catch(e){} }, 1800);
+    setTimeout(function(){ try{ toastCard("⚖️", t, c); avisoVoyInyecta("pesaje"); }catch(e){} }, 1800);   // 🎯 v0.26.1 · botón «Voy» — enganche 1 línea
     return true;
   }catch(e){ return false; }
 }
@@ -6323,6 +6400,7 @@ function notifCheck(){
   try{
     if(notifPesajeCheck()) return;   // ⚖️ E10 · el pesaje (mañana) manda; si salta, no se encadena otro toast encima
     if(notifMotivaCheck()) return;   // 💪 A18 · empujón de entreno (mañana/tarde de un día marcado)
+    if(notifPasosCheck()) return;   // 👟 v0.26 · pasos sin apuntar (noche, hora configurable) — enganche 1 línea
     if(notifMacroRestoCheck()) return;   // 📊 A20 · macros que faltan al cierre del día
     var d=new Date(), ctx={ mes:d.getMonth()+1, hora:d.getHours(),
       aguaHoy:(get(LS_AGUA,{})[hoyLocal()]||0), objetivoAgua:(typeof aguaObjetivo==="function"?aguaObjetivo():0) };
@@ -6353,7 +6431,51 @@ function notifDecidir(cfg, ctx, clima){
   var shown=get(LS_NOTIF_SHOWN,{});
   if(shown[a.id]===hoyLocal()) return;                 // no repetir el mismo aviso el mismo día
   shown[a.id]=hoyLocal(); set(LS_NOTIF_SHOWN,shown);
-  setTimeout(function(){ try{ toastCard(a.ico, a.titulo, a.cuerpo); }catch(e){} }, 1800);
+  setTimeout(function(){ try{ toastCard(a.ico, a.titulo, a.cuerpo); avisoVoyInyecta(a.id); }catch(e){} }, 1800);   // 🎯 v0.26.1 · botón «Voy» — enganche 1 línea
+}
+// [AVISO-VOY-PURE-INICIO] — 🎯 v0.26.1 · botón «Voy» de los avisos: mapa recordatorio → destino.
+// PURO (sin DOM ni storage): _tests/test-aviso-voy.node.js extrae este bloque tal cual. UNA sola
+// fuente de verdad: cada tipo de aviso lleva a SU vista (pestaña de abrir()) o a SU modal (fn
+// global existente). Tipo desconocido / entrada basura → null (el aviso sale SIN botón, no revienta).
+var AVISO_VOY_DESTINOS={
+  "pesaje":         { tab:"registro", focus:"r_peso", label:"⚖️ Voy — apuntar el peso" },
+  "entreno-motiva": { tab:"entrenos",                 label:"💪 Voy — a entrenar" },
+  "macro-resto":    { tab:"comida",                   label:"🍽️ Voy — apuntar comida" },
+  "agua-verano":    { tab:"agua",                     label:"💧 Voy — apuntar agua" },
+  "pasos-noche":    { fn:"pasosImpAbrir",             label:"👟 Voy — apuntar pasos" }
+};
+function avisoVoyDestino(tipo){
+  if(typeof tipo!=="string") return null;
+  var d=AVISO_VOY_DESTINOS[tipo];
+  if(!d || (!d.tab && !d.fn)) return null;
+  return { tab:d.tab||null, fn:d.fn||null, focus:d.focus||null, label:d.label||"Voy" };
+}
+// [AVISO-VOY-PURE-FIN]
+// 🎯 v0.26.1 · inyecta el botón «Voy» en la tarjeta RECIÉN pintada (llamar justo tras toastCard).
+// NO toca toastCard ni el cierre existente: tocar la tarjeta la sigue cerrando; el botón navega con
+// las funciones de SIEMPRE (abrir(tab) del router de pestañas / el modal global del mapa) y cierra.
+// Tipo sin destino → no pinta nada. El autocierre se recalcula con la MISMA regla de duración.
+function avisoVoyInyecta(tipo){
+  try{
+    var d=avisoVoyDestino(tipo); if(!d) return false;
+    var t=$("toast"); if(!t || !t.classList.contains("tcard") || !t.lastElementChild) return false;
+    if(t.querySelector(".tc-voy")) return false;   // ya hay botón (no duplicar)
+    var b=document.createElement("button");
+    b.type="button"; b.className="tc-voy"; b.textContent=d.label;
+    b.onclick=function(ev){
+      try{ if(ev&&ev.stopPropagation) ev.stopPropagation(); }catch(e){}
+      clearTimeout(window._toastId); _toastHide();
+      try{
+        if(d.tab && typeof abrir==="function") abrir(d.tab);
+        if(d.fn && typeof window[d.fn]==="function") window[d.fn]();
+        if(d.focus){ setTimeout(function(){ try{ var f=$(d.focus); if(f&&f.focus) f.focus(); }catch(e){} }, 250); }   // ⚖️ formulario listo
+      }catch(e){}
+    };
+    t.lastElementChild.appendChild(b);
+    clearTimeout(window._toastId);   // con botón hay más que leer/tocar: mismo cálculo, texto completo
+    window._toastId=setTimeout(_toastHide, _toastDur(t.textContent||""));
+    return true;
+  }catch(e){ return false; }
 }
 // ======= 🌙 MODO TRASNOCHADOR · envoltura de sesión (la decisión pura vive en [NIGHT-PURE]) =======
 // Recuerda la elección hoy/ayer SOLO en memoria de la sesión, atada al día natural en que se tomó, para NO
@@ -6792,6 +6914,669 @@ function pasosSyncFetch(fuerza){
       set(LS_PASOS_SYNC_LAST,{ ts:Date.now(), dato:null, motivo:"red", aplicado:false });
       pasosSyncEstadoRender();
     });
+}
+
+// [PASOS-CSV-PURE-INICIO] — 📥 IMPORTAR PASOS desde CSV/texto (v0.26). PURO (sin DOM, sin storage, sin
+// red): _tests/test-pasos-import.node.js extrae este bloque junto a [PASOS-PURE-*] (reutiliza pasosVal).
+// parseStepsCSV es el parser VERIFICADO por Codex (18/18 pruebas adversarias, 2026-07-12; copia canónica
+// en _pasos-auto/parse-steps-csv.js — NO tocar su lógica). Acepta exports de Samsung Health / Google Fit /
+// hojas de cálculo: detecta delimitador (, ; tab), cabeceras es/en (fecha/date…, pasos/steps…), fechas ISO
+// y DD/MM/YYYY (desambigua el orden con los propios datos), suma filas del mismo día y devuelve
+// {ok, data:[{fecha,pasos}], report, error} con avisos honestos fila a fila.
+function parseStepsCSV(csvText) {
+  const report = {
+    totalDataRows: 0,
+    rowsUsed: 0,
+    rowsSkipped: 0,
+    daysOut: 0,
+    dateColumn: "",
+    stepsColumn: "",
+    delimiter: ",",
+    dateOrderAssumed: false,
+    warnings: []
+  };
+
+  const input = typeof csvText === "string" ? csvText : "";
+  const source = input.charCodeAt(0) === 0xFEFF ? input.slice(1) : input;
+
+  const warningState = {
+    items: [],
+    total: 0
+  };
+
+  function addWarning(message) {
+    warningState.total += 1;
+    if (warningState.items.length < 50) {
+      warningState.items.push(message);
+    }
+  }
+
+  function finishWarnings() {
+    if (warningState.total <= 50) {
+      return warningState.items.slice();
+    }
+    return warningState.items.slice(0, 49).concat(
+      "... (+" + (warningState.total - 49) + " avisos omitidos)"
+    );
+  }
+
+  function isBlankText(value) {
+    return /^[\s ]*$/.test(value);
+  }
+
+  function firstNonBlankPhysicalLine(value) {
+    const lines = value.split(/\r\n|\n|\r/);
+    for (let index = 0; index < lines.length; index += 1) {
+      if (!isBlankText(lines[index])) {
+        return lines[index];
+      }
+    }
+    return "";
+  }
+
+  function countOutsideQuotes(line, candidate) {
+    let count = 0;
+    let inQuotes = false;
+
+    for (let index = 0; index < line.length; index += 1) {
+      const character = line[index];
+      if (character === "\"") {
+        if (inQuotes && line[index + 1] === "\"") {
+          index += 1;
+        } else {
+          inQuotes = !inQuotes;
+        }
+      } else if (!inQuotes && character === candidate) {
+        count += 1;
+      }
+    }
+
+    return count;
+  }
+
+  function detectDelimiter(headerLine) {
+    const candidates = [",", ";", "\t"];
+    let selected = candidates[0];
+    let highestCount = -1;
+
+    for (let index = 0; index < candidates.length; index += 1) {
+      const count = countOutsideQuotes(headerLine, candidates[index]);
+      if (count > highestCount) {
+        selected = candidates[index];
+        highestCount = count;
+      }
+    }
+
+    return selected;
+  }
+
+  function parseCSV(value, delimiter) {
+    const records = [];
+    let fields = [];
+    let field = "";
+    let raw = "";
+    let inQuotes = false;
+    let physicalLine = 1;
+    let recordStartLine = 1;
+
+    function pushRecord() {
+      fields.push(field);
+      records.push({
+        fields: fields,
+        raw: raw,
+        rowNumber: recordStartLine
+      });
+      fields = [];
+      field = "";
+      raw = "";
+    }
+
+    for (let index = 0; index < value.length; index += 1) {
+      const character = value[index];
+
+      if (inQuotes) {
+        if (character === "\"") {
+          raw += character;
+          if (value[index + 1] === "\"") {
+            field += "\"";
+            raw += "\"";
+            index += 1;
+          } else {
+            inQuotes = false;
+          }
+          continue;
+        }
+
+        if (character === "\r" || character === "\n") {
+          if (character === "\r" && value[index + 1] === "\n") {
+            raw += "\r\n";
+            index += 1;
+          } else {
+            raw += character;
+          }
+          field += "\n";
+          physicalLine += 1;
+          continue;
+        }
+
+        field += character;
+        raw += character;
+        continue;
+      }
+
+      if (character === "\"" && isBlankText(field)) {
+        field = "";
+        inQuotes = true;
+        raw += character;
+        continue;
+      }
+
+      if (character === delimiter) {
+        fields.push(field);
+        field = "";
+        raw += character;
+        continue;
+      }
+
+      if (character === "\r" || character === "\n") {
+        pushRecord();
+        if (character === "\r" && value[index + 1] === "\n") {
+          index += 1;
+        }
+        physicalLine += 1;
+        recordStartLine = physicalLine;
+        continue;
+      }
+
+      field += character;
+      raw += character;
+    }
+
+    if (raw.length > 0 || field.length > 0 || fields.length > 0) {
+      pushRecord();
+    }
+
+    return records;
+  }
+
+  function cleanHeader(value) {
+    return String(value == null ? "" : value)
+      .replace(/ /g, " ")
+      .trim();
+  }
+
+  function normalizeHeader(value) {
+    return cleanHeader(value)
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[̀-ͯ]/g, "");
+  }
+
+  function listHeaders(headers) {
+    if (headers.length === 0) {
+      return "(ninguna)";
+    }
+    return headers.map(function (header) {
+      return JSON.stringify(header);
+    }).join(", ");
+  }
+
+  function preview(value) {
+    let output = String(value == null ? "" : value)
+      .replace(/ /g, " ")
+      .replace(/[\r\n]+/g, " ")
+      .trim();
+    if (output.length > 80) {
+      output = output.slice(0, 77) + "...";
+    }
+    return output;
+  }
+
+  const headerLine = firstNonBlankPhysicalLine(source);
+  const delimiter = detectDelimiter(headerLine);
+  report.delimiter = delimiter;
+
+  const records = parseCSV(source, delimiter).filter(function (record) {
+    return !isBlankText(record.raw);
+  });
+
+  const headerRecord = records.length > 0 ? records[0] : null;
+  const dataRecords = records.length > 1 ? records.slice(1) : [];
+  const headers = headerRecord
+    ? headerRecord.fields.map(cleanHeader)
+    : [];
+  const normalizedHeaders = headers.map(normalizeHeader);
+
+  const dateNames = [
+    "date",
+    "fecha",
+    "dia",
+    "day",
+    "time",
+    "datetime",
+    "timestamp",
+    "start",
+    "start_time",
+    "start time",
+    "fecha y hora",
+    "date/time"
+  ];
+  const stepsNames = [
+    "steps",
+    "pasos",
+    "step count",
+    "step_count",
+    "numero de pasos",
+    "recuento de pasos",
+    "total steps",
+    "total de pasos",
+    "step total",
+    "count"
+  ];
+
+  let dateIndex = -1;
+  let stepsIndex = -1;
+
+  for (let index = 0; index < normalizedHeaders.length; index += 1) {
+    if (dateIndex === -1 && dateNames.indexOf(normalizedHeaders[index]) !== -1) {
+      dateIndex = index;
+    }
+    if (stepsIndex === -1 && stepsNames.indexOf(normalizedHeaders[index]) !== -1) {
+      stepsIndex = index;
+    }
+  }
+
+  if (dateIndex !== -1) {
+    report.dateColumn = headers[dateIndex];
+  }
+  if (stepsIndex !== -1) {
+    report.stepsColumn = headers[stepsIndex];
+  }
+
+  report.totalDataRows = dataRecords.length;
+
+  if (dateIndex === -1 || stepsIndex === -1) {
+    const missing = [];
+    if (dateIndex === -1) {
+      missing.push("fecha");
+    }
+    if (stepsIndex === -1) {
+      missing.push("pasos");
+    }
+
+    report.rowsSkipped = dataRecords.length;
+    for (let index = 0; index < dataRecords.length; index += 1) {
+      addWarning(
+        "fila " + dataRecords[index].rowNumber +
+        ": no procesada porque falta la columna de " + missing.join(" y ")
+      );
+    }
+    report.warnings = finishWarnings();
+
+    const missingText = missing.length === 2
+      ? "las columnas de fecha y de pasos"
+      : "la columna de " + missing[0];
+
+    return {
+      ok: false,
+      data: [],
+      report: report,
+      error:
+        "No se pudo identificar " + missingText +
+        ". Cabeceras encontradas: " + listHeaders(headers) + "."
+    };
+  }
+
+  function datePart(value) {
+    const cleaned = String(value == null ? "" : value)
+      .replace(/ /g, " ")
+      .trim();
+    const timeStart = cleaned.search(/[Tt,\s]/);
+    return timeStart === -1 ? cleaned : cleaned.slice(0, timeStart);
+  }
+
+  function localDateMatch(value) {
+    return datePart(value).match(/^(\d{1,2})([/-])(\d{1,2})\2(\d{4})$/);
+  }
+
+  let sawLocalDate = false;
+  let sawFirstNumberOverTwelve = false;
+  let sawSecondNumberOverTwelve = false;
+
+  for (let index = 0; index < dataRecords.length; index += 1) {
+    const match = localDateMatch(dataRecords[index].fields[dateIndex]);
+    if (!match) {
+      continue;
+    }
+
+    sawLocalDate = true;
+    if (Number(match[1]) > 12) {
+      sawFirstNumberOverTwelve = true;
+    }
+    if (Number(match[3]) > 12) {
+      sawSecondNumberOverTwelve = true;
+    }
+  }
+
+  let dateOrder = "DMY";
+  if (sawFirstNumberOverTwelve) {
+    dateOrder = "DMY";
+  } else if (sawSecondNumberOverTwelve) {
+    dateOrder = "MDY";
+  } else if (sawLocalDate) {
+    report.dateOrderAssumed = true;
+    addWarning(
+      "formato de fecha ambiguo: se ha asumido DD/MM/YYYY"
+    );
+  }
+
+  function isRealDate(year, month, day) {
+    if (
+      !Number.isInteger(year) ||
+      !Number.isInteger(month) ||
+      !Number.isInteger(day) ||
+      year < 1 ||
+      year > 9999 ||
+      month < 1 ||
+      month > 12 ||
+      day < 1
+    ) {
+      return false;
+    }
+
+    const leapYear =
+      year % 400 === 0 || (year % 4 === 0 && year % 100 !== 0);
+    const daysPerMonth = [
+      31,
+      leapYear ? 29 : 28,
+      31,
+      30,
+      31,
+      30,
+      31,
+      31,
+      30,
+      31,
+      30,
+      31
+    ];
+
+    return day <= daysPerMonth[month - 1];
+  }
+
+  function formatDate(year, month, day) {
+    return (
+      String(year).padStart(4, "0") + "-" +
+      String(month).padStart(2, "0") + "-" +
+      String(day).padStart(2, "0")
+    );
+  }
+
+  function parseDateValue(value) {
+    const core = datePart(value);
+    const shortYear = core.match(
+      /^(\d{1,2})([/-])(\d{1,2})\2(\d{2})$/
+    );
+    if (shortYear) {
+      return {
+        ok: false,
+        reason: "fecha ilegible (año de 2 dígitos no admitido)"
+      };
+    }
+
+    const iso = core.match(/^(\d{4})([/-])(\d{2})\2(\d{2})$/);
+    if (iso) {
+      const year = Number(iso[1]);
+      const month = Number(iso[3]);
+      const day = Number(iso[4]);
+      if (!isRealDate(year, month, day)) {
+        return { ok: false, reason: "fecha no válida" };
+      }
+      return {
+        ok: true,
+        value: formatDate(year, month, day)
+      };
+    }
+
+    const local = core.match(
+      /^(\d{1,2})([/-])(\d{1,2})\2(\d{4})$/
+    );
+    if (local) {
+      const first = Number(local[1]);
+      const second = Number(local[3]);
+      const year = Number(local[4]);
+      const day = dateOrder === "DMY" ? first : second;
+      const month = dateOrder === "DMY" ? second : first;
+
+      if (!isRealDate(year, month, day)) {
+        return { ok: false, reason: "fecha no válida" };
+      }
+      return {
+        ok: true,
+        value: formatDate(year, month, day)
+      };
+    }
+
+    return { ok: false, reason: "fecha ilegible" };
+  }
+
+  function parseStepsValue(value) {
+    const cleaned = String(value == null ? "" : value)
+      .replace(/ /g, " ")
+      .trim();
+    let numericValue;
+
+    if (/^\d{1,3}([.,]\d{3})+$/.test(cleaned)) {
+      numericValue = Number(cleaned.replace(/[.,]/g, ""));
+    } else if (/^\d+([.,]\d+)?$/.test(cleaned)) {
+      numericValue = Math.round(parseFloat(cleaned.replace(",", ".")));
+    } else {
+      return { ok: false, reason: "pasos ilegibles" };
+    }
+
+    if (
+      !Number.isFinite(numericValue) ||
+      !Number.isSafeInteger(numericValue) ||
+      numericValue < 0
+    ) {
+      return {
+        ok: false,
+        reason: "pasos fuera del rango entero seguro"
+      };
+    }
+
+    return { ok: true, value: numericValue };
+  }
+
+  const totalsByDate = new Map();
+
+  for (let index = 0; index < dataRecords.length; index += 1) {
+    const record = dataRecords[index];
+    const rawDate = record.fields[dateIndex];
+    const rawSteps = record.fields[stepsIndex];
+    const parsedDate = parseDateValue(rawDate);
+
+    if (!parsedDate.ok) {
+      report.rowsSkipped += 1;
+      addWarning(
+        "fila " + record.rowNumber + ": " + parsedDate.reason +
+        " '" + preview(rawDate) + "'"
+      );
+      continue;
+    }
+
+    const parsedSteps = parseStepsValue(rawSteps);
+    if (!parsedSteps.ok) {
+      report.rowsSkipped += 1;
+      addWarning(
+        "fila " + record.rowNumber + ": " + parsedSteps.reason +
+        " '" + preview(rawSteps) + "'"
+      );
+      continue;
+    }
+
+    const previousTotal = totalsByDate.has(parsedDate.value)
+      ? totalsByDate.get(parsedDate.value)
+      : 0;
+    const nextTotal = previousTotal + parsedSteps.value;
+
+    if (!Number.isSafeInteger(nextTotal)) {
+      report.rowsSkipped += 1;
+      addWarning(
+        "fila " + record.rowNumber +
+        ": la suma diaria de pasos excede el rango entero seguro"
+      );
+      continue;
+    }
+
+    totalsByDate.set(parsedDate.value, nextTotal);
+    report.rowsUsed += 1;
+  }
+
+  const data = Array.from(totalsByDate.keys())
+    .sort()
+    .map(function (fecha) {
+      return {
+        fecha: fecha,
+        pasos: totalsByDate.get(fecha)
+      };
+    });
+
+  report.daysOut = data.length;
+  report.warnings = finishWarnings();
+
+  return {
+    ok: true,
+    data: data,
+    report: report,
+    error: null
+  };
+}
+// pasosCsvMerge: deduplica lo parseado contra lo YA guardado — una fecha con dato local SE RESPETA
+// (tus apuntes mandan, la misma filosofía que pasosMezclarAuto). Guardia 0..100000 de pasosVal
+// ([PASOS-PURE], arriba). Jamás muta el log de entrada (devuelve copia).
+function pasosCsvMerge(log, dias){
+  var base=(log && typeof log==="object" && !Array.isArray(log))?log:{};
+  var out={}, k;
+  for(k in base){ if(Object.prototype.hasOwnProperty.call(base,k)) out[k]=base[k]; }
+  var nuevos=[], dupes=0, fueraRango=0;
+  if(Array.isArray(dias)) for(var i=0;i<dias.length;i++){
+    var d=dias[i]; if(!d || typeof d.fecha!=="string" || !/^\d{4}-\d{2}-\d{2}$/.test(d.fecha)) continue;
+    var v=pasosVal(d.pasos);
+    if(v==null){ fueraRango++; continue; }
+    if(pasosVal(base[d.fecha])!=null){ dupes++; continue; }   // fecha ya guardada = duplicado ignorado
+    out[d.fecha]=v; nuevos.push({fecha:d.fecha, pasos:v});
+  }
+  return { log:out, nuevos:nuevos, nNuevos:nuevos.length, nDupes:dupes, nFueraRango:fueraRango };
+}
+// [PASOS-CSV-PURE-FIN]
+// [PASOS-NOCHE-PURE-INICIO] — 🌙👟 ¿toca recordar los pasos AHORA? (idea de Pablo, 12-07). PURO (sin DOM
+// ni storage): el test lo extrae junto a [PESAJE-PURE] (reutiliza _horaAMin de allí). Regla honesta:
+// cfg.pasosNoche!==false (apagable en Ajustes) + hora actual >= cfg.pasosNocheHora (default 22:30) +
+// HOY sin pasos guardados (ctx.yaRegistrado) — si ya hay dato, NO molesta. Hora ilegible → default.
+var PASOS_NOCHE_DEF="22:30";
+function pasosNocheToca(cfg, ctx){
+  cfg=cfg||{}; ctx=ctx||{};
+  if(cfg.pasosNoche===false) return false;
+  if(ctx.yaRegistrado) return false;
+  var ahora=_horaAMin(ctx.hora); if(ahora==null) return false;
+  var desde=_horaAMin(cfg.pasosNocheHora); if(desde==null) desde=_horaAMin(PASOS_NOCHE_DEF);
+  return ahora>=desde;
+}
+// [PASOS-NOCHE-PURE-FIN]
+// ——— 📥 IMPORTAR PASOS · envoltura DOM/storage (NO va en los bloques puros) ———
+var _pimpPlan=null;   // plan analizado pendiente de confirmar (efímero)
+function pasosImpAbrir(){
+  var t=$("pimp_texto"); if(t) t.value="";
+  var r=$("pimp_resumen"); if(r) r.innerHTML="";
+  var h=$("pimp_hoy"); if(h) h.value="";
+  _pimpPlan=null;
+  show("pasosImpModal", true);
+}
+function pasosImpCerrar(){ show("pasosImpModal", false); }
+// ⚡ atajo "pasos de HOY": número + guardar en 2 toques (reutiliza pasosGuardar: misma validación y toast)
+function pasosImpHoy(){
+  var v=(($("pimp_hoy")||{}).value);
+  if(v===""||v==null){ toast("Escribe los pasos de hoy"); return; }
+  pasosGuardar(v);
+  var el=$("pimp_hoy"); if(el) el.value="";
+}
+function pasosImpFichero(inp){
+  var f=inp && inp.files && inp.files[0]; if(!f) return;
+  if(f.size>2*1024*1024){ toast("Fichero demasiado grande (máx. 2 MB)"); inp.value=""; return; }
+  var rd=new FileReader();
+  rd.onload=function(){ var t=$("pimp_texto"); if(t) t.value=String(rd.result||""); pasosImpAnalizar(); };
+  rd.onerror=function(){ toast("No pude leer el fichero — prueba a pegar el texto"); };
+  rd.readAsText(f);
+  inp.value="";   // permite re-elegir el mismo fichero
+}
+function pasosImpAnalizar(){
+  var box=$("pimp_resumen"); if(!box) return;
+  var txt=((($("pimp_texto")||{}).value)||"");
+  if(!txt.trim()){ toast("Pega el CSV o elige un fichero"); return; }
+  var r=parseStepsCSV(txt);
+  if(!r.ok){
+    _pimpPlan=null;
+    box.innerHTML="<div class='aviso'>⚠️ "+esc(r.error||"No se pudo leer el CSV")+"</div>";
+    return;
+  }
+  var plan=pasosCsvMerge(pasosLog(), r.data);
+  _pimpPlan=plan;
+  var h="<div class='card' style='padding:10px;margin:0'>"
+    +"<div class='kv'><span>Días nuevos</span><span><b style='color:var(--jade)'>"+plan.nNuevos+"</b></span></div>"
+    +"<div class='kv'><span>Ya guardados (se respetan)</span><span>"+plan.nDupes+"</span></div>"
+    +(plan.nFueraRango?"<div class='kv'><span>Fuera de rango 0–100.000</span><span>"+plan.nFueraRango+"</span></div>":"")
+    +(r.report.rowsSkipped?"<div class='kv'><span>Filas ilegibles (descartadas)</span><span>"+r.report.rowsSkipped+"</span></div>":"");
+  if(plan.nNuevos){
+    var muestra=plan.nuevos.slice(0,5).map(function(d){ return d.fecha+" · "+d.pasos.toLocaleString("es-ES"); }).join("<br>");   // formato controlado por el parser (fecha ISO + entero)
+    h+="<p class='hint' style='margin-top:6px'>"+muestra+(plan.nuevos.length>5?"<br>… y "+(plan.nuevos.length-5)+" días más":"")+"</p>"
+      +"<button type='button' style='width:100%;margin-top:8px' onclick='pasosImpGuardar()'>💾 Guardar "+plan.nNuevos+" día"+(plan.nNuevos===1?"":"s")+"</button>";
+  } else {
+    h+="<p class='hint' style='margin-top:6px'>Nada nuevo que guardar"+(plan.nDupes?" — esas fechas ya tienen dato y tu apunte manda":"")+".</p>";
+  }
+  if(r.report.warnings && r.report.warnings.length){
+    h+="<details style='margin-top:6px'><summary style='cursor:pointer;color:var(--mute)'>Avisos ("+r.report.warnings.length+")</summary><p class='hint' style='white-space:pre-line'>"+esc(r.report.warnings.join("\n"))+"</p></details>";
+  }
+  h+="</div>";
+  box.innerHTML=h;
+}
+function pasosImpGuardar(){
+  var p=_pimpPlan;
+  if(!p || !p.nNuevos){ toast("Primero analiza un CSV con días nuevos"); return; }
+  set(LS_PASOS_LOG, p.log);   // mismo patrón que pasosSyncFetch: merge PURO + un solo set
+  _pimpPlan=null;
+  pasosImpCerrar();
+  try{ pasosRender(); }catch(e){}
+  toast("👟 "+p.nNuevos+" día"+(p.nNuevos===1?"":"s")+" de pasos importado"+(p.nNuevos===1?"":"s")+(p.nDupes?" · "+p.nDupes+" ya estaban (respetados)":""));
+}
+// ——— 🌙👟 recordatorio nocturno · envoltura (config en jvf_notif_cfg: pasosNoche + pasosNocheHora) ———
+function pasosNocheHoraSet(v){
+  v=String(v==null?"":v).trim();
+  if(!/^([01]\d|2[0-3]):[0-5]\d$/.test(v)){ toast("Hora no válida (HH:MM)"); return; }
+  var c=notifCfg(); c.pasosNocheHora=v; set(LS_NOTIF_CFG,c);   // viaja en el backup con notif_cfg, como el resto
+  toast("👟 Recordatorio de pasos a partir de las "+v);
+}
+function pasosNocheSyncUI(){
+  var el=$("aj_notif_pasos"); if(el) el.checked = notifCfg().pasosNoche!==false;
+  var h=$("aj_pasos_noche_hora"); if(h && document.activeElement!==h) h.value = notifCfg().pasosNocheHora||PASOS_NOCHE_DEF;
+}
+// 👟 aviso al abrir la app (patrón EXACTO de notifPesajeCheck/notifMotivaCheck: 1/día vía jvf_notif_shown,
+// decisión PURA en [PASOS-NOCHE-PURE], toastCard con tono/apodo). El botón «Voy» abre el importador —
+// v0.26.1: unificado al patrón avisoVoyInyecta (antes re-asignaba el onclick del toast). → true si mostró.
+function notifPasosCheck(){
+  try{
+    var hoy=hoyLocal(), shown=get(LS_NOTIF_SHOWN,{});
+    if(shown["pasos-noche"]===hoy) return false;
+    var d=new Date(), hhmm=String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0");
+    if(!pasosNocheToca(notifCfg(), {hora:hhmm, yaRegistrado:(pasosVal(pasosLog()[hoy])!=null)})) return false;
+    shown["pasos-noche"]=hoy; set(LS_NOTIF_SHOWN,shown);
+    var tono=flexCfg().tono, ap=apodo(), t, c;
+    if(tono==="cana"){ t="¡"+ap+", los pasos!"; c="Día casi cerrado y ni un paso apuntado. Mira el reloj y dale a «Voy» — 10 segundos, campeón."; }
+    else if(tono==="neutro"){ t="Pasos de hoy"; c="Sin registro de pasos hoy. Dale a «Voy» para apuntarlos o importar el CSV."; }
+    else { t=ap+", ¿cuántos pasos hoy? 👟"; c="Aún no los has apuntado. Dale a «Voy»: los escribes (o pegas el CSV) y listo."; }
+    setTimeout(function(){ try{ toastCard("👟", t, c); avisoVoyInyecta("pasos-noche"); }catch(e){} }, 1800);   // 🎯 v0.26.1 · botón «Voy» — unificado al patrón común
+    return true;
+  }catch(e){ return false; }
 }
 
 // [PRESUPUESTO-HOY-PURE-INICIO] — presupuesto del día = objetivo base + kcal de las sesiones de deporte de ese
@@ -7259,6 +8044,22 @@ function coachAvisos(ctx){
 // [COACH-PURE-FIN]
 
 var SODIO_MAX_MG=2000;   // 🧂 OMS: <2 g de sodio (= <5 g de sal) al día
+// [COM-MIC-TOT] 💊 v0.26 · suma del día de vitaminas/minerales registrados en mic{} (⚡ Micros sueltos).
+// Autocontenido: solo lo llama el enganche de renderComida. Honesto: sin registros → devuelve "" (no
+// pinta nada); solo suma valores numéricos >0. Mismas etiquetas que la ficha (qaMicLbl).
+function comMicTotHTML(arr){
+  var tot={}, i, k;
+  if(!Array.isArray(arr)) return "";
+  for(i=0;i<arr.length;i++){
+    var m=arr[i] && arr[i].mic;
+    if(!m || typeof m!=="object") continue;
+    for(k in m){ if(Object.prototype.hasOwnProperty.call(m,k) && isFinite(+m[k]) && +m[k]>0) tot[k]=Math.round(((tot[k]||0)+ +m[k])*100)/100; }
+  }
+  var ks=qaMicKeys().filter(function(kk){ return tot[kk]!=null; });
+  Object.keys(tot).forEach(function(kk){ if(ks.indexOf(kk)<0) ks.push(kk); });   // claves desconocidas al final (no se pierden)
+  if(!ks.length) return "";
+  return "<div class='kv' style='margin-top:6px'><span>💊 Micros <span class='hint' style='display:inline'>· registrados a mano</span></span><span style='text-align:right'>"+ks.map(function(kk){ var l=qaMicLbl(kk); return esc(l[0])+" "+tot[kk]+" "+l[1]; }).join(" · ")+"</span></div>";
+}
 function renderComida(){
   var fecha=($("com_fecha")&&$("com_fecha").value)||hoyLocal();
   try{ comFechaSync(); }catch(e){}   // 📅 v0.19-UI · el hero de fecha siempre en sintonía con el input
@@ -7315,6 +8116,7 @@ function renderComida(){
   } else {
     h+="<div class='kv'><span>Calorías</span><span>"+Math.round(tot.kcal)+" kcal</span></div><div class='kv'><span>P / C / G</span><span>"+Math.round(tot.p)+" / "+Math.round(tot.c)+" / "+Math.round(tot.gr)+" g</span></div>";
   }
+  try{ h+=comMicTotHTML(arr); }catch(e){}   // 💊 v0.26 · micros sueltos del día [COM-MIC-TOT] (enganche 1 línea)
   h+="</div>"; $("com_tot").innerHTML=h;
   try{ renderHistorial(); }catch(e){}   // 🕑 historial + buscador (deriva del diario; abarca todos los días)
   if(!arr.length){ $("com_list").innerHTML="<div class='empty'><div class='ico'>🍽️</div><div class='et'>Sin comidas este día</div><div class='es'>Busca un alimento y los gramos para empezar.</div></div>"; try{ renderMeals(); }catch(e){} return; }
@@ -7812,18 +8614,53 @@ function fotoAddDiario(){
 
 // ======= F4 · ⚡ AÑADIR RÁPIDO + 💾 MIS COMIDAS (v0.10) — los "wins" de MFP, gratis =======
 var LS_MEALS="jvf_meals";
-function qaAbrir(){ show("qa_form", true); setTimeout(function(){ try{ $("qa_kcal").focus(); }catch(e){} },60); }
+function qaAbrir(){ show("qa_form", true); try{ qaMicFill(); }catch(e){} setTimeout(function(){ try{ $("qa_kcal").focus(); }catch(e){} },60); }
 function qaCerrar(){ show("qa_form", false); }
-// Quick add: kcal obligatorias; P/C/G opcionales (MFP los cobra en premium — aquí gratis).
+// [QA-MIC] 🔬 v0.26 · micros sueltos en el añadido rápido. AMPLÍA el PR #109 (badges/ficha informativos)
+// con REGISTRO: az/fib/sat/na viajan en el item del diario (el acumulador del día YA los suma) y las
+// vitaminas/minerales en mic{} con las MISMAS claves que la ficha (MIC_LBL/MIC_ORDEN) + las cinco de los
+// destacados UE (ca/fe/k/vc/vd, que en la ficha se pintan aparte). Autocontenido: solo qaAbrir/qaAdd lo llaman.
+var QA_MIC_EXTRA={ca:["Calcio","mg"], fe:["Hierro","mg"], k:["Potasio","mg"], vc:["Vitamina C","mg"], vd:["Vitamina D","µg"]};
+var _qaMic={};
+function qaMicLbl(k){ return QA_MIC_EXTRA[k]||MIC_LBL[k]||[k,""]; }
+function qaMicKeys(){ return ["ca","fe","k","vc","vd"].concat(MIC_ORDEN); }
+function qaMicFill(){
+  var sel=$("qa_mic_k"); if(!sel || sel.options.length) return;   // se rellena una vez (la lista no cambia)
+  sel.innerHTML=qaMicKeys().map(function(k){ var l=qaMicLbl(k); return "<option value=\""+k+"\">"+esc(l[0])+" ("+l[1]+")</option>"; }).join("");
+}
+function qaMicAdd(){
+  var k=(($("qa_mic_k")||{}).value)||"";
+  var v=parseFloat(String((($("qa_mic_v")||{}).value)||"").replace(",","."));
+  if(!k || !(isFinite(v) && v>0)){ toast("Pon una cantidad válida (de tu etiqueta)"); return; }
+  _qaMic[k]=Math.round(v*100)/100;   // repetir un micro = corregirlo (reemplaza, no suma)
+  var el=$("qa_mic_v"); if(el) el.value="";
+  qaMicRender();
+}
+function qaMicDel(k){ delete _qaMic[k]; qaMicRender(); }
+function qaMicRender(){
+  var box=$("qa_mic_lista"); if(!box) return;
+  var ks=Object.keys(_qaMic);
+  box.innerHTML=ks.length?("<div class='badges'>"+ks.map(function(k){ var l=qaMicLbl(k);
+    return "<span class='badge'>"+esc(l[0])+" "+_qaMic[k]+" "+l[1]+" <a href='#' onclick=\"qaMicDel('"+k+"');return false\" style='color:var(--mute);text-decoration:none' aria-label='Quitar'>✕</a></span>"; }).join("")+"</div>"):"";
+}
+// Quick add: kcal obligatorias SALVO que registres algún micro/macro suelto (v0.26: corrección honesta
+// del desglose con 0 kcal). P/C/G opcionales (MFP los cobra en premium — aquí gratis).
 function qaAdd(){
   var kcal=+$("qa_kcal").value;
-  if(!(kcal>0)){ toast("Las kcal son obligatorias"); return; }
   var p=+$("qa_p").value||0, c=+$("qa_c").value||0, g=+$("qa_g").value||0;
+  var az=+((($("qa_az")||{}).value))||0, fib=+((($("qa_fib")||{}).value))||0, sat=+((($("qa_sat")||{}).value))||0, na=+((($("qa_na")||{}).value))||0;
+  var micKs=Object.keys(_qaMic);
+  if(!(kcal>0) && !(p>0||c>0||g>0||az>0||fib>0||sat>0||na>0||micKs.length)){ toast("Pon kcal o algún micro (azúcar, fibra, sodio, vitamina…)"); return; }
+  if(!(kcal>=0)) kcal=0;
   var f=(($("com_fecha")||{}).value)||hoyLocal(), arr=get(LS_COMIDA,[]);
   // misma estructura que un alimento manual; g=0 = sin gramos que enseñar
-  arr.push({id:Date.now().toString(36)+Math.random().toString(36).slice(2,6), f:f, n:"⚡ Rápido", g:0, kcal:Math.round(kcal), p:+p.toFixed(1), c:+c.toFixed(1), gr:+g.toFixed(1)});
+  var it={id:Date.now().toString(36)+Math.random().toString(36).slice(2,6), f:f, n:(kcal>0?"⚡ Rápido":"⚡ Micros"), g:0, kcal:Math.round(kcal), p:+p.toFixed(1), c:+c.toFixed(1), gr:+g.toFixed(1)};
+  if(az>0||fib>0||sat>0||na>0){ it.fib=+fib.toFixed(1); it.az=+az.toFixed(1); it.sat=+sat.toFixed(1); it.na=Math.round(na); }
+  if(micKs.length){ it.mic={}; micKs.forEach(function(k){ it.mic[k]=_qaMic[k]; }); }
+  arr.push(it);
   set(LS_COMIDA,arr);
-  $("qa_kcal").value=""; $("qa_p").value=""; $("qa_c").value=""; $("qa_g").value="";
+  ["qa_kcal","qa_p","qa_c","qa_g","qa_az","qa_fib","qa_sat","qa_na","qa_mic_v"].forEach(function(id){ var el=$(id); if(el) el.value=""; });
+  _qaMic={}; try{ qaMicRender(); }catch(e){}
   qaCerrar(); renderComida(); toast("⚡ Añadido");
 }
 // "Mis comidas": plantillas de días enteros. Simple, sin edición en v1 (se borra y se rehace).
@@ -7913,7 +8750,7 @@ function mealBorrar(id){
 // confirmación SIEMPRE editable y, si faltan kcal o proteína, se exige copiarlas de la etiqueta.
 // Red permitida: world.openfoodfacts.org (lookup por EAN) + jsDelivr (polyfill del lector). Nada más.
 var LS_BC_CACHE="jvf_barcode_cache";   // {ean:{producto:{...por 100 g o 100 ml + u:"g"|"ml" + dens}, ts}} — cachear respeta el límite de OFF (15 req/min) y da offline en productos repetidos
-var LS_ALIM="jvf_alimentos_propios";   // [{id, nombre, marca, ean|null, porcion_g, kcal100, p100, c100, g100}]
+var LS_ALIM="jvf_alimentos_propios";   // [{id, nombre, marca, ean|null, porcion_g, kcal100, p100, c100, g100[, fib100, az100, sat100, na100]}] · los 4 últimos desde v0.26 (null = sin dato)
 var _bcStream=null, _bcTimer=null, _bcDetector=null, _bcProducto=null, _apEan=null;
 var _bcUnidadIn="g";                   // unidad en la que el usuario apunta la CANTIDAD (g|ml); se resetea en cada confirmación
 
@@ -8608,7 +9445,7 @@ function bcCrearPropioPrefijado(){
 // ---- I6 · alimento propio ----
 function apAbrir(ean){
   _apEan=(typeof ean==="string" && ean)?ean:null;
-  ["ap_nombre","ap_marca","ap_porcion","ap_kcal","ap_p","ap_c","ap_g"].forEach(function(id){ var el=$(id); if(el) el.value=""; });
+  ["ap_nombre","ap_marca","ap_porcion","ap_kcal","ap_p","ap_c","ap_g","ap_fib","ap_az","ap_sat","ap_na"].forEach(function(id){ var el=$(id); if(el) el.value=""; });
   var info=$("ap_ean_info");
   if(info){
     if(_apEan){ info.textContent="Código "+_apEan+" — se guarda vinculado: la próxima vez el escáner lo encuentra directo."; info.classList.remove("hidden"); }
@@ -8626,21 +9463,33 @@ function apGuardar(){
   var porcion=parseFloat(($("ap_porcion")||{}).value);
   var kcal=parseFloat(($("ap_kcal")||{}).value), p=parseFloat(($("ap_p")||{}).value);
   var c=parseFloat(($("ap_c")||{}).value), g=parseFloat(($("ap_g")||{}).value);
+  // 🍬 v0.26 · desglose opcional (fibra/azúcar/saturadas/sodio). Vacío o inválido → null = SIN dato
+  // (no se inventa un 0); el 0 tecleado sí se guarda (0 declarado se respeta, como en la base).
+  var fib=parseFloat(($("ap_fib")||{}).value), az=parseFloat(($("ap_az")||{}).value), sat=parseFloat(($("ap_sat")||{}).value), na=parseFloat(($("ap_na")||{}).value);
   if(!nombre){ toast("El nombre es obligatorio"); return; }
   if(!isFinite(kcal) || kcal<0 || !isFinite(p) || p<0){ toast("Kcal y proteína por 100 g son obligatorias"); return; }
   if(!isFinite(c)||c<0) c=0; if(!isFinite(g)||g<0) g=0;
   var arr=get(LS_ALIM,[]);
   arr.push({id:Date.now().toString(36)+Math.random().toString(36).slice(2,6), nombre:nombre, marca:marca||null,
-    ean:_apEan||null, porcion_g:(porcion>0?porcion:null), kcal100:kcal, p100:p, c100:c, g100:g});
+    ean:_apEan||null, porcion_g:(porcion>0?porcion:null), kcal100:kcal, p100:p, c100:c, g100:g,
+    fib100:(isFinite(fib)&&fib>=0?fib:null), az100:(isFinite(az)&&az>=0?az:null),
+    sat100:(isFinite(sat)&&sat>=0?sat:null), na100:(isFinite(na)&&na>=0?Math.round(na):null)});
   set(LS_ALIM,arr);
   comFillDatalist();                     // que aparezca YA en el buscador de la pestaña Comida
   apCerrar();
   toast("🍽 Guardado — búscalo por su nombre al añadir alimento");
 }
 // Los propios "disfrazados" de FOODS ({n,kcal,p,c,f} por 100 g) para reutilizar comAdd tal cual.
+// 🍬 v0.26 · fib/az/sat/na viajan SOLO si el propio los guardó (ausente = sin dato, como en la base;
+// el 0 declarado se respeta). Así el total de azúcar del día suma también tus alimentos creados a mano.
 function apComoFoods(){
   return get(LS_ALIM,[]).map(function(a){
-    return {n:a.nombre+(a.marca?" ("+a.marca+")":""), kcal:+a.kcal100||0, p:+a.p100||0, c:+a.c100||0, f:+a.g100||0, ean:(a.ean||null), propio:true};
+    var o={n:a.nombre+(a.marca?" ("+a.marca+")":""), kcal:+a.kcal100||0, p:+a.p100||0, c:+a.c100||0, f:+a.g100||0, ean:(a.ean||null), propio:true};
+    if(a.fib100!=null && isFinite(+a.fib100)) o.fib=+a.fib100;
+    if(a.az100!=null  && isFinite(+a.az100))  o.az=+a.az100;
+    if(a.sat100!=null && isFinite(+a.sat100)) o.sat=+a.sat100;
+    if(a.na100!=null  && isFinite(+a.na100))  o.na=+a.na100;
+    return o;
   });
 }
 // Datalist del buscador de Comida: primero tus alimentos (los usas más), luego la base curada.
@@ -9943,7 +10792,7 @@ function resetTodo(){ if(!confirm("⚠️ Esto borra TODO: perfil, pesos, entren
 // Reemplazo total con confirmación. Reusa get/set, hoyLocal, toast, validar, render. NO toca motor ni gate.
 function exportarJSON(){ try{ set("jvf_last_export",hoyLocal()); }catch(e){}
   try{
-    var data={ app:"jvf", schema:1, app_version:"0.24.0", exportadoEl:new Date().toISOString(),
+    var data={ app:"jvf", schema:1, app_version:"0.26.1", exportadoEl:new Date().toISOString(),
       perfil:get(LS_P,null), pesos:get(LS_W,[]), entrenos:get(LS_E,[]), notas_ej:get("jvf_notas_ej",{}), comida:get("jvf_comida",[]), agua:get("jvf_agua",{}), suples_cfg:get("jvf_suples_cfg",null), suples_log:get("jvf_suples_log",{}),
       rutinas:get("jvf_rutinas",[]), meals:get("jvf_meals",[]), ent_start:get("jvf_ent_start",null),   // v0.10 · backup completo
       alimentos_propios:get("jvf_alimentos_propios",[]), barcode_cache:get("jvf_barcode_cache",{}),   // I5/I6 · también viajan en el backup
@@ -13305,6 +14154,64 @@ var RUTINAS={
       {n:"Crunch en polea",s:2,rmin:12,rmax:20,rir:"0-1",desc:60,nota:"Abdomen con carga."}
     ]}
 };
+// [RUTINAS-AV-INICIO] NIVEL v0.14 · plantillas AVANZADO — volumen 16-22+/sem (T4; T19 ~16-20+) ·
+// compuestos pesados 5-8 RIR 1-2 (T23 regla v2/Tesis#2) · aislamientos RIR 0-1, fallo solo en
+// finales (T13) · mesociclo RIR 4→1 y deload gatillado (T4) · sin tempos/dead-stop (T31).
+// 34/34 filas de ejercicio verificadas contra EJERCICIOS por _tests/test-rutinas-nivel.node.js.
+// App-only: NO están en data/rutinas-catalogo.json (el "88/88" de arriba se refiere solo a las 13).
+var RUTINAS_AV={
+  torso_av:{nombre:"Torso (torso-pierna 4 días · avanzado)",nivel:"avanzado",porQue:"Torso×2 + Pierna×2 para avanzado que solo puede 4 días: los grupos grandes caen en ~14-18 series/sem — el techo práctico de 4 días, zona de solape con intermedio (la banda plena de avanzado es 16-22, T4; T19 refuerza ~16-20+): si puedes 5-6 días, el PPL×2 avanzado te da la banda completa. Compuestos PESADOS a 5-8 reps RIR 1-2 (T23 regla v2/Tesis#2), aislamientos RIR 0-1 — el fallo solo en los finales/aislados (T13). Doble progresión + mesociclo RIR 4→1 en 4-6 semanas (T4). Si te estancas o acumulas molestias: deload −40-50 % volumen 5-7 días (T4). 4 días que cumples > 6 que abandonas (Tesis#10/T24·C85). Descansos 90-180 s compuesto, 60-90 s aislamiento.",
+    ej:[
+      {n:"Press banca",s:4,rmin:5,rmax:8,rir:"1-2",desc:180,nota:"Empuje horizontal pesado, primero (T24). 5-8 reps: fuerza+hipertrofia con menos fatiga (T23)."},
+      {n:"Remo con barra",s:4,rmin:5,rmax:8,rir:"1-2",desc:150,nota:"Tirón horizontal pesado, equilibra el empuje."},
+      {n:"Press inclinado mancuernas",s:3,rmin:8,rmax:12,rir:"1-2",desc:120,nota:"Pecho superior (T8·C19)."},
+      {n:"Jalón al pecho",s:3,rmin:8,rmax:12,rir:"1-2",desc:90,nota:"Tirón vertical, dorsal."},
+      {n:"Elevaciones laterales",s:3,rmin:12,rmax:20,rir:"0-1",desc:60,nota:"Deltoides lateral; recibe poco indirecto, por eso directas."},
+      {n:"Curl con barra",s:2,rmin:8,rmax:12,rir:"0-1",desc:75,nota:"Bíceps directo (+ el indirecto de remos/jalón)."},
+      {n:"Extensión en polea (cuerda)",s:2,rmin:10,rmax:15,rir:"0-1",desc:75,nota:"Tríceps directo (+ el indirecto de los press)."}
+    ]},
+  pierna_av:{nombre:"Pierna (torso-pierna 4 días · avanzado)",nivel:"avanzado",porQue:"Torso×2 + Pierna×2 para avanzado que solo puede 4 días: los grupos grandes caen en ~14-18 series/sem — el techo práctico de 4 días, zona de solape con intermedio (la banda plena de avanzado es 16-22, T4; T19 refuerza ~16-20+): si puedes 5-6 días, el PPL×2 avanzado te da la banda completa. Compuestos PESADOS a 5-8 reps RIR 1-2 (T23 regla v2/Tesis#2), aislamientos RIR 0-1 — el fallo solo en los finales/aislados (T13). Doble progresión + mesociclo RIR 4→1 en 4-6 semanas (T4). Si te estancas o acumulas molestias: deload −40-50 % volumen 5-7 días (T4). 4 días que cumples > 6 que abandonas (Tesis#10/T24·C85). Descansos 90-180 s compuesto, 60-90 s aislamiento.",
+    ej:[
+      {n:"Sentadilla con barra",s:4,rmin:5,rmax:8,rir:"1-2",desc:180,nota:"Compuesto principal, primero (T24)."},
+      {n:"Peso muerto rumano",s:4,rmin:6,rmax:10,rir:"1-2",desc:150,nota:"Bisagra pesada: femoral/glúteo en estirado (T8·C21)."},
+      {n:"Prensa de piernas",s:3,rmin:8,rmax:12,rir:"1-2",desc:120,nota:"Volumen extra de cuádriceps con menos fatiga técnica."},
+      {n:"Curl femoral tumbado",s:3,rmin:10,rmax:15,rir:"0-1",desc:75,nota:"Femoral en flexión de rodilla (el RDL solo no basta)."},
+      {n:"Extensión de cuádriceps",s:2,rmin:10,rmax:15,rir:"0-1",desc:75,nota:"Cuádriceps aislado para rematar en banda de avanzado (T19)."},
+      {n:"Elevación de gemelo de pie",s:4,rmin:8,rmax:15,rir:"0-1",desc:60,nota:"Gemelo."},
+      {n:"Crunch en polea",s:2,rmin:12,rmax:20,rir:"0-1",desc:60,nota:"Abdomen con carga progresable."}
+    ]},
+  ppl_push_av:{nombre:"Push · empuje (avanzado)",nivel:"avanzado",porQue:"PPL×2 = 6 días para avanzado: frecuencia 2×/músculo y volumen en banda de avanzado 16-22 series/sem en pecho (T4; T19 refuerza ~16-20+). Mezcla fuerza+hipertrofia: compuestos PESADOS a 5-8 reps RIR 1-2 (T23 regla v2/Tesis#2) y aislamientos con RIR 0-1 — el fallo solo en los últimos aislados (T13). Femoral y brazos suman lo suyo del trabajo indirecto de los compuestos. Progresa con doble progresión + mesociclo RIR 4→1 en 4-6 semanas (T4). Si te estancas o acumulas molestias: deload −40-50 % volumen 5-7 días (T4). Si no llegas a 6 días, haz 5 y rota — la adherencia manda (Tesis#10/T24·C85). Descansos 90-180 s compuesto, 60-90 s aislamiento.",
+    ej:[
+      {n:"Press banca",s:4,rmin:5,rmax:8,rir:"1-2",desc:180,nota:"Empuje principal pesado, primero (T24)."},
+      {n:"Press inclinado mancuernas",s:3,rmin:8,rmax:12,rir:"1-2",desc:120,nota:"Pecho superior (T8·C19)."},
+      {n:"Cruces en polea",s:2,rmin:10,rmax:15,rir:"0-1",desc:75,nota:"Pecho con tensión constante y en estirado (T8·C21)."},
+      {n:"Press militar con barra",s:3,rmin:5,rmax:8,rir:"1-2",desc:150,nota:"Hombro compuesto pesado."},
+      {n:"Elevaciones laterales",s:4,rmin:12,rmax:20,rir:"0-1",desc:60,nota:"Deltoides lateral, el que da anchura; volumen directo alto en avanzado."},
+      {n:"Extensión en polea (cuerda)",s:2,rmin:10,rmax:15,rir:"0-1",desc:75,nota:"Tríceps directo."},
+      {n:"Press francés",s:2,rmin:8,rmax:12,rir:"0-1",desc:75,nota:"Tríceps en estirado (cabeza larga)."}
+    ]},
+  ppl_pull_av:{nombre:"Pull · tirón (avanzado)",nivel:"avanzado",porQue:"PPL×2 = 6 días para avanzado: frecuencia 2×/músculo y volumen en banda de avanzado 16-22 series/sem en espalda (T4; T19 refuerza ~16-20+). Mezcla fuerza+hipertrofia: compuestos PESADOS a 5-8 reps RIR 1-2 (T23 regla v2/Tesis#2) y aislamientos con RIR 0-1 — el fallo solo en los últimos aislados (T13). Bíceps suma lo suyo del trabajo indirecto de dominadas y remos. Progresa con doble progresión + mesociclo RIR 4→1 en 4-6 semanas (T4). Si te estancas o acumulas molestias: deload −40-50 % volumen 5-7 días (T4). Si no llegas a 6 días, haz 5 y rota — la adherencia manda (Tesis#10/T24·C85). Descansos 90-180 s compuesto, 60-90 s aislamiento.",
+    ej:[
+      {n:"Dominadas",s:4,rmin:5,rmax:8,rir:"1-2",desc:180,nota:"Tirón vertical pesado; lastra cuando superes el rango."},
+      {n:"Remo con barra",s:3,rmin:5,rmax:8,rir:"1-2",desc:150,nota:"Tirón horizontal pesado, grosor de espalda."},
+      {n:"Jalón al pecho",s:3,rmin:8,rmax:12,rir:"1-2",desc:90,nota:"Dorsal; complementa las dominadas."},
+      {n:"Pájaros (deltoides posterior)",s:3,rmin:12,rmax:20,rir:"0-1",desc:60,nota:"Deltoides posterior."},
+      {n:"Curl con barra",s:3,rmin:8,rmax:12,rir:"0-1",desc:75,nota:"Bíceps directo."},
+      {n:"Curl inclinado con mancuernas",s:2,rmin:10,rmax:15,rir:"0-1",desc:75,nota:"Bíceps en estirado (T18·C61)."}
+    ]},
+  ppl_legs_av:{nombre:"Legs · pierna (avanzado)",nivel:"avanzado",porQue:"PPL×2 = 6 días para avanzado: frecuencia 2×/músculo y volumen en banda de avanzado 16-22 series/sem en cuádriceps (T4; T19 refuerza ~16-20+). Mezcla fuerza+hipertrofia: compuestos PESADOS a 5-8 reps RIR 1-2 (T23 regla v2/Tesis#2) y aislamientos con RIR 0-1 — el fallo solo en los últimos aislados (T13). Femoral suma al directo el indirecto de sentadilla y prensa. Progresa con doble progresión + mesociclo RIR 4→1 en 4-6 semanas (T4). Si te estancas o acumulas molestias: deload −40-50 % volumen 5-7 días (T4). Si no llegas a 6 días, haz 5 y rota — la adherencia manda (Tesis#10/T24·C85). Descansos 90-180 s compuesto, 60-90 s aislamiento.",
+    ej:[
+      {n:"Sentadilla con barra",s:4,rmin:5,rmax:8,rir:"1-2",desc:180,nota:"Compuesto principal, primero (T24)."},
+      {n:"Peso muerto rumano",s:3,rmin:6,rmax:10,rir:"1-2",desc:150,nota:"Femoral/glúteo en estirado (T8·C21)."},
+      {n:"Prensa de piernas",s:3,rmin:8,rmax:12,rir:"1-2",desc:120,nota:"Volumen extra de cuádriceps."},
+      {n:"Curl femoral tumbado",s:3,rmin:10,rmax:15,rir:"0-1",desc:75,nota:"Femoral aislado."},
+      {n:"Extensión de cuádriceps",s:2,rmin:10,rmax:15,rir:"0-1",desc:75,nota:"Cuádriceps aislado; remata la banda de avanzado (T19)."},
+      {n:"Elevación de gemelo de pie",s:4,rmin:8,rmax:15,rir:"0-1",desc:60,nota:"Gemelo."},
+      {n:"Crunch en polea",s:2,rmin:12,rmax:20,rir:"0-1",desc:60,nota:"Abdomen con carga."}
+    ]}
+};
+for(var _kAv in RUTINAS_AV) RUTINAS[_kAv]=RUTINAS_AV[_kAv];   // merge: las 13 originales quedan byte-intactas
+// [RUTINAS-AV-FIN]
 // Recomienda rutinas según "qué quieres mejorar" (w_prioridad), material, días/semana y nivel.
 // Regla dictada por Pablo: si el usuario pone "todo" (o nada concreto) -> PPL básicos según los días.
 // B v0.12 · el NIVEL elige la variante: solo si el usuario DIJO ser intermedio/avanzado se le dan
@@ -13563,6 +14470,7 @@ function entVistaRender(){
   show("ent_v_home", _entVista==="home");
   show("ent_v_registro", _entVista==="registro");
   show("ent_v_editor", _entVista==="editor");
+  show("ent_v_explorar", _entVista==="explorar"); if(_entVista==="explorar"){ try{ expNivRender(); }catch(e){} }
   if(_entVista==="home"){ try{ renderMisRutinas(); entCtaRutina(); entHomeCurso(); hintNovato(); depSesInit(); depSesRender(); }catch(e){} }
 }
 
@@ -15194,6 +16102,91 @@ function initSwipe(){
   }, {passive:true});
 }
 initSwipe();
+
+// ======= NIVEL v0.14 · EXPLORAR RUTINAS POR NIVEL =======
+// Autocontenido (prefijo expNiv, cero colisiones). Lee RUTINAS y EJERCICIOS; no toca motor,
+// gate, render() ni localStorage. Enganchado a la app con UNA línea en entVistaRender().
+// [EXPNIV-PURE-INICIO] helpers puros y deterministas (testeados en _tests/test-rutinas-nivel.node.js)
+var _expNivMapaM=null;
+function expNivMapa(){   // nombre de ejercicio → músculo primario (lookup de EJERCICIOS, construido 1 vez)
+  if(!_expNivMapaM){ _expNivMapaM={}; for(var i=0;i<EJERCICIOS.length;i++){ var e=EJERCICIOS[i]; if(!_expNivMapaM[e.n]) _expNivMapaM[e.n]=e.m; } }
+  return _expNivMapaM;
+}
+function expNivKeys(nivel){ var out=[]; for(var k in RUTINAS){ if(RUTINAS[k].nivel===nivel) out.push(k); } return out; }
+function expNivGrupos(key){ var r=RUTINAS[key]; if(!r) return []; var mapa=expNivMapa(), out=[];
+  r.ej.forEach(function(e){ var m=mapa[e.n]; if(m && out.indexOf(m)<0) out.push(m); });
+  return out;
+}
+function expNivTiempo(key){ var r=RUTINAS[key]; if(!r) return 0; var seg=0;
+  r.ej.forEach(function(e){ seg += e.s*((e.desc||90)+35); });   // ~35 s de ejecución por serie: estimación de logística, NO ciencia
+  return Math.max(5, Math.round(seg/60/5)*5);
+}
+function expNivDias(key){ var r=RUTINAS[key]; if(!r) return "";
+  var m=/(\d)\s*días/.exec(r.nombre||"") || /(\d)\s*días/.exec(r.porQue||"") || /(\d)×\/sem/.exec(r.porQue||"");
+  return m ? m[1]+" días/sem" : "";
+}
+// [EXPNIV-PURE-FIN]
+
+// --- UI del explorador (usa .rutcard/.eyebrow-lbl/esc()/t() existentes; textos nuevos TODO-i18n) ---
+var _expNivSel=null;   // key de la rutina en previsualización; null = lista
+var EXPNIV_META=[
+  {nivel:"principiante",icono:"🌱",titulo:"Principiante",sub:"Para aprender la técnica sin prisa."},
+  {nivel:"intermedio",icono:"💪",titulo:"Intermedio",sub:"Ya dominas la técnica: más volumen y RIR más apurado."},
+  {nivel:"avanzado",icono:"🏆",titulo:"Avanzado",sub:"Años entrenando: pesado, más series y deload cuando el cuerpo lo pida."}
+];
+function expNivIr(){ _expNivSel=null; entVista("explorar"); }   // anti-zombi: siempre entra en la lista
+function expNivChips(key){
+  var grupos=expNivGrupos(key), dias=expNivDias(key), min=expNivTiempo(key);
+  return "<span class='expniv-chip'>🎯 "+esc(grupos.join(" · "))+"</span>"
+    +"<span class='expniv-chip'>⏱ ≈"+min+" min</span>"
+    +(dias?"<span class='expniv-chip'>📅 "+esc(dias)+"</span>":"");
+}
+function expNivCard(key){
+  var r=RUTINAS[key]; if(!r) return "";
+  var frase=(r.porQue||"").split(". ")[0]; if(frase&&!/\.$/.test(frase)) frase+=".";
+  return "<div class='rutcard'>"
+    +"<div class='rc-nombre'>"+esc(r.nombre)+"</div>"
+    +"<div>"+expNivChips(key)+"</div>"
+    +"<div class='expniv-porque'>"+esc(frase)+"</div>"
+    +"<button class='btn-lg' type='button' aria-label='Ver la rutina "+esc(r.nombre)+"' onclick='expNivAbrir(\""+key+"\")'>👀 Ver rutina</button>"
+    +"</div>";
+}
+function expNivAbrir(key){ if(!RUTINAS[key]) return; _expNivSel=key; expNivRender(); window.scrollTo(0,0); }
+function expNivVolver(){ _expNivSel=null; expNivRender(); window.scrollTo(0,0); }
+function expNivPreview(key){
+  var r=RUTINAS[key];
+  var h="<button class='sec entback' type='button' aria-label='Volver a la lista por nivel' onclick='expNivVolver()'>← Por nivel</button>"
+    +"<h2>"+esc(r.nombre)+"</h2>"
+    +"<div>"+expNivChips(key)+"</div>"
+    +"<details open style='margin-top:10px'><summary>🎓 ¿Por qué esta rutina?</summary><p class='hint'>"+esc(r.porQue)+"</p>"
+    +"<p class='hint'>En cristiano: <b style='color:var(--soft)'>RIR</b> = repes que te guardas (RIR 2 = paras pudiendo hacer 2 más) · <b style='color:var(--soft)'>deload</b> = semana suave para recuperar · las citas (T4, T23…) son los temas del conocimiento validado de la casa.</p></details>"
+    +"<div class='eyebrow-lbl' style='margin-top:14px'>Ejercicios ("+r.ej.length+")</div>";
+  r.ej.forEach(function(e){
+    h+="<div style='padding:8px 0;border-bottom:1px solid var(--line-soft)'>"
+      +"<b>"+esc(e.n)+"</b> — "+e.s+"×"+e.rmin+"-"+e.rmax+" · RIR "+esc(e.rir)+" · descanso "+e.desc+" s"
+      +(e.nota?"<br><span class='hint'>"+esc(e.nota)+"</span>":"")
+      +"</div>";
+  });
+  h+="<button class='btn-lg' type='button' style='margin-top:14px' aria-label='Empezar la rutina "+esc(r.nombre)+"' onclick='entRutCatEmpezar(\""+key+"\")'>"+t("rut_empezar")+"</button>";
+  return h;
+}
+function expNivRender(){
+  var el=$("ent_v_explorar"); if(!el) return;
+  if(_expNivSel && RUTINAS[_expNivSel]){ el.innerHTML=expNivPreview(_expNivSel); return; }
+  var h="<button class='sec entback' type='button' onclick='entVista(\"home\")'>"+t("ent_volver")+"</button>"
+    +"<h2>🗂️ Rutinas por nivel</h2>"
+    +"<p class='hint'>Todo el catálogo, con su porqué anclado al conocimiento de la casa. Elige por tu experiencia real, no por ego: en la duda, un nivel menos y a progresar. Tocas, empiezas y se registra como cualquier entreno.</p>";
+  EXPNIV_META.forEach(function(mt){
+    var keys=expNivKeys(mt.nivel);
+    h+="<div class='eyebrow-lbl' style='margin-top:18px'>"+mt.icono+" "+mt.titulo+" ("+keys.length+")</div>"
+      +"<div class='expniv-sub'>"+esc(mt.sub)+"</div>";
+    keys.forEach(function(k){ h+=expNivCard(k); });
+  });
+  el.innerHTML=h;
+}
+function expNivBtnSync(){ try{ var b=$("expniv_btn"); if(b) b.textContent="🗂️ Ver todas las rutinas por nivel ("+Object.keys(RUTINAS).length+")"; }catch(e){} }
+expNivBtnSync();
+
 render();
 </script>
 <script>
