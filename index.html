@@ -550,7 +550,7 @@
 <header class="brandbar">
   <div class="logo"><span class="dot"></span>JV <b>Fitness</b></div>
   <div style="display:flex;align-items:center">
-    <span class="tag">MVP v0.26.1 · motor v0.7</span>
+    <span class="tag">MVP v0.27.1 · motor v0.7</span>
     <!-- ⚙️ tanda #22 · hub de AJUSTES (no es pestaña): modal a pantalla completa -->
     <button class="gearbtn" id="btn_hub" type="button" title="Ajustes" aria-label="Abrir ajustes" onclick="hubAbrir()">⚙️</button>
   </div>
@@ -854,6 +854,8 @@
   <!-- M1 · chips de contexto (opcional): capturan el "por qué" del día junto al peso. Los pinta flexPesoChipsRender() -->
   <div id="flex_peso_chips" class="flexchips"></div>
   <button class="btn-lg" onclick="registrarPeso()">Guardar peso</button>
+  <!-- ✏️ v0.27 · lápiz pesajes (spec 13-07): Eliminar SOLO visible en modo edición (editarPeso lo muestra y le pone su onclick) -->
+  <button class="sec" id="r_borrar" style="display:none" onclick="">🗑 Eliminar</button>
   <p class="hint">El peso diario sube/baja por agua y glucógeno. <b style="color:var(--soft)">Manda la media semanal</b>, no el dato de un día.</p>
   <div id="r_tabla"></div>
 </div>
@@ -5498,7 +5500,7 @@ function comCopiarAyer(){
   var full=get(LS_COMIDA,[]), deAyer=full.filter(function(x){ return x.f===ayer; });
   if(!deAyer.length){ toast("Ayer ("+ayer+") no hay nada apuntado"); return; }
   // Fix ml · u viaja en la copia (si el item era en ml, la copia también); en los antiguos queda undefined y JSON lo omite (= g)
-  deAyer.forEach(function(x){ full.push({id:Date.now().toString(36)+Math.random().toString(36).slice(2,6), f:f, n:x.n, g:x.g, u:x.u, kcal:x.kcal, p:x.p, c:x.c, gr:x.gr, fib:x.fib||0, az:x.az||0, sat:x.sat||0, na:x.na||0}); });
+  deAyer.forEach(function(x){ full.push({id:Date.now().toString(36)+Math.random().toString(36).slice(2,6), f:f, n:x.n, g:x.g, u:x.u, ean:x.ean, kcal:x.kcal, p:x.p, c:x.c, gr:x.gr, fib:x.fib||0, az:x.az||0, sat:x.sat||0, na:x.na||0}); });   // [ETIQ] ean viaja en la copia (undefined en items viejos → JSON lo omite)
   set(LS_COMIDA,full); renderComida(); toast("⧉ Copiado el día de ayer ("+deAyer.length+" alimentos)");
 }
 function comRecientes(){
@@ -5659,6 +5661,40 @@ function aplicarOverride(f, ovr){
   return out;
 }
 // [OVR-PURE-FIN]
+// [ETIQ-PURE-INICIO] — 📋 «LA ETIQUETA MANDA» (v0.27.1, cubo 🔴 guardarraíl de datos): la corrección
+// que el usuario copia de la etiqueta FÍSICA gana a CUALQUIER base (OFF / curada / Base España / caché)
+// en TODOS los caminos — escáner, buscador, ficha, re-añadir del historial y totales del día. PURO
+// (sin DOM/red/storage): _tests/test-etiqueta-manda.node.js extrae este bloque y lo evalúa tal cual.
+// ovrAplicarAScanner: traduce un parche en claves de FICHA (kcal/p/c/f/fib/az/sat/na, na en mg) al
+// view-model del ESCÁNER (kcal100/p100/c100/g100/…). MUTA prod a propósito (mismo contrato que el
+// bloque inline histórico de bcConfirmar, que ahora delega aquí) y lo devuelve. Sin parche → intacto.
+function ovrAplicarAScanner(prod, patch){
+  if(!prod || typeof prod!=="object" || !patch || typeof patch!=="object") return prod;
+  if(patch.kcal!=null) prod.kcal100=patch.kcal; if(patch.p!=null) prod.p100=patch.p;
+  if(patch.c!=null) prod.c100=patch.c;         if(patch.f!=null) prod.g100=patch.f;
+  if(patch.fib!=null) prod.fib100=patch.fib;   if(patch.az!=null) prod.az100=patch.az;
+  if(patch.sat!=null) prod.sat100=patch.sat;   if(patch.na!=null) prod.na100=patch.na;
+  prod._edit=true;
+  return prod;
+}
+// ovrHistPer100: item del historial/diario (macros TOTALES para h.g gramos) → per-100 CON tu
+// corrección aplicada, o null si NO hay parche (el caller sigue su camino de siempre: retrocompat
+// total, ni una cifra cambia sin override). Doble lookup con la MISMA prioridad que ovrPorClave:
+// primero por EAN (items nuevos lo guardan), si no matchea se reintenta por nombre (items antiguos
+// sin EAN, o parches guardados por nombre desde la ficha de un escaneado). Reutiliza
+// fichaPor100DeTotales ([FICHA-PURE]) + aplicarOverride ([OVR-PURE]) — misma <script>, hoisting.
+function ovrHistPer100(h, ovr){
+  if(!h || typeof h!=="object" || !ovr || typeof ovr!=="object") return null;
+  var v=fichaPor100DeTotales(h); if(!v) return null;
+  var out=aplicarOverride(v, ovr);
+  if(out===v && v.ean!=null){                     // sin match por EAN → reintento por nombre (parche antiguo "nom:")
+    var v2={}, c;
+    for(c in v){ if(Object.prototype.hasOwnProperty.call(v,c) && c!=="ean") v2[c]=v[c]; }
+    out=aplicarOverride(v2, ovr);
+  }
+  return (out && out._edit===true) ? out : null;
+}
+// [ETIQ-PURE-FIN]
 // ✏️ A4 · store + resolutor del override (IMPURO: usa get/set). LS_OVR = { clave: {campos…, _ts, _fuente} }.
 var LS_OVR="jvf_overrides";
 function ovrAll(){ var o=get(LS_OVR,{}); return (o && typeof o==="object" && !Array.isArray(o))?o:{}; }
@@ -5727,20 +5763,20 @@ function histSync(){
   var ult={};
   full.forEach(function(x,i){
     if(!x || typeof x.n!=="string" || !x.n || !(+x.g>0)) return;
-    ult[x.n.toLowerCase()]={ n:x.n, g:+x.g, u:comUnidad(x), fecha:x.f||"", rank:i, kcal:+x.kcal||0, p:+x.p||0, c:+x.c||0, gr:+x.gr||0, fib:+x.fib||0, az:+x.az||0, sat:+x.sat||0, na:+x.na||0 };   // B2 · arrastra macros → re-añadir clona (funciona con escaneados)
+    ult[x.n.toLowerCase()]={ n:x.n, g:+x.g, u:comUnidad(x), fecha:x.f||"", rank:i, ean:(x.ean!=null&&x.ean!==""?String(x.ean):null), kcal:+x.kcal||0, p:+x.p||0, c:+x.c||0, gr:+x.gr||0, fib:+x.fib||0, az:+x.az||0, sat:+x.sat||0, na:+x.na||0 };   // B2 · arrastra macros → re-añadir clona (funciona con escaneados) · [ETIQ] el EAN también viaja → tu corrección por EAN alcanza el re-añadir
   });
   var out=[], seen={};
   // 1) arrastra el historial anterior en su orden; si el alimento reaparece en el diario, se refresca
   prev.forEach(function(h){
     if(!h || typeof h.n!=="string" || !h.n) return;
     var key=h.n.toLowerCase(); if(seen[key]) return; seen[key]=1;
-    if(ult[key]) out.push({ n:ult[key].n, g:ult[key].g, u:ult[key].u, fecha:ult[key].fecha, kcal:ult[key].kcal, p:ult[key].p, c:ult[key].c, gr:ult[key].gr, fib:ult[key].fib, az:ult[key].az, sat:ult[key].sat, na:ult[key].na });   // A19 · el sodio también viaja al historial (antes se perdía → re-añadir lo ponía a 0)
-    else out.push({ n:h.n, g:(+h.g>0?+h.g:100), u:(h.u==="ml"?"ml":"g"), fecha:h.fecha||"", kcal:+h.kcal||0, p:+h.p||0, c:+h.c||0, gr:+h.gr||0, fib:+h.fib||0, az:+h.az||0, sat:+h.sat||0, na:+h.na||0 });
+    if(ult[key]) out.push({ n:ult[key].n, g:ult[key].g, u:ult[key].u, fecha:ult[key].fecha, ean:ult[key].ean, kcal:ult[key].kcal, p:ult[key].p, c:ult[key].c, gr:ult[key].gr, fib:ult[key].fib, az:ult[key].az, sat:ult[key].sat, na:ult[key].na });   // A19 · el sodio también viaja al historial (antes se perdía → re-añadir lo ponía a 0)
+    else out.push({ n:h.n, g:(+h.g>0?+h.g:100), u:(h.u==="ml"?"ml":"g"), fecha:h.fecha||"", ean:(h.ean!=null&&h.ean!==""?String(h.ean):null), kcal:+h.kcal||0, p:+h.p||0, c:+h.c||0, gr:+h.gr||0, fib:+h.fib||0, az:+h.az||0, sat:+h.sat||0, na:+h.na||0 });
   });
   // 2) añade al final los alimentos nuevos del diario (por orden de aparición)
   Object.keys(ult).sort(function(a,b){ return ult[a].rank-ult[b].rank; }).forEach(function(key){
     if(seen[key]) return; seen[key]=1;
-    out.push({ n:ult[key].n, g:ult[key].g, u:ult[key].u, fecha:ult[key].fecha, kcal:ult[key].kcal, p:ult[key].p, c:ult[key].c, gr:ult[key].gr, fib:ult[key].fib, az:ult[key].az, sat:ult[key].sat, na:ult[key].na });   // A19 · el sodio también viaja al historial (antes se perdía → re-añadir lo ponía a 0)
+    out.push({ n:ult[key].n, g:ult[key].g, u:ult[key].u, fecha:ult[key].fecha, ean:ult[key].ean, kcal:ult[key].kcal, p:ult[key].p, c:ult[key].c, gr:ult[key].gr, fib:ult[key].fib, az:ult[key].az, sat:ult[key].sat, na:ult[key].na });   // A19 · el sodio también viaja al historial (antes se perdía → re-añadir lo ponía a 0)
   });
   set(LS_HIST_ALIM,out);
   return out;
@@ -5836,6 +5872,19 @@ function histCloneAdd(nombre, g){
   var it={id:Date.now().toString(36)+Math.random().toString(36).slice(2,6), f:(($("com_fecha")||{}).value||hoyLocal()), n:h.n, g:+g,
     kcal:Math.round((+h.kcal||0)*f), p:+((+h.p||0)*f).toFixed(1), c:+((+h.c||0)*f).toFixed(1), gr:+((+h.gr||0)*f).toFixed(1),
     fib:+((+h.fib||0)*f).toFixed(1), az:+((+h.az||0)*f).toFixed(1), sat:+((+h.sat||0)*f).toFixed(1), na:Math.round((+h.na||0)*f)};
+  // 📋 v0.27.1 [ETIQ] · «la etiqueta manda» TAMBIÉN al re-añadir un escaneado que no vive en la base:
+  // si corregiste este producto (✏️/📋, por EAN o por nombre), el clon se recalcula desde TU per-100
+  // (ovrHistPer100, pura) en vez de arrastrar los totales viejos pre-corrección. Sin parche → ni se toca.
+  try{
+    var _e=ovrHistPer100(h, ovrAll());
+    if(_e){ var _k=(+g)/100;
+      it.kcal=Math.round((+_e.kcal||0)*_k); it.p=+(((+_e.p||0))*_k).toFixed(1);
+      it.c=+(((+_e.c||0))*_k).toFixed(1);   it.gr=+(((+_e.f||0))*_k).toFixed(1);
+      if(_e.fib!=null) it.fib=+((+_e.fib)*_k).toFixed(1); if(_e.az!=null) it.az=+((+_e.az)*_k).toFixed(1);
+      if(_e.sat!=null) it.sat=+((+_e.sat)*_k).toFixed(1); if(_e.na!=null) it.na=Math.round((+_e.na)*_k);
+    }
+  }catch(e){}
+  if(h.ean!=null && h.ean!=="") it.ean=String(h.ean);   // [ETIQ] el EAN sigue viajando (diario → historial → clon)
   if(h.u==="ml") it.u="ml";
   it.ts=Date.now();   // 📊 A20 · marca de tiempo (igual que comAdd) para aprender la hora de cierre
   arr.push(it); set(LS_COMIDA,arr);
@@ -9243,17 +9292,12 @@ function bcConfirmar(prod){
     prod.uMotivo="es agua: 0 kcal y por ml (corrígelo si tu etiqueta dice otra cosa)";
   }
   if(prod.u!=="ml") prod.u="g";                    // saneo: cualquier camino sin unidad clara = gramos
-  // ✏️ A4/A22 · si ya corregiste este producto (en su ficha), tu dato MANDA también al escanear. Aditivo y
-  // guardado: sin override no cambia nada. Traduce los nombres de campo de la ficha (kcal/p/c/f…) a los del escáner.
+  // ✏️ A4/A22 · si ya corregiste este producto (en su ficha o con 📋), tu dato MANDA también al escanear.
+  // Aditivo y guardado: sin override no cambia nada. v0.27.1: la traducción ficha→escáner vive en
+  // ovrAplicarAScanner ([ETIQ-PURE], testeada en node) — mismo contrato que el bloque inline histórico.
   try{
     var _ov=ovrPorClave(prod.ean, prod.nombre);
-    if(_ov){
-      if(_ov.kcal!=null) prod.kcal100=_ov.kcal; if(_ov.p!=null) prod.p100=_ov.p;
-      if(_ov.c!=null) prod.c100=_ov.c;         if(_ov.f!=null) prod.g100=_ov.f;
-      if(_ov.fib!=null) prod.fib100=_ov.fib;   if(_ov.az!=null) prod.az100=_ov.az;
-      if(_ov.sat!=null) prod.sat100=_ov.sat;   if(_ov.na!=null) prod.na100=_ov.na;
-      prod._edit=true;
-    }
+    if(_ov) ovrAplicarAScanner(prod, _ov);
   }catch(e){}
   _bcUnidadIn=prod.u;                              // la cantidad se pregunta en LA UNIDAD del producto
   var res=$("bc_res"); if(!res) return;
@@ -9298,6 +9342,18 @@ function bcConfirmar(prod){
     + bcFila("Proteínas (g)","bc_p",bcRed(prod.p100,1),true,false)
     + bcFila("Sal (g)","bc_sal",(prod.na100!=null?+((prod.na100*2.5/1000).toFixed(2)):null),false,false)
     +"</div>";
+  // ⚠️ v0.27.1 [ETIQ] · badge de coherencia [ATWATER-PURE] TAMBIÉN en el resultado del escáner (antes
+  // solo en la ficha y el buscador): energía⇄macros fuera de tolerancia → señal honesta, SIN bloquear
+  // nada, enlazada al botón 📋 de abajo. Misma tolerancia de siempre (0,5×–1,7× de 4P+4C+9G).
+  var _atw=null; try{ _atw=atwaterCheck({kcal:prod.kcal100, p:prod.p100, c:prod.c100, f:prod.g100}); }catch(e){}
+  if(_atw && _atw.ok===false) h+="<div class='aviso' style='margin-top:8px'>⚠️ Dato dudoso — "+esc(_atw.motivo)
+    +". <a href='#' style='color:inherit;text-decoration:underline' onclick=\"var b=document.getElementById('bc_btn_etiq');if(b){b.scrollIntoView({block:'center'});b.focus();}return false;\">Compara con la etiqueta física y corrígelo aquí</a>.</div>";
+  // 📋 v0.27.1 [ETIQ] · «Corregir con la etiqueta»: guarda la tabla DE PANTALLA (lo que acabas de
+  // cotejar con el envase) como TU corrección persistente — jvf_overrides, MISMO almacén y claves
+  // (ean:/nom:) que el ✏️ de la ficha. Manda sobre OFF/curada/Base España/caché en el escáner, el
+  // buscador, la ficha y los totales, para siempre (y viaja en el backup).
+  h+="<button class='sec' type='button' id='bc_btn_etiq' onclick='bcCorregirEtiqueta()'>📋 Corregir con la etiqueta (guardar mi dato)</button>";
+  if(prod._edit) h+="<div class='hint' style='margin-top:4px'><span style='color:var(--jade)'>✏️ corregido por ti</span> — tus valores mandan sobre la base; se revierte desde la ficha del alimento (↩️).</div>";
   // v0.13 · L2: honestidad "está pero incompleto" — el producto SÍ existe en la base, lo que
   // faltan son datos (ficha colaborativa a medias). Se dice tal cual y se ofrece el alta manual
   // PREFIJADA con el nombre, en vez del genérico "no encontrado" o de dejarle pelearse a ciegas.
@@ -9368,6 +9424,29 @@ function bcUnidadBase(){
   prod.uMotivo="corregida a mano por ti (la ficha de OFF decía lo contrario)";
   bcConfirmar(prod);
 }
+// 📋 v0.27.1 [ETIQ] · «la etiqueta manda»: persiste lo que hay EN PANTALLA (la tabla que el usuario
+// acaba de cotejar con la etiqueta FÍSICA) como corrección en jvf_overrides — MISMO almacén, MISMAS
+// claves (ean: si hay código, nom: si no) y MISMO formato de parche que fichaCorregirGuardar (el ✏️
+// de la ficha): cero sistemas nuevos, el revert (↩️) de la ficha también le sirve. Campo vacío = no
+// se parchea (usa el valor de la base, como en la ficha). Después re-pinta la confirmación por el
+// camino de SIEMPRE (bcConfirmar re-aplica el parche vía ovrPorClave+ovrAplicarAScanner): lo que ves
+// es exactamente lo que quedó guardado. Determinista, sin IA.
+function bcCorregirEtiqueta(){
+  var prod=_bcProducto; if(!prod){ toast("Escanea o busca un código primero"); return; }
+  function rd(id){ var el=$(id); if(!el) return null; var s=(el.value==null?"":String(el.value)).trim(); if(s==="") return null; var n=+s.replace(",","."); return (isFinite(n)&&n>=0)?n:null; }
+  var _sal=rd("bc_sal");   // la tabla pide SAL en g (como el envase) → el parche guarda sodio en mg (sal g × 400)
+  var campos={kcal:rd("bc_kcal"), p:rd("bc_p"), c:rd("bc_c"), f:rd("bc_g"), fib:rd("bc_fib"), az:rd("bc_az"), sat:rd("bc_sat"), na:(_sal!=null?Math.round(_sal*400):null)};
+  var patch={}, algo=false, kk;
+  for(kk in campos){ if(campos[kk]!=null){ patch[kk]=campos[kk]; algo=true; } }
+  if(!algo){ toast("Copia al menos un valor de la etiqueta (kcal, proteína…)"); return; }
+  var key=ovrKey({n:prod.nombre, ean:prod.ean}); if(!key){ toast("No puedo identificar este alimento para guardar la corrección"); return; }
+  patch._ts=Date.now(); patch._fuente="editado por ti";
+  var all=ovrAll(); all[key]=patch; set(LS_OVR, all);
+  var _nom=((($("bc_nombre")||{}).value)||"").trim(); if(_nom) prod.nombre=_nom;              // conserva el nombre tecleado al re-pintar
+  var _cant=parseFloat((($("bc_gramos")||{}).value)); if(_cant>0) prod._cant=_cant;           // y la cantidad (patrón bcUnidadBase)
+  bcConfirmar(prod);
+  toast("📋 Guardado — tu etiqueta manda ya en escáner, buscador, ficha y totales");
+}
 function bcAddDiario(){
   var prod=_bcProducto; if(!prod){ toast("Escanea o busca un código primero"); return; }
   var nombre=((($("bc_nombre")||{}).value)||"").trim();
@@ -9391,6 +9470,9 @@ function bcAddDiario(){
   // (los items antiguos no llevan u → gramos). Los macros van escalados de por-100 a lo comido.
   var _it={id:Date.now().toString(36)+Math.random().toString(36).slice(2,6), f:((($("com_fecha")||{}).value)||hoyLocal()),
     n:nombre, g:g, u:uIn, kcal:Math.round(kcal*k), p:+(p*k).toFixed(1), c:+(c*k).toFixed(1), gr:+(gr*k).toFixed(1)};
+  // 📋 v0.27.1 [ETIQ] · el EAN viaja con el item del diario → historial (histSync) → la corrección
+  // por EAN (📋/✏️) alcanza también el re-añadir y la ficha del item. Items antiguos sin ean = nom:.
+  if(prod.ean) _it.ean=String(prod.ean);
   if(fib!=null) _it.fib=+(fib*k).toFixed(1);
   if(az!=null)  _it.az=+(az*k).toFixed(1);
   if(sat!=null) _it.sat=+(sat*k).toFixed(1);
@@ -10034,7 +10116,11 @@ function fichaPor100DeTotales(it){
   if(!it || typeof it!=="object") return null;
   var g=fichaNum(it.g); if(g==null || g<=0) return null;
   function p100(v){ var n=fichaNum(v); return n==null?null:Math.round(n*100/g*10)/10; }
+  // 📋 v0.27.1 [ETIQ] · el EAN (si el item lo trae: escaneados desde v0.27.1) viaja al view-model →
+  // la corrección ✏️ de esta ficha se guarda/resuelve por EAN (misma clave que el escáner). Sin EAN
+  // (items antiguos, foto, manual) queda null → clave por nombre, como siempre.
   return { n:it.n, u:(it.u==="ml"?"ml":"g"), diario:true,
+    ean:((typeof it.ean==="string"||typeof it.ean==="number")&&String(it.ean)!==""?String(it.ean):null),
     kcal:p100(it.kcal), p:p100(it.p), c:p100(it.c), f:p100(it.gr),
     fib:p100(it.fib), az:p100(it.az), sat:p100(it.sat), na:p100(it.na) };
 }
@@ -10198,9 +10284,11 @@ function fichaRender(){
   h+= cal ? '<p class="hint" style="margin-top:4px;white-space:pre-line">'+esc(cal.motivos.map(function(m){ return m.txt; }).join("\n"))+'</p>'
           : '<p class="hint" style="margin-top:4px">Sin datos de azúcar/saturadas/sodio — no se juzga a ciegas.</p>';
   // ⚠️ A22 · aviso Atwater [ATWATER-PURE]: la energía no cuadra con los macros (posible error de unidad/aritmética).
+  // v0.27.1 [ETIQ] · el aviso enlaza directo al ✏️ Corregir (mismo botón de abajo): dato dudoso → etiqueta física.
   var atw=null; try{ atw=atwaterCheck(x); }catch(e){}
   if(atw && atw.ok===false){
-    h+='<p class="hint" style="margin-top:4px;color:var(--ember)">⚠️ Revisar — '+esc(atw.motivo)+' '+infoTip("revisar-atwater")+'</p>';
+    h+='<p class="hint" style="margin-top:4px;color:var(--ember)">⚠️ Dato dudoso — '+esc(atw.motivo)+' '+infoTip("revisar-atwater")
+      +' · <a href="#" style="color:inherit;text-decoration:underline" onclick="fichaCorregirAbrir();return false;">📋 corrígelo con la etiqueta</a></p>';
   }
   // 💊 A22 · vitaminas y minerales de mic{} (solo los que existan; "—" honesto = no se pinta nada si no hay)
   if(x.mic && typeof x.mic==="object"){
@@ -10792,7 +10880,7 @@ function resetTodo(){ if(!confirm("⚠️ Esto borra TODO: perfil, pesos, entren
 // Reemplazo total con confirmación. Reusa get/set, hoyLocal, toast, validar, render. NO toca motor ni gate.
 function exportarJSON(){ try{ set("jvf_last_export",hoyLocal()); }catch(e){}
   try{
-    var data={ app:"jvf", schema:1, app_version:"0.26.1", exportadoEl:new Date().toISOString(),
+    var data={ app:"jvf", schema:1, app_version:"0.27.1", exportadoEl:new Date().toISOString(),
       perfil:get(LS_P,null), pesos:get(LS_W,[]), entrenos:get(LS_E,[]), notas_ej:get("jvf_notas_ej",{}), comida:get("jvf_comida",[]), agua:get("jvf_agua",{}), suples_cfg:get("jvf_suples_cfg",null), suples_log:get("jvf_suples_log",{}),
       rutinas:get("jvf_rutinas",[]), meals:get("jvf_meals",[]), ent_start:get("jvf_ent_start",null),   // v0.10 · backup completo
       alimentos_propios:get("jvf_alimentos_propios",[]), barcode_cache:get("jvf_barcode_cache",{}),   // I5/I6 · también viajan en el backup
@@ -11485,6 +11573,22 @@ var CEREBRO_KB=[
     chips:["¿Y la creatina, esa sí que va para el músculo?","¿Cuánta proteína al día necesito de verdad?","¿Multivitamínico sí o no en mi caso?"]
   },
 
+  // ─────────────── TRONCO: SUPLEMENTACIÓN — GLUTAMINA ───────────────
+  {
+    tronco:"suplementacion", rama:"glutamina-no-hipertrofia",
+    claves:["glutamina","l glutamina","l-glutamina","tomar glutamina","sirve la glutamina","vale la pena la glutamina","glutamina para musculo","glutamina para recuperar","glutamina recuperacion","glutamina agujetas","glutamina sistema inmune","me tomo glutamina","la glutamina funciona","glutamina despues de entrenar"],
+    r:"La glutamina NO te va a dar más músculo ni más fuerza si ya comes suficiente proteína: en un ensayo controlado de 6 semanas con entreno de fuerza (0,9 g/kg de masa magra al día) no mejoró nada frente a placebo. Tu cuerpo ya la fabrica y la sacas de la comida. Su papel real es clínico (grandes quemados, problemas intestinales), no el gimnasio. Ahorra ese dinero para creatina y proteína, que sí funcionan. (— Candow 2001, ensayo controlado 6 semanas)",
+    chips:["¿qué suplementos SÍ funcionan?","¿cuánta proteína necesito?","¿la creatina sirve?"]
+  },
+
+  // ─────────────── TRONCO: VEGETARIANO / VEGANO ───────────────
+  {
+    tronco:"vegetariano", rama:"ganar-musculo-sin-carne",
+    claves:["vegetariano","vegano","sin carne","dieta vegetal","plant based","plantbased","basada en plantas","proteina vegetal","proteina sin carne","gano musculo sin carne","puedo ganar musculo vegano","puedo ganar musculo vegetariano","musculo siendo vegano","b12","vitamina b12","hierro vegano","hierro vegetal","omega 3 vegano","omega-3 vegano","suplementos vegano","creatina vegano","como llego a la proteina sin carne"],
+    r:"Se gana igual de músculo con dieta vegana que omnívora SIEMPRE que iguales la proteína (~1,6-2,0 g/kg): en un estudio en directo, veganos y omnívoros entrenados progresaron lo mismo. Las claves son cinco: (1) proteína algo más alta y VARIADA (legumbre+cereal, soja/tofu/tempeh, seitán), porque la proteína vegetal tiene menos leucina; (2) B12 SIEMPRE suplementada — no hay fuente vegetal fiable; (3) el hierro vegetal se absorbe peor: acompáñalo de vitamina C y vigílalo sobre todo si menstrúas; (4) omega-3 de aceite de ALGAS (EPA/DHA directos; la conversión desde lino/nueces es pobre); (5) creatina: los vegetarianos parten con menos reserva y RESPONDEN MÁS, casi obligada. (— Hevia-Larraín 2021 / Burke 2003 creatina en vegetarianos / consenso B12)",
+    chips:["¿cuánta proteína vegana?","¿qué suplementos como vegano?","¿la creatina es vegana?","¿de dónde saco el omega-3?"]
+  },
+
   // ─────────────── TRONCO: EXPECTATIVAS / LÓGICA TEMPORAL (spec 2 · 2026-07-09) ───────────────
   {
     tronco:"expectativas", rama:"cuando-veo-resultados",
@@ -11570,9 +11674,8 @@ var CEREBRO_COMBOS=[
 // huecosMaster — ramas ESPERABLES que el master NO cubre (NO inventadas aquí). Pendientes de que
 // Pablo alimente el master antes de escribir respuesta. El Cerebro las declina con honestidad.
 var CEREBRO_HUECOS=[
-  { tronco:"suplementacion", falta:"Sin cobertura propia de multivitamínico y glutamina (colágeno, vit. D, omega-3, ashwagandha, ZMA, BCAA y quemagrasas ya cubiertos)." },
+  { tronco:"suplementacion", falta:"Sin cobertura propia de multivitamínico (colágeno, vit. D, omega-3, ashwagandha, ZMA, BCAA, glutamina y quemagrasas ya cubiertos)." },
   { tronco:"lesiones", falta:"El Cerebro en sí no tiene dolor articular/tendinitis/movilidad; lo lleva el sub-motor LESIONES aparte, no CEREBRO_KB." },
-  { tronco:"vegetariano", falta:"Cómo llegar a la proteína y a los micros clave (B12, hierro, omega-3) sin carne o sin productos animales no está tratado." },
   { tronco:"embarazo", falta:"Entrenar y comer en embarazo/lactancia (con las cautelas médicas que exige) no está cubierto." },
   { tronco:"termorregulacion", falta:"Entrenar con calor extremo o frío, aclimatación y golpe de calor no tienen Tema propio más allá de la hidratación." }
 ];
@@ -13356,7 +13459,22 @@ function registrarPeso(){
   set(LS_W,ws); $("r_peso").value=""; _flexPesoCtxSel={}; render();
   var btn=document.querySelector('#registro button[onclick="registrarPeso()"]'); okFlash(btn); popEl(btn);
   toast(_conRopa ? ("✓ "+w.toFixed(1)+" kg (−"+_ajRopa+" ropa, aprox.)") : "✓ Peso guardado");
+  if($("r_borrar")) $("r_borrar").style.display="none";   // ✏️ v0.27 · guardar = salir del modo edición (spec 13-07)
 }
+// ✏️ v0.27 · LÁPIZ PESAJES (spec 13-07, UX de Pablo: SOLO un ✏️ por fila; Eliminar aparece al editar).
+// Guardar ya sobrescribe por fecha (registrarPeso hace .filter(x=>x.f!==f)) — aquí solo cargar y borrar.
+// [LAPIZ-PESO-INICIO] — lo extrae _tests/test-lapiz-pesajes.node.js (mocks de $, get/set, confirm, toast, render)
+function editarPeso(f){
+  const x=get(LS_W,[]).find(p=>p.f===f); if(!x) return;
+  $("r_fecha").value=x.f; $("r_peso").value=(+x.w).toFixed(1); $("r_peso").focus();
+  const b=$("r_borrar"); b.style.display=""; b.setAttribute("onclick","borrarPeso('"+f+"')");
+}
+function borrarPeso(f){
+  if(!confirm("¿Eliminar el pesaje del "+f+"?")) return;
+  set(LS_W, get(LS_W,[]).filter(x=>x.f!==f));
+  $("r_borrar").style.display="none"; toast("Pesaje eliminado"); render();
+}
+// [LAPIZ-PESO-FIN]
 function mediaSemana(ws,offsetDias){
   if(!ws.length) return null;
   const fin=new Date(ws[ws.length-1].f); fin.setDate(fin.getDate()-offsetDias);
@@ -15959,11 +16077,12 @@ function render(){
   $("aj_prot").value=pgkg; $("aj_grasa").value=ggkg;
   $("aj_carb").value=Math.round((carb/p.peso_kg)*10)/10; $("aj_cal").value=ov.cal_off||0;
 
+  if($("r_borrar")) $("r_borrar").style.display="none";   // ✏️ v0.27 · repintar la tabla = salir del modo edición (spec 13-07)
   const ws=get(LS_W,[]);
   if(ws.length){
     let h=pesoSpark(ws);
-    h+="<table><tr><th>Fecha</th><th>Peso</th></tr>";
-    ws.slice(-8).reverse().forEach(x=>{ var b=flexCtxBadges(x.ctx); h+=`<tr><td>${x.f}</td><td>${(+x.w).toFixed(1)} kg${b?` <span class="pesoctx">${b}</span>`:""}</td></tr>`; });
+    h+="<table><tr><th>Fecha</th><th>Peso</th><th></th></tr>";
+    ws.slice(-8).reverse().forEach(x=>{ var b=flexCtxBadges(x.ctx); h+=`<tr><td>${x.f}</td><td>${(+x.w).toFixed(1)} kg${b?` <span class="pesoctx">${b}</span>`:""}</td><td><button class="sec" style="padding:2px 8px" onclick="editarPeso('${x.f}')">✏️</button></td></tr>`; });
     $("r_tabla").innerHTML=h+"</table>";
   } else $("r_tabla").innerHTML="<div class='empty'><div class='ico'>⚖️</div><div class='et'>Empieza tu tendencia</div><div class='es'>Apunta el peso de hoy. En ~2 semanas la app calcula tu gasto REAL.</div></div>";
 
