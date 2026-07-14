@@ -550,7 +550,7 @@
 <header class="brandbar">
   <div class="logo"><span class="dot"></span>JV <b>Fitness</b></div>
   <div style="display:flex;align-items:center">
-    <span class="tag">MVP v0.27.1 · motor v0.7</span>
+    <span class="tag">MVP v0.27.2 · motor v0.7</span>
     <!-- ⚙️ tanda #22 · hub de AJUSTES (no es pestaña): modal a pantalla completa -->
     <button class="gearbtn" id="btn_hub" type="button" title="Ajustes" aria-label="Abrir ajustes" onclick="hubAbrir()">⚙️</button>
   </div>
@@ -2216,8 +2216,8 @@ var FOODS=[
   {n:"Aceite de oliva virgen serie oro (Coosur)",kcal:822,p:0,c:0,f:91,fib:0,az:0,sat:12,na:0,ean:"8411190040011"},
   {n:"Aceite La Masía Summum Intenso 1 º 5 Litros (La Masia)",kcal:824,p:0,c:0,f:92,fib:0,az:0,sat:14,na:0,ean:"8432580121059"},
   {n:"aceite oliva virgen extra (Hacendado)",kcal:819,p:0,c:0,f:91,fib:0,az:0,sat:14,na:0,ean:"8402001020612"},
-  {n:"Agua (Veri)",kcal:0,p:0,c:0,f:0,u:"ml",fib:0,az:0,sat:0,na:252,ean:"8413384222005"},
-  {n:"Agua con gas (Solan De Cabras)",kcal:1,p:0,c:0,f:0,u:"ml",fib:0,az:0,sat:0,na:1600,ean:"8411547212726"},
+  {n:"Agua (Veri)",kcal:0,p:0,c:0,f:0,u:"ml",fib:0,az:0,sat:0,na:0,ean:"8413384222005"},   // 🧂 fix 14-07-2026: OFF traía 252 mg/100ml (residuo seco colado como sodio); mineralización real de Veri ≈1 mg/L → 0
+  {n:"Agua con gas (Solan De Cabras)",kcal:1,p:0,c:0,f:0,u:"ml",fib:0,az:0,sat:0,na:1,ean:"8411547212726"},   // 🧂 fix 14-07-2026: OFF traía 1.600 mg/100ml (imposible en agua; pintaba ROJO «alto en sal»); mineralización oficial ≈5,8 mg/L → 1
   {n:"Agua de Coco (Hacendado)",kcal:20,p:0,c:5,f:0,u:"ml",fib:0,az:4,sat:0,na:20,k:201,ean:"8402001019807",mic:{k:201}},
   {n:"Albacore (KIRKLAND)",kcal:124,p:42,c:0,f:1,fib:0,az:0,sat:0.7,na:255,tr:0,k:248,fe:0.3,ean:"0096619977819",mic:{fe:3,k:248.4}},
   {n:"Alesto pörkölt egészmogyoró",kcal:722,p:14.3,c:3.5,f:70.5,fib:8.2,az:3.5,sat:6.8,na:12,ean:"4335619014404"},
@@ -2468,7 +2468,7 @@ var FOODS=[
   {n:"Lentejas gourmandes Guisantes & soja (Carrefour)",kcal:354,p:26,c:45,f:5.5,fib:12,az:3,sat:0.9,na:0,ean:"3560070823826"},
   {n:"Lentejas Riojana (Nestlé)",kcal:101,p:5.6,c:7.8,f:4.5,fib:2.9,az:0.9,sat:1.7,na:328,ean:"8413000065764"},
   {n:"Lentejas verdinas (Carrefour BIO)",kcal:333,p:24,c:50,f:1.7,fib:11,az:1,sat:0.2,na:4,ean:"3270190128403"},
-  {n:"Les petites tranches &quot;comté&quot; (Saint Agaûne)",kcal:318,p:40.1,c:2.3,f:16.5,fib:0,az:2.2,sat:6.5,na:4500,ean:"3450160001985"},
+  {n:"Les petites tranches &quot;comté&quot; (Saint Agaûne)",kcal:318,p:40.1,c:2.3,f:16.5,fib:0,az:2.2,sat:6.5,ean:"3450160001985"},   // 🧂 fix 14-07-2026: OFF traía na 4500 (= 11,3 g de sal, más del doble que el embutido más salado); sin etiqueta verificable → hueco honesto
   {n:"Lomo de Pavo (Hacendado)",kcal:215,p:40,c:0.7,f:5.8,fib:0,az:0.7,sat:2.8,na:1720,ean:"8480000591388"},
   {n:"Longaniza Clásica (Hacendado)",kcal:449,p:27.5,c:2.7,f:36.5,fib:0,az:2.7,sat:14.1,na:1495,ean:"8480000551252"},
   {n:"Longaniza de Pavo (Hacendado)",kcal:315,p:31,c:3.1,f:18,fib:0,az:2.7,sat:6.8,na:1720,ean:"8480000591654"},
@@ -2912,7 +2912,7 @@ var FOODS=[
   {n:"Bolas de cereales (Carrefour)",kcal:372,p:9.7,c:73,f:3.2,fib:6.4,az:24,sat:1.1,na:172,ean:"3560070330867"},
   {n:"Bolas sabor queso (tosfrit)",kcal:529,p:4.9,c:67.3,f:26.7,fib:1,az:3,sat:2.9,ean:"8422114162160"},
   {n:"Bolitas de cereales con chocolate (Veritas)",kcal:386,p:7.5,c:81,f:3,fib:0,az:23,sat:1.8,na:200,ean:"8435173008287"},
-  {n:"Bombay Mix (Cofresh)",kcal:507,p:12,c:48,f:28,fib:8,az:2.2,sat:1.8,na:9441,porc:"ración:100",ean:"5026489477459"},
+  {n:"Bombay Mix (Cofresh)",kcal:507,p:12,c:48,f:28,fib:8,az:2.2,sat:1.8,porc:"ración:100",ean:"5026489477459"},   // 🧂 fix 14-07-2026: OFF traía na 9441 (= 23,6 g de sal en un snack, físicamente imposible; típico 1,5-2,5 g); sin etiqueta verificable → hueco honesto
   {n:"Bon Gelati",kcal:319,p:3.6,c:29.4,f:20.4,fib:1.5,az:26.2,sat:14.7,na:24,ean:"4056489375180"},
   {n:"Bonito aceite oliva (De nuestra tierra)",kcal:233,p:27,c:0,f:14,fib:0,az:0,sat:2.4,na:316,ean:"8431876063448"},
   {n:"Bonito del norte (Consorcio)",kcal:225,p:27,c:0,f:13,fib:0,az:0,sat:2.2,na:200,porc:"ración:100",ean:"8410628010930"},
@@ -3307,7 +3307,7 @@ var FOODS=[
   {n:"Margarina de girasol (Vita d'Or)",kcal:720,p:0,c:0,f:80,fib:0,az:0,sat:24,na:80,vd:7.5,ean:"4056489135760"},
   {n:"Margarina flora 400 g",kcal:531,p:0.5,c:0.5,f:59,fib:0,az:0.5,sat:12,na:80,vd:7.5,ean:"8719200234857"},
   {n:"Margherita pizza (Tesco)",kcal:259,p:13.1,c:35,f:7,fib:2,az:2.8,sat:3.6,na:750,porc:"ración:141",ean:"5059697699368"},
-  {n:"Masa fresca de pizza con cereales y semillas (Hacendado)",kcal:270,p:7.9,c:47.2,f:4.8,fib:0,az:2,sat:1.8,na:1560,porc:"ración:260",ean:"8480000634771"},
+  {n:"Masa fresca de pizza con cereales y semillas (Hacendado)",kcal:270,p:7.9,c:47.2,f:4.8,fib:0,az:2,sat:1.8,porc:"ración:260",ean:"8480000634771"},   // 🧂 fix 14-07-2026: OFF traía na 1560 (= 3,9 g de sal — una masa así no se puede comer; todo apunta a sal 1,56 g tecleada en el campo del sodio) pero sin etiqueta verificable → hueco honesto
   {n:"Maxibon (Nestlé)",kcal:303,p:3.9,c:40,f:14,fib:1.6,az:23,sat:9.9,na:68,porc:"ración:96",ean:"7613035428751"},
   {n:"Maxibon Cookie (Nestlé)",kcal:355,p:4.1,c:39.4,f:19.8,fib:0,az:29.4,sat:14.1,na:80,porc:"ración:100",ean:"8000300313994"},
   {n:"Mayonesa en sobres individuales (Hacendado)",kcal:599,p:0.5,c:2,f:65,fib:0,az:1,sat:9.5,na:395,porc:"ración:20",ean:"8480000238160"},
@@ -3574,7 +3574,7 @@ var FOODS=[
   {n:"Sardinas en aceite de oliva (dia)",kcal:308,p:20,c:0.5,f:25,fib:0,az:0.5,sat:4.5,na:228,ean:"8480017079756"},
   {n:"Sardinas en aceite de oliva (Eroski)",kcal:235,p:24,c:0,f:16,fib:0,az:0,sat:3.6,na:480,ca:400,ean:"8480010110319",mic:{ca:400}},
   {n:"Sardinas en aceite de oliva (Lidl)",kcal:317,p:18.6,c:0,f:27,fib:0,az:0,sat:5.5,na:360,ean:"4056489268581"},
-  {n:"Sardinas en aceite de oliva virgen extra (ALBO)",kcal:232,p:22,c:0,f:16,fib:0,az:0,sat:3.8,na:3200,ca:375,vd:6,porc:"ración:50",ean:"8410032006055"},
+  {n:"Sardinas en aceite de oliva virgen extra (ALBO)",kcal:232,p:22,c:0,f:16,fib:0,az:0,sat:3.8,na:320,ca:375,vd:6,porc:"ración:50",ean:"8410032006055"},   // 🧂 fix 14-07-2026: OFF trae sodium=3,2 INCOHERENTE con salt=0,8 (la sal es el dato de etiqueta) → 320 mg, no 3.200
   {n:"Sardinas en salsa de tomate (Lidl)",kcal:192,p:20.7,c:1,f:11.7,fib:0,az:0.5,sat:3.4,na:500,ean:"4056489149996"},
   {n:"Sardinas en salsa de tomate (Minerva)",kcal:183,p:17.5,c:0.7,f:11.7,fib:0.8,az:0.8,sat:4.2,na:500,tr:0,fe:1.5,porc:"ración:120",ean:"5606677101269",mic:{fe:15}},
   {n:"Sardinas picantonas (Albo)",kcal:192,p:19.1,c:1.2,f:12,fib:1.2,az:0,sat:3.1,ca:540,vd:6,porc:"ración:85",ean:"8410032006062"},
@@ -4192,7 +4192,7 @@ var FOODS=[
   {n:"Extra virgin olive oil",kcal:822,p:0,c:0,f:91,fib:0,az:0,sat:13,na:0,ean:"5099874235132"},
   {n:"Familiy (dulceoliva)",kcal:900,p:0,c:0,f:100,fib:0,az:0,sat:13,na:0,ean:"8414862207316"},
   {n:"Family oli de sansa d'oliva",kcal:900,p:0,c:0,f:100,fib:0,az:0,sat:13,na:0,ean:"8414862207323"},
-  {n:"Fanta piña",kcal:5,p:0.9,c:0,f:0,u:"ml",fib:0,az:0,sat:0,na:360,ean:"5000112537680"},
+  {n:"Fanta piña",kcal:5,p:0.9,c:0,f:0,u:"ml",fib:0,az:0,sat:0,na:0,ean:"5000112537680"},   // 🧂 fix 14-07-2026: OFF traía 360 mg/100ml (imposible en un refresco); la etiqueta de Fanta declara sal 0 g → 0
   {n:"Fastio serra do Gerês",kcal:0,p:0,c:0,f:0,fib:0,az:0,sat:0,na:0,ean:"5604055111220"},
   {n:"Fat Free Natural Yogurt (Lancashire Farm)",kcal:48,p:5,c:7.3,f:0.1,fib:0.5,az:4,sat:0.1,na:72,porc:"ración:100",ean:"5035251000146"},
   {n:"Faves Frit Ravich",kcal:424,p:30,c:29,f:18,fib:16,az:2.8,sat:1.8,na:400,ean:"8410564013040"},
@@ -4664,7 +4664,7 @@ var FOODS=[
   {n:"Purafruta - Mermelada de fresa de huelva (Helios)",kcal:139,p:0.8,c:32,f:0,fib:0,az:30,sat:0,na:0,ean:"8410095038307"},
   {n:"Pure de frutas (Frullà)",kcal:59,p:0.7,c:12.9,f:0.2,fib:1.7,az:12.9,sat:0,na:4,ean:"8024985005234"},
   {n:"Quedo afuegal pitu",kcal:297,p:18.4,c:3.6,f:21,fib:0,az:0.5,sat:19.2,na:348,ean:"8437010996023"},
-  {n:"Queijo Flamengo Light (Hacendado)",kcal:249,p:24,c:0.5,f:17,fib:0.5,az:0.5,sat:11.6,na:5600,ean:"8480000197603"},
+  {n:"Queijo Flamengo Light (Hacendado)",kcal:249,p:24,c:0.5,f:17,fib:0.5,az:0.5,sat:11.6,ean:"8480000197603"},   // 🧂 fix 14-07-2026: OFF traía na 5600 (= 14 g de sal en un queso, imposible; típico 1,2-1,8 g); sin etiqueta verificable → hueco honesto
   {n:"Queixo San Simón da Costa (don crisanto)",kcal:390,p:18.2,c:11.6,f:30.5,fib:0,az:1,sat:20.5,na:520,ean:"8437011058027"},
   {n:"Queixo tetilla (TGT)",kcal:354,p:19.9,c:0.5,f:30.3,fib:0,az:0.5,sat:21.1,na:300,ean:"8413212001888"},
   {n:"Queso (san simon da costa)",kcal:446,p:26,c:0.1,f:38,fib:0,az:0,sat:1.2,na:640,ean:"8437016107102"},
@@ -4727,7 +4727,7 @@ var FOODS=[
   {n:"Quinoa Integral (brillante)",kcal:156,p:6.4,c:21,f:3.3,fib:8.3,az:0.3,sat:0.4,na:204,ean:"8410184031479"},
   {n:"Ratatouille 1/2 (Bonduelle)",kcal:82,p:1.5,c:5.8,f:5.4,fib:2.1,az:5.8,sat:0.7,na:248,porc:"ración:100",ean:"3083681145786"},
   {n:"Ravioli bolo (Carrefour)",kcal:108,p:5.3,c:12,f:4.1,fib:1.1,az:2.2,sat:1.6,na:400,ean:"3560071486556"},
-  {n:"Raviolis Serrana (Hacendado)",kcal:256,p:10,c:35,f:8,fib:21,az:4.6,sat:2.8,na:4721,ean:"8402001040603"},
+  {n:"Raviolis Serrana (Hacendado)",kcal:256,p:10,c:35,f:8,fib:21,az:4.6,sat:2.8,ean:"8402001040603"},   // 🧂 fix 14-07-2026: OFF traía na 4721 (= 11,8 g de sal en pasta fresca, imposible; típico ~1,2 g); sin etiqueta verificable → hueco honesto
   {n:"Raw Rice (Clean Foods)",kcal:5,p:0.1,c:1.2,f:0.1,fib:3.2,az:0.1,sat:0.1,na:3,ean:"8717953127471"},
   {n:"Real Bites Chips de Lentejas Sabor Tomate y Albahaca (FRIT RAV",kcal:416,p:24,c:54,f:10,fib:5.6,az:3,sat:0.6,na:1800,porc:"ración:100",ean:"8410564030344"},
   {n:"Reese's Puffs",kcal:410,p:7.7,c:76.9,f:11.5,fib:5.1,az:30.8,sat:1.3,na:564,k:231,ca:333,fe:9.2,vc:26,vd:10.3,porc:"ración:39",ean:"0016000122222"},
@@ -6627,6 +6627,35 @@ function aguaQuitarManual(){
   var ml=Math.round(+String(inp.value||"").replace(",",".")||0);
   if(!(ml>0)){ toast("Escribe cuántos ml quitar"); return; }
   aguaQuitar(ml); inp.value="";
+}
+// [AGUA-NFC-PURE-INICIO] — 📶 pegatina NFC / deep-link de agua: parte PURA (testeable en node, sin navegador).
+// La pegatina lleva grabada una URL tipo .../?agua=600 · esta función decide si eso es un alta válida.
+// Regla: entero entre 50 y 2000 ml; cualquier otra cosa (letras, vacío, 49, 99999, negativo) → null (no suma).
+function aguaNfcParse(search){
+  var m=/[?&]agua=(\d{1,4})(&|$)/.exec(search||"");
+  if(!m) return null;
+  var ml=parseInt(m[1],10);
+  return (ml>=50 && ml<=2000) ? ml : null;
+}
+// [AGUA-NFC-PURE-FIN]
+
+// 📶 pegatina NFC — parte con EFECTOS (solo navegador): candado, anti-doble-toque, alta y limpieza de URL.
+function aguaNfcCheck(){
+  try{
+    var ml=aguaNfcParse(location.search); if(!ml) return;
+    // El candado manda: si ESTE móvil no está desbloqueado, no se registra nada (un extraño que
+    // escanee la botella solo verá la pantalla de contraseña). No toques el gate: solo LEE su marca.
+    var okGate=false; try{ okGate=(localStorage.getItem("jvf_gate_ok_v1")==="1")||(location.protocol==="file:"); }catch(e){}
+    if(!okGate) return;
+    // Anti-doble-toque: dos lecturas de la pegatina en <15 s cuentan UNA sola vez. localStorage y no
+    // sessionStorage a propósito: el segundo toque puede abrir OTRA pestaña y sessionStorage no se comparte.
+    var last=0; try{ last=+localStorage.getItem("jvf_agua_nfc_last")||0; }catch(e){}
+    if(Date.now()-last<15000) return;
+    try{ localStorage.setItem("jvf_agua_nfc_last",String(Date.now())); }catch(e){}
+    aguaAdd(ml);   // reutiliza TODO lo que ya existe: toast, pulso, historial 📜 con hora, celebración de objetivo
+    // Limpia la URL para que recargar (F5) o reabrir la pestaña NO vuelva a sumar.
+    try{ history.replaceState(null,"",location.pathname); }catch(e){}
+  }catch(e){}
 }
 function renderAgua(){
   var el=$("agua_resumen"); if(!el) return;
@@ -8901,7 +8930,16 @@ function bcNormalizarOFF(p){
   // 🏷️ etiqueta completa (fibra/azúcar/saturadas/sal→sodio), con la misma cordura; el confirmador la enseña como tabla
   function num100(k){ var v=num(nu[k]); return (v!=null && v>=0 && v<=100)?v:null; }
   out.fib100=num100("fiber_100g"); out.az100=num100("sugars_100g"); out.sat100=num100("saturated-fat_100g");
-  var _na=num(nu["sodium_100g"]); if(_na==null && num(nu["salt_100g"])!=null) _na=num(nu["salt_100g"])/2.5;
+  var _na=num(nu["sodium_100g"]), _salg=num(nu["salt_100g"]);
+  // 🧂 v0.27.2 FIX sodio (BUG B): si OFF trae sodio Y sal INCOHERENTES entre sí (sal ≠ sodio×2,5 con
+  // >12% de desvío, tolerancia mínima 0,1 g por redondeos), gana el MENOR de los dos — el modo de
+  // error observado en la base colaborativa es el INFLADO (la sal tecleada en el campo del sodio queda
+  // ×2,5: caso real Sardinas ALBO 8410032006055, sodium_100g=3,2 con salt_100g=0,8 → 320 mg, no 3.200;
+  // o unidades ×1000). Coherentes → sodio directo, como siempre.
+  if(_salg!=null && _salg>=0){
+    if(_na==null) _na=_salg/2.5;
+    else if(Math.abs(_salg-_na*2.5)>Math.max(0.1,_salg*0.12)) _na=Math.min(_na,_salg/2.5);
+  }
   out.na100=(_na!=null && _na>=0 && _na<=40)?Math.round(_na*1000):null;   // mg de sodio /100
   var marca=p.brands?String(p.brands).split(",")[0].trim():"";
   var nombre=((p.product_name||"").trim()+(marca?" ("+marca+")":"")).trim();
@@ -9140,11 +9178,15 @@ function bcBuscar(ean){
   var propio=get(LS_ALIM,[]).filter(function(a){ return a && a.ean===ean; })[0];
   if(propio){
     // Los alimentos propios se dan de alta SIEMPRE por 100 g (así lo pide su modal) → u:"g" fijo.
+    // 🧂 v0.27.2 FIX sodio (BUG A): fib/az/sat/na del propio también VIAJAN al confirmador — antes se
+    // perdían por este camino y la fila «Sal (g)» salía vacía aunque el propio los tenía (v0.26).
     bcConfirmar({ean:ean, fuente:"propio", nombre:propio.nombre+(propio.marca?" ("+propio.marca+")":""),
       kcal100:(propio.kcal100==null?null:+propio.kcal100), p100:(propio.p100==null?null:+propio.p100),
       c100:(+propio.c100||0), g100:(+propio.g100||0), img:null, nutriscore:null, serving:null,
       u:"g", uMotivo:"tus alimentos propios van por 100 g (como los diste de alta)",
       dens:bcDensidad(propio.nombre,null), servingAviso:null,
+      fib100:(propio.fib100!=null?+propio.fib100:null), az100:(propio.az100!=null?+propio.az100:null),
+      sat100:(propio.sat100!=null?+propio.sat100:null), na100:(propio.na100!=null?+propio.na100:null),
       porcion:(+propio.porcion_g>0?+propio.porcion_g:null)});
     return;
   }
@@ -9164,11 +9206,18 @@ function bcBuscar(ean){
     return;
   }
   // 🏷️ base CURADA por EAN (productos que OFF no tiene, p.ej. suplementos de gym) → sin red, ANTES de OFF
+  // 🧂 v0.27.2 FIX sodio (BUG A): fib/az/sat/na de la base curada también VIAJAN al confirmador — antes
+  // este camino los tiraba y la tabla nutricional salía con «Sal (g)» vacía (el sodio «se bugueaba» en
+  // cada escaneo de un producto de la base); el item entraba al diario sin na y dependía del auto-sanado
+  // por nombre exacto (renombrar en la confirmación lo dejaba a 0 en silencio).
   if(typeof FOODS_EAN==="object" && FOODS_EAN[ean]){
     var fc=FOODS_EAN[ean];
     bcConfirmar({ean:ean, fuente:"cache", nombre:fc.n, kcal100:+fc.kcal, p100:+fc.p, c100:+fc.c, g100:+fc.f,
       u:(fc.u==="ml")?"ml":"g", uMotivo:"producto de la base curada de la app", dens:bcDensidad(fc.n,null),
-      servingAviso:null, serving:null, porcion:(fc.porc?(+String(fc.porc).split(":")[1]||null):null)});
+      servingAviso:null, serving:null,
+      fib100:(fc.fib!=null?+fc.fib:null), az100:(fc.az!=null?+fc.az:null),
+      sat100:(fc.sat!=null?+fc.sat:null), na100:(fc.na!=null?+fc.na:null),
+      porcion:(fc.porc?(+String(fc.porc).split(":")[1]||null):null)});
     return;
   }
   // 🗄️ Base España descargada (IndexedDB) → por EAN sin red, ANTES de salir a OFF. dbxPorEan es
@@ -10067,9 +10116,16 @@ function fichaDeOFFNutriments(nu){
   var fib=fichaNum(nu["fiber_100g"]);        if(fib!=null)  out.fib=fib;
   var az=fichaNum(nu["sugars_100g"]);        if(az!=null)   out.az=az;
   var sat=fichaNum(nu["saturated-fat_100g"]);if(sat!=null)  out.sat=sat;
-  var na=fichaNum(nu["sodium_100g"]);
-  if(na!=null) out.na=Math.round(na*1000);
-  else { var sal=fichaNum(nu["salt_100g"]); if(sal!=null) out.na=Math.round(sal/2.5*1000); }
+  var na=fichaNum(nu["sodium_100g"]), salg=fichaNum(nu["salt_100g"]);
+  // 🧂 v0.27.2 FIX sodio (BUG B, espejo de bcNormalizarOFF): sal y sodio INCOHERENTES (>12% de desvío,
+  // mínimo 0,1 g) → gana el MENOR (el error observado en OFF es el inflado: sal tecleada en el campo
+  // del sodio ×2,5 — caso Sardinas ALBO — o unidades ×1000). Además, misma cordura 0–40 g que el
+  // escáner (antes esta ruta tragaba cualquier disparate de OFF).
+  if(salg!=null && salg>=0){
+    if(na==null) na=salg/2.5;
+    else if(Math.abs(salg-na*2.5)>Math.max(0.1,salg*0.12)) na=Math.min(na,salg/2.5);
+  }
+  if(na!=null && na>=0 && na<=40) out.na=Math.round(na*1000);
   var pot=fichaNum(nu["potassium_100g"]);    if(pot!=null)  out.k=Math.round(pot*1000);
   var fe=fichaNum(nu["iron_100g"]);          if(fe!=null)   out.fe=Math.round(fe*10000)/10;
   var tr=fichaNum(nu["trans-fat_100g"]);     if(tr!=null)   out.tr=tr;
@@ -10859,6 +10915,7 @@ document.addEventListener('DOMContentLoaded',function(){
     if(ents.length>20 && _old) setTimeout(function(){ toast("💾 Llevas tiempo sin copia de seguridad — toca Exportar en ⚙️ Ajustes → 📦 Datos"); }, 3500);
     notifSyncUI();   // 🔔 refleja la config del recordatorio en el checkbox de Ajustes
     notifCheck();    // 🔔 recordatorios in-app (p.ej. agua en verano) al abrir
+    aguaNfcCheck();   // 📶 pegatina NFC: procesa ?agua=NNN al abrir la app (una sola vez, ver [AGUA-NFC-PURE])
     pasosSyncUI();          // 👟 spec 4 · refleja toggle+URL del sync de pasos en Ajustes
     pasosSyncFetch(false);  // 👟 spec 4 · primera lectura del steps.json al abrir la app
     dbxEstado(function(){ dbxUIRender(); });   // 🗄️ Base España: refresca _dbxInfo (lo usan escáner y supermercado) + pinta el estado en Ajustes
@@ -10880,7 +10937,7 @@ function resetTodo(){ if(!confirm("⚠️ Esto borra TODO: perfil, pesos, entren
 // Reemplazo total con confirmación. Reusa get/set, hoyLocal, toast, validar, render. NO toca motor ni gate.
 function exportarJSON(){ try{ set("jvf_last_export",hoyLocal()); }catch(e){}
   try{
-    var data={ app:"jvf", schema:1, app_version:"0.27.1", exportadoEl:new Date().toISOString(),
+    var data={ app:"jvf", schema:1, app_version:"0.27.2", exportadoEl:new Date().toISOString(),
       perfil:get(LS_P,null), pesos:get(LS_W,[]), entrenos:get(LS_E,[]), notas_ej:get("jvf_notas_ej",{}), comida:get("jvf_comida",[]), agua:get("jvf_agua",{}), suples_cfg:get("jvf_suples_cfg",null), suples_log:get("jvf_suples_log",{}),
       rutinas:get("jvf_rutinas",[]), meals:get("jvf_meals",[]), ent_start:get("jvf_ent_start",null),   // v0.10 · backup completo
       alimentos_propios:get("jvf_alimentos_propios",[]), barcode_cache:get("jvf_barcode_cache",{}),   // I5/I6 · también viajan en el backup
