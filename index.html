@@ -550,7 +550,7 @@
 <header class="brandbar">
   <div class="logo"><span class="dot"></span>JV <b>Fitness</b></div>
   <div style="display:flex;align-items:center">
-    <span class="tag">MVP v0.28.0 · motor v0.7</span>
+    <span class="tag">MVP v0.30.0 · motor v0.7</span>
     <!-- ⚙️ tanda #22 · hub de AJUSTES (no es pestaña): modal a pantalla completa -->
     <button class="gearbtn" id="btn_hub" type="button" title="Ajustes" aria-label="Abrir ajustes" onclick="hubAbrir()">⚙️</button>
   </div>
@@ -789,8 +789,8 @@
   <details id="plani_box" style="margin-top:16px;border:1px solid var(--line);border-radius:12px;padding:12px 14px">
     <summary style="cursor:pointer;color:var(--jade);font-weight:600">🎯 ¿Tienes una meta? Comprueba si es realista</summary>
     <p class="hint" style="margin-top:8px">Dime cuánto quieres cambiar y en cuánto tiempo. Te digo si es <b style="color:var(--soft)">realista</b>, con qué <b style="color:var(--soft)">probabilidad</b> y el déficit que exige. No cambia tus calorías de arriba: es una comprobación aparte.</p>
-    <div class="row" style="gap:6px;align-items:flex-end">
-      <div style="flex:1.2"><label>Quiero</label><select id="plani_dir"><option value="perder">Perder peso</option><option value="ganar">Ganar peso</option></select></div>
+    <div style="margin-top:2px"><label>Quiero</label><select id="plani_dir" style="width:100%"><option value="perder">Perder peso</option><option value="ganar">Ganar peso</option></select></div>
+    <div class="row" style="gap:6px;align-items:flex-end;margin-top:8px">
       <div style="flex:1"><label>Kilos</label><input id="plani_kg" type="number" step="0.1" inputmode="decimal" placeholder="ej. 4"></div>
       <div style="flex:1"><label>Semanas</label><input id="plani_sem" type="number" step="1" inputmode="numeric" placeholder="ej. 8"></div>
     </div>
@@ -876,11 +876,14 @@
       <button class="sec" type="button" style="flex:1;width:auto" onclick="pasosChip(12000)">12k</button>
     </div>
     <div class="row" style="gap:6px;margin-top:6px;align-items:flex-end">
+      <div style="flex:0 0 auto"><label style="font-size:.72rem">Día</label><input id="pasos_fecha" type="date" style="width:auto"></div>
       <div style="flex:1"><label style="font-size:.72rem">Pasos exactos (los de tu reloj/móvil)</label><input id="pasos_manual" type="number" inputmode="numeric" min="0" step="100" placeholder="ej. 9500" onkeydown="if(event.key==='Enter'){event.preventDefault();pasosAddManual();}"></div>
       <button class="sec" type="button" style="flex:0 0 auto;width:auto;margin:0" onclick="pasosAddManual()">✓ Apuntar</button>
     </div>
+    <button id="pasos_borrar" class="sec" type="button" style="display:none;width:100%;margin-top:6px;color:var(--ember)" onclick="">🗑 Eliminar este día</button>
     <button class="sec" type="button" style="width:100%;margin-top:6px" onclick="pasosImpAbrir()">📥 Importar pasos (CSV / varios días)</button><!-- 👟 v0.26 · enganche al importador [PASOS-CSV-PURE] -->
     <div id="pasos_stats" style="margin-top:8px"></div>
+    <div id="pasos_hist" style="margin-top:8px"></div>
     <div id="pasos_aviso"></div>
     <div id="pasos_sync_estado"></div><!-- 👟 spec 4 · "🔄 auto: N pasos — actualizado a las HH:MM" (lo pinta pasosSyncEstadoRender) -->
     <p class="hint" style="margin-top:8px">Apunta a mano los pasos que marca tu reloj o tu móvil. Honesto: una web <b style="color:var(--soft)">no puede leer Samsung Health / Google Fit</b> — la lectura automática llegará con la app nativa.</p>
@@ -6823,6 +6826,22 @@ function pasosAvisoPerfil(media7, dias7, perfilPasos){
   if(Math.abs(dif)<=PASOS_AVISO_UMBRAL) return null;
   return { tipo:"difiere", declarado:Math.round(perfil), real:media7, difPct:Math.round(dif*100) };
 }
+// Fecha válida para registrar/editar pasos: "YYYY-MM-DD" parseable y NO futura (no hay pasos de mañana).
+function pasosFechaOk(fecha, hoy){
+  var t=Date.parse(String(fecha)+"T12:00:00"); if(isNaN(t)) return false;
+  var h=Date.parse(String(hoy)+"T12:00:00"); if(isNaN(h)) return true;   // sin 'hoy' de referencia: basta fecha válida
+  return t<=h;
+}
+// Últimos días CON dato para la lista editable (más reciente primero), máx. n: [{f, pasos}].
+function pasosDiasRecientes(log, hoy, n){
+  if(!log || typeof log!=="object" || Array.isArray(log)) return [];
+  n=n||8; var out=[];
+  for(var i=0;i<180 && out.length<n;i++){
+    var f=pasosFechaMenos(hoy,i); if(!f) break;
+    var v=pasosVal(log[f]); if(v!=null) out.push({f:f, pasos:v});
+  }
+  return out;
+}
 // [PASOS-PURE-FIN]
 // [PASOS-SYNC-PURE-INICIO] — 👟 spec 4 · sync automático de pasos (Tasker → GitHub → PWA). PURO
 // (sin DOM, sin storage, sin red). El test lo extrae junto a [PASOS-PURE-*]: reutiliza pasosVal de allí.
@@ -6861,18 +6880,37 @@ function pasosMezclarAuto(logLocal, auto, hoy){
 // Envoltura DOM/storage (NO va en el bloque puro): registro rápido + render de la tarjeta 👟.
 var LS_PASOS_LOG="jvf_pasos_log";   // {"YYYY-MM-DD": pasos}
 function pasosLog(){ var l=get(LS_PASOS_LOG,{}); return (l && typeof l==="object" && !Array.isArray(l))?l:{}; }
-function pasosGuardar(n){
+function pasosGuardar(n, fecha){
   n=Math.round(+n);
   if(!(n>=0 && n<=100000)){ toast("Pon un número de pasos válido (0–100.000)"); return; }
-  var l=pasosLog(); l[hoyLocal()]=n; set(LS_PASOS_LOG,l);
-  toast(n>=PASOS_OBJETIVO ? "✓ "+n.toLocaleString("es-ES")+" pasos — objetivo del día cumplido 👟" : "✓ Pasos de hoy apuntados");
+  var hoy=hoyLocal();
+  var f=pasosFechaOk(fecha, hoy) ? fecha : hoy;   // sin fecha, futura o inválida → hoy
+  var l=pasosLog(); l[f]=n; set(LS_PASOS_LOG,l);
+  toast(f===hoy
+    ? (n>=PASOS_OBJETIVO ? "✓ "+n.toLocaleString("es-ES")+" pasos — objetivo del día cumplido 👟" : "✓ Pasos de hoy apuntados")
+    : "✓ "+n.toLocaleString("es-ES")+" pasos guardados para el "+f);
+  var b=$("pasos_borrar"); if(b) b.style.display="none";
   pasosRender();
 }
-function pasosChip(n){ pasosGuardar(n); }
+function pasosChip(n){ pasosGuardar(n, ($("pasos_fecha")||{}).value); }
 function pasosAddManual(){
   var v=$("pasos_manual").value;
   if(v===""){ toast("Escribe tus pasos o usa un botón rápido"); return; }
-  pasosGuardar(v); $("pasos_manual").value="";
+  pasosGuardar(v, ($("pasos_fecha")||{}).value); $("pasos_manual").value="";
+}
+// ✏️ editar / 🗑 borrar un día (mismo patrón que el lápiz de pesajes): tocar un día lo carga en los campos.
+function pasosEditar(f){
+  var l=pasosLog(); if(l[f]==null) return;
+  var fe=$("pasos_fecha"); if(fe) fe.value=f;
+  var mi=$("pasos_manual"); if(mi){ mi.value=l[f]; mi.focus(); }
+  var b=$("pasos_borrar"); if(b){ b.style.display=""; b.setAttribute("onclick","pasosBorrar('"+f+"')"); }
+}
+function pasosBorrar(f){
+  if(!confirm("¿Eliminar los pasos del "+f+"?")) return;
+  var l=pasosLog(); delete l[f]; set(LS_PASOS_LOG,l);
+  var b=$("pasos_borrar"); if(b) b.style.display="none";
+  var mi=$("pasos_manual"); if(mi) mi.value="";
+  toast("Pasos eliminados"); pasosRender();
 }
 function pasosRender(){
   var box=$("pasos_resumen"); if(!box) return;
@@ -6887,6 +6925,15 @@ function pasosRender(){
   $("pasos_stats").innerHTML=
     "<div class='kv'><span>🔥 Racha días ≥10k</span><span>"+(st.racha>0 ? st.racha+" día"+(st.racha===1?"":"s") : "—")+"</span></div>"+
     "<div class='kv'><span>Media 7 días</span><span>"+(st.media7!=null ? st.media7.toLocaleString("es-ES")+" <small style='color:var(--mute)'>("+st.dias7+"/7 con dato)</small>" : "— aún sin datos")+"</span></div>";
+  var histBox=$("pasos_hist");
+  if(histBox){
+    var dias=pasosDiasRecientes(pasosLog(), hoyLocal(), 8);
+    histBox.innerHTML = dias.length
+      ? "<div class='eyebrow-lbl' style='margin-top:4px'>✏️ Editar días (toca uno para corregir)</div>"+dias.map(function(d){
+          return "<div class='kv' style='cursor:pointer' onclick=\"pasosEditar('"+d.f+"')\"><span>"+(d.f===hoyLocal()?"Hoy":esc(d.f))+"</span><span>"+d.pasos.toLocaleString("es-ES")+" pasos ✏️</span></div>";
+        }).join("")
+      : "";
+  }
   var avisoBox=$("pasos_aviso"), p=get(LS_P,null);
   var av=pasosAvisoPerfil(st.media7, st.dias7, p?p.pasos:null);
   if(!av){ avisoBox.innerHTML=""; return; }
@@ -10937,7 +10984,7 @@ function resetTodo(){ if(!confirm("⚠️ Esto borra TODO: perfil, pesos, entren
 // Reemplazo total con confirmación. Reusa get/set, hoyLocal, toast, validar, render. NO toca motor ni gate.
 function exportarJSON(){ try{ set("jvf_last_export",hoyLocal()); }catch(e){}
   try{
-    var data={ app:"jvf", schema:1, app_version:"0.28.0", exportadoEl:new Date().toISOString(),
+    var data={ app:"jvf", schema:1, app_version:"0.30.0", exportadoEl:new Date().toISOString(),
       perfil:get(LS_P,null), pesos:get(LS_W,[]), entrenos:get(LS_E,[]), notas_ej:get("jvf_notas_ej",{}), comida:get("jvf_comida",[]), agua:get("jvf_agua",{}), suples_cfg:get("jvf_suples_cfg",null), suples_log:get("jvf_suples_log",{}),
       rutinas:get("jvf_rutinas",[]), meals:get("jvf_meals",[]), ent_start:get("jvf_ent_start",null),   // v0.10 · backup completo
       alimentos_propios:get("jvf_alimentos_propios",[]), barcode_cache:get("jvf_barcode_cache",{}),   // I5/I6 · también viajan en el backup
@@ -11897,6 +11944,274 @@ var CEREBRO_KB=[
     claves:["reutilizar el aceite de freir","freir varias veces con el mismo aceite","el aceite quemado es malo","recalentar aceite","aceite de freir reutilizado","puedo reusar el aceite","aceite requemado","cuantas veces puedo usar el aceite","el aceite de la freidora","aceite viejo de freir","aceite recalentado hace daño","reciclar el aceite de la sarten"],
     r:"Reutilizar el aceite o recalentarlo a fuego vivo sí es mala idea: cada recalentado dispara la peroxidación (más 4-HNE y MDA), así que el aceite ya frito varias veces es desaconsejable para cocinar. Para el día a día, mejor aceite de oliva o de aguacate. Pero ojo: esto NO convierte al omega-6 en veneno. El omega-6 en su sitio (nueces, huevos) es parte de una dieta sana; el problema es el aceite requemado y reutilizado, no el omega-6 en un contexto equilibrado. (— Tema 30, Esterbauer 1991 / regla JV Fitness)",
     chips:["¿Los aceites de semilla son veneno?","¿Qué aceite uso para cocinar?","¿Debo añadir omega-3?"]
+  },
+
+  // ─────────────── ÁRBOL DE DIAGNÓSTICO del coach 2026-07-15 · fichas 132-152 (chips encadenados: pregunta→área→síntoma→ajuste; validado 0 callejones/0 colisiones) + mitos verificados ───────────────
+  {
+    tronco:"diagnostico", rama:"que-hago-para-mejorar",
+    claves:["que hago para mejorar","como puedo mejorar","que hago ahora para mejorar","quiero mejorar","ayudame a mejorar","por donde empiezo para mejorar","que deberia mejorar","que hago para avanzar"],
+    r:"Vamos a diagnosticarlo juntos, paso a paso, como haría un entrenador. ¿Dónde notas que la cosa no avanza? Toca lo que más te encaje y voy afinando contigo. (— diagnóstico del coach)",
+    chips:["me siento estancado","no gano músculo","no bajo de peso","estoy siempre cansado","no sé qué me falla"]
+  },
+  {
+    tronco:"diagnostico", rama:"estancado-general",
+    claves:["me siento estancado","estoy estancado","llevo semanas sin avanzar","no progreso en nada","estancamiento general","me he estancado del todo"],
+    r:"El estancamiento casi siempre es una de estas cuatro palancas. ¿Cuál notas más floja? Si no lo tienes claro, toca «no sé qué me falla» y vamos por descarte. (— diagnóstico del coach / Tema 4)",
+    chips:["no subo de fuerza","no gano músculo","estoy siempre cansado","no sé qué me falla"]
+  },
+  {
+    tronco:"diagnostico", rama:"no-se-que-falla",
+    claves:["no se que me falla","no se que me pasa","no estoy seguro de que falla","ni idea de que me pasa","no se por donde empezar","no lo tengo claro"],
+    r:"Sin problema, vamos por descarte. Elige un área y te hago un par de preguntas para acotarlo. (— diagnóstico del coach)",
+    chips:["revisar mi entreno","revisar mi comida","revisar mi descanso","revisar mi intensidad"]
+  },
+  {
+    tronco:"diagnostico", rama:"revisar-entreno",
+    claves:["revisar mi entreno","mirar mi entrenamiento","repasar el entreno","algo falla en mi entreno","revisar entrenamiento","revisar el gym"],
+    r:"Vale, tu entrenamiento. ¿Qué es lo que más notas? (— diagnóstico del coach)",
+    chips:["no subo de fuerza","hago siempre lo mismo","no sé cuánto entrenar","me quedo muy lejos del fallo"]
+  },
+  {
+    tronco:"diagnostico", rama:"revisar-comida",
+    claves:["revisar mi comida","mirar mi alimentacion","repasar mi dieta","algo falla en mi dieta","revisar alimentacion","revisar lo que como"],
+    r:"Vale, la comida. ¿Qué es lo que más notas? (— diagnóstico del coach)",
+    chips:["me falta energía","como poca proteína","engordo sin ganar músculo","no bajo de peso"]
+  },
+  {
+    tronco:"diagnostico", rama:"revisar-descanso",
+    claves:["revisar mi descanso","mirar mi recuperacion","repasar el descanso","algo falla en mi recuperacion","revisar recuperacion","revisar como descanso"],
+    r:"Vale, la recuperación. ¿Qué pasa? La recuperación es donde de verdad creces, no en la sesión. (— diagnóstico del coach / Tema 27)",
+    chips:["duermo poco","estoy siempre cansado","siempre tengo agujetas"]
+  },
+  {
+    tronco:"diagnostico", rama:"revisar-intensidad",
+    claves:["revisar mi intensidad","mirar la intensidad","entreno flojo o fuerte","cuanto apretar en el gym","revisar el esfuerzo","reviso la intensidad"],
+    r:"La intensidad es cuánto aprietas cada serie (lo cerca que acabas del fallo). ¿Cómo lo llevas? (— diagnóstico del coach / Tema 13)",
+    chips:["me quedo muy lejos del fallo","voy al fallo en todo","¿qué es el RIR?"]
+  },
+  {
+    tronco:"diagnostico", rama:"no-subo-fuerza",
+    claves:["no subo de fuerza","no progreso en fuerza","me atasco en los pesos","no le meto mas peso","no gano fuerza","no avanzo en los pesos"],
+    r:"Si el peso no sube desde hace 2-3 semanas: 1) asegura la SOBRECARGA PROGRESIVA — apunta cada serie e intenta sumar +1 rep o un poquito de peso cada semana; 2) revisa que llegas cerca del fallo (RIR 1-2), no a RIR 4; 3) si vienes muy cansado, puede faltar recuperación, no esfuerzo. Cambia UNA variable a la vez y dale 2-3 semanas. (— Tema 4/13, sobrecarga progresiva)",
+    chips:["¿qué es el RIR?","estoy siempre cansado","hago siempre lo mismo"]
+  },
+  {
+    tronco:"diagnostico", rama:"no-gano-musculo",
+    claves:["no gano musculo","no crezco","no gano masa","no aumento de musculo","no veo cambios en el musculo","no me crece el musculo"],
+    r:"Ganar músculo pide tres cosas a la vez: 1) ESTÍMULO suficiente (10-20 series por músculo a la semana, cerca del fallo); 2) PROTEÍNA suficiente (~1,6 g/kg); 3) ENERGÍA suficiente (en déficit fuerte cuesta; un superávit pequeño ayuda, salvo que seas principiante o tengas grasa que perder). ¿Cuál crees que te falla? (— Tema 1/3/19)",
+    chips:["como poca proteína","no sé cuánto entrenar","engordo sin ganar músculo"]
+  },
+  {
+    tronco:"diagnostico", rama:"me-falta-energia",
+    claves:["me falta energia","no tengo energia para entrenar","llego sin fuerzas al gym","estoy flojo en el entreno","sin energia entrenando","me quedo sin gasolina entrenando"],
+    r:"La energía del entreno la dan sobre todo los CARBOHIDRATOS (son el combustible del músculo). Si andas flojo: sube un poco los carbos, sobre todo alrededor del entreno, y come algo con carbos 1-3 h antes (sin atiborrarte). Vigila también el sueño y un déficit demasiado agresivo. (— comida pre-entreno, ISSN 2017)",
+    chips:["¿qué como antes de entrenar?","duermo poco","no bajo de peso"]
+  },
+  {
+    tronco:"diagnostico", rama:"poca-proteina",
+    claves:["como poca proteina","no llego a la proteina","me falta proteina","tomo poca proteina","no como suficiente proteina","voy corto de proteina"],
+    r:"El objetivo práctico es ~1,6 g por kg de peso al día (p. ej. 80 kg → ~128 g). Repártela en 3-4 comidas de ~25-40 g. Fuentes fáciles: pollo, huevos, atún, yogur griego, lácteos, legumbres, y proteína en polvo solo si no llegas comiendo. Pasar de ~2,2 g/kg no construye más músculo. (— Tema 3, Morton 2018)",
+    chips:["no gano músculo","¿cuánta proteína tengo que comer al día?","engordo sin ganar músculo"]
+  },
+  {
+    tronco:"diagnostico", rama:"engordo-sin-musculo",
+    claves:["engordo sin ganar musculo","gano grasa en volumen","subo grasa y no musculo","estoy ganando demasiada grasa","el volumen me engorda mucho","gano mucha grasa en volumen"],
+    r:"Si en volumen ganas más grasa que músculo, tu superávit es demasiado grande. Para ganar músculo basta +200-400 kcal/día (o subir ~0,25-0,5% de tu peso a la semana). Baja un poco las calorías (recorta de las grasas o de carbos sobrantes), mantén la proteína en ~1,6 g/kg y sigue entrenando fuerte. «Músculo sin nada de grasa» no existe, pero sí puedes minimizarla. (— Tema 1, Slater 2019)",
+    chips:["no bajo de peso","¿cuánto superávit?","como poca proteína"]
+  },
+  {
+    tronco:"diagnostico", rama:"siempre-cansado",
+    claves:["estoy siempre cansado","siempre cansado","fatiga constante","siempre agotado","no me recupero bien","siempre estoy reventado"],
+    r:"El cansancio crónico suele venir de tres sitios: 1) SUEÑO (apunta a 7-9 h; es la palanca nº1); 2) demasiada FATIGA acumulada (mucho volumen o muchas series al fallo → recorta 1-2 series o mete una semana suave); 3) comer o beber poco. Si llevas semanas en déficit agresivo, tu cuerpo pide un respiro. Empieza por dormir. (— Tema 16/27, factores de fatiga)",
+    chips:["duermo poco","siempre tengo agujetas","¿necesito una semana de descarga?"]
+  },
+  {
+    tronco:"diagnostico", rama:"duermo-poco",
+    claves:["duermo poco","no duermo bien","pocas horas de sueno","me cuesta dormir","no descanso por la noche","duermo demasiado poco"],
+    r:"Dormir es una variable anabólica crítica: por debajo de ~6 h crónicas el músculo y la recuperación se resienten aunque entrenes y comas perfecto. Higiene básica: horario fijo, cuarto oscuro y fresco, sin pantallas 1 h antes y cortar la cafeína ~8 h antes de dormir. Ningún suplemento compensa dormir poco. (— Tema 27, Hirshkowitz 2015)",
+    chips:["¿cuánto hay que dormir?","estoy siempre cansado","¿hasta qué hora puedo tomar café?"]
+  },
+  {
+    tronco:"diagnostico", rama:"muchas-agujetas",
+    claves:["siempre tengo agujetas","muchas agujetas","agujetas constantes","me duele todo tras entrenar","agujetas que no se van","tengo agujetas siempre"],
+    r:"Las agujetas NO miden si el entreno sirve ni si creces: puedes crecer sin agujetas y tenerlas sin crecer. Muchas agujetas seguidas suelen ser demasiada novedad o demasiado volumen/excéntricas. Baja un pelo el volumen, progresa gradual y prioriza recuperación (sueño, proteína). Con agujetas leves puedes entrenar; con dolor que rompe la técnica, espera. (— agujetas ≠ crecimiento)",
+    chips:["estoy siempre cansado","¿necesito una semana de descarga?","duermo poco"]
+  },
+  {
+    tronco:"diagnostico", rama:"hago-siempre-lo-mismo",
+    claves:["hago siempre lo mismo","mi rutina no cambia","llevo mucho con la misma rutina","aburrido de mi rutina","siempre la misma rutina","siempre entreno igual"],
+    r:"Repetir ejercicios NO es malo — de hecho ayuda a la sobrecarga progresiva (puedes medir si mejoras). Cambiar por cambiar cada semana te quita esa trazabilidad. Cambia algo solo si: te aburres y por eso faltas, te duele algo, o llevas semanas sin progresar en ese ejercicio. Recuerda: no hay rutina estrella, la mejor es la que sostienes y en la que progresas. (— Tema 25, adherencia)",
+    chips:["no subo de fuerza","¿cuál es la mejor rutina?","no sé cuánto entrenar"]
+  },
+  {
+    tronco:"diagnostico", rama:"cuanto-entrenar",
+    claves:["no se cuanto entrenar","cuanto debo entrenar","cuantas series hago yo","cuanto volumen necesito","no se cuantas series hacer","cuanto entreno a la semana"],
+    r:"Punto de partida por músculo y semana: principiante ~8-12 series, intermedio ~12-18, avanzado ~16-20+ (techo práctico ~20). Reparte en 2 días/semana por músculo. Autorregula: si progresas, mantén o +1 serie; si te estancas con buena recuperación, quita 1. Más no es siempre mejor. (— Tema 19/25, Pelland 2025)",
+    chips:["no gano músculo","estoy siempre cansado","hago siempre lo mismo"]
+  },
+  {
+    tronco:"diagnostico", rama:"lejos-del-fallo",
+    claves:["me quedo muy lejos del fallo","dejo muchas reps en el tanque","no aprieto en las series","entreno muy suave","me sobra mucho al acabar la serie","me quedo corto en las series"],
+    r:"Para crecer hay que acercarse al fallo: deja RIR 1-2 (te quedan 1-2 reps buenas) en la mayoría de series. Si acabas con 4-5 reps de sobra, el estímulo es flojo. Sube peso o reps hasta llegar cerca del fallo con buena técnica. En básicos pesados no hace falta fallar; en aislamientos puedes apurar más. (— Tema 13, RIR)",
+    chips:["¿qué es el RIR?","no subo de fuerza","voy al fallo en todo"]
+  },
+  {
+    tronco:"diagnostico", rama:"al-fallo-en-todo",
+    claves:["voy al fallo en todo","siempre entreno al fallo","llego al fallo siempre","fallo total en todas las series","entreno al fallo siempre","fallo en todas las series"],
+    r:"Ir al fallo en TODAS las series dispara la fatiga sin dar más músculo: acumulas cansancio que te frena las siguientes series y sesiones. Reserva el fallo para la última serie de un ejercicio o para aislamientos; en los básicos pesados quédate a RIR 1-2. Más fallo ≠ más crecimiento; manda el volumen de calidad. (— Tema 13/16)",
+    chips:["estoy siempre cansado","¿necesito una semana de descarga?","me quedo muy lejos del fallo"]
+  },
+  {
+    tronco:"habitos", rama:"masturbarse-antes-de-entrenar",
+    claves:["masturbarme antes de entrenar","masturbarse antes del gym","eyacular antes de entrenar","el sexo antes de entrenar baja la fuerza","perder fuerza por masturbarme","masturbarse baja la testosterona","hacerme una paja antes del gym","sexo antes de competir"],
+    r:"Mito: masturbarse o tener sexo antes de entrenar NO te deja sin fuerza ni «gasta» la testosterona útil. Un metaanálisis (9 estudios, 133 personas) no vio efecto sobre fuerza o potencia (SMD 0,03, ns), y un ensayo con atletas incluso midió la testosterona MÁS ALTA y un +3,2% de duración del ejercicio tras masturbarse 30 min antes. La única pega sería el punto de vista mental si te desconcentra. Entrena tranquilo. (— Zavorsky 2019 / Rodríguez-Fernández 2025, PMID 41390043)",
+    chips:["¿qué como antes de entrenar?","¿las grasas suben la testosterona?","¿cuánto hay que dormir?"]
+  },
+  {
+    tronco:"habitos", rama:"que-comer-antes-de-entrenar",
+    claves:["que comer antes de entrenar","comida antes del gym","que comida antes de entrenar","proteina o carbos antes de entrenar","que alimento antes de entrenar","comer antes de entrenar","comida pre entreno","que comer pre entreno"],
+    r:"Para tener ENERGÍA, prioriza CARBOHIDRATOS, no proteína: los carbos llenan el glucógeno, que es el combustible del músculo. Una comida muy alta en proteína o muy grasa pesa y digiere lento, así que puede sentarte mal si entrenas justo después. Idea práctica: carbos + algo de proteína 1-3 h antes; si es cerca del entreno, que sea ligero. Para el gym normal (no maratón) hasta entrenar en ayunas rinde casi igual: lo que manda es tu comida del DÍA. (— ISSN 2017, Kerksick / Naharudin 2021)",
+    chips:["me falta energía","¿pierdo músculo si entreno en ayunas?","masturbarme antes de entrenar"]
+  },
+
+  // ─────────────── LOTE MITOS/AMPLITUD 2026-07-15 · fichas 153-175 (enjambre 24 bots → 1 ficha/mito; limpiadas: cita, dedup claves, chips solo ruta-limpia; validado 0 callejones) ───────────────
+  {
+    tronco:"mitos", rama:"reduccion-localizada-abdominales",
+    claves:["hacer abdominales quita la barriga","se puede quemar grasa de una zona entrenandola","la reduccion localizada funciona","abdominales para quitar la panza","pierdo grasa del abdomen si entreno abdomen","ejercicios para quemar grasa localizada","adelgazar una zona concreta entrenandola","quemar grasa justo donde entreno"],
+    r:"No, hacer abdominales no quita la barriga: la reducción localizada es un mito. La grasa no se quema en la zona que entrenas; cuando gastas más energía de la que comes, el cuerpo tira de grasa de todo el cuerpo a la vez, y dónde la pierdes primero lo decide sobre todo tu genética, no el ejercicio de esa zona. Los abdominales fortalecen el músculo de debajo, pero la capa de grasa que lo tapa solo baja con déficit calórico sostenido y adherencia. (— Vispute et al. 2011)",
+    chips:["Entonces, ¿cómo pierdo la grasa de la barriga?","¿Sirve de algo hacer abdominales?","¿Por qué se me acumula la grasa justo en el abdomen?"]
+  },
+  {
+    tronco:"mitos", rama:"sudar-no-mide-grasa-quemada",
+    claves:["sudar mas quema mas grasa","si sudo mucho adelgazo mas","sudar es quemar grasa","cuanto mas sudo mas calorias quemo","entrenar con plastico para sudar mas","faja de sudoracion para quemar grasa","el sudor mide la grasa que pierdo","sudar mucho en el gym significa mas grasa"],
+    r:"No. El sudor es el aire acondicionado del cuerpo: sirve para bajar la temperatura, no para medir la grasa que quemas. Lo que pierdes sudando es agua, y ese peso vuelve en cuanto bebes. Cuánto sudas depende del calor, la humedad, tu hidratación y tu genética, no de cuánta grasa estés gastando; la grasa se pierde con un déficit calórico sostenido, no con lo empapada que acaba la camiseta ni con fajas o plásticos. (— consenso fisiología del ejercicio)",
+    chips:["¿Entonces las fajas y trajes de sudoración no sirven para adelgazar?","¿Qué determina de verdad la grasa que quemo en una sesión?","¿qué hago para mejorar?"]
+  },
+  {
+    tronco:"entreno", rama:"angulo-press-inclinado-pecho-superior",
+    claves:["que angulo de banco para pecho superior","press inclinado 30 o 45 grados","el press inclinado hace pecho superior","cuanto inclinar el banco en press","45 grados es mejor para el pecho de arriba","inclinacion del banco y enfasis pectoral superior","press inclinado trabaja mas hombro o pecho","mejor angulo de press inclinado para pecho clavicular"],
+    r:"Sí, inclinar el banco desplaza algo de énfasis hacia la porción clavicular del pectoral (el \"pecho superior\"), pero el efecto es modesto: sigues trabajando todo el pecho, solo cambias el reparto. Los estudios de electromiografía apuntan a que un ángulo moderado, en torno a 30°, activa más esa zona que el banco plano; subir a 45° o más no añade pecho y empieza a robarle trabajo al deltoides anterior (el hombro). Lo que de verdad mueve la aguja es el volumen total, la progresión de cargas y tu propia estructura, no clavar un grado exacto. (— Rodríguez-Ridao et al. 2020)",
+    chips:["¿El press plano ya trabaja el pecho superior o necesito el inclinado?","¿Mejor con mancuernas o con barra para el press inclinado?","¿Cuántas series de inclinado a la semana para notar el pecho superior?"]
+  },
+  {
+    tronco:"entreno", rama:"mejor-hora-entrenar-manana-vs-tarde",
+    claves:["mejor hora para entrenar","es mejor entrenar por la mañana o por la tarde","se rinde mas entrenando por la noche","a que hora se levanta mas peso","cual es la mejor hora para ir al gym","importa la hora a la que entreno","por la tarde levanto mas que por la mañana","entrenar por la mañana rinde menos"],
+    r:"Se rinde un poco más por la tarde o primera noche, cuando la temperatura corporal está en su pico y la fuerza y la potencia suelen ser algo mayores. Pero la diferencia es pequeña y casi se borra si entrenas siempre a la misma hora: el cuerpo se adapta al horario en que lo acostumbras. En la práctica no hay franja mágica; la mejor hora para entrenar es aquella en la que puedes ser constante y llegar con energía. (— consenso cronobiología del ejercicio)",
+    chips:["¿Entrenar en ayunas por la mañana es peor?","¿Cómo acostumbro mi cuerpo a entrenar temprano?","¿qué hago para mejorar?"]
+  },
+  {
+    tronco:"mitos", rama:"peso-libre-vs-maquina-hipertrofia",
+    claves:["es mejor peso libre o maquina para ganar musculo","las maquinas dan menos musculo que las mancuernas","peso libre vs maquina hipertrofia","hay que hacer pesas libres para crecer","maquinas o mancuernas para masa muscular","las maquinas sirven para ponerse mamado","es verdad que el peso libre es mas efectivo en el gym","barra o maquina para hipertrofia"],
+    r:"Mito: para ganar músculo, peso libre y máquina crecen prácticamente igual cuando igualas volumen, esfuerzo (cercanía al fallo) y progresión de carga. El peso libre exige más estabilizadores y transfiere mejor al deporte o a movimientos cotidianos; la máquina es más fácil de aprender, aísla mejor un músculo y te deja apretar cerca del fallo con menos riesgo. Lo que de verdad decide no es la herramienta, sino que entrenes duro, subas cargas con el tiempo y seas constante; lo mejor suele ser combinar ambos. (— consenso en ciencia del ejercicio)",
+    chips:["¿Cuánto cerca del fallo tengo que entrenar para crecer?","¿Qué es exactamente el volumen de entrenamiento?","¿qué hago para mejorar?"]
+  },
+  {
+    tronco:"entreno", rama:"estiramiento-estatico-antes-de-fuerza",
+    claves:["estirar antes de entrenar fuerza baja el rendimiento","estiramiento estatico antes de pesas","es malo estirar antes de levantar peso","estirar antes de entrenar quita fuerza","hay que estirar antes o despues de entrenar","estiramientos estaticos como calentamiento en el gym","estirar antes de las sentadillas es malo","calentar estirando antes de las pesas"],
+    r:"Mantener estiramientos estaticos (aguantar la postura 30-60 s) justo antes de levantar peso baja un poco la fuerza y la potencia durante los minutos siguientes, sobre todo si los aguantas mucho tiempo; es un efecto pequeño y pasajero, no una lesion ni nada grave. Para entrenar fuerza rinde mas un calentamiento dinamico (movimientos que llevan la articulacion por su recorrido) y dejar los estiramientos estaticos para despues o para otro momento del dia. Dicho esto, no es magia negra: si estiras suave y breve no vas a arruinar la sesion; lo que de verdad manda es calentar bien y tu constancia. (— Simic et al. 2013)",
+    chips:["¿Estirar después de entrenar sirve para algo?","¿qué hago para mejorar?","¿cuál es la mejor rutina?"]
+  },
+  {
+    tronco:"entreno", rama:"calentar-antes-de-entrenar-necesario-y-como",
+    claves:["hace falta calentar antes de entrenar","es necesario calentar en el gym","como calentar antes de las pesas","puedo entrenar sin calentar","tengo que estirar antes de entrenar","cuanto hay que calentar antes de entrenar","calentar previene lesiones","calentamiento antes de pesas sirve o no"],
+    r:"Sí merece la pena, pero no necesitas 20 minutos ni rituales complicados. Con 5-10 minutos de cardio suave para subir pulsaciones y unas series de aproximación del propio ejercicio (empezar con poco peso e ir subiendo) basta: mejora el rendimiento y prepara músculo y articulaciones. Los estiramientos estáticos largos antes de entrenar no hacen falta y pueden bajarte la fuerza de forma puntual; mejor movimiento dinámico. Como todo en la app, lo importante es que lo hagas de forma sostenible, no clavar un protocolo perfecto. (— Fradkin 2010)",
+    chips:["¿Estiro antes o después de entrenar?","¿Cómo hago bien las series de aproximación?","¿qué hago para mejorar?"]
+  },
+  {
+    tronco:"mitos", rama:"entrenamiento-concurrente-cardio-orden",
+    claves:["el cardio me quita musculo","hacer cardio y pesas el mismo dia","cardio antes o despues de las pesas","el cardio arruina mis ganancias","correr me hace perder musculo","entrenamiento concurrente interferencia","importa el orden cardio pesas","puedo hacer cardio si quiero ganar musculo"],
+    r:"No, en un usuario normal el cardio no \"se come\" el músculo. El llamado efecto interferencia existe, pero es modesto y solo se nota de verdad con volúmenes muy altos de carrera y en atletas de resistencia; con proteína suficiente (~1,6-2 g/kg) y sin pasarte de cardio, mantienes tus ganancias. El orden (cardio antes o después de las pesas) apenas cambia las adaptaciones a largo plazo, así que pon primero lo que más te importe ese día: si tu objetivo es fuerza o músculo, las pesas primero y el cardio después. (— consenso en fisiología del ejercicio; Schumann et al. 2021)",
+    chips:["¿Cuánto cardio es demasiado si quiero ganar músculo?","¿Interfiere menos la bici que correr?","¿qué hago para mejorar?"]
+  },
+  {
+    tronco:"mitos", rama:"musculo-no-se-convierte-en-grasa",
+    claves:["el musculo se convierte en grasa si dejo de entrenar","si dejo el gym el musculo se me hace grasa","es verdad que el musculo se transforma en grasa","cuando dejas de entrenar el musculo se vuelve grasa","parar de entrenar convierte musculo en grasa","se me hara grasa el musculo si dejo las pesas","el musculo se pone flacido y se vuelve grasa"],
+    r:"Es un mito. El músculo y la grasa son dos tejidos distintos y uno no se transforma en el otro, igual que un hueso no se convierte en piel. Lo que ocurre al dejar de entrenar es que el músculo se atrofia (encoge) porque ya no lo estimulas, y si además sigues comiendo de más ganas grasa por separado; los dos procesos a la vez dan esa sensación de \"blandura\". No hay magia: para evitarlo basta con mantener algo de entrenamiento de fuerza y ajustar las calorías a tu gasto real. (— consenso en fisiología del ejercicio)",
+    chips:["¿qué hago para mejorar?","¿cuál es la mejor rutina?"]
+  },
+  {
+    tronco:"mitos", rama:"mujeres-pesado-no-masculiniza",
+    claves:["las mujeres se ponen grandes si levantan pesado","si entreno pesas me pondre masculina","el gym me va a poner cachas siendo mujer","levantar peso me hara ver como un hombre","las pesas ponen a las mujeres muy musculosas","me da miedo ponerme grande entrenando fuerte","entrenar pesado hace a las chicas masculinas","las mujeres deben entrenar ligero para no crecer"],
+    r:"Mito. Las mujeres producen del orden de 10 a 30 veces menos testosterona que los hombres, la hormona clave para ganar mucho músculo, así que entrenar pesado las hace más fuertes y firmes, no \"grandes\" ni masculinas. Ganar mucho volumen cuesta años de trabajo muy específico incluso a los hombres; en las mujeres la hipertrofia es real pero más lenta y moderada. Lo que de verdad manda es la adherencia y adaptar la carga a cada persona, no el miedo a \"ponerse cachas\". (— consenso ACSM/NSCA sobre entrenamiento de fuerza en mujeres)",
+    chips:["¿Qué debería entrenar una mujer para verme firme y tonificada?","¿La creatina o los suplementos me van a poner grande?","¿qué hago para mejorar?"]
+  },
+  {
+    tronco:"mitos", rama:"confusion-muscular-cambiar-ejercicios",
+    claves:["hay que confundir al musculo cambiando de ejercicios","cambiar de ejercicios a menudo para crecer","la confusion muscular funciona","tengo que cambiar la rutina cada semana","el musculo se acostumbra si hago siempre lo mismo","variar ejercicios para no estancarme","muscle confusion es verdad","hacer siempre los mismos ejercicios es malo","cambiar la rutina para sorprender al musculo"],
+    r:"No, el músculo no se \"confunde\": lo que lo hace crecer es la sobrecarga progresiva (subir peso, repeticiones o series con el tiempo) y la constancia, no cambiar de ejercicio cada semana. De hecho, cambiar sin parar te impide medir si estás progresando y dominar bien la técnica, que es cuando puedes cargar más. Algo de variedad está bien por motivación, salud articular o trabajar distintas zonas de un músculo, pero es un complemento, no un requisito mágico. Elige unos ejercicios, hazte bueno en ellos y súbeles la carga poco a poco. (— consenso en ciencia del ejercicio)",
+    chips:["¿Qué es exactamente la sobrecarga progresiva?","¿qué hago para mejorar?","¿cuál es la mejor rutina?"]
+  },
+  {
+    tronco:"entreno", rama:"rango-completo-vs-parciales-hipertrofia",
+    claves:["rango completo o parciales para hipertrofia","medias repeticiones sirven para ganar musculo","recorrido completo vs parcial en el gym","es mejor bajar del todo o hacer media repeticion","parciales en estiramiento para ganar musculo","rango de movimiento completo para hipertrofia","hago el ejercicio entero o a medias","las repeticiones parciales construyen mas musculo"],
+    r:"Para la mayoria, el rango completo es la apuesta segura: entrena el musculo en toda su longitud y da igual o mas hipertrofia que hacer medias repeticiones, sobre todo porque estira bien la fibra. El mito de que \"las parciales de arriba\" hacen crecer mas es falso; las parciales solo compiten cuando se hacen en la parte estirada del movimiento (parciales en elongacion), no en la acortada. Norma practica: rango completo por defecto, y si sumas parciales, hazlas en el estiramiento. Al final manda que puedas cargar y progresar sin dolor. (— consenso; revision de Schoenfeld & Grgic 2020)",
+    chips:["¿Como se hacen bien las parciales en estiramiento?","¿En que ejercicios merece mas la pena el rango completo?","¿El rango completo es peor para las articulaciones?"]
+  },
+  {
+    tronco:"mitos", rama:"entrenar-resfriado-gripe-regla-del-cuello",
+    claves:["se puede entrenar resfriado","entrenar con gripe es malo","puedo ir al gym constipado","la regla del cuello para entrenar enfermo","hacer pesas con mocos","entrenar con fiebre","sudar la gripe en el gym","entrenar con dolor de garganta","moqueo y entrenamiento"],
+    r:"Sí, con matices, y sirve la \"regla del cuello\": si los síntomas están de cuello para arriba (mocos, congestión, estornudos, dolor de garganta leve) normalmente puedes entrenar suave a moderado, bajando intensidad y volumen. De cuello para abajo (fiebre, dolores musculares, tos con pecho, vómitos o cansancio extremo) toca descansar, porque entrenar con fiebre estresa el corazón y \"sudar la gripe\" es un mito: no acorta la infección, solo retrasa tu recuperación. No hay magia; manda escucharte y volver progresivamente. (— consenso ACSM / medicina deportiva, regla del cuello)",
+    chips:["¿Y si tengo solo un poco de fiebre, entreno o no?","¿Cuántos días espero para volver al gym tras una gripe?","¿qué hago para mejorar?"]
+  },
+  {
+    tronco:"mitos", rama:"alcohol-musculo-definicion",
+    claves:["el alcohol arruina el musculo","beber cerveza y perder definicion","puedo tomar alcohol si voy al gym","una copa el finde me jode las ganancias","alcohol despues de entrenar","beber alcohol y volumen muscular","cuanto alcohol puedo tomar sin perder musculo","emborracharse arruina el gimnasio"],
+    r:"Beber de forma puntual y moderada no arruina tus ganancias, pero tampoco es gratis. El alcohol frena temporalmente la síntesis de proteína muscular después de entrenar (aunque tomes proteína a la vez), empeora el sueño y la recuperación, y sobre todo suma calorías \"vacías\" (7 kcal/g más las mezclas y el picoteo que provoca) que atacan directamente tu definición. El daño de verdad viene del consumo frecuente o alto y de cuánto te descuadra las calorías y el descanso, no de una cerveza ocasional dentro de tu presupuesto diario. (— Parr et al. 2014)",
+    chips:["¿Cuánto tarda el alcohol en dejar de afectar al músculo?","¿qué hago para mejorar?","¿cuál es la mejor rutina?"]
+  },
+  {
+    tronco:"mitos", rama:"comer-de-noche-engorda",
+    claves:["comer de noche engorda","cenar tarde engorda mas","es malo comer tarde por la noche","engorda comer antes de dormir","picar de noche engorda","cenar tarde sube de peso","la cena tardia engorda mas","comer de madrugada engorda"],
+    r:"No, la hora no engorda por sí sola: lo que decide tu peso es el balance de calorías a lo largo de la semana, no el reloj. Lo que sí pasa es que de noche solemos picar más y peor (menos saciedad, más antojos), así que la cena tardía puede colar calorías extra sin que te des cuenta. Si tu total diario cuadra, cenar tarde no te hace ganar grasa; mandan la adherencia y las calorías, no el horario. (— consenso nutricional)",
+    chips:["¿A qué hora conviene cenar si entreno de noche?","¿Comer carbohidratos por la noche engorda?","¿Cuántas comidas al día son mejores para adelgazar?"]
+  },
+  {
+    tronco:"mitos", rama:"azucar-no-es-veneno-eliminar-del-todo",
+    claves:["el azucar es veneno","tengo que quitar el azucar del todo","hay que eliminar el azucar para adelgazar","el azucar es toxico o puedo comerlo","cuanta azucar puedo tomar al dia","el azucar de la fruta tambien es malo","dejar el azucar por completo","el azucar hace daño de verdad"],
+    r:"Mito. El azúcar no es un \"veneno\": tu cuerpo y sobre todo tu cerebro funcionan con glucosa, y el azúcar que viene en la fruta o la leche llega con fibra y nutrientes, sin problema. Lo que conviene limitar es el azúcar AÑADIDO (refrescos, bollería), no porque sea tóxico, sino porque suma calorías vacías y hace fácil pasarte; la referencia habitual es mantenerlo por debajo del 10% de tus calorías. No hace falta eliminarlo al 100%: manda el total de tu dieta y la adherencia, y prohibírtelo todo suele salir peor que moderarlo. (— OMS 2015)",
+    chips:["¿Los edulcorantes son una alternativa mejor?","¿qué hago para mejorar?","¿cuál es la mejor rutina?"]
+  },
+  {
+    tronco:"mitos", rama:"gluten-sin-celiaquia",
+    claves:["el gluten engorda","dejar el gluten para adelgazar","quitar el gluten rinde mas","hay que evitar el gluten sin ser celiaco","el gluten inflama y da barriga","dieta sin gluten para definir","el pan con gluten es malo para el gym","sin gluten para bajar grasa"],
+    r:"Si no eres celíaco ni tienes una sensibilidad al gluten diagnosticada, no hay ninguna razón para evitarlo: no mejora el rendimiento ni te hace perder grasa por sí mismo. Quien adelgaza al \"quitar el gluten\" suele hacerlo porque de paso elimina bollería, pan blanco y ultraprocesados, no por la proteína en sí. Lo que manda sigue siendo el balance calórico y la adherencia; para la gran mayoría el gluten es neutro. (— Lis et al. 2015)",
+    chips:["¿qué hago para mejorar?","¿cuál es la mejor rutina?"]
+  },
+  {
+    tronco:"mitos", rama:"detox-dietas-depurativas-limpiar-cuerpo",
+    claves:["sirven los detox para limpiar el cuerpo","las dietas depurativas eliminan toxinas","funcionan los batidos y zumos detox","necesito un detox despues de navidad","los zumos verdes desintoxican","hay que limpiar el higado con dietas depurativas","tes detox para adelgazar sirven","detox de fin de semana funciona"],
+    r:"No, es un mito de marketing: ningun estudio serio demuestra que zumos, tes o dietas \"detox\" eliminen \"toxinas\" ni limpien nada. De eso ya se encargan tu higado y tus riñones las 24 horas, y funcionan mejor con comida real, agua, sueño y sin exceso de alcohol que con un batido caro. Lo que pierdes esos primeros dias es agua y algo de musculo por comer casi nada, no \"porqueria\" acumulada; en cuanto vuelves a comer normal, vuelve. La salud manda por adherencia a largo plazo, no por limpiezas rapidas (— Klein & Kiat 2015). (— consenso ciencia del ejercicio)",
+    chips:["¿Los zumos verdes o batidos detox tienen algún beneficio real?","¿Por qué pierdo peso los primeros días de un detox si no sirve?","¿qué hago para mejorar?"]
+  },
+  {
+    tronco:"mitos", rama:"sauna-plastico-sudar-no-quema-grasa",
+    claves:["la sauna quema grasa","sudar adelgaza o quema grasa","ropa de plastico para sudar sirve","traje o faja de sauna para bajar barriga","perder peso sudando en la sauna","ponerse plastico en la barriga para quemar grasa","las fajas de sudoracion funcionan"],
+    r:"No, sudar no quema grasa: lo que baja en la bascula tras la sauna o con ropa de plastico es agua, y vuelve en cuanto bebes y comes. La grasa solo se pierde con un deficit calorico sostenido, no por sudar mas. Forzar la sudoracion con plasticos o fajas ademas te deshidrata y puede ser peligroso, sin darte ningun beneficio real de perdida de grasa. (— consenso ACSM / fisiologia del ejercicio)",
+    chips:["Como se pierde grasa de verdad?","Es peligroso entrenar con ropa de plastico?","¿qué hago para mejorar?"]
+  },
+  {
+    tronco:"mitos", rama:"picante-agua-fria-acelera-metabolismo",
+    claves:["el picante acelera el metabolismo","comer picante adelgaza","agua fria quema calorias","beber agua helada para adelgazar","la capsaicina quema grasa","comida picante para perder peso","el chile ayuda a bajar de peso","agua fria acelera el metabolismo"],
+    r:"Tienen un efecto real pero minúsculo: la capsaicina del picante sube un poco el gasto de energía y quita algo de hambre, y enfriar el agua obliga al cuerpo a templarla, pero hablamos de unas pocas decenas de calorías al día como mucho (un vaso de agua helada gasta apenas unas 8 kcal). Eso no mueve la aguja de la báscula ni compensa lo que comes. Adelgazar sigue dependiendo del déficit calórico sostenido y de la adherencia, no de trucos que «aceleran el metabolismo». (— consenso en nutrición y termogénesis inducida por la dieta)",
+    chips:["¿el té verde o la cafeína sí aceleran el metabolismo?","¿qué alimentos queman grasa de verdad?","¿qué hago para mejorar?"]
+  },
+  {
+    tronco:"mitos", rama:"estirar-previene-lesiones-y-agujetas",
+    claves:["estirar previene lesiones","hay que estirar antes de entrenar","estirar quita las agujetas","sirve de algo estirar antes del gym","estirar para no tener agujetas","si no estiro me lesiono","estiramientos antes o despues de entrenar","el estiramiento previene lesiones de verdad"],
+    r:"Es un mito muy extendido. Estirar (sobre todo el estiramiento estatico justo antes de entrenar) no reduce de forma apreciable el riesgo de lesion ni previene las agujetas: las revisiones que lo han medido no encuentran un efecto relevante. Lo que si protege es calentar progresivamente, subir la carga poco a poco y, sobre todo, entrenar fuerza; y las agujetas se van solas con el tiempo y la repeticion del ejercicio. Estira si te sienta bien o para ganar movilidad, no esperando que sea un escudo contra lesiones. (— Herbert & de Noronha 2011)",
+    chips:["¿Como quito o alivio las agujetas?","¿qué hago para mejorar?","¿cuál es la mejor rutina?"]
+  },
+  {
+    tronco:"mitos", rama:"entrenar-en-casa-vs-gimnasio-mismos-resultados",
+    claves:["entrenar en casa da los mismos resultados que el gimnasio","se puede ganar musculo en casa sin maquinas","hace falta ir al gimnasio para ponerse fuerte","mancuernas en casa vs maquinas del gym","puedo hipertrofiar solo con bandas y peso corporal","en casa se progresa igual que en el gimnasio","resultados entrenando en casa comparado con gym","necesito el gimnasio o vale entrenar en casa"],
+    r:"Sí, es posible: para ganar músculo lo que manda es acercar cada serie al fallo con una carga que te suponga esfuerzo y ir subiendo la dificultad con el tiempo (sobrecarga progresiva), no la máquina concreta. El músculo no distingue si la tensión viene de una mancuerna, una banda o tu propio peso; con equipo suficiente en casa (unas mancuernas ajustables o bandas) y progresión, los resultados en hipertrofia son equivalentes. El gimnasio gana sobre todo en cargar mucho peso para fuerza máxima y en variedad de máquinas, pero para el usuario general lo decisivo sigue siendo la adherencia: entrena mejor donde vayas a ser constante. (— consenso en ciencia del entrenamiento de fuerza)",
+    chips:["¿Cómo aplico sobrecarga progresiva si solo tengo mancuernas ligeras?","¿Puedo entrenar al fallo sin lesionarme sin nadie que me ayude?","¿qué hago para mejorar?"]
+  },
+  {
+    tronco:"mitos", rama:"ventana-anabolica-proteina-post-entreno",
+    claves:["ventana anabolica es real","tengo que tomar proteina justo despues de entrenar","si no como en 30 minutos pierdo el musculo","batido de proteina nada mas terminar el gym","cuanto tiempo tengo para comer despues de entrenar","se pierden las ganancias si no como rapido tras entrenar","importa el momento de tomar la proteina post entreno","hay que meter proteina justo al acabar el gym"],
+    r:"La \"ventana anabólica\" de 30 minutos es un mito exagerado: tras entrenar el músculo sigue receptivo a los nutrientes durante varias horas, no solo un ratito. Lo que de verdad manda es la proteína total del día (en torno a 1,6-2,2 g por kg de peso) repartida en varias comidas, no correr a por el batido nada más soltar la mancuerna. Si entrenas en ayunas o llevas muchas horas sin comer, conviene no demorar mucho la siguiente comida; para el resto, no hace falta agobiarse con el cronómetro. (— Aragon & Schoenfeld 2013)",
+    chips:["¿Cuánta proteína necesito al día para ganar músculo?","¿Sirve de algo entonces el batido justo después de entrenar?","¿Y si entreno en ayunas por la mañana, cambia algo?"]
   }
 ];
 
@@ -16422,8 +16737,11 @@ function planiCalc(){
   var dirTxt   = dir === "perder" ? "perder" : "ganar";
   var balLbl   = dir === "perder" ? "Déficit diario" : "Superávit diario";
   var semTxt   = (Math.round(sem * 10) / 10).toString().replace(".", ",");
+  var dirVerbo = dir === "perder" ? "perder" : "ganar";
+  var kgTxt    = (Math.round(kg * 10) / 10).toString().replace(".", ",");
 
   var h = "";
+  h += "<div style='margin:8px 0 2px;font-size:15px'>🎯 Compruebo tu meta de <b style='color:var(--soft)'>" + dirVerbo + " " + kgTxt + " kg</b> en <b style='color:var(--soft)'>" + semTxt + " semanas</b>:</div>";
   h += "<div class='kv' style='border:0;margin-top:8px'><span>Veredicto</span>"
      + "<span style='color:" + col + ";font-weight:700;letter-spacing:.04em'>" + esc(r.veredicto) + "</span></div>";
   h += "<div class='eyebrow-lbl'>Probabilidad de lograrlo bien</div>";
@@ -16443,6 +16761,7 @@ function planiCalc(){
 }
 
 try{ $("r_fecha").value=hoyLocal(); }catch(e){}
+try{ $("pasos_fecha").value=hoyLocal(); }catch(e){}
 // ⚖️ A10 · (i) del pesaje (reutiliza infoTip) + valor por defecto del ajuste "ropa interior"
 try{ var _pi=$("pesaje_info"); if(_pi) _pi.innerHTML=infoTip('pesaje'); var _rk=$("r_peso_ropa_kg"); if(_rk) _rk.value=pesoRopaAjuste(); }catch(e){}
 // Al abrir: PERSISTE el perfil (como una app real). Si ya hiciste el onboarding (perfil
