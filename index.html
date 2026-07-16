@@ -550,7 +550,7 @@
 <header class="brandbar">
   <div class="logo"><span class="dot"></span>JV <b>Fitness</b></div>
   <div style="display:flex;align-items:center">
-    <span class="tag">MVP v0.31.0 · motor v0.7</span>
+    <span class="tag">MVP v0.31.2 · motor v0.7</span>
     <!-- ⚙️ tanda #22 · hub de AJUSTES (no es pestaña): modal a pantalla completa -->
     <button class="gearbtn" id="btn_hub" type="button" title="Ajustes" aria-label="Abrir ajustes" onclick="hubAbrir()">⚙️</button>
   </div>
@@ -11176,7 +11176,7 @@ document.addEventListener('DOMContentLoaded',function(){
     setTimeout(function(){ try{ dbxAutoProvision(); }catch(e){} }, 4000);   // 🗄️ E9 · auto-provisión/actualización de la base, tras el primer render
   }catch(e){}
 });
-function resetTodo(){ if(!confirm("⚠️ Esto borra TODO: perfil, pesos, entrenos, rutinas, comidas, alimentos propios, agua, suplementos, lo hablado con el Cerebro y las fotos de progreso. ¿Seguro?")) return; try{ localStorage.removeItem(LS_P); localStorage.removeItem(LS_W); localStorage.removeItem(LS_E); localStorage.removeItem("jvf_notas_ej"); localStorage.removeItem("jvf_comida"); localStorage.removeItem("jvf_agua"); localStorage.removeItem("jvf_agua_log"); localStorage.removeItem("jvf_suples_cfg"); localStorage.removeItem("jvf_suples_log"); localStorage.removeItem("jvf_rutinas"); localStorage.removeItem("jvf_ent_start"); localStorage.removeItem("jvf_meals"); localStorage.removeItem("jvf_alimentos_propios"); localStorage.removeItem("jvf_barcode_cache"); localStorage.removeItem("jvf_foto_ajustes"); localStorage.removeItem("jvf_warmup_stats"); localStorage.removeItem("jvf_plate_barra"); localStorage.removeItem("jvf_rest_seg"); localStorage.removeItem("jvf_cerebro_diario"); localStorage.removeItem("jvf_cerebro_norec"); localStorage.removeItem("jvf_fotos_consent"); localStorage.removeItem("jvf_fotos_meta"); localStorage.removeItem("jvf_flex_cfg"); localStorage.removeItem("jvf_flex_visto"); localStorage.removeItem("jvf_tono"); localStorage.removeItem("jvf_deporte_sesiones"); localStorage.removeItem("jvf_favoritos"); localStorage.removeItem("jvf_uso_alim"); localStorage.removeItem("jvf_hist_alim"); localStorage.removeItem("jvf_lesiones"); localStorage.removeItem("jvf_notif_cfg"); localStorage.removeItem("jvf_notif_shown"); localStorage.removeItem("jvf_pasos_log"); localStorage.removeItem("jvf_pasos_sync_cfg"); localStorage.removeItem("jvf_pasos_sync_last"); localStorage.removeItem("jvf_apodo"); localStorage.removeItem("jvf_clima"); localStorage.removeItem("jvf_agua_colapsada"); localStorage.removeItem("jvf_levantar_semana"); localStorage.removeItem("jvf_levantar_finde"); localStorage.removeItem("jvf_overrides"); }catch(e){} _mem={};
+function resetTodo(){ if(!confirm("⚠️ Esto borra TODO: perfil, pesos, entrenos, rutinas, comidas, alimentos propios, agua, suplementos, lo hablado con el Cerebro y las fotos de progreso. ¿Seguro?")) return; try{ localStorage.removeItem(LS_P); localStorage.removeItem(LS_W); localStorage.removeItem(LS_E); localStorage.removeItem("jvf_notas_ej"); localStorage.removeItem("jvf_comida"); localStorage.removeItem("jvf_agua"); localStorage.removeItem("jvf_agua_log"); localStorage.removeItem("jvf_suples_cfg"); localStorage.removeItem("jvf_suples_log"); localStorage.removeItem("jvf_rutinas"); localStorage.removeItem("jvf_ent_start"); localStorage.removeItem("jvf_meals"); localStorage.removeItem("jvf_alimentos_propios"); localStorage.removeItem("jvf_barcode_cache"); localStorage.removeItem("jvf_foto_ajustes"); localStorage.removeItem("jvf_warmup_stats"); localStorage.removeItem("jvf_plate_barra"); localStorage.removeItem("jvf_rest_seg"); localStorage.removeItem("jvf_cerebro_diario"); localStorage.removeItem("jvf_cerebro_norec"); localStorage.removeItem("jvf_fotos_consent"); localStorage.removeItem("jvf_fotos_meta"); localStorage.removeItem("jvf_flex_cfg"); localStorage.removeItem("jvf_flex_visto"); localStorage.removeItem("jvf_tono"); localStorage.removeItem("jvf_deporte_sesiones"); localStorage.removeItem("jvf_favoritos"); localStorage.removeItem("jvf_uso_alim"); localStorage.removeItem("jvf_hist_alim"); localStorage.removeItem("jvf_lesiones"); localStorage.removeItem("jvf_notif_cfg"); localStorage.removeItem("jvf_notif_shown"); localStorage.removeItem("jvf_pasos_log"); localStorage.removeItem("jvf_pasos_sync_cfg"); localStorage.removeItem("jvf_pasos_sync_last"); localStorage.removeItem("jvf_apodo"); localStorage.removeItem("jvf_clima"); localStorage.removeItem("jvf_agua_colapsada"); localStorage.removeItem("jvf_levantar_semana"); localStorage.removeItem("jvf_levantar_finde"); localStorage.removeItem("jvf_overrides"); localStorage.removeItem("jvf_sinonimos"); localStorage.removeItem("jvf_desvios"); localStorage.removeItem("jvf_vol_ajuste"); }catch(e){} _mem={};
   // 📸 v0.13-C · las fotos viven en IndexedDB: se borra la base entera ANTES de recargar (con
   // timeout de seguridad — si el borrado se quedara bloqueado, la app no se cuelga: recarga igual
   // y el intento de borrado sigue en cola del navegador).
@@ -11191,7 +11191,7 @@ function resetTodo(){ if(!confirm("⚠️ Esto borra TODO: perfil, pesos, entren
 // Reemplazo total con confirmación. Reusa get/set, hoyLocal, toast, validar, render. NO toca motor ni gate.
 function exportarJSON(){ try{ set("jvf_last_export",hoyLocal()); }catch(e){}
   try{
-    var data={ app:"jvf", schema:1, app_version:"0.31.0", exportadoEl:new Date().toISOString(),
+    var data={ app:"jvf", schema:1, app_version:"0.31.2", exportadoEl:new Date().toISOString(),
       perfil:get(LS_P,null), pesos:get(LS_W,[]), entrenos:get(LS_E,[]), notas_ej:get("jvf_notas_ej",{}), comida:get("jvf_comida",[]), agua:get("jvf_agua",{}), suples_cfg:get("jvf_suples_cfg",null), suples_log:get("jvf_suples_log",{}),
       rutinas:get("jvf_rutinas",[]), meals:get("jvf_meals",[]), ent_start:get("jvf_ent_start",null),   // v0.10 · backup completo
       alimentos_propios:get("jvf_alimentos_propios",[]), barcode_cache:get("jvf_barcode_cache",{}),   // I5/I6 · también viajan en el backup
@@ -11215,6 +11215,7 @@ function exportarJSON(){ try{ set("jvf_last_export",hoyLocal()); }catch(e){}
       lesiones:get("jvf_lesiones",[]),   // 🩹 2B · lesiones activas (viajan en el backup)
       ciclo_log:get(LS_CICLO_LOG,{}),   // 🩸 A11 · registro diario de ciclo/síntomas (dato de salud; SOLO viaja en el backup que inicia la usuaria)
       overrides:get(LS_OVR,{}),   // ✏️ A22 · tus correcciones de datos nutricionales (parches por EAN/nombre) — viajan en el backup
+      sinonimos:get("jvf_sinonimos",[]), desvios:get("jvf_desvios",[]), vol_ajuste:get("jvf_vol_ajuste",{}),   // 🔁 v0.31.2 · claves NUEVAS (Tandas A+B): sinónimos de ejercicios [[a,b],...] · log de desvíos del Cerebro [{f,...}] · ajustes de volumen por músculo {mus:{resp,prio}} — faltaban en el backup
       fotos_aviso:"Las fotos de progreso NO van en este JSON: viven solo en el dispositivo (IndexedDB). Exportarlas aparte esta pendiente." };
     var blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
     var url=URL.createObjectURL(blob);
@@ -11280,6 +11281,10 @@ function procesarImport(file){
     if(Array.isArray(data.lesiones)) set("jvf_lesiones", data.lesiones.filter(function(l){ return l && l.id; }));   // 🩹 2B · lesiones activas
     if(data.ciclo_log && typeof data.ciclo_log==="object" && !Array.isArray(data.ciclo_log)) set(LS_CICLO_LOG, data.ciclo_log);   // 🩸 A11 · registro de ciclo (backups antiguos no lo traen: se deja como está)
     if(data.overrides && typeof data.overrides==="object" && !Array.isArray(data.overrides)) set(LS_OVR, data.overrides);   // ✏️ A22 · correcciones (backups antiguos no las traen: se dejan como están)
+    // 🔁 v0.31.2 · claves NUEVAS (Tandas A+B) — los backups antiguos no las traen: se dejan como están (guarda de tipo, como overrides)
+    if(Array.isArray(data.sinonimos)) set("jvf_sinonimos", data.sinonimos.filter(function(g){ return Array.isArray(g); }));   // 🟰 sinónimos de ejercicios [[a,b],...]
+    if(Array.isArray(data.desvios)) set("jvf_desvios", data.desvios.filter(function(d){ return d && d.f; }));   // 🧭 log de desvíos del Cerebro [{f,...}]
+    if(data.vol_ajuste && typeof data.vol_ajuste==="object" && !Array.isArray(data.vol_ajuste)) set("jvf_vol_ajuste", data.vol_ajuste);   // 💪 ajustes de volumen por músculo {mus:{resp,prio}}
     render();
     toast("✓ Datos importados");
   };
