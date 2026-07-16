@@ -8,7 +8,7 @@
      inline por todo el HTML de un solo archivo); 'wasm-unsafe-eval' lo pide el lector de códigos ZXing/WASM;
      data:/blob: los pide la foto de comida; jsdelivr = polyfill del escáner; NO se lista allorigins porque
      se retiró (OFF sirve Access-Control-Allow-Origin:* → fetch directo, sin proxy ajeno). -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; form-action 'self'; img-src 'self' data: blob: https://world.openfoodfacts.org https://raw.githubusercontent.com; font-src 'self' https://fonts.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' https://cdn.jsdelivr.net; connect-src 'self' https://world.openfoodfacts.org https://api.open-meteo.com https://raw.githubusercontent.com https://cdn.jsdelivr.net; worker-src 'self' blob:; manifest-src 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; form-action 'self'; img-src 'self' data: blob: https://world.openfoodfacts.org https://images.openfoodfacts.org https://static.openfoodfacts.org https://raw.githubusercontent.com; font-src 'self' https://fonts.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' https://cdn.jsdelivr.net; connect-src 'self' https://world.openfoodfacts.org https://api.open-meteo.com https://raw.githubusercontent.com https://cdn.jsdelivr.net; worker-src 'self' blob:; manifest-src 'self'">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -550,7 +550,7 @@
 <header class="brandbar">
   <div class="logo"><span class="dot"></span>JV <b>Fitness</b></div>
   <div style="display:flex;align-items:center">
-    <span class="tag">MVP v0.32.0 · motor v0.7</span>
+    <span class="tag">MVP v0.32.1 · motor v0.7</span>
     <!-- ⚙️ tanda #22 · hub de AJUSTES (no es pestaña): modal a pantalla completa -->
     <button class="gearbtn" id="btn_hub" type="button" title="Ajustes" aria-label="Abrir ajustes" onclick="hubAbrir()">⚙️</button>
   </div>
@@ -9605,7 +9605,13 @@ function bcConfirmar(prod){
   // na100 físicamente imposible (>40 g/100 g = 40.000 mg; la sal pura ~39.000 mg) se descarta en vez de
   // inflar la fila «Sal» y el diario. Antes el clamp solo vivía en el parser OFF; los demás caminos
   // metían el valor podrido sin red. Aditivo (los datos sanos no se tocan).
-  if(prod.na100!=null && !(prod.na100>=0 && prod.na100<=40000)) prod.na100=null;
+  // 🧂 TOPE FÍSICO: la sal pura tiene ~39.340 mg de sodio/100 g. Nada comestible supera eso.
+  // OJO — el 40.000 anterior era CÓDIGO MUERTO (medido 17-07: 0 disparos en 162.626 registros):
+  // el generador de la base ya topa en `na<=40` g = 40.000 mg, así que jamás emitía un valor
+  // que un clamp de «>40000» pudiera atrapar (mismo número, uno con <= y otro con >).
+  // Con 39.340 sí caza los 30 imposibles (incl. los 27 clavados en 40.000 = el error de
+  // teclear salt_100g=100). El saneo de datos del 17-07 los anula en origen; esto es la red.
+  if(prod.na100!=null && !(prod.na100>=0 && prod.na100<=39340)) prod.na100=null;
   if(prod.caf100!=null && !(prod.caf100>=0 && prod.caf100<=100000)) prod.caf100=null;   // ☕ cordura cafeína (mg/100)
   // ✏️ A4/A22 · si ya corregiste este producto (en su ficha o con 📋), tu dato MANDA también al escanear.
   // Aditivo y guardado: sin override no cambia nada. v0.27.1: la traducción ficha→escáner vive en
@@ -11210,7 +11216,7 @@ function resetTodo(){ if(!confirm("⚠️ Esto borra TODO: perfil, pesos, entren
 // Reemplazo total con confirmación. Reusa get/set, hoyLocal, toast, validar, render. NO toca motor ni gate.
 function exportarJSON(){ try{ set("jvf_last_export",hoyLocal()); }catch(e){}
   try{
-    var data={ app:"jvf", schema:1, app_version:"0.32.0", exportadoEl:new Date().toISOString(),
+    var data={ app:"jvf", schema:1, app_version:"0.32.1", exportadoEl:new Date().toISOString(),
       perfil:get(LS_P,null), pesos:get(LS_W,[]), entrenos:get(LS_E,[]), notas_ej:get("jvf_notas_ej",{}), comida:get("jvf_comida",[]), agua:get("jvf_agua",{}), suples_cfg:get("jvf_suples_cfg",null), suples_log:get("jvf_suples_log",{}),
       rutinas:get("jvf_rutinas",[]), meals:get("jvf_meals",[]), ent_start:get("jvf_ent_start",null),   // v0.10 · backup completo
       alimentos_propios:get("jvf_alimentos_propios",[]), barcode_cache:get("jvf_barcode_cache",{}),   // I5/I6 · también viajan en el backup

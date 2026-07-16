@@ -5,3 +5,8 @@
 node_modules/
 *.log
 jvf-backup-*.json
+
+# carpetas de backup de datos (NO subir a la historia del repo público)
+db.BAK-*/
+*.BAK-*/
+data/db.BAK-*/
