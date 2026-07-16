@@ -550,7 +550,7 @@
 <header class="brandbar">
   <div class="logo"><span class="dot"></span>JV <b>Fitness</b></div>
   <div style="display:flex;align-items:center">
-    <span class="tag">MVP v0.31.2 · motor v0.7</span>
+    <span class="tag">MVP v0.32.0 · motor v0.7</span>
     <!-- ⚙️ tanda #22 · hub de AJUSTES (no es pestaña): modal a pantalla completa -->
     <button class="gearbtn" id="btn_hub" type="button" title="Ajustes" aria-label="Abrir ajustes" onclick="hubAbrir()">⚙️</button>
   </div>
@@ -9193,6 +9193,10 @@ function bcNormalizarOFF(p){
     else if(Math.abs(_salg-_na*2.5)>Math.max(0.1,_salg*0.12)) _na=Math.min(_na,_salg/2.5);
   }
   out.na100=(_na!=null && _na>=0 && _na<=40)?Math.round(_na*1000):null;   // mg de sodio /100
+  // ☕ cafeína de OFF (bug: antes NUNCA se leía → el escáner sumaba 0 mg). OFF la da normalmente en
+  // g/100 (Red Bull caffeine_100g=0,032 = 32 mg) y a veces ya en mg: si es ≤5 lo trato como gramos.
+  var _caf=num(nu["caffeine_100g"]);
+  out.caf100=(_caf!=null && _caf>=0)?Math.round(_caf<=5?_caf*1000:_caf):null;   // mg de cafeína /100
   var marca=p.brands?String(p.brands).split(",")[0].trim():"";
   var nombre=((p.product_name||"").trim()+(marca?" ("+marca+")":"")).trim();
   out.dens=bcDensidad(nombre, p.categories_tags||[]);
@@ -9439,6 +9443,7 @@ function bcBuscar(ean){
       dens:bcDensidad(propio.nombre,null), servingAviso:null,
       fib100:(propio.fib100!=null?+propio.fib100:null), az100:(propio.az100!=null?+propio.az100:null),
       sat100:(propio.sat100!=null?+propio.sat100:null), na100:(propio.na100!=null?+propio.na100:null),
+      caf100:(propio.caf!=null?+propio.caf:(propio.caf100!=null?+propio.caf100:null)),   // ☕ cafeína del propio también viaja
       porcion:(+propio.porcion_g>0?+propio.porcion_g:null)});
     return;
   }
@@ -9454,6 +9459,7 @@ function bcBuscar(ean){
       dens:(cp.dens && cp.dens.d>0)?cp.dens:bcDensidad(cp.nombre,null), servingAviso:null,
       fib100:(cp.fib100!=null?+cp.fib100:null), az100:(cp.az100!=null?+cp.az100:null),
       sat100:(cp.sat100!=null?+cp.sat100:null), na100:(cp.na100!=null?+cp.na100:null),
+      caf100:(cp.caf100!=null?+cp.caf100:null),   // ☕ cafeína cacheada de un escaneo anterior
       serving:cp.serving||null, porcion:null});
     return;
   }
@@ -9469,6 +9475,7 @@ function bcBuscar(ean){
       servingAviso:null, serving:null,
       fib100:(fc.fib!=null?+fc.fib:null), az100:(fc.az!=null?+fc.az:null),
       sat100:(fc.sat!=null?+fc.sat:null), na100:(fc.na!=null?+fc.na:null),
+      caf100:(fc.caf!=null?+fc.caf:null),   // ☕ cafeína de la base curada por EAN (energéticas/cafés)
       porcion:(fc.porc?(+String(fc.porc).split(":")[1]||null):null)});
     return;
   }
@@ -9485,6 +9492,7 @@ function bcBuscar(ean){
           servingAviso:null, serving:null,
           fib100:(e.fib!=null?+e.fib:null), az100:(e.az!=null?+e.az:null),
           sat100:(e.sat!=null?+e.sat:null), na100:(e.na!=null?+e.na:null),
+          caf100:(e.caf!=null?+e.caf:null),   // ☕ cafeína de la base España (si el registro la trae)
           porcion:(e.porc?(+String(e.porc).split(":")[1]||null):null)});
         return;
       }
@@ -9593,6 +9601,12 @@ function bcConfirmar(prod){
     prod.uMotivo="es agua: 0 kcal y por ml (corrígelo si tu etiqueta dice otra cosa)";
   }
   if(prod.u!=="ml") prod.u="g";                    // saneo: cualquier camino sin unidad clara = gramos
+  // 🧂 cordura de sodio en el EMBUDO ÚNICO (propio/cache/curada/España/OFF pasan todos por aquí): un
+  // na100 físicamente imposible (>40 g/100 g = 40.000 mg; la sal pura ~39.000 mg) se descarta en vez de
+  // inflar la fila «Sal» y el diario. Antes el clamp solo vivía en el parser OFF; los demás caminos
+  // metían el valor podrido sin red. Aditivo (los datos sanos no se tocan).
+  if(prod.na100!=null && !(prod.na100>=0 && prod.na100<=40000)) prod.na100=null;
+  if(prod.caf100!=null && !(prod.caf100>=0 && prod.caf100<=100000)) prod.caf100=null;   // ☕ cordura cafeína (mg/100)
   // ✏️ A4/A22 · si ya corregiste este producto (en su ficha o con 📋), tu dato MANDA también al escanear.
   // Aditivo y guardado: sin override no cambia nada. v0.27.1: la traducción ficha→escáner vive en
   // ovrAplicarAScanner ([ETIQ-PURE], testeada en node) — mismo contrato que el bloque inline histórico.
@@ -9642,6 +9656,7 @@ function bcConfirmar(prod){
     + bcFila("Fibra alimentaria (g)","bc_fib",bcRed(prod.fib100,1),false,false)
     + bcFila("Proteínas (g)","bc_p",bcRed(prod.p100,1),true,false)
     + bcFila("Sal (g)","bc_sal",(prod.na100!=null?+((prod.na100*2.5/1000).toFixed(2)):null),false,false)
+    + bcFila("Cafeína (mg)","bc_caf",bcRed(prod.caf100,0),false,false)   // ☕ editable: OFF casi nunca la trae → cópiala de la lata
     +"</div>";
   // ⚠️ v0.27.1 [ETIQ] · badge de coherencia [ATWATER-PURE] TAMBIÉN en el resultado del escáner (antes
   // solo en la ficha y el buscador): energía⇄macros fuera de tolerancia → señal honesta, SIN bloquear
@@ -9767,6 +9782,9 @@ function bcAddDiario(){
   // 🏷️ v0.17.2 · la tabla completa también viaja al diario (fibra/azúcar/saturadas/sal→sodio), escalada
   function leerOpc(id){ var v=parseFloat((($(id)||{}).value)); return (isFinite(v)&&v>=0&&v<=100)?v:null; }
   var fib=leerOpc("bc_fib"), az=leerOpc("bc_az"), sat=leerOpc("bc_sat"), sal=leerOpc("bc_sal");
+  // ☕ cafeína (mg/100) — lector propio, NO leerOpc: la cafeína puede pasar de 100 (café molido, cápsulas),
+  // así que su tope es alto. Antes el escáner NUNCA la leía → escanear un Red Bull sumaba 0 mg de cafeína.
+  var caf=(function(){ var v=parseFloat((($("bc_caf")||{}).value)); return (isFinite(v)&&v>=0&&v<=100000)?v:null; })();
   // Estructura EXACTA del diario (la misma que comAdd) + u con la unidad en que APUNTASTE la cantidad
   // (los items antiguos no llevan u → gramos). Los macros van escalados de por-100 a lo comido.
   var _it={id:Date.now().toString(36)+Math.random().toString(36).slice(2,6), f:((($("com_fecha")||{}).value)||hoyLocal()),
@@ -9778,6 +9796,7 @@ function bcAddDiario(){
   if(az!=null)  _it.az=+(az*k).toFixed(1);
   if(sat!=null) _it.sat=+(sat*k).toFixed(1);
   if(sal!=null) _it.na=Math.round(sal*400*k);   // sal g → sodio mg (sal = sodio×2,5)
+  if(caf!=null) _it.caf=Math.round(caf*k);      // ☕ cafeína (mg) escalada — la suma cafeTotalDia() y el panel EFSA
   arr.push(_it);
   set(LS_COMIDA,arr);
   // Se cachea con los valores YA corregidos por el usuario (mejores que los crudos de OFF), incluida
@@ -9785,7 +9804,7 @@ function bcAddDiario(){
   if(prod.ean && prod.fuente!=="propio"){
     var cache=get(LS_BC_CACHE,{});
     cache[prod.ean]={producto:{nombre:nombre, kcal100:kcal, p100:p, c100:c, g100:gr, u:uProd, dens:prod.dens||null, img:prod.img||null, nutriscore:prod.nutriscore||null, serving:prod.serving||null,
-      fib100:(fib!=null?fib:null), az100:(az!=null?az:null), sat100:(sat!=null?sat:null), na100:(sal!=null?Math.round(sal*400):null)}, ts:Date.now()};
+      fib100:(fib!=null?fib:null), az100:(az!=null?az:null), sat100:(sat!=null?sat:null), na100:(sal!=null?Math.round(sal*400):null), caf100:(caf!=null?caf:null)}, ts:Date.now()};
     set(LS_BC_CACHE,cache);
   }
   bcCerrar(); renderComida(); toast("✓ Añadido · "+Math.round(kcal*k)+" kcal");
@@ -11191,7 +11210,7 @@ function resetTodo(){ if(!confirm("⚠️ Esto borra TODO: perfil, pesos, entren
 // Reemplazo total con confirmación. Reusa get/set, hoyLocal, toast, validar, render. NO toca motor ni gate.
 function exportarJSON(){ try{ set("jvf_last_export",hoyLocal()); }catch(e){}
   try{
-    var data={ app:"jvf", schema:1, app_version:"0.31.2", exportadoEl:new Date().toISOString(),
+    var data={ app:"jvf", schema:1, app_version:"0.32.0", exportadoEl:new Date().toISOString(),
       perfil:get(LS_P,null), pesos:get(LS_W,[]), entrenos:get(LS_E,[]), notas_ej:get("jvf_notas_ej",{}), comida:get("jvf_comida",[]), agua:get("jvf_agua",{}), suples_cfg:get("jvf_suples_cfg",null), suples_log:get("jvf_suples_log",{}),
       rutinas:get("jvf_rutinas",[]), meals:get("jvf_meals",[]), ent_start:get("jvf_ent_start",null),   // v0.10 · backup completo
       alimentos_propios:get("jvf_alimentos_propios",[]), barcode_cache:get("jvf_barcode_cache",{}),   // I5/I6 · también viajan en el backup
