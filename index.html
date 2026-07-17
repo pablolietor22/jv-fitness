@@ -560,7 +560,7 @@
 <header class="brandbar">
   <div class="logo"><span class="dot"></span>JV <b>Fitness</b></div>
   <div style="display:flex;align-items:center">
-    <span class="tag">MVP v0.33.0 · motor v0.7</span>
+    <span class="tag">MVP v0.33.1 · motor v0.7</span>
     <!-- ⚙️ tanda #22 · hub de AJUSTES (no es pestaña): modal a pantalla completa -->
     <button class="gearbtn" id="btn_hub" type="button" title="Ajustes" aria-label="Abrir ajustes" onclick="hubAbrir()">⚙️</button>
   </div>
@@ -7934,6 +7934,20 @@ function presupuestoHoy(objetivoBase, sesionesHoy){
 }
 // [PRESUPUESTO-HOY-PURE-FIN]
 
+// 🧭 Lo que te QUEDA por comer hoy respecto a un presupuesto ya calculado (objetivo + deporte).
+// Por qué existe: decirle al usuario «hoy puedes comer 2.300 kcal» es un dato MUERTO — le obliga a
+// ir al diario, mirar lo que lleva y restar de cabeza. Lo que necesita saber es «te quedan 900».
+// Filosofía de Pablo: que piense y toque lo MÍNIMO; el desenlace se le da masticado.
+// No es pura (lee el diario), por eso vive FUERA del bloque [*-PURE]: el reparto y la ciencia no se
+// tocan, esto solo resta lo ya apuntado. Devuelve null si no hay presupuesto válido; nunca negativo.
+function comRestanteHoy(presupuesto){
+  var p=+presupuesto; if(!(p>0)) return null;
+  var hoy=hoyLocal();
+  var llevado=get(LS_COMIDA,[]).filter(function(x){ return x && x.f===hoy; })
+    .reduce(function(a,x){ return a+(+x.kcal||0); }, 0);
+  return Math.max(0, Math.round(p-llevado));
+}
+
 // ======= 🍽️ GENERADOR DE MENÚ (v0.14) — DETERMINISTA, SIN IA — el nº1 de Laura =======
 // Dado el objetivo del día (kcal + macros p/c/g del Plan, window._obj) reparte en comidas y por
 // cada una propone alimentos CONCRETOS con GRAMOS que cuadren esa comida. NO toca el motor de
@@ -8391,10 +8405,17 @@ var SODIO_MAX_MG=2000;   // 🧂 OMS: <2 g de sodio (= <5 g de sal) al día — 
 // el coach también; pero el ámbar solo salta en el límite SUPERIOR de guía (2.300 mg, US DGA/FDA
 // 2020-2025 «Chronic Disease Risk Reduction»), que es cuando de verdad te has ido.
 var SODIO_ALARMA_MG=2300;
-// 📊 D-COMIDA · último total de kcal pintado. renderComida() reconstruye el resumen entero con
-// innerHTML, así que el <b> del contador nace nuevo en cada render: si naciera con el valor final
-// no habría nada que contar. Nace con ESTE valor (el de antes) y countUp() lo lleva hasta el nuevo.
-var _comPrevKcal=0;
+// 📊 D-COMIDA · memoria del último resumen pintado, para saber CUÁNDO animar.
+// renderComida() reconstruye el resumen entero con innerHTML, así que el <b> del contador nace nuevo
+// en cada render: si naciera con el valor final no habría nada que contar. Nace con _comPrevKcal y
+// countUp() lo lleva al nuevo.
+// ⚠️ PERO renderComida() se llama desde 17 sitios (cambiar de fecha, borrar, editar, copiar el día de
+// ayer, cerrar una foto, entrar en la pestaña...). Animar en TODOS sería jank, no dopamina: al cambiar
+// de día el contador contaría desde el total de AYER (incluso hacia ABAJO) y las barras re-flashearían
+// desde 0 cada vez que entras. Por eso se guarda también la FECHA: solo se anima cuando es el MISMO
+// día y el total ha SUBIDO (= acabas de añadir algo). En cualquier otro caso se pinta el valor final
+// directo, sin animar.
+var _comPrevKcal=0, _comPrevFecha=null;
 // [COM-MIC-TOT] 💊 v0.26 · suma del día de vitaminas/minerales registrados en mic{} (⚡ Micros sueltos).
 // Autocontenido: solo lo llama el enganche de renderComida. Honesto: sin registros → devuelve "" (no
 // pinta nada); solo suma valores numéricos >0. Mismas etiquetas que la ficha (qaMicLbl).
@@ -8424,15 +8445,20 @@ function renderComida(){
   arr.forEach(function(x){ tot.kcal+=x.kcal; tot.p+=x.p; tot.c+=x.c; tot.gr+=x.gr; tot.fib+=(+x.fib||0); tot.az+=(+x.az||0); tot.sat+=(+x.sat||0); tot.na+=(+x.na||0); });
   try{ renderCafe(); }catch(e){}   // ☕ #12 · el panel de cafeína se suma solo de los items del día (misma fuente, sin almacén paralelo)
   var obj=window._obj||null;
-  // 📊 D-COMIDA · la barra NACE en 0 y su ancho real se pone en el siguiente frame (comAnimarBarras):
-  // así se dispara la transición `width .9s` que .pbar>i YA tenía (línea ~390) y que nunca se veía,
-  // porque innerHTML creaba el elemento ya nacido con el ancho final (sin cambio → sin animación).
-  // El ancho objetivo viaja en data-w. Con prefers-reduced-motion se pinta directo, sin animar.
+  // 📊 D-COMIDA · ¿ANIMAR este render? Solo si es el MISMO día que el render anterior Y el total ha
+  // SUBIDO (= acabas de añadir algo). renderComida() se llama desde 17 sitios; animar en todos sería
+  // jank: al cambiar de fecha el contador iría desde el total de ayer (a veces hacia ABAJO) y las
+  // barras re-flashearían desde 0 solo por entrar en la pestaña. Con esta puerta, la dopamina se
+  // dispara cuando toca y el resto de renders pintan el valor final directo, quietos.
+  var _animar = (_comPrevFecha===fecha) && (Math.round(tot.kcal) > Math.round(_comPrevKcal)) && !_reducedMotion();
+  // La barra nace en 0 y su ancho real se pone en el siguiente frame: así se dispara la transición
+  // `width .9s` que .pbar>i YA tenía (línea ~390) y que nunca se veía, porque innerHTML creaba el
+  // elemento ya nacido con el ancho final (sin cambio → sin animación). El destino viaja en data-w.
   function bar(v,o,col){ if(!(o>0)) return ""; var over=v>o*1.05, pct=Math.round(Math.min(1,v/o)*100);
-    return "<div class='pbar'><i data-w='"+pct+"' style='width:"+(_reducedMotion()?pct+"%":"0")+";background:"+(over?'#f4c04e':col)+"'></i></div>"; }
+    return "<div class='pbar'><i data-w='"+pct+"' style='width:"+(_animar?"0":pct+"%")+";background:"+(over?'#f4c04e':col)+"'></i></div>"; }
   var h="<div class='card' style='margin:0 0 8px;padding:12px'><div class='eyebrow-lbl'>Resumen del día · "+esc(fecha)+"</div>";
   if(obj){
-    h+="<div class='kv'><span>Calorías</span><span><b id='com_tot_kcal'>"+Math.round(_reducedMotion()?tot.kcal:_comPrevKcal)+"</b> / "+obj.cal+" kcal</span></div>"+bar(tot.kcal,obj.cal,'var(--ember)')
+    h+="<div class='kv'><span>Calorías</span><span><b id='com_tot_kcal'>"+Math.round(_animar?_comPrevKcal:tot.kcal)+"</b> / "+obj.cal+" kcal</span></div>"+bar(tot.kcal,obj.cal,'var(--ember)')
      +"<div class='kv' style='margin-top:6px'><span>Proteínas</span><span>"+Math.round(tot.p)+" / "+obj.prot+" g</span></div>"+bar(tot.p,obj.prot,'var(--jade)')
      +"<div class='kv' style='margin-top:6px'><span>Carbohidratos</span><span>"+Math.round(tot.c)+" / "+obj.carb+" g</span></div>"+bar(tot.c,obj.carb,'#74c7ff')
      +"<div class='kv' style='margin-top:6px'><span>Grasas</span><span>"+Math.round(tot.gr)+" / "+obj.grasa+" g</span></div>"+bar(tot.gr,obj.grasa,'#f4c04e')
@@ -8483,18 +8509,20 @@ function renderComida(){
   // Si el total SUBE (has añadido algo), el resumen da un pulso corto. Nada de esto puede romper el
   // diario: si algo fallara, el try deja los números finales ya pintados por el innerHTML de arriba.
   try{
-    var _tk=Math.round(tot.kcal), _subio=_tk>Math.round(_comPrevKcal);
-    if(!_reducedMotion()){
+    if(_animar){
+      // las barras nacieron en 0 → en el SIGUIENTE frame se les pone su ancho real y la transición
+      // `width .9s` de .pbar>i (que ya estaba) por fin se ve: las barritas suben solas.
       requestAnimationFrame(function(){
         var _is=$("com_tot").querySelectorAll(".pbar>i[data-w]");
         for(var i=0;i<_is.length;i++) _is[i].style.width=_is[i].getAttribute("data-w")+"%";
       });
-      countUp($("com_tot_kcal"), _tk, "");
-      if(_subio){ var _c=$("com_tot").querySelector(".card");
-        if(_c){ _c.classList.remove("combump"); void _c.offsetWidth; _c.classList.add("combump"); } }
+      countUp($("com_tot_kcal"), Math.round(tot.kcal), "");   // cuenta desde el total anterior
+      var _c=$("com_tot").querySelector(".card");             // y el resumen da un pulso corto
+      if(_c){ _c.classList.remove("combump"); void _c.offsetWidth; _c.classList.add("combump"); }
     }
-    _comPrevKcal=_tk;
-  }catch(e){ _comPrevKcal=Math.round(tot.kcal); }
+  }catch(e){}
+  // SIEMPRE (anime o no): recordar qué se pintó, para decidir el próximo render.
+  _comPrevKcal=Math.round(tot.kcal); _comPrevFecha=fecha;
   try{ renderHistorial(); }catch(e){}   // 🕑 historial + buscador (deriva del diario; abarca todos los días)
   if(!arr.length){ $("com_list").innerHTML="<div class='empty'><div class='ico'>🍽️</div><div class='et'>Sin comidas este día</div><div class='es'>Busca un alimento y los gramos para empezar.</div></div>"; try{ renderMeals(); }catch(e){} return; }
   $("com_list").innerHTML="<div class='eyebrow-lbl'>Lo que llevas</div>"+arr.map(function(x){
@@ -11263,7 +11291,7 @@ function resetTodo(){ if(!confirm("⚠️ Esto borra TODO: perfil, pesos, entren
 // Reemplazo total con confirmación. Reusa get/set, hoyLocal, toast, validar, render. NO toca motor ni gate.
 function exportarJSON(){ try{ set("jvf_last_export",hoyLocal()); }catch(e){}
   try{
-    var data={ app:"jvf", schema:1, app_version:"0.33.0", exportadoEl:new Date().toISOString(),
+    var data={ app:"jvf", schema:1, app_version:"0.33.1", exportadoEl:new Date().toISOString(),
       perfil:get(LS_P,null), pesos:get(LS_W,[]), entrenos:get(LS_E,[]), notas_ej:get("jvf_notas_ej",{}), comida:get("jvf_comida",[]), agua:get("jvf_agua",{}), suples_cfg:get("jvf_suples_cfg",null), suples_log:get("jvf_suples_log",{}),
       rutinas:get("jvf_rutinas",[]), meals:get("jvf_meals",[]), ent_start:get("jvf_ent_start",null),   // v0.10 · backup completo
       alimentos_propios:get("jvf_alimentos_propios",[]), barcode_cache:get("jvf_barcode_cache",{}),   // I5/I6 · también viajan en el backup
@@ -15950,8 +15978,17 @@ function depSesGuardar(){
   var _sesHoy=get(LS_DEP_SES,[]).filter(function(s){ return s && s.f===hoyLocal() && +s.kcal>0; });
   var _pre=(_obj0 && _obj0.cal>0) ? presupuestoHoy(_obj0.cal, _sesHoy) : null;
   if(_pre && _pre.extra>0 && typeof celebrar==="function"){
-    celebrar("¡Estás de suerte!", "+"+r.kcal+" kcal",
-      "Has quemado "+(r.emoji||"🏀")+" "+r.depNombre+" — hoy puedes comer hasta ~"+_pre.total.toLocaleString('es-ES')+" kcal");
+    // 🧭 El desenlace se dice en UNA frase y con lo que el usuario tiene que hacer, no con datos que
+    // tenga que interpretar (filosofía de Pablo: que toque y piense lo MÍNIMO). Se le dice: (1) lo
+    // conseguido, (2) qué significa HOY para él, (3) que puede cerrar tranquilo. El cuánto-falta real
+    // lo calcula comRestanteHoy() sobre lo que YA lleva comido: sin eso, "puedes comer más" es un dato
+    // muerto que le obliga a ir a mirar y restar de cabeza.
+    var _falta=null;
+    try{ _falta=comRestanteHoy(_pre.total); }catch(e){}
+    var _sub = (_falta!=null && _falta>0)
+      ? "Hoy puedes comer hasta ~"+_pre.total.toLocaleString('es-ES')+" kcal · te quedan "+_falta.toLocaleString('es-ES')+". Puedes cerrar tranquilo, pero recuerda comer un poco más."
+      : "Hoy puedes comer hasta ~"+_pre.total.toLocaleString('es-ES')+" kcal. Puedes cerrar tranquilo, pero recuerda comer un poco más.";
+    celebrar("¡Estás de suerte!", "+"+r.kcal+" kcal", _sub);
     setTimeout(function(){ try{ abrir("comida"); renderComida(); }catch(e){} }, 1200);   // redirige solo, sin toque
   } else {
     toast("🏀 Sesión registrada · ~"+r.kcal+" kcal");
