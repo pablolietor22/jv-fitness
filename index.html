@@ -403,11 +403,25 @@
      (has añadido algo) el resumen da un pulso corto y las barras brillan mientras se llenan. Es
      presentación pura: no toca totales ni objetivos. La regla global @prefers-reduced-motion de
      arriba la neutraliza, y en JS hay guard con _reducedMotion() (se pinta directo, sin animar). */
-  @keyframes compulse{0%{transform:scale(1)}42%{transform:scale(1.02)}100%{transform:scale(1)}}
-  @keyframes comglow{0%{box-shadow:0 0 0 0 rgba(61,220,151,0)}42%{box-shadow:0 0 14px 2px rgba(61,220,151,.45)}100%{box-shadow:0 0 0 0 rgba(61,220,151,0)}}
-  #com_tot .card.combump{animation:compulse .5s cubic-bezier(.2,.8,.3,1.2)}
-  #com_tot .card.combump .pbar{animation:comglow .8s ease-out}
-  #com_tot_kcal{font-variant-numeric:tabular-nums}   /* el número no "baila" mientras cuenta */
+  /* Vistosidad subida a petición de Pablo (17-07): «se ha rellenado un poquito, dale más caña».
+     La primera versión era tan sutil que no se veía. Ahora: pulso más marcado, borde vivo que
+     recorre la tarjeta, barras que brillan al llenarse y el número con destello + escala. */
+  @keyframes compulse{0%{transform:scale(1)}30%{transform:scale(1.045)}55%{transform:scale(.995)}100%{transform:scale(1)}}
+  @keyframes comglow{0%{box-shadow:0 0 0 0 rgba(61,220,151,0)}35%{box-shadow:0 0 22px 5px rgba(61,220,151,.85)}100%{box-shadow:0 0 0 0 rgba(61,220,151,0)}}
+  @keyframes comring{0%{box-shadow:0 0 0 0 rgba(61,220,151,.55),0 0 22px 0 rgba(61,220,151,.35)}
+                     60%{box-shadow:0 0 0 10px rgba(61,220,151,0),0 0 30px 6px rgba(61,220,151,.28)}
+                     100%{box-shadow:0 0 0 0 rgba(61,220,151,0),0 0 0 0 rgba(61,220,151,0)}}
+  /* OJO: sin fijar color en 0%/100% — así vuelve SOLO al color que tenga el tema, sin depender de
+     una variable que quizá no exista (var(--ink-9) no está garantizada). Solo se tiñe en el pico. */
+  @keyframes comkcal{0%{transform:scale(1)}
+                     28%{transform:scale(1.3);color:var(--jade);text-shadow:0 0 16px rgba(61,220,151,.9)}
+                     100%{transform:scale(1);text-shadow:none}}
+  #com_tot .card.combump{animation:compulse .62s cubic-bezier(.2,.8,.3,1.35), comring .9s ease-out}
+  #com_tot .card.combump .pbar{animation:comglow .95s ease-out}
+  #com_tot .card.combump #com_tot_kcal{animation:comkcal .8s cubic-bezier(.2,.8,.3,1.4)}
+  /* la barra que se llena deja un brillo que la recorre, para que el ojo la SIGA */
+  #com_tot .card.combump .pbar>i{filter:drop-shadow(0 0 8px rgba(61,220,151,.75))}
+  #com_tot_kcal{font-variant-numeric:tabular-nums;display:inline-block}  /* no "baila" al contar */
   @keyframes aguaburst{0%{transform:translateY(6px) scale(.5);opacity:0}22%{opacity:1}100%{transform:translateY(-64px) scale(1.15);opacity:0}}
   .agua-spark{position:absolute;pointer-events:none;z-index:30;line-height:1;filter:drop-shadow(0 0 6px rgba(116,199,255,.45));animation:aguaburst 1.05s ease-out forwards;will-change:transform,opacity}
 
@@ -560,7 +574,7 @@
 <header class="brandbar">
   <div class="logo"><span class="dot"></span>JV <b>Fitness</b></div>
   <div style="display:flex;align-items:center">
-    <span class="tag">MVP v0.33.2 · motor v0.7</span>
+    <span class="tag">MVP v0.33.3 · motor v0.7</span>
     <!-- ⚙️ tanda #22 · hub de AJUSTES (no es pestaña): modal a pantalla completa -->
     <button class="gearbtn" id="btn_hub" type="button" title="Ajustes" aria-label="Abrir ajustes" onclick="hubAbrir()">⚙️</button>
   </div>
@@ -5726,6 +5740,18 @@ function comTrasAlta(items, protAntes, fecha){
   if(!list.length) return false;
   var f = fecha || ($("com_fecha") && $("com_fecha").value) || hoyLocal();
   var celebro = false;
+  // 🧭 TELETRANSPORTE al resumen (petición de Pablo 17-07, y es un fallo de diseño real: «al añadir
+  // tengo que escrolear hacia abajo para ver mis nutrientes; hay veces que no sé si ha cambiado
+  // algo»). Con tanto historial, la lista empuja el resumen fuera de pantalla y la animación se
+  // reproduce donde NADIE la ve — o sea, como si no existiera. Al vivir en el cierre ÚNICO, las
+  // SEIS puertas (teclear, escáner, historial, foto, rápido, mis-comidas) lo heredan gratis.
+  // Va en rAF: el resumen se acaba de repintar y así se mide ya con su altura nueva.
+  try{
+    requestAnimationFrame(function(){
+      var _r=$("com_tot"); if(!_r) return;
+      _r.scrollIntoView({ behavior: _reducedMotion()?"auto":"smooth", block:"center" });
+    });
+  }catch(e){}
   try{
     var _o = window._obj || null;
     var pAhora = get(LS_COMIDA,[]).filter(function(x){ return x && x.f===f; })
@@ -11345,7 +11371,7 @@ function resetTodo(){ if(!confirm("⚠️ Esto borra TODO: perfil, pesos, entren
 // Reemplazo total con confirmación. Reusa get/set, hoyLocal, toast, validar, render. NO toca motor ni gate.
 function exportarJSON(){ try{ set("jvf_last_export",hoyLocal()); }catch(e){}
   try{
-    var data={ app:"jvf", schema:1, app_version:"0.33.2", exportadoEl:new Date().toISOString(),
+    var data={ app:"jvf", schema:1, app_version:"0.33.3", exportadoEl:new Date().toISOString(),
       perfil:get(LS_P,null), pesos:get(LS_W,[]), entrenos:get(LS_E,[]), notas_ej:get("jvf_notas_ej",{}), comida:get("jvf_comida",[]), agua:get("jvf_agua",{}), suples_cfg:get("jvf_suples_cfg",null), suples_log:get("jvf_suples_log",{}),
       rutinas:get("jvf_rutinas",[]), meals:get("jvf_meals",[]), ent_start:get("jvf_ent_start",null),   // v0.10 · backup completo
       alimentos_propios:get("jvf_alimentos_propios",[]), barcode_cache:get("jvf_barcode_cache",{}),   // I5/I6 · también viajan en el backup
