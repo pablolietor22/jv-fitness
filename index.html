@@ -574,7 +574,7 @@
 <header class="brandbar">
   <div class="logo"><span class="dot"></span>JV <b>Fitness</b></div>
   <div style="display:flex;align-items:center">
-    <span class="tag">MVP v0.33.4 · motor v0.7</span>
+    <span class="tag">MVP v0.33.5 · motor v0.7</span>
     <!-- ⚙️ tanda #22 · hub de AJUSTES (no es pestaña): modal a pantalla completa -->
     <button class="gearbtn" id="btn_hub" type="button" title="Ajustes" aria-label="Abrir ajustes" onclick="hubAbrir()">⚙️</button>
   </div>
@@ -5693,9 +5693,15 @@ function comAdd(){
   if(!fd){
     // A19/B2 · ¿es un escaneado que re-añades desde el historial? No vive en la base (por eso el lookup
     // falla), pero el historial guardó sus macros: los reescala a los gramos elegidos y los añade.
-    if(histCloneAdd(nombre, g)){
+    var _clon=histCloneAdd(nombre, g);
+    if(_clon){
       $("com_nombre").value=""; $("com_gramos").value=""; try{ favSyncBtn(); }catch(e){}
-      renderComida(); toast("✓ Añadido");
+      renderComida();
+      // 🧭 cierre ÚNICO también aquí. Antes esta rama salía por `return` ANTES del cierre de comAdd,
+      // así que re-añadir un escaneado desde el HISTORIAL (la vía que más usa Pablo) no premiaba
+      // nada: ni proteína, ni digestión, ni aviso de cafeína, ni teletransporte al resumen.
+      if(!(typeof comTrasAlta==="function" && comTrasAlta(_clon.it, _clon.protAntes, _clon.it.f)))
+        toast("✓ Añadido");
       return;
     }
     toast("No está en la base — elige de la lista, escanea el código o crea un alimento propio"); return;
@@ -6177,8 +6183,15 @@ function histCloneAdd(nombre, g){
   if(h.ean!=null && h.ean!=="") it.ean=String(h.ean);   // [ETIQ] el EAN sigue viajando (diario → historial → clon)
   if(h.u==="ml") it.u="ml";
   it.ts=Date.now();   // 📊 A20 · marca de tiempo (igual que comAdd) para aprender la hora de cierre
+  // 🧭 proteína ANTES del set (el llamador la necesita para el cierre único; medirla después ya
+  // contaría este item y la proteína nunca "cruzaría").
+  var _pAntesHist=(typeof comProtAntes==="function") ? comProtAntes(it.f) : 0;
   arr.push(it); set(LS_COMIDA,arr);
-  return true;
+  // Devuelve el ITEM (antes: true a secas). Su llamador salía por `return` ANTES del cierre de
+  // comAdd, así que re-añadir un escaneado desde el historial no premiaba NADA: ni proteína, ni
+  // digestión, ni aviso de cafeína. Con el item + la proteína previa, el llamador ya puede cerrar
+  // bien. Sigue siendo "verdadero" para los `if(histCloneAdd(...))` de siempre (un objeto es truthy).
+  return { it:it, protAntes:_pAntesHist };
 }
 // ======= ⭐ FAVORITOS · UI (fila de acceso rápido + toggle en el buscador + sugerencia) =======
 // Resuelve el texto tecleado al nombre canónico de la base (MISMA regla que comAdd).
@@ -9096,10 +9109,15 @@ function fotoAddDiario(){
   var _dn=(typeof otroNorm==="function"?otroNorm(desc):(desc||"").toLowerCase());
   var _esGrasa=/\baceite\b|alino|aova|aceitun|mantequilla|\boil\b/.test(_dn);
   var _mp=_esGrasa?0:est.prot, _mc=_esGrasa?0:(est.carb||0), _mg=_esGrasa?Math.round(kcalU/9):(est.grasa||0);
-  arr.push({id:Date.now().toString(36)+Math.random().toString(36).slice(2,6), f:f, n:"📷 "+(desc||FOTO_NOMBRE[est.tipo]||"Comida por foto"), g:0, kcal:kcalU, p:_mp, c:_mc, gr:_mg, foto:true});
+  var _pAntesFoto=(typeof comProtAntes==="function") ? comProtAntes(f) : 0;   // 🧭 ANTES del set
+  var _itFoto={id:Date.now().toString(36)+Math.random().toString(36).slice(2,6), f:f, n:"📷 "+(desc||FOTO_NOMBRE[est.tipo]||"Comida por foto"), g:0, kcal:kcalU, p:_mp, c:_mc, gr:_mg, foto:true};
+  arr.push(_itFoto);
   set(LS_COMIDA,arr);
   fotoCerrar(); renderComida();
-  toast("✓ Añadido "+kcalU+" kcal (rango "+est.min+"-"+est.max+")"+(aprendido?" · apunto tu corrección para aprender":""));
+  // 🧭 cierre ÚNICO: la foto también premia y teletransporta. Su toast lleva el rango estimado, así
+  // que solo se calla si comTrasAlta celebró la proteína (que es un mensaje mejor que el rango).
+  if(!(typeof comTrasAlta==="function" && comTrasAlta(_itFoto, _pAntesFoto, f)))
+    toast("✓ Añadido "+kcalU+" kcal (rango "+est.min+"-"+est.max+")"+(aprendido?" · apunto tu corrección para aprender":""));
 }
 
 // ======= F4 · ⚡ AÑADIR RÁPIDO + 💾 MIS COMIDAS (v0.10) — los "wins" de MFP, gratis =======
@@ -9147,11 +9165,14 @@ function qaAdd(){
   var it={id:Date.now().toString(36)+Math.random().toString(36).slice(2,6), f:f, n:(kcal>0?"⚡ Rápido":"⚡ Micros"), g:0, kcal:Math.round(kcal), p:+p.toFixed(1), c:+c.toFixed(1), gr:+g.toFixed(1)};
   if(az>0||fib>0||sat>0||na>0){ it.fib=+fib.toFixed(1); it.az=+az.toFixed(1); it.sat=+sat.toFixed(1); it.na=Math.round(na); }
   if(micKs.length){ it.mic={}; micKs.forEach(function(k){ it.mic[k]=_qaMic[k]; }); }
+  var _pAntesQa=(typeof comProtAntes==="function") ? comProtAntes(it.f) : 0;   // 🧭 ANTES del set
   arr.push(it);
   set(LS_COMIDA,arr);
   ["qa_kcal","qa_p","qa_c","qa_g","qa_az","qa_fib","qa_sat","qa_na","qa_mic_v"].forEach(function(id){ var el=$(id); if(el) el.value=""; });
   _qaMic={}; try{ qaMicRender(); }catch(e){}
-  qaCerrar(); renderComida(); toast("⚡ Añadido");
+  qaCerrar(); renderComida();
+  // 🧭 cierre ÚNICO: el ⚡ rápido también premia y teletransporta al resumen, como el resto.
+  if(!(typeof comTrasAlta==="function" && comTrasAlta(it, _pAntesQa, it.f))) toast("⚡ Añadido");
 }
 // "Mis comidas": plantillas de días enteros. Simple, sin edición en v1 (se borra y se rehace).
 function renderMeals(){
@@ -9218,13 +9239,22 @@ function mealAddHoy(id){
   for(var k=0;k<meals.length;k++){ if(meals[k].id===id){ meal=meals[k]; break; } }
   if(!meal){ toast("No encontrada"); return; }
   var f=(($("com_fecha")||{}).value)||hoyLocal(), arr=get(LS_COMIDA,[]);
+  // 🧭 proteína ANTES de meter nada: si se midiera después, los items nuevos ya contarían y la
+  // proteína no "cruzaría" jamás. Esta puerta es la que MÁS lo necesita: mete VARIOS alimentos de
+  // golpe, que es justo cuando se cruza el objetivo.
+  var _pAntesMeal=(typeof comProtAntes==="function") ? comProtAntes(f) : 0;
+  var _nuevos=[];
   (meal.items||[]).forEach(function(x){
     var o={id:Date.now().toString(36)+Math.random().toString(36).slice(2,6), f:f, n:x.n, g:x.g||0, kcal:x.kcal||0, p:x.p||0, c:x.c||0, gr:x.gr||0, fib:x.fib||0, az:x.az||0, sat:x.sat||0, na:x.na||0};
     if(x.foto) o.foto=true;
-    arr.push(o);
+    if(x.caf!=null) o.caf=+x.caf||0;   // ☕ si la comida guardada traía cafeína, viaja al diario
+    arr.push(o); _nuevos.push(o);
   });
   set(LS_COMIDA,arr); renderComida();
-  toast("➕ "+(meal.items||[]).length+" alimentos añadidos");
+  // 🧭 cierre ÚNICO con el ARRAY entero: comTrasAlta dispara la digestión UNA vez (con el más
+  // pesado) y la cafeína UNA vez (con el que más trae), en vez de N avisos = spam.
+  if(!(typeof comTrasAlta==="function" && comTrasAlta(_nuevos, _pAntesMeal, f)))
+    toast("➕ "+(meal.items||[]).length+" alimentos añadidos");
 }
 function mealBorrar(id){
   var meals=get(LS_MEALS,[]), meal=meals.filter(function(x){ return x.id===id; })[0];
@@ -11511,7 +11541,7 @@ function resetTodo(){ if(!confirm("⚠️ Esto borra TODO: perfil, pesos, entren
 // Reemplazo total con confirmación. Reusa get/set, hoyLocal, toast, validar, render. NO toca motor ni gate.
 function exportarJSON(){ try{ set("jvf_last_export",hoyLocal()); }catch(e){}
   try{
-    var data={ app:"jvf", schema:1, app_version:"0.33.4", exportadoEl:new Date().toISOString(),
+    var data={ app:"jvf", schema:1, app_version:"0.33.5", exportadoEl:new Date().toISOString(),
       perfil:get(LS_P,null), pesos:get(LS_W,[]), entrenos:get(LS_E,[]), notas_ej:get("jvf_notas_ej",{}), comida:get("jvf_comida",[]), agua:get("jvf_agua",{}), suples_cfg:get("jvf_suples_cfg",null), suples_log:get("jvf_suples_log",{}),
       rutinas:get("jvf_rutinas",[]), meals:get("jvf_meals",[]), ent_start:get("jvf_ent_start",null),   // v0.10 · backup completo
       alimentos_propios:get("jvf_alimentos_propios",[]), barcode_cache:get("jvf_barcode_cache",{}),   // I5/I6 · también viajan en el backup
