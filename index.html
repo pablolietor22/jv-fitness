@@ -574,7 +574,7 @@
 <header class="brandbar">
   <div class="logo"><span class="dot"></span>JV <b>Fitness</b></div>
   <div style="display:flex;align-items:center">
-    <span class="tag">MVP v0.33.3 · motor v0.7</span>
+    <span class="tag">MVP v0.33.4 · motor v0.7</span>
     <!-- ⚙️ tanda #22 · hub de AJUSTES (no es pestaña): modal a pantalla completa -->
     <button class="gearbtn" id="btn_hub" type="button" title="Ajustes" aria-label="Abrir ajustes" onclick="hubAbrir()">⚙️</button>
   </div>
@@ -6285,11 +6285,13 @@ function comDeshacer(){
   set(LS_COMIDA,arr); renderComida(); toast("↶ Recuperado");
 }
 function comToastDeshacer(msg){   // como toast() pero con botón accionable; 6 s para dar tiempo a reaccionar
-  var t=$("toast"); if(!t) return;
-  t.classList.remove("tcard"); t.onclick=null;   // v0.19-UI · por si venía de un toastCard
-  t.innerHTML=esc(msg)+" <button type='button' class='sec' style='width:auto;margin:0 0 0 10px;padding:2px 10px' onclick='comDeshacer()'>↶ Deshacer</button>";
-  t.classList.add("show"); clearTimeout(window._toastId);
-  window._toastId=setTimeout(function(){ t.classList.remove("show"); }, 6000);
+  // 🔔 v0.33.4 · pasa por la COLA como todos. Antes pintaba a mano: (a) machacaba el aviso que
+  // hubiera vivo (te comías el «Deshacer» o él se comía al otro), (b) su timer solo quitaba la
+  // clase y NO devolvía _toastVivo a false → la cola quedaba COLGADA para el resto de la sesión.
+  // prio 1: es ACCIONABLE y caduca (6 s para reaccionar); no puede perder contra una píldora.
+  toastPush({ tipo:"pill", texto:String(msg||""), prio:1, clave:"com-deshacer",
+              html:esc(String(msg||""))+" <button type='button' class='sec' style='width:auto;margin:0 0 0 10px;padding:2px 10px' onclick='comDeshacer()'>↶ Deshacer</button>",
+              dur:6000 });
 }
 // ✏️ corregir los GRAMOS de un alimento ya añadido (Pablo, audio #1: «me equivoqué de gramos»). Escala los macros.
 // 🩹 E4 · AUTO-SANAR items del diario sin fib/az/sat/na (bug real de Pablo, pantallazo 09-07-2026):
@@ -6797,13 +6799,23 @@ function avisoVoyDestino(tipo){
 function avisoVoyInyecta(tipo){
   try{
     var d=avisoVoyDestino(tipo); if(!d) return false;
-    var t=$("toast"); if(!t || !t.classList.contains("tcard") || !t.lastElementChild) return false;
+    var t=$("toast");
+    // 🔔 Con la COLA (v0.33.4), toastCard() ENCOLA en vez de pintar al instante: quien llama pide el
+    // botón «Voy» cuando su tarjeta puede no existir todavía. Sin esto el botón se perdería en
+    // silencio justo en los avisos que MÁS lo necesitan (los que llegan durante una celebración).
+    // Se apunta el destino y _toastPinta() lo inyecta en cuanto esa tarjeta salga a pantalla.
+    if(!t || !t.classList.contains("tcard") || !t.lastElementChild || !t.classList.contains("show")){
+      if(typeof _toastVoyPend!=="undefined"){ _toastVoyPend=tipo; return true; }
+      return false;
+    }
     if(t.querySelector(".tc-voy")) return false;   // ya hay botón (no duplicar)
     var b=document.createElement("button");
     b.type="button"; b.className="tc-voy"; b.textContent=d.label;
     b.onclick=function(ev){
       try{ if(ev&&ev.stopPropagation) ev.stopPropagation(); }catch(e){}
-      clearTimeout(window._toastId); _toastHide();
+      // 🔔 _toastCierra (no _toastHide): _toastHide solo oculta y dejaría _toastVivo=true para
+      // siempre → la cola se quedaría COLGADA y no saldría ni un aviso más en toda la sesión.
+      clearTimeout(window._toastId); _toastCierra();
       try{
         if(d.tab && typeof abrir==="function") abrir(d.tab);
         if(d.fn && typeof window[d.fn]==="function") window[d.fn]();
@@ -6812,7 +6824,7 @@ function avisoVoyInyecta(tipo){
     };
     t.lastElementChild.appendChild(b);
     clearTimeout(window._toastId);   // con botón hay más que leer/tocar: mismo cálculo, texto completo
-    window._toastId=setTimeout(_toastHide, _toastDur(t.textContent||""));
+    window._toastId=setTimeout(_toastCierra, _toastDur(t.textContent||""));   // _toastCierra: reanuda la cola
     return true;
   }catch(e){ return false; }
 }
@@ -11298,26 +11310,154 @@ function aplicarTab(){
 // rebote, salida suave) vive en el CSS de .toast/.show; prefers-reduced-motion la neutraliza allí.
 function _toastDur(txt){ return Math.min(9000, 2500 + String(txt==null?"":txt).length*60); }
 function _toastHide(){ var t=$("toast"); if(t){ t.classList.remove("show"); t.onclick=null; } }
-function toast(msg){
-  var t=$("toast"); if(!t) return;
-  t.classList.remove("tcard"); t.onclick=null;   // vuelve al modo píldora si venía de toastCard
-  t.textContent=msg;
-  t.classList.remove("show"); void t.offsetWidth;   // reinicia la animación si había otro a medias
-  t.classList.add("show");
-  clearTimeout(window._toastId);
-  window._toastId=setTimeout(_toastHide, _toastDur(msg));
+
+/* ============================================================================
+   🔔 COLA DE AVISOS — [TOAST-COLA-PURE]
+   ============================================================================
+   EL PROBLEMA REAL (auditoría 17-07, medido en el código):
+   Hay UN SOLO elemento #toast. Cada aviso le hacía innerHTML encima y un
+   clearTimeout que MATABA al anterior. Sin cola. Consecuencias comprobadas:
+     · Los avisos se PISABAN: dos seguidos = el 1º desaparecía sin leerse.
+     · Peor: .toast es z-index 50 y .celebrate (la celebración) es z-index 120
+       con inset:0 → cualquier aviso lanzado mientras vive el overlay (0-3600 ms)
+       salía ENTERRADO debajo. Caso real que YA pasaba: al hacer récord de
+       entreno, el consejo de hidratación (2600 ms) nacía bajo el overlay y a los
+       4200 ms otro lo machacaba → visible ~600 ms. Justo el día que más entrenas,
+       el consejo de hidratación era ilegible.
+   POR QUÉ ASÍ (decisión de ingeniería, no de valentía):
+   toast() se llama desde 171 sitios y toastCard() desde 15, y avisoVoyInyecta()
+   depende de que $("toast") SEA la tarjeta viva (.tcard + lastElementChild).
+   Montar un contenedor con varios nodos DOM habría roto las dos cosas de golpe.
+   Aquí la firma de toast()/toastCard() NO cambia: la cola vive DEBAJO. Radio de
+   explosión cero, y ni un aviso se pierde.
+   «Varios apilados si tienen que ver» (petición de Pablo): en vez de N nodos, los
+   del MISMO grupo se FUNDEN en una tarjeta multilínea. Mismo resultado visual,
+   sin tocar la arquitectura.
+   Estas funciones son PURAS (no tocan DOM ni reloj): decidir qué entra, qué se
+   descarta y qué se funde. Se testean solas en _tests/test-toast-cola.node.js.
+   ============================================================================ */
+// [TOAST-COLA-PURE-INICIO]
+var TOAST_MAX_COLA = 4;   // tope: más que esto es acoso, no información
+/* Prioridad: 1 = salud/seguridad (EFSA, lesión, sodio) · 2 = tarjeta informativa
+   · 3 = píldora breve ("✓ Añadido"). Se descarta SIEMPRE por la de menor valor. */
+function toastPrioDe(it){
+  if(!it) return 3;
+  var p=+it.prio; return (p===1||p===2||p===3) ? p : (it.tipo==="card" ? 2 : 3);
 }
-// Variante TARJETA para avisos importantes (coach, agua-verano, lesión): icono grande + título en
-// negrita + cuerpo. Cierre al tocar + autocierre con la MISMA regla de duración por longitud.
-function toastCard(ico, titulo, cuerpo){
+/* Mete un aviso en la cola SIN mutar la original. Reglas, en orden:
+   1) DEDUPE por clave: si ya hay uno con la misma clave, lo REEMPLAZA en su sitio
+      (el dato nuevo es el bueno; ej. la cafeína del día actualizada). No duplica.
+   2) Si cabe → al final.
+   3) Si está llena → se descarta el de MENOR prioridad de la cola; si el nuevo es
+      el menos prioritario de todos, se descarta el NUEVO (no se cuela a codazos).
+      A igualdad de prioridad cae el MÁS VIEJO (el nuevo es más actual). */
+function toastColaMete(cola, item, max){
+  var out=(cola||[]).slice();
+  if(!item) return out;
+  max=+max>0?+max:TOAST_MAX_COLA;
+  if(item.clave!=null){
+    for(var i=0;i<out.length;i++){
+      if(out[i] && out[i].clave===item.clave){ out[i]=item; return out; }
+    }
+  }
+  if(out.length<max){ out.push(item); return out; }
+  var pNuevo=toastPrioDe(item), peorIdx=-1, peorPrio=-1;
+  for(var j=0;j<out.length;j++){
+    var pj=toastPrioDe(out[j]);
+    if(pj>peorPrio){ peorPrio=pj; peorIdx=j; }   // prio mayor = menos importante
+  }
+  if(peorPrio>pNuevo){ out.splice(peorIdx,1); out.push(item); return out; }
+  return out;   // el nuevo es el menos importante: la cola llena manda, se descarta
+}
+/* Funde los avisos CONSECUTIVOS del mismo grupo en UNA tarjeta multilínea
+   («varios apilados si tienen mucho que ver»). Solo tarjetas con grupo definido;
+   las píldoras y los sueltos pasan intactos. El título es el del primero; el
+   cuerpo se une con separador. No muta la cola original. */
+function toastColaFunde(cola){
+  var src=(cola||[]).slice(), out=[];
+  for(var i=0;i<src.length;i++){
+    var it=src[i];
+    if(!it || !it.grupo || it.tipo!=="card"){ out.push(it); continue; }
+    var cuerpos=[String(it.cuerpo||"")], j=i+1;
+    while(j<src.length && src[j] && src[j].grupo===it.grupo && src[j].tipo==="card"){
+      cuerpos.push(String(src[j].cuerpo||"")); j++;
+    }
+    if(j>i+1){
+      var fus={}; for(var k in it) if(Object.prototype.hasOwnProperty.call(it,k)) fus[k]=it[k];
+      fus.cuerpo=cuerpos.filter(function(c){ return c; }).join(" · ");
+      fus.fundidos=j-i;
+      out.push(fus); i=j-1;
+    } else out.push(it);
+  }
+  return out;
+}
+// [TOAST-COLA-PURE-FIN]
+
+/* --- motor de la cola (impuro: DOM + reloj) --- */
+var _toastCola=[], _toastVivo=false, _toastVoyPend=null, _toastBombaId=null;
+/* ¿hay overlay de celebración vivo? Nada se pinta debajo de él (z-120 vs z-50). */
+function _toastOverlay(){ try{ return !!document.querySelector(".celebrate"); }catch(e){ return false; } }
+function _toastBombea(){
+  if(_toastVivo) return;                       // hay uno leyéndose: su cierre reanuda
+  clearTimeout(_toastBombaId);
+  if(_toastOverlay()){                          // el overlay manda: la cola ESPERA (no se pierde)
+    _toastBombaId=setTimeout(_toastBombea, 250); return;
+  }
+  _toastCola=toastColaFunde(_toastCola);
+  if(!_toastCola.length) return;
+  _toastPinta(_toastCola.shift());
+}
+function _toastPinta(it){
   var t=$("toast"); if(!t) return;
-  t.classList.add("tcard");
-  t.innerHTML="<span class='tc-ico'>"+esc(ico||"🔔")+"</span><span style='min-width:0'><b class='tc-tit'>"+esc(titulo||"")+"</b><span class='tc-body'>"+esc(cuerpo||"")+"</span></span>";
-  t.onclick=function(){ clearTimeout(window._toastId); _toastHide(); };
-  t.classList.remove("show"); void t.offsetWidth;
+  _toastVivo=true;
+  var txt;
+  if(it.tipo==="card"){
+    t.classList.add("tcard");
+    t.innerHTML="<span class='tc-ico'>"+esc(it.ico||"🔔")+"</span><span style='min-width:0'><b class='tc-tit'>"+esc(it.titulo||"")+"</b><span class='tc-body'>"+esc(it.cuerpo||"")+"</span></span>";
+    t.onclick=function(){ clearTimeout(window._toastId); _toastCierra(); };
+    txt=String(it.titulo||"")+String(it.cuerpo||"");
+  } else {
+    t.classList.remove("tcard"); t.onclick=null;
+    // it.html = píldora con botón accionable YA escapado por quien la creó (ej. «↶ Deshacer»).
+    // Solo se acepta html pre-construido en el propio código; jamás texto de usuario sin escapar.
+    if(it.html) t.innerHTML=it.html; else t.textContent=String(it.texto==null?"":it.texto);
+    txt=String(it.texto||"");
+  }
+  t.classList.remove("show"); void t.offsetWidth;   // reinicia la animación de entrada
   t.classList.add("show");
+  // el botón «Voy» que pidió avisoVoyInyecta antes de que esta tarjeta existiera
+  if(_toastVoyPend && it.tipo==="card"){
+    var tipoVoy=_toastVoyPend; _toastVoyPend=null;
+    try{ avisoVoyInyecta(tipoVoy); }catch(e){}
+    txt=String(t.textContent||txt);   // el botón añade texto → más tiempo para leer
+  }
   clearTimeout(window._toastId);
-  window._toastId=setTimeout(_toastHide, _toastDur(String(titulo||"")+String(cuerpo||"")));
+  // it.dur: duración fija para los accionables (el «Deshacer» necesita sus 6 s enteros, no los que
+  // salgan de contar caracteres). Si no la traen, la regla de siempre: 2,5 s + 60 ms por carácter.
+  window._toastId=setTimeout(_toastCierra, (+it.dur>0 ? +it.dur : _toastDur(txt)));
+}
+/* Cierra el vivo y BOMBEA el siguiente (aquí es donde la cola avanza sola). */
+function _toastCierra(){
+  _toastHide(); _toastVivo=false;
+  clearTimeout(_toastBombaId);
+  _toastBombaId=setTimeout(_toastBombea, 260);   // respiro para que se note el relevo
+}
+/* Puerta única de entrada. Firma libre; toast()/toastCard() la usan por debajo. */
+function toastPush(item){
+  if(!item) return;
+  _toastCola=toastColaMete(_toastCola, item, TOAST_MAX_COLA);
+  _toastBombea();
+}
+
+/* --- API PÚBLICA (firma intacta: 171 + 15 llamadas siguen igual) --- */
+function toast(msg){ toastPush({ tipo:"pill", texto:msg, prio:3 }); }
+/* Variante TARJETA para avisos importantes (coach, agua-verano, lesión): icono grande + título en
+   negrita + cuerpo. Cierre al tocar + autocierre con la MISMA regla de duración por longitud.
+   opts (opcional): {prio:1|2|3, clave:"x" (dedupe), grupo:"y" (fusión con sus hermanos)}. */
+function toastCard(ico, titulo, cuerpo, opts){
+  opts=opts||{};
+  toastPush({ tipo:"card", ico:ico, titulo:titulo, cuerpo:cuerpo,
+    prio:(opts.prio||2), clave:(opts.clave!=null?opts.clave:String(titulo||"")), grupo:opts.grupo });
 }
 function pesoSpark(ws){
   var pts=ws.slice(-30); if(pts.length<3) return "";
@@ -11371,7 +11511,7 @@ function resetTodo(){ if(!confirm("⚠️ Esto borra TODO: perfil, pesos, entren
 // Reemplazo total con confirmación. Reusa get/set, hoyLocal, toast, validar, render. NO toca motor ni gate.
 function exportarJSON(){ try{ set("jvf_last_export",hoyLocal()); }catch(e){}
   try{
-    var data={ app:"jvf", schema:1, app_version:"0.33.3", exportadoEl:new Date().toISOString(),
+    var data={ app:"jvf", schema:1, app_version:"0.33.4", exportadoEl:new Date().toISOString(),
       perfil:get(LS_P,null), pesos:get(LS_W,[]), entrenos:get(LS_E,[]), notas_ej:get("jvf_notas_ej",{}), comida:get("jvf_comida",[]), agua:get("jvf_agua",{}), suples_cfg:get("jvf_suples_cfg",null), suples_log:get("jvf_suples_log",{}),
       rutinas:get("jvf_rutinas",[]), meals:get("jvf_meals",[]), ent_start:get("jvf_ent_start",null),   // v0.10 · backup completo
       alimentos_propios:get("jvf_alimentos_propios",[]), barcode_cache:get("jvf_barcode_cache",{}),   // I5/I6 · también viajan en el backup
