@@ -421,6 +421,9 @@
   #com_tot .card.combump #com_tot_kcal{animation:comkcal .8s cubic-bezier(.2,.8,.3,1.4)}
   /* la barra que se llena deja un brillo que la recorre, para que el ojo la SIGA */
   #com_tot .card.combump .pbar>i{filter:drop-shadow(0 0 8px rgba(61,220,151,.75))}
+  /* v0.33.6 · SOLO las barras del resumen del diario se llenan más DESPACIO (petición de Pablo:
+     «que se vea cómo sube la barrita»). El agua y el resto siguen a .9s: esta regla no les toca. */
+  #com_tot .pbar>i{transition-duration:1.8s;transition-timing-function:cubic-bezier(.25,.7,.3,1)}
   #com_tot_kcal{font-variant-numeric:tabular-nums;display:inline-block}  /* no "baila" al contar */
   @keyframes aguaburst{0%{transform:translateY(6px) scale(.5);opacity:0}22%{opacity:1}100%{transform:translateY(-64px) scale(1.15);opacity:0}}
   .agua-spark{position:absolute;pointer-events:none;z-index:30;line-height:1;filter:drop-shadow(0 0 6px rgba(116,199,255,.45));animation:aguaburst 1.05s ease-out forwards;will-change:transform,opacity}
@@ -574,7 +577,7 @@
 <header class="brandbar">
   <div class="logo"><span class="dot"></span>JV <b>Fitness</b></div>
   <div style="display:flex;align-items:center">
-    <span class="tag">MVP v0.33.5 · motor v0.7</span>
+    <span class="tag">MVP v0.33.6 · motor v0.7</span>
     <!-- ⚙️ tanda #22 · hub de AJUSTES (no es pestaña): modal a pantalla completa -->
     <button class="gearbtn" id="btn_hub" type="button" title="Ajustes" aria-label="Abrir ajustes" onclick="hubAbrir()">⚙️</button>
   </div>
@@ -8554,9 +8557,23 @@ function renderComida(){
   // elemento ya nacido con el ancho final (sin cambio → sin animación). El destino viaja en data-w.
   function bar(v,o,col){ if(!(o>0)) return ""; var over=v>o*1.05, pct=Math.round(Math.min(1,v/o)*100);
     return "<div class='pbar'><i data-w='"+pct+"' style='width:"+(_animar?"0":pct+"%")+";background:"+(over?'#f4c04e':col)+"'></i></div>"; }
+  // 🏀 v0.33.6 · el presupuesto del día se calcula ANTES de pintar la línea de Calorías (petición
+  // de Pablo: «que el resumen ponga en GRANDE el total, en amarillo, y tanto más por el deporte»).
+  // Con deporte registrado, el techo de la línea y de la barra es el PRESUPUESTO (objetivo + extra),
+  // que es el mismo número que ve el coach — una sola verdad. Sin deporte, todo queda como siempre.
+  var _sesDia=obj ? get(LS_DEP_SES,[]).filter(function(s){ return s && s.f===fecha && +s.kcal>0; }) : [];
+  // OJO: con obj, _pre SIEMPRE es objeto (presupuestoHoy tolera cal<=0 con base=0) — el coach de
+  // abajo usa _pre.total SIN guarda y un null aquí reventaría renderComida entero.
+  var _pre=obj ? presupuestoHoy(obj.cal, _sesDia) : null;
+  var _conDep=!!(_pre && _pre.extra>0);
   var h="<div class='card' style='margin:0 0 8px;padding:12px'><div class='eyebrow-lbl'>Resumen del día · "+esc(fecha)+"</div>";
   if(obj){
-    h+="<div class='kv'><span>Calorías</span><span><b id='com_tot_kcal'>"+Math.round(_animar?_comPrevKcal:tot.kcal)+"</b> / "+obj.cal+" kcal</span></div>"+bar(tot.kcal,obj.cal,'var(--ember)')
+    h+="<div class='kv'><span>Calorías</span><span><b id='com_tot_kcal'>"+Math.round(_animar?_comPrevKcal:tot.kcal)+"</b> / "
+      +(_conDep
+        ? "<b style='color:#f4c04e;font-size:1.25em;text-shadow:0 0 10px rgba(244,192,78,.45)'>"+_pre.total.toLocaleString('es-ES')+"</b> kcal</span></div>"
+          +"<div class='hint' style='text-align:right;margin-top:-2px;color:#f4c04e'>🏀 +"+_pre.extra.toLocaleString('es-ES')+" por el deporte de "+(fecha===hoyLocal()?"hoy":"ese día")+"</div>"
+        : obj.cal+" kcal</span></div>")
+      +bar(tot.kcal,(_conDep?_pre.total:obj.cal),(_conDep?'#f4c04e':'var(--ember)'))
      +"<div class='kv' style='margin-top:6px'><span>Proteínas</span><span>"+Math.round(tot.p)+" / "+obj.prot+" g</span></div>"+bar(tot.p,obj.prot,'var(--jade)')
      +"<div class='kv' style='margin-top:6px'><span>Carbohidratos</span><span>"+Math.round(tot.c)+" / "+obj.carb+" g</span></div>"+bar(tot.c,obj.carb,'#74c7ff')
      +"<div class='kv' style='margin-top:6px'><span>Grasas</span><span>"+Math.round(tot.gr)+" / "+obj.grasa+" g</span></div>"+bar(tot.gr,obj.grasa,'#f4c04e')
@@ -8565,9 +8582,9 @@ function renderComida(){
      +"<div class='kv' style='margin-top:6px'><span>🧈 Grasa saturada <span class='hint' style='display:inline'>· máx ~"+(obj.sat||0)+" g</span></span><span"+(tot.sat>(obj.sat||0)*1.05?" style='color:#f4c04e'":"")+">"+Math.round(tot.sat)+" g</span></div>"+bar(tot.sat,obj.sat,'#f4a04e')
      +"<div class='kv' style='margin-top:6px'><span>🧂 Sodio <span class='hint' style='display:inline'>· ideal &lt;2.000 mg (OMS) · aviso a "+SODIO_ALARMA_MG.toLocaleString('es-ES')+"</span></span><span"+(tot.na>SODIO_ALARMA_MG?" style='color:#f4c04e'":"")+">"+Math.round(tot.na)+" mg</span></div>"+bar(tot.na,SODIO_MAX_MG,'#9fb6f4');
     // 🏀 Presupuesto del día: el deporte registrado ESE día suma encima del objetivo base (aditivo, no toca la fórmula).
-    var _sesDia=get(LS_DEP_SES,[]).filter(function(s){ return s && s.f===fecha && +s.kcal>0; });
-    var _pre=presupuestoHoy(obj.cal, _sesDia);
-    if(_pre.extra>0){
+    // v0.33.6 · _sesDia/_pre ya vienen calculados de ARRIBA (la línea de Calorías los usa para el
+    // total en amarillo): una sola llamada a presupuestoHoy, una sola verdad.
+    if(_pre && _pre.extra>0){
       var _esHoy=(fecha===hoyLocal());
       h+="<div style='margin-top:10px;padding-top:10px;border-top:1px solid var(--line)'>"
         +"<div class='kv' style='border-bottom:none'><span>🏀 "+(_esHoy?"Hoy puedes comer":"Ese día podías comer")+"</span><span><b style='color:var(--jade)'>~"+_pre.total+" kcal</b></span></div>"
@@ -8614,7 +8631,7 @@ function renderComida(){
         var _is=$("com_tot").querySelectorAll(".pbar>i[data-w]");
         for(var i=0;i<_is.length;i++) _is[i].style.width=_is[i].getAttribute("data-w")+"%";
       });
-      countUp($("com_tot_kcal"), Math.round(tot.kcal), "");   // cuenta desde el total anterior
+      countUp($("com_tot_kcal"), Math.round(tot.kcal), "", 1400);   // cuenta desde el total anterior, DESPACIO (se ve subir)
       var _c=$("com_tot").querySelector(".card");             // y el resumen da un pulso corto
       if(_c){ _c.classList.remove("combump"); void _c.offsetWidth; _c.classList.add("combump"); }
     }
@@ -11541,7 +11558,7 @@ function resetTodo(){ if(!confirm("⚠️ Esto borra TODO: perfil, pesos, entren
 // Reemplazo total con confirmación. Reusa get/set, hoyLocal, toast, validar, render. NO toca motor ni gate.
 function exportarJSON(){ try{ set("jvf_last_export",hoyLocal()); }catch(e){}
   try{
-    var data={ app:"jvf", schema:1, app_version:"0.33.5", exportadoEl:new Date().toISOString(),
+    var data={ app:"jvf", schema:1, app_version:"0.33.6", exportadoEl:new Date().toISOString(),
       perfil:get(LS_P,null), pesos:get(LS_W,[]), entrenos:get(LS_E,[]), notas_ej:get("jvf_notas_ej",{}), comida:get("jvf_comida",[]), agua:get("jvf_agua",{}), suples_cfg:get("jvf_suples_cfg",null), suples_log:get("jvf_suples_log",{}),
       rutinas:get("jvf_rutinas",[]), meals:get("jvf_meals",[]), ent_start:get("jvf_ent_start",null),   // v0.10 · backup completo
       alimentos_propios:get("jvf_alimentos_propios",[]), barcode_cache:get("jvf_barcode_cache",{}),   // I5/I6 · también viajan en el backup
@@ -13951,13 +13968,15 @@ function flexInitUI(){ try{ flexRefrescar(); flexSyncAjustes(); flexPesoChipsRen
 // Count-up: anima el número de un elemento de su valor previo hasta target (solo si cambia).
 // Respeta reduced-motion (pone el valor final directo). suffix opcional (ej. "g", " kcal").
 function _reducedMotion(){ try{ return window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches; }catch(e){ return false; } }
-function countUp(el, target, suffix){
+function countUp(el, target, suffix, durMs){
   if(!el) return; suffix=suffix||"";
   target=+target; if(isNaN(target)) return;
   var prev=parseFloat((el.textContent||"").replace(/[^\d.-]/g,""));
   if(isNaN(prev)) prev=0;
   if(prev===target || _reducedMotion()){ el.textContent=Math.round(target)+suffix; return; }
-  var ini=prev, dur=600, t0=null;
+  // durMs opcional (v0.33.6): el diario cuenta más DESPACIO a petición de Pablo («que se vea cómo
+  // sube»); los contadores de entreno/plan siguen a 600 ms (su ritmo de siempre) al no pasarlo.
+  var ini=prev, dur=(+durMs>0?+durMs:600), t0=null;
   function step(ts){
     if(t0==null) t0=ts;
     var k=Math.min(1,(ts-t0)/dur);
