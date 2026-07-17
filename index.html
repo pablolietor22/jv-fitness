@@ -179,6 +179,11 @@
     #ent_form input.ent-peso,#ent_form input.ent-reps,#ent_form input.ent-rir,#ent_form input.ent-nombre,#ent_form .ent-nota,#ent_form .ent-nota-serie{min-height:44px;font-size:1rem}
     #ent_form .rirq-b{padding:6px 9px}
   }
+  /* v0.33.7 · guardarraíl del ⓘ del RIR (PR #125 de Jorge): por debajo de 400px la fila de serie no
+     tiene hueco (medido: con ⓘ el ✕ de borrar acababa en x≈395 → cortado en pantallas de 375-390px).
+     Ahí se oculta el ⓘ y queda el acceso «RIR ⓘ» de la cabecera de la tarjeta (mismo modal). El arreglo
+     de fondo del ancho de la fila es el PR #127 + idea #26 (rediseño), decisión de Pablo. */
+  @media(max-width:399px){ #ent_form .ent-rir-info{display:none} }
   .bib-item{display:flex;align-items:center;gap:10px}
   .bib-ver{width:auto;padding:4px 9px;margin:0;flex:none}
   .wizchips{display:flex;gap:6px;flex-wrap:wrap;margin:-6px 0 14px}
@@ -577,7 +582,7 @@
 <header class="brandbar">
   <div class="logo"><span class="dot"></span>JV <b>Fitness</b></div>
   <div style="display:flex;align-items:center">
-    <span class="tag">MVP v0.33.6 · motor v0.7</span>
+    <span class="tag">MVP v0.33.7 · motor v0.7</span>
     <!-- ⚙️ tanda #22 · hub de AJUSTES (no es pestaña): modal a pantalla completa -->
     <button class="gearbtn" id="btn_hub" type="button" title="Ajustes" aria-label="Abrir ajustes" onclick="hubAbrir()">⚙️</button>
   </div>
@@ -11558,7 +11563,7 @@ function resetTodo(){ if(!confirm("⚠️ Esto borra TODO: perfil, pesos, entren
 // Reemplazo total con confirmación. Reusa get/set, hoyLocal, toast, validar, render. NO toca motor ni gate.
 function exportarJSON(){ try{ set("jvf_last_export",hoyLocal()); }catch(e){}
   try{
-    var data={ app:"jvf", schema:1, app_version:"0.33.6", exportadoEl:new Date().toISOString(),
+    var data={ app:"jvf", schema:1, app_version:"0.33.7", exportadoEl:new Date().toISOString(),
       perfil:get(LS_P,null), pesos:get(LS_W,[]), entrenos:get(LS_E,[]), notas_ej:get("jvf_notas_ej",{}), comida:get("jvf_comida",[]), agua:get("jvf_agua",{}), suples_cfg:get("jvf_suples_cfg",null), suples_log:get("jvf_suples_log",{}),
       rutinas:get("jvf_rutinas",[]), meals:get("jvf_meals",[]), ent_start:get("jvf_ent_start",null),   // v0.10 · backup completo
       alimentos_propios:get("jvf_alimentos_propios",[]), barcode_cache:get("jvf_barcode_cache",{}),   // I5/I6 · también viajan en el backup
@@ -14757,6 +14762,7 @@ function renderEntForm(){
         +'<button type="button" title="Calculadora de discos para este peso" onclick="plateAbrir(this)" style="width:auto;margin:0;padding:6px 0;background:transparent;border:0;box-shadow:none;font-size:.85rem;cursor:pointer">🏋️</button>'
         +'<input class="ent-reps" type="number" inputmode="numeric" placeholder="reps" value="'+escAttr(s.reps)+'">'
         +'<input class="ent-rir" type="number" inputmode="numeric" step="1" placeholder="RIR" value="'+escAttr(s.rir)+'" style="max-width:64px" title="RIR — 0 = al límite (ninguna completa más); fallo = la siguiente no sale; negativo = más allá del fallo">'
+        +'<button type="button" class="ent-rir-info" title="¿Qué es RIR?" aria-label="Qué es RIR" onclick="rirAbrir()" style="width:auto;min-width:22px;margin:0;padding:6px 2px;background:transparent;border:0;box-shadow:none;font-size:.85rem;cursor:pointer;opacity:.55">ⓘ</button>'
         +'<span class="rirq">'+[0,1,2,3].map(function(v){ return '<button type="button" class="rirq-b'+(String(s.rir)===String(v)?' on':'')+'" onclick="entRirSet(this,'+v+')">'+v+'</button>'; }).join('')+'</span>'
         +'<button type="button" class="ent-notabtn'+(_nota?' on':'')+'" title="Nota de esta serie" onclick="entNotaToggle(this)" style="width:auto;margin:0;padding:6px 4px;background:transparent;border:0;box-shadow:none;font-size:.85rem;cursor:pointer;opacity:'+(_nota?'1':'.5')+'">📝</button>'
         +'<button class="sec" type="button" style="width:auto;margin:0;padding:8px 8px" onclick="entDelSerie('+i+','+j+')">✕</button>'
@@ -17560,11 +17566,13 @@ function abrirBiblio(btn){
 // NUNCA rompe la app (plan offline C1, versión mínima; caché de navegador hace el resto).
 var IMG_EJ="https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/";
 function bibRender(){
-  var q=($("bib_buscar").value||"").toLowerCase().trim(), eq=$("bib_eq").value, mu=$("bib_mus").value;
+  // Idea Jorge 16-jul: buscar SIN tildes (usuario escribe "biceps" y encuentra "bíceps").
+  // Reutilizamos otroNorm() ya presente en el código (línea ~13848).
+  var q=otroNorm(($("bib_buscar").value||"").trim()), eq=$("bib_eq").value, mu=$("bib_mus").value;
   var res=EJERCICIOS.filter(function(e){
     if(eq && e.eq!==eq) return false;
     if(mu && e.m!==mu) return false;
-    if(q && e.n.toLowerCase().indexOf(q)<0) return false;
+    if(q && otroNorm(e.n).indexOf(q)<0) return false;
     return true;
   });
   if(!res.length){ $("bib_lista").innerHTML="<p class='hint'>Sin resultados. Escríbelo a mano en el ejercicio.</p>"; return; }
