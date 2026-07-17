@@ -560,7 +560,7 @@
 <header class="brandbar">
   <div class="logo"><span class="dot"></span>JV <b>Fitness</b></div>
   <div style="display:flex;align-items:center">
-    <span class="tag">MVP v0.33.1 · motor v0.7</span>
+    <span class="tag">MVP v0.33.2 · motor v0.7</span>
     <!-- ⚙️ tanda #22 · hub de AJUSTES (no es pestaña): modal a pantalla completa -->
     <button class="gearbtn" id="btn_hub" type="button" title="Ajustes" aria-label="Abrir ajustes" onclick="hubAbrir()">⚙️</button>
   </div>
@@ -5704,11 +5704,58 @@ function comAdd(){
   $("com_nombre").value=""; $("com_gramos").value="";
   try{ favSyncBtn(); }catch(e){}
   renderComida();
-  var _pAhora=arr.filter(function(x){return x.f===_f;}).reduce(function(a,x){return a+x.p;},0);
-  if(_obj&&_obj.prot>0&&_pAntes<_obj.prot&&_pAhora>=_obj.prot){ try{ if(typeof confetti==='function') confetti(18); }catch(e){} toast("💪 ¡Proteína del día conseguida!"); }
-  else toast("✓ Añadido");
-  try{ digestTrasComer(_item); }catch(e){}   // 🍽️ idea #13 · consejo cualitativo de digestión→entreno [DIGEST-PURE]
-  try{ cafeTrasComer(_item); }catch(e){}     // ☕ idea #12 · panel + aviso EFSA/sueño si el alimento traía cafeína [CAFE-PURE]
+  // 🧭 cierre ÚNICO (comTrasAlta): proteína+confeti, digestión y aviso EFSA de cafeína. Antes este
+  // bloque vivía SOLO aquí y las otras 5 puertas al diario no premiaban nada. Misma conducta.
+  // typeof-guard: mismo estilo defensivo que el resto del fichero (`typeof confetti==='function'`).
+  // Si comTrasAlta no está (arneses de test que extraen comAdd suelto del HTML), degrada al toast
+  // de siempre en vez de reventar. Corto-circuito: si no existe, ni se la llama.
+  if(!(typeof comTrasAlta==='function' && comTrasAlta(_item, _pAntes, _f))) toast("✓ Añadido");
+}
+// 🧭 CIERRE ÚNICO de "acabo de meter comida en el diario". Lo llaman las SEIS puertas.
+// POR QUÉ (auditoría 17-07): hay 6 formas de meter comida (comAdd, histCloneAdd, bcAddDiario,
+// fotoAdd, qaAdd, mealAdd) y SOLO comAdd premiaba. Consecuencias reales medidas: escaneabas dos
+// energéticos y el aviso EFSA de cafeína NO saltaba JAMÁS (la cafeína se sumaba en el panel pero
+// nadie te avisaba = la feature contaba sin servir), y «💾 mis comidas» mete varios alimentos de
+// golpe —justo cuando cruzas la proteína— sin celebrar nada. Se unifica aquí en vez de copiar el
+// bloque 6 veces (6 copias = 6 sitios donde olvidarse del próximo aviso).
+// ⚠️ protAntes SE PASA como argumento, no se relee: comAdd la mide ANTES del set(), y si la
+// releyéramos aquí (después del set) el item nuevo ya contaría y la proteína nunca "cruzaría".
+// Devuelve true si celebró la proteína → quien llama se salta su toast de "Añadido" (sin duplicar).
+function comTrasAlta(items, protAntes, fecha){
+  var list = (Array.isArray(items) ? items : [items]).filter(Boolean);
+  if(!list.length) return false;
+  var f = fecha || ($("com_fecha") && $("com_fecha").value) || hoyLocal();
+  var celebro = false;
+  try{
+    var _o = window._obj || null;
+    var pAhora = get(LS_COMIDA,[]).filter(function(x){ return x && x.f===f; })
+      .reduce(function(a,x){ return a+(+x.p||0); }, 0);
+    if(_o && _o.prot>0 && protAntes < _o.prot && pAhora >= _o.prot){
+      try{ if(typeof confetti==='function') confetti(18); }catch(e){}
+      toast("💪 ¡Proteína del día conseguida!");
+      celebro = true;
+    }
+  }catch(e){}
+  // digestión: UNA vez por alta (no una por alimento — «mis comidas» mete varios y sería spam).
+  // Se elige el más pesado (kcal + grasa×9), que es el que de verdad condiciona el entreno.
+  try{
+    var pesado = list.slice().sort(function(a,b){
+      return ((+b.kcal||0)+(+b.gr||0)*9) - ((+a.kcal||0)+(+a.gr||0)*9); })[0];
+    if(pesado) digestTrasComer(pesado);
+  }catch(e){}
+  // cafeína: UNA vez, con el que más traiga. El panel/EFSA se suma solo del diario.
+  try{
+    var conCaf = list.slice().sort(function(a,b){ return (+b.caf||0)-(+a.caf||0); })[0];
+    if(conCaf && +conCaf.caf>0) cafeTrasComer(conCaf);
+  }catch(e){}
+  return celebro;
+}
+// Proteína del día ANTES de meter nada (para pasársela a comTrasAlta). Se mide siempre igual.
+function comProtAntes(f){
+  try{
+    return get(LS_COMIDA,[]).filter(function(x){ return x && x.f===f; })
+      .reduce(function(a,x){ return a+(+x.p||0); }, 0);
+  }catch(e){ return 0; }
 }
 function comQuick(n,g){ $("com_nombre").value=n; $("com_gramos").value=g; comAdd(); }
 function comCopiarAyer(){
@@ -9878,6 +9925,9 @@ function bcAddDiario(){
   if(sat!=null) _it.sat=+(sat*k).toFixed(1);
   if(sal!=null) _it.na=Math.round(sal*400*k);   // sal g → sodio mg (sal = sodio×2,5)
   if(caf!=null) _it.caf=Math.round(caf*k);      // ☕ cafeína (mg) escalada — la suma cafeTotalDia() y el panel EFSA
+  // 🧭 proteína ANTES de meter el item (para el cierre único). Se mide aquí, antes del set: después
+  // el item nuevo ya contaría y la proteína no "cruzaría" nunca.
+  var _pAntesBc=comProtAntes(_it.f);
   arr.push(_it);
   set(LS_COMIDA,arr);
   // Se cachea con los valores YA corregidos por el usuario (mejores que los crudos de OFF), incluida
@@ -9888,7 +9938,11 @@ function bcAddDiario(){
       fib100:(fib!=null?fib:null), az100:(az!=null?az:null), sat100:(sat!=null?sat:null), na100:(sal!=null?Math.round(sal*400):null), caf100:(caf!=null?caf:null)}, ts:Date.now()};
     set(LS_BC_CACHE,cache);
   }
-  bcCerrar(); renderComida(); toast("✓ Añadido · "+Math.round(kcal*k)+" kcal");
+  bcCerrar(); renderComida();
+  // 🧭 cierre ÚNICO también por el ESCÁNER. Antes esta puerta no disparaba NADA: escaneabas dos
+  // energéticos, la cafeína se sumaba en el panel y el aviso EFSA no saltaba jamás — la feature
+  // contaba sin servir. Ahora escanear premia igual que teclear (proteína, digestión, cafeína).
+  if(!(typeof comTrasAlta==='function' && comTrasAlta(_it, _pAntesBc, _it.f))) toast("✓ Añadido · "+Math.round(kcal*k)+" kcal");
 }
 function bcNoEncontrado(ean){
   var res=$("bc_res"); if(!res) return;
@@ -11291,7 +11345,7 @@ function resetTodo(){ if(!confirm("⚠️ Esto borra TODO: perfil, pesos, entren
 // Reemplazo total con confirmación. Reusa get/set, hoyLocal, toast, validar, render. NO toca motor ni gate.
 function exportarJSON(){ try{ set("jvf_last_export",hoyLocal()); }catch(e){}
   try{
-    var data={ app:"jvf", schema:1, app_version:"0.33.1", exportadoEl:new Date().toISOString(),
+    var data={ app:"jvf", schema:1, app_version:"0.33.2", exportadoEl:new Date().toISOString(),
       perfil:get(LS_P,null), pesos:get(LS_W,[]), entrenos:get(LS_E,[]), notas_ej:get("jvf_notas_ej",{}), comida:get("jvf_comida",[]), agua:get("jvf_agua",{}), suples_cfg:get("jvf_suples_cfg",null), suples_log:get("jvf_suples_log",{}),
       rutinas:get("jvf_rutinas",[]), meals:get("jvf_meals",[]), ent_start:get("jvf_ent_start",null),   // v0.10 · backup completo
       alimentos_propios:get("jvf_alimentos_propios",[]), barcode_cache:get("jvf_barcode_cache",{}),   // I5/I6 · también viajan en el backup
@@ -13424,6 +13478,12 @@ function popEl(el){ if(!el) return; el.classList.remove("pop"); void el.offsetWi
 function okFlash(el){ if(!el) return; el.classList.remove("okflash"); void el.offsetWidth; el.classList.add("okflash"); setTimeout(function(){ el.classList.remove("okflash"); },650); }
 // Confeti ligero: N trozos cayendo, se autolimpian. Sin librerías.
 function confetti(n){
+  // ♿ Guard de movimiento reducido. Faltaba (auditoría 17-07): countUp, las barras del diario y el
+  // burst del agua SÍ lo tenían, pero confetti() no — y al cablear celebrar() a la dopamina del
+  // deporte (v0.33.0) se propagó el hueco. La regla CSS global neutraliza la caída, pero aun así se
+  // creaban 40 divs que aparecían y desaparecían de golpe: eso NO es "menos movimiento", es peor.
+  // Quien pide menos movimiento se queda con el mensaje (overlay/toast), sin la lluvia.
+  if(_reducedMotion()) return;
   n=n||26; var cols=["#3DDC97","#FF6A3D","#74c7ff","#EEF2EC"];
   for(var i=0;i<n;i++){
     (function(){
