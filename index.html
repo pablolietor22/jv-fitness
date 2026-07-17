@@ -398,6 +398,16 @@
   @keyframes aguaglow{0%{box-shadow:0 0 0 0 rgba(116,199,255,0)}42%{box-shadow:0 0 12px 2px rgba(116,199,255,.5)}100%{box-shadow:0 0 0 0 rgba(116,199,255,0)}}
   #agua_resumen.aguabump{animation:aguapulse .55s cubic-bezier(.2,.8,.3,1.2)}
   #agua_resumen.aguabump .pbar{animation:aguaglow .7s ease-out}
+
+  /* D-COMIDA · misma capa de dopamina que el agua, para el resumen del diario. Cuando SUBE el total
+     (has añadido algo) el resumen da un pulso corto y las barras brillan mientras se llenan. Es
+     presentación pura: no toca totales ni objetivos. La regla global @prefers-reduced-motion de
+     arriba la neutraliza, y en JS hay guard con _reducedMotion() (se pinta directo, sin animar). */
+  @keyframes compulse{0%{transform:scale(1)}42%{transform:scale(1.02)}100%{transform:scale(1)}}
+  @keyframes comglow{0%{box-shadow:0 0 0 0 rgba(61,220,151,0)}42%{box-shadow:0 0 14px 2px rgba(61,220,151,.45)}100%{box-shadow:0 0 0 0 rgba(61,220,151,0)}}
+  #com_tot .card.combump{animation:compulse .5s cubic-bezier(.2,.8,.3,1.2)}
+  #com_tot .card.combump .pbar{animation:comglow .8s ease-out}
+  #com_tot_kcal{font-variant-numeric:tabular-nums}   /* el número no "baila" mientras cuenta */
   @keyframes aguaburst{0%{transform:translateY(6px) scale(.5);opacity:0}22%{opacity:1}100%{transform:translateY(-64px) scale(1.15);opacity:0}}
   .agua-spark{position:absolute;pointer-events:none;z-index:30;line-height:1;filter:drop-shadow(0 0 6px rgba(116,199,255,.45));animation:aguaburst 1.05s ease-out forwards;will-change:transform,opacity}
 
@@ -550,7 +560,7 @@
 <header class="brandbar">
   <div class="logo"><span class="dot"></span>JV <b>Fitness</b></div>
   <div style="display:flex;align-items:center">
-    <span class="tag">MVP v0.32.1 · motor v0.7</span>
+    <span class="tag">MVP v0.33.0 · motor v0.7</span>
     <!-- ⚙️ tanda #22 · hub de AJUSTES (no es pestaña): modal a pantalla completa -->
     <button class="gearbtn" id="btn_hub" type="button" title="Ajustes" aria-label="Abrir ajustes" onclick="hubAbrir()">⚙️</button>
   </div>
@@ -8372,7 +8382,19 @@ function coachAvisos(ctx){
 }
 // [COACH-PURE-FIN]
 
-var SODIO_MAX_MG=2000;   // 🧂 OMS: <2 g de sodio (= <5 g de sal) al día
+var SODIO_MAX_MG=2000;   // 🧂 OMS: <2 g de sodio (= <5 g de sal) al día — OBJETIVO IDEAL (la barra mide contra esto)
+// 🧂 Umbral de AVISO (ámbar), distinto del objetivo ideal. Queja real de Pablo (17-07): «el sodio
+// siempre me acabo pasando y es una mierda». Tenía razón y no era un bug: 2.000 mg es el IDEAL de la
+// OMS, no un máximo tolerable — con una dieta española normal se supera casi cada día, así que el
+// aviso saltaba SIEMPRE y por tanto no informaba de nada (un aviso que salta siempre es ruido).
+// Se separan las dos cosas: la barra sigue midiendo contra el ideal OMS (honesto, ciencia intacta) y
+// el coach también; pero el ámbar solo salta en el límite SUPERIOR de guía (2.300 mg, US DGA/FDA
+// 2020-2025 «Chronic Disease Risk Reduction»), que es cuando de verdad te has ido.
+var SODIO_ALARMA_MG=2300;
+// 📊 D-COMIDA · último total de kcal pintado. renderComida() reconstruye el resumen entero con
+// innerHTML, así que el <b> del contador nace nuevo en cada render: si naciera con el valor final
+// no habría nada que contar. Nace con ESTE valor (el de antes) y countUp() lo lleva hasta el nuevo.
+var _comPrevKcal=0;
 // [COM-MIC-TOT] 💊 v0.26 · suma del día de vitaminas/minerales registrados en mic{} (⚡ Micros sueltos).
 // Autocontenido: solo lo llama el enganche de renderComida. Honesto: sin registros → devuelve "" (no
 // pinta nada); solo suma valores numéricos >0. Mismas etiquetas que la ficha (qaMicLbl).
@@ -8402,17 +8424,22 @@ function renderComida(){
   arr.forEach(function(x){ tot.kcal+=x.kcal; tot.p+=x.p; tot.c+=x.c; tot.gr+=x.gr; tot.fib+=(+x.fib||0); tot.az+=(+x.az||0); tot.sat+=(+x.sat||0); tot.na+=(+x.na||0); });
   try{ renderCafe(); }catch(e){}   // ☕ #12 · el panel de cafeína se suma solo de los items del día (misma fuente, sin almacén paralelo)
   var obj=window._obj||null;
-  function bar(v,o,col){ if(!(o>0)) return ""; var over=v>o*1.05, pct=Math.round(Math.min(1,v/o)*100); return "<div class='pbar'><i style='width:"+pct+"%;background:"+(over?'#f4c04e':col)+"'></i></div>"; }
+  // 📊 D-COMIDA · la barra NACE en 0 y su ancho real se pone en el siguiente frame (comAnimarBarras):
+  // así se dispara la transición `width .9s` que .pbar>i YA tenía (línea ~390) y que nunca se veía,
+  // porque innerHTML creaba el elemento ya nacido con el ancho final (sin cambio → sin animación).
+  // El ancho objetivo viaja en data-w. Con prefers-reduced-motion se pinta directo, sin animar.
+  function bar(v,o,col){ if(!(o>0)) return ""; var over=v>o*1.05, pct=Math.round(Math.min(1,v/o)*100);
+    return "<div class='pbar'><i data-w='"+pct+"' style='width:"+(_reducedMotion()?pct+"%":"0")+";background:"+(over?'#f4c04e':col)+"'></i></div>"; }
   var h="<div class='card' style='margin:0 0 8px;padding:12px'><div class='eyebrow-lbl'>Resumen del día · "+esc(fecha)+"</div>";
   if(obj){
-    h+="<div class='kv'><span>Calorías</span><span>"+Math.round(tot.kcal)+" / "+obj.cal+" kcal</span></div>"+bar(tot.kcal,obj.cal,'var(--ember)')
+    h+="<div class='kv'><span>Calorías</span><span><b id='com_tot_kcal'>"+Math.round(_reducedMotion()?tot.kcal:_comPrevKcal)+"</b> / "+obj.cal+" kcal</span></div>"+bar(tot.kcal,obj.cal,'var(--ember)')
      +"<div class='kv' style='margin-top:6px'><span>Proteínas</span><span>"+Math.round(tot.p)+" / "+obj.prot+" g</span></div>"+bar(tot.p,obj.prot,'var(--jade)')
      +"<div class='kv' style='margin-top:6px'><span>Carbohidratos</span><span>"+Math.round(tot.c)+" / "+obj.carb+" g</span></div>"+bar(tot.c,obj.carb,'#74c7ff')
      +"<div class='kv' style='margin-top:6px'><span>Grasas</span><span>"+Math.round(tot.gr)+" / "+obj.grasa+" g</span></div>"+bar(tot.gr,obj.grasa,'#f4c04e')
      +"<div class='kv' style='margin-top:6px'><span>🌾 Fibra <span class='hint' style='display:inline'>· objetivo</span></span><span>"+Math.round(tot.fib)+" / "+(obj.fibra||0)+" g</span></div>"+bar(tot.fib,obj.fibra,'#8fd694')
      +"<div class='kv' style='margin-top:6px'><span>🍬 Azúcar <span class='hint' style='display:inline'>· máx ~"+(obj.azucar||0)+" g</span></span><span"+(tot.az>(obj.azucar||0)*1.05?" style='color:#f4c04e'":"")+">"+Math.round(tot.az)+" g</span></div>"+bar(tot.az,obj.azucar,'#e08fd6')
      +"<div class='kv' style='margin-top:6px'><span>🧈 Grasa saturada <span class='hint' style='display:inline'>· máx ~"+(obj.sat||0)+" g</span></span><span"+(tot.sat>(obj.sat||0)*1.05?" style='color:#f4c04e'":"")+">"+Math.round(tot.sat)+" g</span></div>"+bar(tot.sat,obj.sat,'#f4a04e')
-     +"<div class='kv' style='margin-top:6px'><span>🧂 Sodio <span class='hint' style='display:inline'>· máx ~2.000 mg (OMS)</span></span><span"+(tot.na>2100?" style='color:#f4c04e'":"")+">"+Math.round(tot.na)+" mg</span></div>"+bar(tot.na,SODIO_MAX_MG,'#9fb6f4');
+     +"<div class='kv' style='margin-top:6px'><span>🧂 Sodio <span class='hint' style='display:inline'>· ideal &lt;2.000 mg (OMS) · aviso a "+SODIO_ALARMA_MG.toLocaleString('es-ES')+"</span></span><span"+(tot.na>SODIO_ALARMA_MG?" style='color:#f4c04e'":"")+">"+Math.round(tot.na)+" mg</span></div>"+bar(tot.na,SODIO_MAX_MG,'#9fb6f4');
     // 🏀 Presupuesto del día: el deporte registrado ESE día suma encima del objetivo base (aditivo, no toca la fórmula).
     var _sesDia=get(LS_DEP_SES,[]).filter(function(s){ return s && s.f===fecha && +s.kcal>0; });
     var _pre=presupuestoHoy(obj.cal, _sesDia);
@@ -8448,6 +8475,26 @@ function renderComida(){
   }
   try{ h+=comMicTotHTML(arr); }catch(e){}   // 💊 v0.26 · micros sueltos del día [COM-MIC-TOT] (enganche 1 línea)
   h+="</div>"; $("com_tot").innerHTML=h;
+  // 📊 D-COMIDA · dopamina del resumen (presentación PURA: no toca totales, objetivos ni el coach).
+  // Mismo patrón que la capa de agua que ya existe. Dos cosas, las dos con guard de movimiento:
+  //   1) las barras nacieron en 0 → en el SIGUIENTE frame se les pone su ancho real y la transición
+  //      `width .9s` de .pbar>i (que ya estaba) por fin se ve: las barritas suben solas.
+  //   2) el contador de kcal cuenta desde el total anterior hasta el nuevo (countUp ya existía).
+  // Si el total SUBE (has añadido algo), el resumen da un pulso corto. Nada de esto puede romper el
+  // diario: si algo fallara, el try deja los números finales ya pintados por el innerHTML de arriba.
+  try{
+    var _tk=Math.round(tot.kcal), _subio=_tk>Math.round(_comPrevKcal);
+    if(!_reducedMotion()){
+      requestAnimationFrame(function(){
+        var _is=$("com_tot").querySelectorAll(".pbar>i[data-w]");
+        for(var i=0;i<_is.length;i++) _is[i].style.width=_is[i].getAttribute("data-w")+"%";
+      });
+      countUp($("com_tot_kcal"), _tk, "");
+      if(_subio){ var _c=$("com_tot").querySelector(".card");
+        if(_c){ _c.classList.remove("combump"); void _c.offsetWidth; _c.classList.add("combump"); } }
+    }
+    _comPrevKcal=_tk;
+  }catch(e){ _comPrevKcal=Math.round(tot.kcal); }
   try{ renderHistorial(); }catch(e){}   // 🕑 historial + buscador (deriva del diario; abarca todos los días)
   if(!arr.length){ $("com_list").innerHTML="<div class='empty'><div class='ico'>🍽️</div><div class='et'>Sin comidas este día</div><div class='es'>Busca un alimento y los gramos para empezar.</div></div>"; try{ renderMeals(); }catch(e){} return; }
   $("com_list").innerHTML="<div class='eyebrow-lbl'>Lo que llevas</div>"+arr.map(function(x){
@@ -11216,7 +11263,7 @@ function resetTodo(){ if(!confirm("⚠️ Esto borra TODO: perfil, pesos, entren
 // Reemplazo total con confirmación. Reusa get/set, hoyLocal, toast, validar, render. NO toca motor ni gate.
 function exportarJSON(){ try{ set("jvf_last_export",hoyLocal()); }catch(e){}
   try{
-    var data={ app:"jvf", schema:1, app_version:"0.32.1", exportadoEl:new Date().toISOString(),
+    var data={ app:"jvf", schema:1, app_version:"0.33.0", exportadoEl:new Date().toISOString(),
       perfil:get(LS_P,null), pesos:get(LS_W,[]), entrenos:get(LS_E,[]), notas_ej:get("jvf_notas_ej",{}), comida:get("jvf_comida",[]), agua:get("jvf_agua",{}), suples_cfg:get("jvf_suples_cfg",null), suples_log:get("jvf_suples_log",{}),
       rutinas:get("jvf_rutinas",[]), meals:get("jvf_meals",[]), ent_start:get("jvf_ent_start",null),   // v0.10 · backup completo
       alimentos_propios:get("jvf_alimentos_propios",[]), barcode_cache:get("jvf_barcode_cache",{}),   // I5/I6 · también viajan en el backup
@@ -15894,7 +15941,21 @@ function depSesGuardar(){
   set(LS_DEP_SES,arr);
   var mn=$("deps_min"); if(mn) mn.value="";
   depSesEstimar(); depSesRender();
-  toast("🏀 Sesión registrada · ~"+r.kcal+" kcal");
+  // 🎉 D-DEPORTE · dopamina (petición de Pablo: «que me salga bien hecho, estás de suerte, y que me
+  // redirija solo a comida»). Registrar deporte AMPLÍA el presupuesto de kcal del día → se celebra
+  // con el overlay+confeti que YA existe (celebrar()) y se redirige SOLO a la pestaña Comida, donde
+  // el panel «🏀 Hoy puedes comer ~X kcal» ya lo confirma. Presentación pura: no toca el cálculo del
+  // presupuesto (presupuestoHoy es la misma fuente que usa el panel). Sin objetivo aún → toast normal.
+  var _obj0=window._obj||null;
+  var _sesHoy=get(LS_DEP_SES,[]).filter(function(s){ return s && s.f===hoyLocal() && +s.kcal>0; });
+  var _pre=(_obj0 && _obj0.cal>0) ? presupuestoHoy(_obj0.cal, _sesHoy) : null;
+  if(_pre && _pre.extra>0 && typeof celebrar==="function"){
+    celebrar("¡Estás de suerte!", "+"+r.kcal+" kcal",
+      "Has quemado "+(r.emoji||"🏀")+" "+r.depNombre+" — hoy puedes comer hasta ~"+_pre.total.toLocaleString('es-ES')+" kcal");
+    setTimeout(function(){ try{ abrir("comida"); renderComida(); }catch(e){} }, 1200);   // redirige solo, sin toque
+  } else {
+    toast("🏀 Sesión registrada · ~"+r.kcal+" kcal");
+  }
 }
 function depSesDel(id){
   var arr=get(LS_DEP_SES,[]); var i=arr.map(function(x){return x.id;}).indexOf(id);
