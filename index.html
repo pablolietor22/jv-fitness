@@ -619,7 +619,7 @@
 <header class="brandbar">
   <div class="logo"><span class="dot"></span>JV <b>Fitness</b></div>
   <div style="display:flex;align-items:center">
-    <span class="tag">MVP v0.39.0 · motor v0.7</span>
+    <span class="tag">MVP v0.40.0 · motor v0.7</span>
     <!-- ⚙️ tanda #22 · hub de AJUSTES (no es pestaña): modal a pantalla completa -->
     <button class="gearbtn" id="btn_hub" type="button" title="Ajustes" aria-label="Abrir ajustes" onclick="hubAbrir()">⚙️</button>
   </div>
@@ -12372,7 +12372,7 @@ function resetTodo(){ if(!confirm("⚠️ Esto borra TODO: perfil, pesos, entren
 // Reemplazo total con confirmación. Reusa get/set, hoyLocal, toast, validar, render. NO toca motor ni gate.
 function exportarJSON(){ try{ set("jvf_last_export",hoyLocal()); }catch(e){}
   try{
-    var data={ app:"jvf", schema:1, app_version:"0.39.0", exportadoEl:new Date().toISOString(),
+    var data={ app:"jvf", schema:1, app_version:"0.40.0", exportadoEl:new Date().toISOString(),
       perfil:get(LS_P,null), pesos:get(LS_W,[]), entrenos:get(LS_E,[]), notas_ej:get("jvf_notas_ej",{}), comida:get("jvf_comida",[]), agua:get("jvf_agua",{}), suples_cfg:get("jvf_suples_cfg",null), suples_log:get("jvf_suples_log",{}),
       rutinas:get("jvf_rutinas",[]), meals:get("jvf_meals",[]), ent_start:get("jvf_ent_start",null),   // v0.10 · backup completo
       alimentos_propios:get("jvf_alimentos_propios",[]), barcode_cache:get("jvf_barcode_cache",{}),   // I5/I6 · también viajan en el backup
@@ -18798,7 +18798,73 @@ function bibFiltra(q, lista){
   return {modo:"musculo", musculos:objetivo, principal:principal, secundario:secundario};
 }
 // [BIBFILTRA-PURE-FIN]
+// edDist(a,b): distancia de edición de Levenshtein CLÁSICA — inserción/borrado/sustitución cuestan 1,
+// SIN transposición (así «biceps»↔«bicpes» = 2, cubierto por el umbral 2). Iterativa, dos filas, sin
+// dependencias. Helper puro del buscador «¿Querías decir…?» (bloque [BIBSUGE-PURE] de abajo).
+function edDist(a, b){
+  a = String(a == null ? "" : a); b = String(b == null ? "" : b);
+  var la = a.length, lb = b.length;
+  if (!la) return lb;
+  if (!lb) return la;
+  var prev = [], cur = [], i, j;
+  for (j = 0; j <= lb; j++) prev[j] = j;
+  for (i = 1; i <= la; i++){
+    cur[0] = i;
+    for (j = 1; j <= lb; j++){
+      var cost = (a.charCodeAt(i - 1) === b.charCodeAt(j - 1)) ? 0 : 1;
+      cur[j] = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + cost);
+    }
+    for (j = 0; j <= lb; j++) prev[j] = cur[j];
+  }
+  return prev[lb];
+}
+// [BIBSUGE-PURE-INICIO] — «¿QUERÍAS DECIR…?»: sugerencia por errata (distancia de edición). PURO (sin
+// DOM). Depende SOLO de otroNorm(), edDist() y MUS_SINON (todos arriba, misma <script>). Resuelve la
+// queja de Pablo: si escribe un músculo con una letra bailada («bicpes», «espada», «hombto») el
+// buscador cae a «Sin resultados» en seco; aquí proponemos el músculo más cercano y clicable.
+// Extraíble por _tests/test-buscador-sugerencia.node.js.
+function bibSugerencia(q){
+  var toks = otroNorm(q || "").split(/\s+/).filter(Boolean);
+  if (!toks.length) return [];
+  // Candidatos: tokens de ≥3 letras que NO sean YA un sinónimo EXACTO de músculo (esos ya los resuelve
+  // bibFiltra en modo músculo — no sugieras lo que ya funciona). Un token de una sola palabra ES la q
+  // entera, así que este barrido también cubre el caso «q de una sola palabra larga».
+  var cand = [];
+  for (var t = 0; t < toks.length; t++){
+    var tk = toks[t];
+    if (tk.length < 3) continue;          // ruido («ab», «de»)
+    if (MUS_SINON[tk]) continue;          // sinónimo exacto → ya funciona, no se sugiere
+    cand.push(tk);
+  }
+  if (!cand.length) return [];
+  // Para cada clave de MUS_SINON, la MEJOR distancia contra cualquier candidato; se acepta si cae
+  // dentro del umbral (1 para claves ≤4 letras, 2 para el resto). Guardamos el orden de MUS_SINON como
+  // desempate de «músculo más común».
+  var claves = Object.keys(MUS_SINON), hits = [];
+  for (var c = 0; c < claves.length; c++){
+    var clave = claves[c], umbral = (clave.length <= 4) ? 1 : 2, best = Infinity;
+    for (var d = 0; d < cand.length; d++){
+      var dd = edDist(cand[d], clave);
+      if (dd < best) best = dd;
+    }
+    if (best <= umbral) hits.push({ display: MUS_SINON[clave][0], q: clave, dist: best, ord: c });
+  }
+  if (!hits.length) return [];
+  // Distancia ascendente; a igualdad, orden de MUS_SINON (músculo más común primero). Así, si dos
+  // músculos DISTINTOS quedan a la misma distancia mínima («riceps» ↔ Bíceps y Tríceps), salen AMBOS.
+  hits.sort(function(x, y){ return (x.dist - y.dist) || (x.ord - y.ord); });
+  // Dedup por músculo mostrado (espalda/dorsal → «Espalda» una sola vez); máx 3.
+  var vistos = {}, out = [];
+  for (var h = 0; h < hits.length && out.length < 3; h++){
+    if (vistos[hits[h].display]) continue;
+    vistos[hits[h].display] = 1;
+    out.push({ musculo: hits[h].display, q: hits[h].q });
+  }
+  return out;
+}
+// [BIBSUGE-PURE-FIN]
 function bibRender(){
+  clearInterval(_fichaAnimT); _fichaAnimT=null;   // repinta la lista encima de la ficha → mata el pseudo-vídeo (punto 4)
   // Idea Jorge 16-jul (tildes) + idea #21 (buscar por MÚSCULO) + intención de músculo (Build C): el
   // catálogo es ~1,5k, así que precomputamos las claves normalizadas (lazy) y capamos a 80 tarjetas.
   // El buscado real lo hace bibFiltra() (bloque [BIBFILTRA-PURE]); aquí solo se aplican los selects y se pinta.
@@ -18818,9 +18884,19 @@ function bibRender(){
     return '<div class="bib-item" onclick="bibElegir('+arg+')">'+thumb+'<span style="flex:1">'+esc(e.n)+'<span class="mus" style="display:block">'+esc(e.m)+" · "+esc(e.eq)+"</span></span>"+ver+"</div>";
   }
   var sinRes="<p class='hint'>Sin resultados. Escríbelo a mano en el ejercicio.</p>";
+  // «¿Querías decir…?» (Build D): ante «Sin resultados», si la q parece un músculo con una errata,
+  // ofrece el más cercano como chip clicable ANTES del hint honesto (bibSugerencia, bloque [BIBSUGE-PURE]).
+  function bibSinResHTML(){
+    var sug=(typeof bibSugerencia==="function")?bibSugerencia(raw):[];
+    if(!sug.length) return sinRes;
+    var chips=sug.map(function(s){
+      return '<button class="wchip done" type="button" onclick="bibSugSet(\''+escAttr(s.q)+'\')">💪 '+esc(s.musculo)+'</button>';
+    }).join(" ");
+    return "<p class='hint'>¿Querías decir…?</p><div class='wizchips' style='margin:4px 0 10px'>"+chips+"</div>"+sinRes;
+  }
   if(r.modo==="musculo"){
     var P=r.principal, S=r.secundario;
-    if(!P.length && !S.length){ $("bib_lista").innerHTML=sinRes; return; }
+    if(!P.length && !S.length){ $("bib_lista").innerHTML=bibSinResHTML(); return; }
     // Cap GLOBAL de 80, primero el principal; «… y N más» honesto sobre el total combinado.
     var vistaP=P.slice(0,CAP), resta=CAP-vistaP.length, vistaS=resta>0?S.slice(0,resta):[];
     var extra=(P.length+S.length)-(vistaP.length+vistaS.length);
@@ -18832,10 +18908,16 @@ function bibRender(){
     return;
   }
   var res=r.res;
-  if(!res.length){ $("bib_lista").innerHTML=sinRes; return; }
+  if(!res.length){ $("bib_lista").innerHTML=bibSinResHTML(); return; }
   var extra2=res.length>CAP?res.length-CAP:0, vista=res.slice(0,CAP);
   $("bib_lista").innerHTML=vista.map(itemHTML).join("")
     + (extra2?"<p class='hint' style='margin-top:8px'>… y "+extra2+" más. Afina la búsqueda o usa los filtros.</p>":"");
+}
+// Chip «¿Querías decir…?» (Build D): rellena el buscador con la clave de músculo sugerida y re-renderiza
+// (mismo patrón que las demás acciones del buscador). Global — lo llama el onclick del chip.
+function bibSugSet(q){
+  var inp=$("bib_buscar"); if(inp) inp.value=q;
+  bibRender();
 }
 // Instrucciones de ejercicio: caché en memoria + carga perezosa del JSON (se baja 1 vez con red).
 var _ejInstr=null;
@@ -18846,17 +18928,74 @@ function ejInstrCarga(cb){
     .then(function(j){ _ejInstr=j; cb(); })
     .catch(function(){ cb(); });   // offline/error: _ejInstr sigue null y la ficha da el hint honesto
 }
-// Ficha visual del ejercicio: se abre SIEMPRE. Con foto: 2 fotogramas (toca para alternar). Sin foto:
-// emoji grande del músculo (idea #24). Con d: bloque «📋 Cómo se hace» (instrucciones del dataset).
+// [PSEUDO-VÍDEO ficha] — efecto «medio vídeo» tipo Hevy con nuestras fotos de free-exercise-db:
+// dos fotogramas (0.jpg inicio / 1.jpg final) alternándose SOLOS en bucle DENTRO de la ficha. Una
+// sola ficha abierta a la vez → un único timer global. Tocar la foto = pausar/reanudar (como el ⏸
+// de esas apps). Con prefers-reduced-motion NO hay bucle: el toque vuelve al alternado clásico.
+var _fichaAnimT=null;            // interval del pseudo-vídeo (null = parado / no hay bucle)
+var _fichaAnimSoportado=false;   // ¿la ficha abierta soporta bucle? (foto + 2º fotograma cargado + sin reduced-motion)
+var FICHA_ANIM_MS=900;           // ms por fotograma (≈900, ritmo de las apps de referencia)
+// Pinta el pequeño indicador ⏸/▶ de estado en la esquina de la foto (opacidad suave).
+function _fichaAnimEstado(corriendo){
+  var s=$("bib_foto_estado"); if(!s) return;
+  s.textContent = corriendo ? "⏸" : "▶";   // corriendo → botón de pausa · parado → botón de play
+  s.style.opacity = "0.6";
+}
+// Arranca (o reanuda) el bucle: alterna el src de #bib_foto entre data-a y data-b cada FICHA_ANIM_MS.
+function _fichaAnimArranca(){
+  clearInterval(_fichaAnimT); _fichaAnimT=null;   // nunca dos timers a la vez (limpieza antes de crear)
+  _fichaAnimT=setInterval(function(){
+    var img=$("bib_foto");
+    if(!img){ clearInterval(_fichaAnimT); _fichaAnimT=null; return; }   // DOM muerto → no dejar zombi
+    img.src = (img.src===img.dataset.a ? img.dataset.b : img.dataset.a);
+  }, FICHA_ANIM_MS);
+  _fichaAnimEstado(true);
+}
+// Precarga el 2º fotograma; si carga, marca la ficha como animable y arranca el bucle. Si falla
+// (onerror), la ficha se queda estática con el 1º fotograma (comportamiento clásico, sin errores).
+function bibFichaAnim(img0, imgB){
+  var pre=new Image();
+  pre.onload=function(){
+    var img=$("bib_foto");
+    if(!img || img.dataset.b!==imgB) return;   // el usuario cambió/cerró la ficha mientras precargaba
+    _fichaAnimSoportado=true;
+    var h=$("bib_foto_hint");
+    if(h){ h.textContent = (h.dataset.eq||"") + " · se mueve solo · toca la foto para pausar"; }
+    _fichaAnimArranca();
+  };
+  pre.onerror=function(){ /* 2º fotograma no disponible → ficha estática, sin errores de consola */ };
+  pre.src=imgB;
+}
+// Toque en la foto. En modo bucle: pausa (queda el fotograma actual) o reanuda. Con reduced-motion
+// o sin 2º fotograma: alterna inicio/final una sola vez por toque (clásico, sin indicador ⏸/▶).
+function bibFotoToque(img){
+  if(!img) img=$("bib_foto");
+  if(!img) return;
+  if(_fichaAnimSoportado){
+    if(_fichaAnimT){ clearInterval(_fichaAnimT); _fichaAnimT=null; _fichaAnimEstado(false); }   // corría → pausa
+    else { _fichaAnimArranca(); }                                                               // parado → reanuda
+  } else {
+    img.src = (img.src===img.dataset.a ? img.dataset.b : img.dataset.a);   // clásico: 1 alternancia por toque
+  }
+}
+// Ficha visual del ejercicio: se abre SIEMPRE. Con foto: pseudo-vídeo en bucle (toca para pausar).
+// Sin foto: emoji grande del músculo (idea #24). Con d: bloque «📋 Cómo se hace» (instrucciones).
 function bibVer(nombre){
+  clearInterval(_fichaAnimT); _fichaAnimT=null; _fichaAnimSoportado=false;   // corta cualquier bucle anterior (punto 4)
   var e=EJERCICIOS.filter(function(x){ return x.n===nombre; })[0]; if(!e) return;
   var arg=JSON.stringify(e.n).replace(/"/g,"&quot;");
   var chips=[ "<span class='wchip cur'>"+esc(e.m)+"</span>" ].concat((e.m2||[]).map(function(m){ return "<span class='wchip done'>"+esc(m)+"</span>"; })).join(" ");
   var cabecera;
+  var img0, imgB, animable=false;
   if(e.img){
-    var img1=IMG_EJ+e.img, img0=img1.replace(/1\.jpg$/,"0.jpg"), imgB=img1.replace(/0\.jpg$/,"1.jpg");
-    cabecera='<div class="hint" style="margin:0 0 8px">'+esc(e.eq)+' · toca la foto para ver inicio/final del movimiento</div>'
-      +'<img id="bib_foto" src="'+escAttr(img0)+'" data-a="'+escAttr(img0)+'" data-b="'+escAttr(imgB)+'" style="width:100%;border-radius:12px;cursor:pointer" onclick="this.src=(this.src===this.dataset.a?this.dataset.b:this.dataset.a)" onerror="this.style.display=\'none\'">';
+    var img1=IMG_EJ+e.img; img0=img1.replace(/1\.jpg$/,"0.jpg"); imgB=img1.replace(/0\.jpg$/,"1.jpg");
+    // Bucle solo si hay 2º fotograma distinto y el usuario no pide menos movimiento (punto 6).
+    animable = (img0!==imgB) && !_reducedMotion();
+    cabecera='<div class="hint" id="bib_foto_hint" data-eq="'+escAttr(e.eq)+'" style="margin:0 0 8px">'+esc(e.eq)+' · toca la foto para ver inicio/final del movimiento</div>'
+      +'<div style="position:relative;line-height:0">'
+      +'<img id="bib_foto" src="'+escAttr(img0)+'" data-a="'+escAttr(img0)+'" data-b="'+escAttr(imgB)+'" style="width:100%;border-radius:12px;cursor:pointer" onclick="bibFotoToque(this)" onerror="this.style.display=\'none\'">'
+      +'<span id="bib_foto_estado" aria-hidden="true" style="position:absolute;top:8px;right:8px;background:rgba(0,0,0,.55);color:#fff;border-radius:999px;padding:1px 8px;font-size:14px;line-height:1.5;opacity:0;transition:opacity .3s;pointer-events:none">⏸</span>'
+      +'</div>';
   } else {
     // Sin foto: emoji grande del músculo en el hueco de la imagen (sin el hint «toca la foto»).
     cabecera='<div class="hint" style="margin:0 0 8px">'+esc(e.eq)+'</div>'
@@ -18870,6 +19009,8 @@ function bibVer(nombre){
     +(e.d?'<div id="bib_instr" style="margin:0 0 10px"></div>':'')
     +'<button class="btn-lg" type="button" onclick="bibElegir('+arg+')">Usar este ejercicio</button>'
     +'<p class="hint" style="margin-top:8px">🎬 Vídeo para principiantes: llegará en una versión futura.</p>';
+  // Pseudo-vídeo (efecto Hevy): ya está el <img> en el DOM → precarga el 2º fotograma y, si carga, arranca el bucle.
+  if(animable){ bibFichaAnim(img0, imgB); }
   if(e.d){
     ejInstrCarga(function(){
       var box=$("bib_instr"); if(!box) return;
@@ -18892,7 +19033,7 @@ function bibElegir(nombre){
   }
   bibCerrar();
 }
-function bibCerrar(){ show("bibModal", false); _bibTarget=null; }
+function bibCerrar(){ clearInterval(_fichaAnimT); _fichaAnimT=null; show("bibModal", false); _bibTarget=null; }
 
 function render(){
   const p=get(LS_P);
