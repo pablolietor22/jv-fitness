@@ -5,10 +5,13 @@
 <!-- CSP acotada a los hosts que la app usa DE VERDAD en runtime (verificado 2026-07-12). Se entrega por
      <meta> porque el sitio vive en GitHub Pages, que NO sirve el archivo _headers (comprobado: sus 5
      cabeceras no llegan en vivo). Notas: 'unsafe-inline' es obligado (handlers onclick/onchange + estilos
-     inline por todo el HTML de un solo archivo); 'wasm-unsafe-eval' lo pide el lector de códigos ZXing/WASM;
-     data:/blob: los pide la foto de comida; jsdelivr = polyfill del escáner; NO se lista allorigins porque
-     se retiró (OFF sirve Access-Control-Allow-Origin:* → fetch directo, sin proxy ajeno). -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; form-action 'self'; img-src 'self' data: blob: https://world.openfoodfacts.org https://images.openfoodfacts.org https://static.openfoodfacts.org https://raw.githubusercontent.com; font-src 'self' https://fonts.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' https://cdn.jsdelivr.net; connect-src 'self' https://world.openfoodfacts.org https://api.open-meteo.com https://raw.githubusercontent.com https://cdn.jsdelivr.net; worker-src 'self' blob:; manifest-src 'self'">
+     inline por todo el HTML de un solo archivo); 'wasm-unsafe-eval' lo piden los DOS WASM: el lector de
+     códigos ZXing y el OCR de etiquetas Tesseract.js; data:/blob: los pide la foto de comida; worker-src
+     blob:/jsdelivr lo pide el worker de Tesseract.js. jsdelivr = DOS dependencias CDN, ambas lazy y
+     documentadas: (1) polyfill ZXing del escáner de códigos y (2) Tesseract.js del lector de etiquetas
+     por foto (v0.34.1). NO se lista allorigins porque se retiró (OFF sirve Access-Control-Allow-Origin:*
+     → fetch directo, sin proxy ajeno). -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; form-action 'self'; img-src 'self' data: blob: https://world.openfoodfacts.org https://images.openfoodfacts.org https://static.openfoodfacts.org https://raw.githubusercontent.com; font-src 'self' https://fonts.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' https://cdn.jsdelivr.net; connect-src 'self' https://world.openfoodfacts.org https://api.open-meteo.com https://raw.githubusercontent.com https://cdn.jsdelivr.net; worker-src 'self' blob: https://cdn.jsdelivr.net; manifest-src 'self'">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -616,7 +619,7 @@
 <header class="brandbar">
   <div class="logo"><span class="dot"></span>JV <b>Fitness</b></div>
   <div style="display:flex;align-items:center">
-    <span class="tag">MVP v0.35.0 · motor v0.7</span>
+    <span class="tag">MVP v0.35.1 · motor v0.7</span>
     <!-- ⚙️ tanda #22 · hub de AJUSTES (no es pestaña): modal a pantalla completa -->
     <button class="gearbtn" id="btn_hub" type="button" title="Ajustes" aria-label="Abrir ajustes" onclick="hubAbrir()">⚙️</button>
   </div>
@@ -1804,13 +1807,25 @@ Tus datos se guardan solo en este dispositivo.</p>
     <button class="modal-x" type="button" title="Cerrar" aria-label="Cerrar" onclick="bcCerrar()">✕</button>
     <h2>📷 Escanear código</h2>
     <div id="bc_scan">
+      <!-- 📷 v0.34.1 · toggle de MODO en la MISMA pantalla: código de barras (por defecto) ↔ etiqueta
+           por foto (OCR con Tesseract.js, lazy). Reutiliza la MISMA cámara y ciclo del escáner. -->
+      <div class="row" id="bc_modo" style="gap:6px;margin:0 0 8px">
+        <button class="sec" type="button" id="bc_modo_cod" style="flex:1;margin:0;border-color:var(--jade);color:var(--jade);font-weight:700" onclick="etiqModo(false)">📷 Código</button>
+        <button class="sec" type="button" id="bc_modo_etiq" style="flex:1;margin:0" onclick="etiqModo(true)">🏷️ Etiqueta</button>
+      </div>
       <!-- v0.13 · L1: botón EXPLÍCITO de cámara. La cámara ya arranca sola al abrir el modal, pero
            se PARA al buscar a mano, al pasar la app a segundo plano o si el permiso se denegó la
            primera vez: este botón la relanza sin cerrar el modal. En navegadores sin cámara/permiso
            el mismo flujo de bcIniciarCamara pinta el hint honesto y el input manual sigue vivo. -->
       <button class="sec" type="button" id="bc_btn_cam" style="width:100%;margin:0 0 8px" onclick="bcIniciarCamara()">📷 Escanear con la cámara</button>
-      <video id="bc_video" class="hidden" playsinline muted autoplay style="width:100%;max-height:240px;object-fit:cover;border-radius:12px;background:var(--ink-3)"></video>
+      <div id="bc_vwrap" style="position:relative">
+        <video id="bc_video" class="hidden" playsinline muted autoplay style="width:100%;max-height:240px;object-fit:cover;border-radius:12px;background:var(--ink-3)"></video>
+        <!-- 🏷️ recuadro guía del modo etiqueta (mismos %s que el recorte de etiqPreprocesar: 8% lados, 12% arriba/abajo) -->
+        <div id="etiq_guia" class="hidden" style="position:absolute;inset:12% 8%;border:2px dashed var(--jade);border-radius:10px;pointer-events:none"></div>
+      </div>
       <div id="bc_estado" class="hint" style="margin-top:6px;min-height:1.1em"></div>
+      <button class="sec hidden" type="button" id="etiq_cap" style="width:100%;margin:2px 0 0" onclick="etiqCapturar()">📸 Capturar etiqueta</button>
+      <canvas id="etiq_canvas" class="hidden" style="display:none"></canvas>
       <label>o escribe el código a mano</label>
       <div class="row" style="gap:6px;align-items:center">
         <input id="bc_manual" inputmode="numeric" placeholder="ej. 8480000278678" style="flex:2" onkeydown="if(event.key==='Enter'){event.preventDefault();bcBuscarManual();}">
@@ -9358,7 +9373,8 @@ function mealBorrar(id){
 // misma base que usan Yuka y ElCoCo en España (~368k productos, Hacendado casi completo).
 // Honestidad: OFF es colaborativa (errores de OCR, por-ración vs por-100g, huecos) → pantalla de
 // confirmación SIEMPRE editable y, si faltan kcal o proteína, se exige copiarlas de la etiqueta.
-// Red permitida: world.openfoodfacts.org (lookup por EAN) + jsDelivr (polyfill del lector). Nada más.
+// Red permitida: world.openfoodfacts.org (lookup por EAN) + jsDelivr (polyfill del lector de códigos y,
+// desde v0.34.1, Tesseract.js del lector de etiquetas por foto — ambas lazy). Nada más.
 var LS_BC_CACHE="jvf_barcode_cache";   // {ean:{producto:{...por 100 g o 100 ml + u:"g"|"ml" + dens}, ts}} — cachear respeta el límite de OFF (15 req/min) y da offline en productos repetidos
 var LS_ALIM="jvf_alimentos_propios";   // [{id, nombre, marca, ean|null, porcion_g, kcal100, p100, c100, g100[, fib100, az100, sat100, na100]}] · los 4 últimos desde v0.26 (null = sin dato)
 var _bcStream=null, _bcTimer=null, _bcDetector=null, _bcProducto=null, _apEan=null;
@@ -9588,11 +9604,237 @@ function bcUrlsLookup(ean){
 }
 // [BC-FALLBACK-PURE-FIN]
 
+// [ETIQ-OCR-PURE-INICIO] — 📷 MOTOR LECTOR DE ETIQUETAS (Bloque B del pliego alimentos, v0.34.1). PURO
+// (sin DOM/red/storage): _tests/test-etiqueta-ocr.node.js extrae este bloque + [ATWATER-PURE] y los
+// evalúa tal cual. Convierte el TEXTO que devuelve el OCR (Tesseract.js) en una ficha nutricional por
+// 100 g/ml lista para el embudo bcConfirmar. Doctrina de la casa (orden de Pablo): AUTOMÁTICO-PRIMERO —
+// en una etiqueta bien fotografiada, CERO preguntas y la MISMA velocidad que el código de barras. Las
+// ecuaciones no solo detectan errores: los CORRIGEN cuando la salida es unívoca (reubicar el decimal que
+// el OCR movió); solo se PREGUNTA cuando hay más de una salida. NUNCA se inventa un valor (I8).
+// Fichas F1-F7 del pliego. F4 REUTILIZA atwaterCheck (mismo umbral 0,5×–1,7×, no se duplica). F5
+// comparte el tope físico de sodio con el clamp de bcConfirmar (NA_MAX_100G_MG=39.340).
+
+// Constantes físicas COMPARTIDAS (F5): NA_MAX_100G_MG es el MISMO tope que usa el clamp de sodio de
+// bcConfirmar (sal pura ≈ 39.340 mg de sodio/100 g). kcal/macros = techo físico por 100 g.
+var NA_MAX_100G_MG=39340;   // sal pura ≈ 39.340 mg de sodio/100 g — nada comestible lo supera
+var KCAL_MAX_100G=900;      // grasa pura = 900 kcal/100 g es el techo físico
+var MACRO_MAX_100G=100;     // p/c/f/az/sat/fib (g) por 100 g no pueden pasar de 100
+
+function etiqNorm(s){
+  return String(s==null?"":s).toLowerCase()
+    .normalize("NFD").replace(/[̀-ͯ]/g,"")   // fuera tildes (á→a, ó→o…), mismo patrón que otroNorm
+    .replace(/\s+/g," ").trim();
+}
+// "5,2"→5.2 · "0,02"→0.02 · "2.206"→2206 (punto de millar, 3 cifras) · "1.234,5"→1234.5
+function etiqNum(raw){
+  if(raw==null) return null;
+  var s=String(raw).replace(/[^\d.,]/g,"");
+  if(!s) return null;
+  var hasC=s.indexOf(",")>=0, hasD=s.indexOf(".")>=0;
+  if(hasC && hasD) s=s.replace(/\./g,"").replace(",",".");
+  else if(hasC) s=s.replace(",",".");
+  else if(hasD){ var m=/^(\d+)\.(\d{3})$/.exec(s); if(m) s=m[1]+m[2]; }   // 2.206 → 2206
+  var n=parseFloat(s);
+  return isFinite(n)?n:null;
+}
+// Todos los números de una línea, en orden (por si hay columnas por-100 y por-ración).
+function etiqNums(ln){
+  var m=ln.match(/\d[\d.,]*/g)||[], out=[];
+  for(var i=0;i<m.length;i++){ var n=etiqNum(m[i]); if(n!=null) out.push(n); }
+  return out;
+}
+// F1 · campo nutricional de UNA línea (orden = específico → genérico; null = ignorar mono/poli).
+function etiqCampoDeLinea(ln){
+  if(/monoinsaturad|poliinsaturad/.test(ln)) return null;      // mono/poli: se ignoran
+  if(/saturad/.test(ln)) return "sat";                          // "de las cuales saturadas"
+  if(/grasas?|lipidos|materia grasa|\bfat\b/.test(ln)) return "f";
+  if(/azucar|sugars/.test(ln)) return "az";                     // "de los cuales azúcares"
+  if(/hidratos de carbono|hidratos|carbohidratos?|carbohydrate/.test(ln)) return "c";
+  if(/fibra|fiber|fibre/.test(ln)) return "fib";
+  if(/proteinas?|protein/.test(ln)) return "p";
+  if(/cafeina|caffeine/.test(ln)) return "caf";
+  if(/\bsodio\b|\bsodium\b/.test(ln)) return "na";
+  if(/\bsal\b|\bsalt\b/.test(ln)) return "sal";
+  return null;
+}
+// F1b · línea FUSIONADA por el OCR («Grasas 10 g de las cuales saturadas 4 g» en UNA sola línea):
+// devuelve {padre,sub} cuando el total Y su subcampo caen juntos. etiqCampoDeLinea evalúa el sub ANTES
+// que el padre, así que sin esto una línea fusionada daría el número del padre al sub y dejaría el padre
+// en null SIN aviso. Con esto: nums[0]→padre, nums[1]→sub (y si solo hay un número, el sub queda null).
+function etiqCampoFusion(ln){
+  var esSat=/saturad/.test(ln) && !/monoinsaturad|poliinsaturad/.test(ln);
+  var esAz=/azucar|sugars/.test(ln);
+  var tieneF=/grasas?|lipidos|materia grasa|\bfat\b/.test(ln);
+  var tieneC=/hidratos de carbono|hidratos|carbohidratos?|carbohydrate/.test(ln);
+  if(esSat && tieneF) return {padre:"f", sub:"sat"};
+  if(esAz && tieneC) return {padre:"c", sub:"az"};
+  return null;
+}
+function etiqSodioMg(ln,n){ if(n==null) return null; if(/mg/.test(ln)) return n; if(/\bg\b/.test(ln)) return n*1000; return n; }
+function etiqCafMg(ln,n){ if(n==null) return null; if(/\bg\b/.test(ln) && !/mg/.test(ln)) return n*1000; return n; }
+// F1 · tokenizador de etiqueta ES → números crudos por campo. La energía se saca del texto entero
+// ("X kJ / Y kcal", puede repartirse en dos líneas); el resto, línea a línea.
+function etiqTokenizar(texto){
+  var out={kj:null,kcal:null,p:null,c:null,f:null,sat:null,az:null,fib:null,sal:null,na:null,caf:null,_cols:{}};
+  var norm=etiqNorm(texto);
+  var mkj=/(\d[\d.,]*)\s*kj\b/.exec(norm); if(mkj) out.kj=etiqNum(mkj[1]);
+  var mkc=/(\d[\d.,]*)\s*kcal\b/.exec(norm); if(mkc) out.kcal=etiqNum(mkc[1]);
+  var lineas=String(texto==null?"":texto).split(/\r?\n/);
+  for(var i=0;i<lineas.length;i++){
+    var ln=etiqNorm(lineas[i]); if(!ln) continue;
+    if(/valor energetico|energia|\benerg/.test(ln) && !/grasa|hidrato|protein|azucar|fibra|\bsal\b/.test(ln)) continue;   // fila de energía: ya está sacada
+    var fus=etiqCampoFusion(ln);
+    if(fus){                                                     // línea fusionada padre+sub: nums[0]→padre, nums[1]→sub
+      var numsF=etiqNums(ln); if(!numsF.length) continue;
+      if(out._cols[fus.padre]==null) out._cols[fus.padre]=[numsF[0]];
+      if(out[fus.padre]==null) out[fus.padre]=numsF[0];
+      if(numsF.length>=2){                                       // solo si el OCR trajo AMBOS números; con uno, el sub queda null
+        if(out._cols[fus.sub]==null) out._cols[fus.sub]=[numsF[1]];
+        if(out[fus.sub]==null) out[fus.sub]=numsF[1];
+      }
+      continue;
+    }
+    var campo=etiqCampoDeLinea(ln); if(!campo) continue;
+    var nums=etiqNums(ln); if(!nums.length) continue;
+    if(out._cols[campo]==null) out._cols[campo]=nums;
+    if(campo==="sal"){ if(out.sal==null) out.sal=nums[0]; }
+    else if(campo==="na"){ if(out.na==null) out.na=etiqSodioMg(ln,nums[0]); }
+    else if(campo==="caf"){ if(out.caf==null) out.caf=etiqCafMg(ln,nums[0]); }
+    else if(out[campo]==null) out[campo]=nums[0];
+  }
+  return out;
+}
+// F5 · sal↔sodio: la etiqueta ES da SAL (g); sodio_mg = sal_g×400; sal_g = sodio_mg×2,5/1000. Si vienen
+// ambos y discrepan >12% → gana el MENOR (misma guardia que bcNormalizarOFF, el modo de error es INFLAR).
+function etiqSalToNa(salG){ return (salG==null||!(salG>=0))?null:Math.round(salG*400); }
+function etiqNaToSal(naMg){ return (naMg==null||!(naMg>=0))?null:+(naMg*2.5/1000).toFixed(2); }
+function etiqSalSodio(salG,naMg){
+  if(salG!=null && salG>=0){
+    var naDeSal=salG*400;
+    if(naMg==null) return Math.round(naDeSal);
+    if(Math.abs(salG-naMg*2.5/1000) > Math.max(0.1,salG*0.12)) return Math.round(Math.min(naMg,naDeSal));
+    return Math.round(naMg);
+  }
+  return (naMg!=null && naMg>=0)?Math.round(naMg):null;
+}
+// F2 · base de la tabla: "por 100 g" / "por 100 ml" / solo "por ración (NN g)". Solo-ración → per-100.
+function etiqBase(texto){
+  var t=etiqNorm(texto);
+  var racionG=null, racionU=null, mr=/(?:racion|porcion)[^\d]{0,24}(\d[\d.,]*)\s*(g|ml)/.exec(t);
+  if(mr){ racionG=etiqNum(mr[1]); racionU=(mr[2]==="ml"?"ml":"g"); }   // 📷 propaga la unidad capturada (g|ml); no la fuerza a "g"
+  if(/por\s*100\s*g|\b100\s*g\b/.test(t)) return {base:"100g", racionG:racionG, u:"g"};
+  if(/por\s*100\s*ml|\b100\s*ml\b/.test(t)) return {base:"100ml", racionG:racionG, u:"ml"};
+  if(racionG!=null && racionG>0) return {base:"racion", racionG:racionG, u:(racionU||"g")};
+  return {base:"100g", racionG:null, u:"g"};
+}
+// F3 · kJ↔kcal: ambos → cruzar (±3% o ±3 kcal); solo kJ → convertir (÷4,184); solo kcal → tal cual.
+function etiqEnergia(kj,kcal){
+  var K=4.184;
+  if(kcal!=null && kj!=null){
+    var esp=kj/K;
+    return {kcal:kcal, kj:kj, fuente:"ambos", coherente:Math.abs(kcal-esp)<=Math.max(3,esp*0.03), kcalDeKj:Math.round(esp)};
+  }
+  if(kcal==null && kj!=null) return {kcal:Math.round(kj/K), kj:kj, fuente:"kj", coherente:true};
+  if(kcal!=null) return {kcal:kcal, kj:null, fuente:"kcal", coherente:true};
+  return {kcal:null, kj:null, fuente:"ninguno", coherente:true};
+}
+// F5a · rangos físicos: un valor imposible se deja en NULL (nunca se inventa) + aviso.
+function etiqRangos(campos){
+  var c={}, avisos=[]; for(var k in campos) c[k]=campos[k];
+  function chk(k,max,nom){ if(c[k]!=null && (!(c[k]>=0)||c[k]>max)){ avisos.push(nom+" fuera de rango físico ("+c[k]+"): lo dejo vacío, cópialo de la etiqueta"); c[k]=null; } }
+  chk("kcal",KCAL_MAX_100G,"energía"); chk("p",MACRO_MAX_100G,"proteínas"); chk("c",MACRO_MAX_100G,"hidratos");
+  chk("f",MACRO_MAX_100G,"grasas"); chk("fib",MACRO_MAX_100G,"fibra"); chk("az",MACRO_MAX_100G,"azúcares");
+  chk("sat",MACRO_MAX_100G,"saturadas"); chk("na",NA_MAX_100G_MG,"sodio");
+  return {campos:c, avisos:avisos};
+}
+// F4 · Atwater (la reina): REUTILIZA atwaterCheck (mismo umbral 0,5×–1,7×). Si la energía no cuadra,
+// busca la corrección UNÍVOCA = mover el decimal (×10 o ÷10) de UN macro que la restaure (caza el
+// clásico OCR «19»↔«1,9»). NUNCA inventa: solo reubica el decimal de un número YA leído. Un único
+// candidato en rango físico → corrige y marca «corregido»; más de uno → pregunta dirigida al más probable.
+function etiqAtwaterCorrige(campos){
+  var res={campos:campos, correcciones:[], preguntas:[]};
+  var a=null; try{ a=atwaterCheck({kcal:campos.kcal,p:campos.p,c:campos.c,f:campos.f}); }catch(e){}
+  if(!a || a.ok!==false) return res;
+  var claves="p c f".split(" "), fixes=[];
+  for(var i=0;i<claves.length;i++){
+    var k=claves[i], v=campos[k]; if(v==null) continue;
+    var cands=[+(v/10).toFixed(4), +(v*10).toFixed(4)];
+    for(var j=0;j<cands.length;j++){
+      var nv=cands[j];
+      if(!isFinite(nv)||nv<0||nv>MACRO_MAX_100G) continue;
+      var t={kcal:campos.kcal,p:campos.p,c:campos.c,f:campos.f}; t[k]=nv;
+      var a2=null; try{ a2=atwaterCheck(t); }catch(e){}
+      if(a2 && a2.ok===true) fixes.push({campo:k, de:v, a:+nv.toFixed(2), ratio:a2.ratio});
+    }
+  }
+  if(fixes.length===1){
+    var fx=fixes[0], nc={}; for(var c in campos) nc[c]=campos[c]; nc[fx.campo]=fx.a;
+    res.campos=nc;
+    res.correcciones.push({campo:fx.campo, de:fx.de, a:fx.a, corregido:true, motivo:"corregido automáticamente (decimal del OCR): la energía no cuadraba y este único cambio la restaura; revísalo con el envase"});
+  } else if(fixes.length>1){
+    fixes.sort(function(x,y){ return Math.abs(x.ratio-1)-Math.abs(y.ratio-1); });
+    var b=fixes[0];
+    res.preguntas.push({campo:b.campo, sugerido:campos[b.campo], hint:b.a, tipo:"atwater",
+      motivo:"la energía no cuadra con los macros; revisa "+etiqNombreCampo(b.campo)+" en la etiqueta"});
+  }
+  return res;
+}
+// F5b · coherencias relacionales: az≤c y sat≤f (el sub no puede superar al total). Ambiguo → pregunta dirigida.
+function etiqCoherencias(campos){
+  var res={campos:campos, preguntas:[]};
+  if(campos.az!=null && campos.c!=null && campos.az>campos.c+0.05)
+    res.preguntas.push({campo:"az", sugerido:campos.az, tipo:"az_c",
+      motivo:"los azúcares ("+campos.az+" g) no pueden superar a los hidratos ("+campos.c+" g): revisa cuál está mal", opciones:["c","az"]});
+  if(campos.sat!=null && campos.f!=null && campos.sat>campos.f+0.05)
+    res.preguntas.push({campo:"sat", sugerido:campos.sat, tipo:"sat_f",
+      motivo:"las saturadas ("+campos.sat+" g) no pueden superar a las grasas ("+campos.f+" g): revisa cuál está mal", opciones:["f","sat"]});
+  return res;
+}
+function etiqNombreCampo(k){ return {kcal:"la energía",p:"las proteínas",c:"los hidratos",f:"las grasas",sat:"las saturadas",az:"los azúcares",fib:"la fibra",na:"el sodio"}[k]||k; }
+// F7 · nombre del producto: primera línea con letras que NO sea de la tabla nutricional; si no → null
+// (la capa impura pide entonces una «palabra clave», flujo exacto que pidió Pablo).
+function etiqNombre(texto){
+  var lineas=String(texto==null?"":texto).split(/\r?\n/);
+  for(var i=0;i<lineas.length;i++){
+    var orig=lineas[i].trim(); if(!orig) continue;
+    var n=etiqNorm(orig);
+    if(/informacion nutricional|valor energetico|por 100|ingredientes|\benerg|grasas?|hidratos|proteinas?|azucar|fibra|\bsal\b|saturad|\bkcal\b|\bkj\b/.test(n)) continue;
+    var letras=(n.match(/[a-z]/g)||[]).length, digitos=(n.match(/\d/g)||[]).length;
+    if(letras>=3 && letras>=digitos) return orig;
+  }
+  return null;
+}
+// ORQUESTADOR · texto OCR → {campos por-100, base, correcciones, preguntas, avisos, nombre, nPreguntas}.
+// Orden: tokenizar → base → per-100 → energía(F3) → rangos(F5a) → Atwater(F4) → coherencias(F5b) → nombre(F7).
+function etiqParse(texto){
+  var tok=etiqTokenizar(texto);
+  var b=etiqBase(texto);
+  var en=etiqEnergia(tok.kj,tok.kcal);
+  var na=etiqSalSodio(tok.sal,tok.na);
+  var campos={kcal:en.kcal, p:tok.p, c:tok.c, f:tok.f, sat:tok.sat, az:tok.az, fib:tok.fib, na:na, caf:tok.caf};
+  if(b.base==="racion" && b.racionG>0){
+    var fac=100/b.racionG;
+    ["kcal","p","c","f","sat","az","fib","na","caf"].forEach(function(k){
+      if(campos[k]!=null){ var ent=(k==="kcal"||k==="na"||k==="caf"); campos[k]=+(campos[k]*fac).toFixed(ent?0:1); }
+    });
+  }
+  var correcciones=[], preguntas=[], avisos=[];
+  if(en.fuente==="ambos" && !en.coherente) avisos.push("kJ y kcal no cuadran entre sí (kJ→"+en.kcalDeKj+" kcal): reviso la energía");
+  var r=etiqRangos(campos); campos=r.campos; avisos=avisos.concat(r.avisos);
+  var f4=etiqAtwaterCorrige(campos); campos=f4.campos; correcciones=correcciones.concat(f4.correcciones); preguntas=preguntas.concat(f4.preguntas);
+  var f5=etiqCoherencias(campos); campos=f5.campos; preguntas=preguntas.concat(f5.preguntas);
+  var nombre=etiqNombre(texto);
+  return {campos:campos, base:b.base, u:b.u, racionG:b.racionG||null, nombre:nombre,
+          correcciones:correcciones, preguntas:preguntas, avisos:avisos, nPreguntas:preguntas.length, energia:en};
+}
+// [ETIQ-OCR-PURE-FIN]
+
 function bcEstado(msg){ var el=$("bc_estado"); if(el) el.textContent=msg||""; }
 function bcAbrir(){
   _bcProducto=null;
   var res=$("bc_res"); if(res){ res.innerHTML=""; res.classList.add("hidden"); }
   var man=$("bc_manual"); if(man) man.value="";
+  try{ etiqReset(); }catch(e){}   // 📷 v0.34.1 · abre SIEMPRE en modo código (resetea el modo etiqueta)
   show("barcodeModal", true);
   bcIniciarCamara();
 }
@@ -9640,7 +9882,8 @@ function bcResolverDetector(){
   return bcCargarPolyfill();
 }
 function bcCargarPolyfill(){
-  // Única dependencia CDN permitida. Si jsDelivr no responde (sin red, bloqueado), null → mensaje honesto.
+  // 1ª de las DOS dependencias CDN (la otra es Tesseract.js del lector de etiquetas, ver etiqLazyCargar),
+  // ambas por jsDelivr y lazy. Si jsDelivr no responde (sin red, bloqueado), null → mensaje honesto.
   try{
     return import("https://cdn.jsdelivr.net/npm/barcode-detector@3/+esm").then(function(mod){
       if(mod && mod.BarcodeDetector) return mod.BarcodeDetector;
@@ -9682,6 +9925,7 @@ function bcLoop(){
   }, 300);
 }
 function bcDetectado(raw){
+  if(_etiqModo) return;   // 📷 v0.34.1 · en modo etiqueta el ciclo de barcode no secuestra la captura por foto
   raw=String(raw==null?"":raw);
   // v0.19-UI · QR/DataMatrix GS1: si el payload trae un GTIN (Digital Link, element string o FNC1
   // crudo), se usa ese. Un código de SOLO dígitos (todos los barcodes de siempre) sigue intacto.
@@ -9844,13 +10088,149 @@ function bcFalloPinta(ean, msg){
   var man=$("bc_manual"); if(man && !man.value) man.value=ean;
   res.innerHTML="<div class='aviso'>"+esc(msg)+"</div>"
     +"<button class='sec' type='button' onclick='bcBuscarManual()'>↻ Reintentar la búsqueda</button>"
-    +"<button class='sec' type='button' onclick='apAbrir(\""+escAttr(ean)+"\")'>Crear alimento propio</button>";
+    +"<button type='button' class='btn-lg' onclick='etiqDesdeFallo(\""+escAttr(ean)+"\")'>📷 Leer la etiqueta con la cámara</button>"
+    +"<button class='sec' type='button' onclick='apAbrir(\""+escAttr(ean)+"\")'>✍️ Crear alimento a mano</button>";
   res.classList.remove("hidden");
 }
 function bcReintentar(){
   _bcProducto=null;
   var res=$("bc_res"); if(res){ res.innerHTML=""; res.classList.add("hidden"); }
+  try{ etiqReset(); }catch(e){}   // 📷 v0.34.1 · «↻ Escanear otro» vuelve al lector de CÓDIGOS; sin esto _etiqModo seguía activo y bcDetectado quedaba muerto por su guard
   bcIniciarCamara();
+}
+
+// ===== 📷 v0.34.1 · CAPA IMPURA del LECTOR DE ETIQUETAS (cámara/canvas/OCR/DOM). La INTELIGENCIA es
+// pura y testeada por node en [ETIQ-OCR-PURE]; aquí solo van la cámara, el preprocesado determinista,
+// la carga LAZY de Tesseract.js y la desembocadura por el embudo bcConfirmar EXISTENTE. =====
+var _etiqModo=false, _etiqEan=null, _etiqBusy=false, _etiqTess=null, _etiqTessCargando=null;
+var LS_ETIQ_STATS="jvf_etiq_stats";   // métrica {etiquetas, preguntas} para verificar que la pregunta es la EXCEPCIÓN
+var ETIQ_TESS_VER="5.1.1";
+// Reinicia el modo etiqueta a «código» (lo llama bcAbrir): oculta guía/captura, marca el toggle.
+function etiqReset(){
+  _etiqModo=false; _etiqEan=null; _etiqBusy=false;
+  var g=$("etiq_guia"); if(g) g.classList.add("hidden");
+  var cap=$("etiq_cap"); if(cap) cap.classList.add("hidden");
+  var bc=$("bc_modo_cod"); if(bc){ bc.style.borderColor="var(--jade)"; bc.style.color="var(--jade)"; bc.style.fontWeight="700"; }
+  var be=$("bc_modo_etiq"); if(be){ be.style.borderColor=""; be.style.color=""; be.style.fontWeight=""; }
+}
+// Cambia de modo en la MISMA pantalla. En etiqueta: recuadro guía + botón capturar + precarga del OCR;
+// el ciclo de barcode sigue vivo pero bcDetectado no actúa (guard). En código: como siempre.
+function etiqModo(on){
+  _etiqModo=!!on;
+  function mark(id,act){ var b=$(id); if(b){ b.style.borderColor=act?"var(--jade)":""; b.style.color=act?"var(--jade)":""; b.style.fontWeight=act?"700":""; } }
+  mark("bc_modo_cod",!on); mark("bc_modo_etiq",on);
+  var g=$("etiq_guia"); if(g) g.classList.toggle("hidden", !on);
+  var cap=$("etiq_cap"); if(cap) cap.classList.toggle("hidden", !on);
+  if(on){
+    bcEstado("Encuadra la tabla nutricional dentro del recuadro y pulsa «Capturar etiqueta».");
+    if(!_bcStream) bcIniciarCamara();
+    try{ etiqLazyCargar(); }catch(e){}   // precarga Tesseract mientras el usuario encuadra (no bloquea)
+  } else {
+    bcEstado(_bcStream?"Apunta al código de barras…":"");
+  }
+}
+// Carga LAZY de Tesseract.js por CDN (jsDelivr), MISMO patrón que bcCargarPolyfill del escáner. Devuelve
+// el módulo (con createWorker) o null si no hay red / está bloqueado. Se cachea el primer resultado.
+function etiqLazyCargar(){
+  if(_etiqTess) return Promise.resolve(_etiqTess);
+  if(_etiqTessCargando) return _etiqTessCargando;
+  var url="https://cdn.jsdelivr.net/npm/tesseract.js@"+ETIQ_TESS_VER+"/dist/tesseract.esm.min.js";
+  _etiqTessCargando=(function(){
+    try{
+      return import(url).then(function(mod){
+        var T=(mod && mod.createWorker)?mod:((mod && mod.default && mod.default.createWorker)?mod.default:null);
+        _etiqTess=T; return T;
+      }).catch(function(){ return null; });
+    }catch(e){ return Promise.resolve(null); }
+  })();
+  return _etiqTessCargando;
+}
+// Preprocesado DETERMINISTA (canvas, sin dependencias): recorte al rectángulo guía → escala de grises →
+// estiramiento de contraste → reescalado. Condición dura de precisión del OCR según la literatura.
+function etiqPreprocesar(video){
+  var vw=video.videoWidth||640, vh=video.videoHeight||480;
+  var cx=Math.round(vw*0.08), cy=Math.round(vh*0.12), cw=Math.round(vw*0.84), ch=Math.round(vh*0.76);   // mismo recuadro que #etiq_guia
+  var scale=Math.min(2, Math.max(1, 1000/(cw||1)));                                                     // ~1000 px de ancho (más resolución = mejor OCR, capado)
+  var W=Math.max(1,Math.round(cw*scale)), H=Math.max(1,Math.round(ch*scale));
+  var cv=$("etiq_canvas"); cv.width=W; cv.height=H;
+  var ctx=cv.getContext("2d");
+  ctx.drawImage(video, cx, cy, cw, ch, 0, 0, W, H);
+  var img=ctx.getImageData(0,0,W,H), d=img.data, i, g, min=255, max=0;
+  for(i=0;i<d.length;i+=4){ g=(d[i]*0.299+d[i+1]*0.587+d[i+2]*0.114)|0; d[i]=d[i+1]=d[i+2]=g; if(g<min)min=g; if(g>max)max=g; }
+  var rng=(max-min)||1;
+  for(i=0;i<d.length;i+=4){ var v=((d[i]-min)*255/rng)|0; d[i]=d[i+1]=d[i+2]=(v<0?0:(v>255?255:v)); }
+  ctx.putImageData(img,0,0);
+  return cv;
+}
+// Captura la etiqueta: preprocesa → OCR (Tesseract español) → etiqParse → embudo bcConfirmar.
+function etiqCapturar(){
+  var v=$("bc_video");
+  if(!v || !_bcStream || v.readyState<2){ toast("Enciende la cámara y encuadra la etiqueta"); return; }
+  if(_etiqBusy) return;
+  _etiqBusy=true; bcEstado("Leyendo la etiqueta… (unos segundos)");
+  var cv; try{ cv=etiqPreprocesar(v); }catch(e){ _etiqBusy=false; bcEstado("No pude capturar la imagen — reintenta."); return; }
+  etiqLazyCargar().then(function(T){
+    if(!T || !T.createWorker){ _etiqBusy=false; bcEstado("No se pudo cargar el lector de etiquetas (¿sin internet?). Escribe el código o crea el alimento a mano."); return; }
+    var worker=null;
+    return T.createWorker("spa", 1, {
+      workerPath:"https://cdn.jsdelivr.net/npm/tesseract.js@"+ETIQ_TESS_VER+"/dist/worker.min.js",
+      corePath:"https://cdn.jsdelivr.net/npm/tesseract.js-core@"+ETIQ_TESS_VER,
+      langPath:"https://cdn.jsdelivr.net/gh/naptha/tessdata@gh-pages/4.0.0"
+    }).then(function(w){ worker=w; return w.recognize(cv); })
+      .then(function(r){ try{ worker.terminate(); }catch(e){} etiqProcesarTexto((r && r.data && r.data.text)||""); })
+      .catch(function(){ try{ if(worker) worker.terminate(); }catch(e){} _etiqBusy=false; bcEstado("No pude leer la etiqueta. Prueba con más luz y el envase plano, o escribe los datos a mano."); });
+  });
+}
+// Desemboca el texto OCR: parser puro → producto → bcConfirmar (hereda clamp de sodio + fila cafeína +
+// badge ATWATER + overrides). Mide preguntas-por-etiqueta. Si no leyó ni kcal ni proteína, no inventa:
+// pide reintento / alta a mano. El nombre no visto (F7) → input Nombre vacío = «palabra clave» de Pablo.
+function etiqProcesarTexto(texto){
+  _etiqBusy=false;
+  var r; try{ r=etiqParse(texto); }catch(e){ bcEstado("No entendí la etiqueta — escribe los datos a mano."); return; }
+  try{ var st=get(LS_ETIQ_STATS,{etiquetas:0,preguntas:0}); st.etiquetas=(+st.etiquetas||0)+1; st.preguntas=(+st.preguntas||0)+(r.nPreguntas||0); set(LS_ETIQ_STATS, st); }catch(e){}
+  var cp=r.campos;
+  if(cp.kcal==null && cp.p==null){
+    bcEstado("No pude leer los valores de la tabla (foto borrosa o con reflejo). Reintenta la foto, o escribe el código / crea el alimento a mano.");
+    return;
+  }
+  bcPararCamara();
+  var prod={ ean:(_etiqEan||null), fuente:"etiqueta", nombre:(r.nombre||""),
+    u:(r.u==="ml"?"ml":"g"), uMotivo:"leído de la etiqueta por foto (revísalo con el envase físico)",
+    kcal100:cp.kcal, p100:cp.p, c100:cp.c, g100:cp.f, fib100:cp.fib, az100:cp.az, sat100:cp.sat,
+    na100:cp.na, caf100:cp.caf, dens:null, servingAviso:null, nutriscore:null, serving:null, img:null };
+  bcConfirmar(prod);            // EMBUDO ÚNICO: hereda clamp de sodio (NA_MAX_100G_MG), fila bc_caf y badge ATWATER
+  etiqPintarResumen(r);         // banner honesto encima de la tabla ya pintada (correcciones/avisos/preguntas)
+}
+// Banner sobre la tabla de bcConfirmar: qué corrigió solo, qué avisos hay y las preguntas DIRIGIDAS (la
+// excepción). Enfoca el campo dudoso con su valor OCR ya puesto de sugerencia (no lo borra, no inventa).
+function etiqPintarResumen(r){
+  var res=$("bc_res"); if(!res) return;
+  var idMap={kcal:"bc_kcal",p:"bc_p",c:"bc_c",f:"bc_g",sat:"bc_sat",az:"bc_az",fib:"bc_fib",na:"bc_sal"};
+  var h="";
+  if(r.correcciones && r.correcciones.length)
+    h+="<div class='aviso' style='margin:0 0 8px'>✏️ Corregido automáticamente (decimal del OCR, la energía no cuadraba): "+r.correcciones.map(function(c){ return esc(etiqNombreCampo(c.campo)+" "+c.de+"→"+c.a); }).join(" · ")+". <span class='hint' style='display:block;margin-top:3px'>No es una verificación: es un arreglo probable. Revisa que ponga lo que dice el envase (lo dejo marcado abajo).</span></div>";
+  if(r.avisos && r.avisos.length)
+    h+="<div class='aviso' style='margin:0 0 8px'>"+r.avisos.map(esc).join("<br>")+"</div>";
+  if(r.preguntas && r.preguntas.length){
+    h+="<div class='aviso' style='margin:0 0 8px'>❓ "+r.preguntas.map(function(q){ return esc(q.motivo); }).join("<br>❓ ")
+      +"<span class='hint' style='display:block;margin-top:3px'>Lo dejo marcado abajo con lo que leí: compáralo con el envase y corrígelo (o déjalo si está bien). No invento valores.</span></div>";
+  }
+  if(h) res.insertAdjacentHTML("afterbegin", h);
+  // 📷 marca en ámbar los campos corregidos automáticamente (revisables, NUNCA verde de "verificado")
+  if(r.correcciones && r.correcciones.length)
+    r.correcciones.forEach(function(c){ try{ var el=$(idMap[c.campo]); if(el) el.style.borderColor="var(--ember)"; }catch(e){} });
+  // enfoca el primer campo dudoso: la pregunta si la hay; si no, la corrección revisable
+  var focoId=(r.preguntas && r.preguntas.length)?idMap[r.preguntas[0].campo]
+            :((r.correcciones && r.correcciones.length)?idMap[r.correcciones[0].campo]:null);
+  if(focoId) setTimeout(function(){ try{ var el=$(focoId); if(el){ el.scrollIntoView({block:"center"}); el.focus(); el.style.borderColor="var(--ember)"; } }catch(e){} }, 50);
+}
+// Entra al modo etiqueta DESDE un fallo del escáner (bcNoEncontrado / bcFalloBusqueda): vincula el EAN
+// escaneado (si lo hay) para que el alta quede enlazada, y abre la cámara en modo etiqueta.
+function etiqDesdeFallo(ean){
+  _etiqEan=(typeof ean==="string" && ean)?ean:null;
+  var res=$("bc_res"); if(res){ res.innerHTML=""; res.classList.add("hidden"); }
+  if(!_bcStream) bcIniciarCamara();
+  etiqModo(true);
 }
 function nsColor(g){ return (g==="A"||g==="B") ? "var(--jade)" : (g==="C" ? "#f4c04e" : "var(--ember)"); }
 // Pantalla de confirmación EDITABLE: el usuario valida SIEMPRE los datos (OFF puede traer errores)
@@ -9891,7 +10271,9 @@ function bcConfirmar(prod){
   // que un clamp de «>40000» pudiera atrapar (mismo número, uno con <= y otro con >).
   // Con 39.340 sí caza los 30 imposibles (incl. los 27 clavados en 40.000 = el error de
   // teclear salt_100g=100). El saneo de datos del 17-07 los anula en origen; esto es la red.
-  if(prod.na100!=null && !(prod.na100>=0 && prod.na100<=39340)) prod.na100=null;
+  // v0.34.1 · el 39.340 vive ahora en la constante COMPARTIDA NA_MAX_100G_MG ([ETIQ-OCR-PURE]),
+  // que el motor lector de etiquetas reutiliza para su mismo rango físico (no se duplica el valor).
+  if(prod.na100!=null && !(prod.na100>=0 && prod.na100<=NA_MAX_100G_MG)) prod.na100=null;
   if(prod.caf100!=null && !(prod.caf100>=0 && prod.caf100<=100000)) prod.caf100=null;   // ☕ cordura cafeína (mg/100)
   // ✏️ A4/A22 · si ya corregiste este producto (en su ficha o con 📋), tu dato MANDA también al escanear.
   // Aditivo y guardado: sin override no cambia nada. v0.27.1: la traducción ficha→escáner vive en
@@ -9904,7 +10286,7 @@ function bcConfirmar(prod){
   var res=$("bc_res"); if(!res) return;
   var falta=(prod.kcal100==null || prod.p100==null);
   function val(v){ return v==null?"":escAttr(v); }
-  var h="<div class='eyebrow-lbl' style='margin-top:0'>"+(prod.fuente==="propio"?"🍽 Tu alimento propio":(prod.fuente==="cache"?"📦 Guardado de un escaneo anterior":"Encontrado en Open Food Facts"))+"</div>";
+  var h="<div class='eyebrow-lbl' style='margin-top:0'>"+(prod.fuente==="propio"?"🍽 Tu alimento propio":(prod.fuente==="cache"?"📦 Guardado de un escaneo anterior":(prod.fuente==="etiqueta"?"📷 Leído de la etiqueta por foto":"Encontrado en Open Food Facts")))+"</div>";
   h+="<div style='display:flex;gap:10px;align-items:flex-start'>";
   if(prod.img) h+="<img src=\""+escAttr(prod.img)+"\" alt=\"\" style='width:56px;height:56px;object-fit:cover;border-radius:8px;background:var(--ink-3);flex:none;margin-top:22px' onerror=\"this.style.display='none'\">";
   h+="<div style='flex:1'><label>Nombre</label><input id='bc_nombre' value=\""+escAttr(prod.nombre)+"\"></div></div>";
@@ -10104,8 +10486,9 @@ function bcAddDiario(){
 }
 function bcNoEncontrado(ean){
   var res=$("bc_res"); if(!res) return;
-  res.innerHTML="<div class='aviso'>Este código no está en Open Food Facts (base colaborativa: productos muy nuevos o muy locales pueden faltar).</div>"
-    +"<button type='button' class='btn-lg' onclick='apAbrir(\""+escAttr(ean)+"\")'>Crear alimento propio</button>"
+  res.innerHTML="<div class='aviso'>Este código no está en Open Food Facts (base colaborativa: productos muy nuevos o muy locales pueden faltar). Ningún alimento se queda sin salida: <b style='color:var(--jade)'>haz una foto de la etiqueta</b> y la leo por ti.</div>"
+    +"<button type='button' class='btn-lg' onclick='etiqDesdeFallo(\""+escAttr(ean)+"\")'>📷 Leer la etiqueta con la cámara</button>"
+    +"<button class='sec' type='button' onclick='apAbrir(\""+escAttr(ean)+"\")'>✍️ Crear alimento a mano</button>"
     +"<button class='sec' type='button' onclick='bcReintentar()'>↻ Escanear otro</button>";
   res.classList.remove("hidden");
 }
@@ -11631,7 +12014,7 @@ function resetTodo(){ if(!confirm("⚠️ Esto borra TODO: perfil, pesos, entren
 // Reemplazo total con confirmación. Reusa get/set, hoyLocal, toast, validar, render. NO toca motor ni gate.
 function exportarJSON(){ try{ set("jvf_last_export",hoyLocal()); }catch(e){}
   try{
-    var data={ app:"jvf", schema:1, app_version:"0.35.0", exportadoEl:new Date().toISOString(),
+    var data={ app:"jvf", schema:1, app_version:"0.35.1", exportadoEl:new Date().toISOString(),
       perfil:get(LS_P,null), pesos:get(LS_W,[]), entrenos:get(LS_E,[]), notas_ej:get("jvf_notas_ej",{}), comida:get("jvf_comida",[]), agua:get("jvf_agua",{}), suples_cfg:get("jvf_suples_cfg",null), suples_log:get("jvf_suples_log",{}),
       rutinas:get("jvf_rutinas",[]), meals:get("jvf_meals",[]), ent_start:get("jvf_ent_start",null),   // v0.10 · backup completo
       alimentos_propios:get("jvf_alimentos_propios",[]), barcode_cache:get("jvf_barcode_cache",{}),   // I5/I6 · también viajan en el backup
