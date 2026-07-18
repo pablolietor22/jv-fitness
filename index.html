@@ -626,7 +626,7 @@
 <header class="brandbar">
   <div class="logo"><span class="dot"></span>JV <b>Fitness</b></div>
   <div style="display:flex;align-items:center">
-    <span class="tag">MVP v0.46.0 · motor v0.7</span>
+    <span class="tag">MVP v0.47.0 · motor v0.7</span>
     <!-- ⚙️ tanda #22 · hub de AJUSTES (no es pestaña): modal a pantalla completa -->
     <button class="gearbtn" id="btn_hub" type="button" title="Ajustes" aria-label="Abrir ajustes" onclick="hubAbrir()">⚙️</button>
   </div>
@@ -5842,6 +5842,33 @@ function cafeSuenoAviso(horaUltimaDosis, horaDormir, vidaMediaH){
   return {avisar:avisar, horas:+horas.toFixed(1), vidaMedia:vm};
 }
 // [CAFE-PURE-FIN]
+// [CAFE-INFER-PURE-INICIO] — INFERENCIA de cafeína por TIPO de bebida cuando el dato FALTA (bug real
+// 17-jul: Red Bull sin azúcar / Coca-Cola Zero se sumaban 0 mg). PURA (sin DOM/red/storage): la extrae
+// _tests/test-cafe-escaner.node.js y la valida por mutación. OFF/base casi nunca traen caffeine_100g, así
+// que sin esto el confirmador sale vacío y el usuario añade la bebida sin cafeína. Devuelve mg de cafeína
+// por 100 (ml/g), o null si no sabe. Reutiliza otroNorm (tildes fuera + minúsculas); NO crea otro normalizador.
+// CONSERVADORA y solo bebidas de consumo DIRECTO. Excluye A PROPÓSITO café/coffee genérico (100 g de café
+// molido = cientos de mg que NO se beben; los cafés-taza ya están curados) y chocolate/cacao. «Descafeinado»
+// o «sin cafeína» en el nombre → 0 (gana a la familia), nunca la estimación de la familia.
+function cafInferir(nombre, categorias){
+  var _n=(typeof otroNorm==="function")?otroNorm(nombre):String(nombre==null?"":nombre).toLowerCase();
+  var _c=Array.isArray(categorias)?categorias.join(" "):String(categorias==null?"":categorias);
+  _c=(typeof otroNorm==="function")?otroNorm(_c):_c.toLowerCase();
+  if(!_n && !_c) return null;
+  // separadores → espacio (para que "coca-cola" case y los \b funcionen) + espacios de borde para \b.
+  var t=" "+(_n+" "+_c).replace(/[^a-z0-9ñ]+/g," ").replace(/\s+/g," ").trim()+" ";
+  // 1) descafeinado / sin cafeína EXPLÍCITO → 0 mg (el nombre lo dice; gana a la familia).
+  if(/descafein|sin cafein|caffeine free|free caffeine|0 ?cafein|cero cafein/.test(t)) return 0;
+  // 2) exclusiones a propósito → null (dato ausente honesto, no una estimación falsa):
+  if(/\bcafe\b|\bcoffee\b|molid|en grano|\bcapsul|nespresso|dolce gusto/.test(t)) return null;         // café genérico
+  if(/chocolate|\bcacao\b|\bcocoa\b|colacao|cola ?cao/.test(t)) return null;                            // chocolate/cacao (incl. Cola Cao)
+  // 3) familias de bebida de consumo directo (mg/100 ml, conservador) — primer match gana:
+  if(/red ?bull|\bmonster\b|\bburn\b|rockstar|\breign\b|prime energy|energetic[oa]|energy drink|\benergy\b/.test(t)) return 32;   // energéticas
+  if(/coca ?cola|\bpepsi\b|\bcola\b|rc cola/.test(t)) return 10;   // colas
+  if(/nestea|iced? tea|te frio|red tea/.test(t)) return 10;        // té RTD embotellado (no la infusión en bolsita)
+  return null;
+}
+// [CAFE-INFER-PURE-FIN]
 // Items de comida del día que se está viendo (misma fecha que el diario). Fuente única: LS_COMIDA.
 function cafeItemsHoy(){
   var f=(($("com_fecha")||{}).value)||hoyLocal();
@@ -9611,12 +9638,21 @@ function bcNormalizarOFF(p){
     else if(Math.abs(_salg-_na*2.5)>Math.max(0.1,_salg*0.12)) _na=Math.min(_na,_salg/2.5);
   }
   out.na100=(_na!=null && _na>=0 && _na<=40)?Math.round(_na*1000):null;   // mg de sodio /100
+  // 🏷️ nombre + marca ANTES de la cafeína: la inferencia por tipo de bebida (cafInferir) los necesita, y
+  // out.dens de más abajo también usa `nombre` (solo se SUBE el cálculo; no se rompe nada de dens).
+  var marca=p.brands?String(p.brands).split(",")[0].trim():"";
+  var nombre=((p.product_name||"").trim()+(marca?" ("+marca+")":"")).trim();
   // ☕ cafeína de OFF (bug: antes NUNCA se leía → el escáner sumaba 0 mg). OFF la da normalmente en
   // g/100 (Red Bull caffeine_100g=0,032 = 32 mg) y a veces ya en mg: si es ≤5 lo trato como gramos.
   var _caf=num(nu["caffeine_100g"]);
   out.caf100=(_caf!=null && _caf>=0)?Math.round(_caf<=5?_caf*1000:_caf):null;   // mg de cafeína /100
-  var marca=p.brands?String(p.brands).split(",")[0].trim():"";
-  var nombre=((p.product_name||"").trim()+(marca?" ("+marca+")":"")).trim();
+  // ☕ si OFF/base NO trae la cafeína (el caso NORMAL: casi nunca viene caffeine_100g), la ESTIMAMOS por
+  // el tipo de bebida (Red Bull, Coca-Cola, Nestea…). Solo rellena cuando faltaba: NUNCA pisa una cafeína
+  // real. out.cafEst marca «estimada» → el confirmador la enseña REVISABLE (ámbar), no como dato verificado.
+  if(out.caf100==null && typeof cafInferir==="function"){   // guard typeof: robusto si un test extrae solo esta función (mismo patrón que otroNorm)
+    var _cafEst=cafInferir(nombre, p.categories_tags||[]);
+    if(_cafEst!=null){ out.caf100=_cafEst; out.cafEst=true; }
+  }
   out.dens=bcDensidad(nombre, p.categories_tags||[]);
   return out;
 }
@@ -10938,10 +10974,17 @@ function bcConfirmar(prod){
   if(prod.avisoCordura) h+="<div class='aviso' style='margin-top:8px'>"+esc(prod.avisoCordura)+"</div>";
   h+="<div class='eyebrow-lbl' style='margin-top:10px'>Información nutricional · por "+uTxt+"</div>";
   h+="<p class='hint' style='margin:2px 0 6px'>Como en el envase: compara fila a fila y corrige lo que no cuadre (la base es colaborativa).</p>";
-  function bcFila(lbl,id,v,oblig,sub){
+  // rev=true → dato REVISABLE (estimado, no verificado): borde ámbar en el input + hint honesto junto al
+  // campo (mismo lenguaje visual que las correcciones del lector). rev/hint opcionales: las demás filas
+  // no los pasan y salen EXACTAMENTE igual que antes.
+  function bcFila(lbl,id,v,oblig,sub,rev,hint){
+    var inpStyle="width:104px;flex:none;margin:0;text-align:right;padding:7px 9px"+(rev?";border:1px solid var(--ember)":"");
+    var izq="<span style='"+(sub?"color:var(--mute);font-size:.8rem":"color:var(--soft)")+"'>"+lbl+(oblig?" <b style='color:var(--ember)'>*</b>":"")+"</span>";
+    if(hint) izq="<span style='display:flex;flex-direction:column;gap:2px;flex:1;min-width:0'>"+izq
+      +"<span class='hint' style='margin:0;color:var(--ember);font-size:.72rem'>"+hint+"</span></span>";
     return "<div style='display:flex;align-items:center;justify-content:space-between;gap:8px;padding:7px 10px;border-bottom:1px solid var(--line-soft)"+(sub?";padding-left:26px":"")+"'>"
-      +"<span style='"+(sub?"color:var(--mute);font-size:.8rem":"color:var(--soft)")+"'>"+lbl+(oblig?" <b style='color:var(--ember)'>*</b>":"")+"</span>"
-      +"<input id='"+id+"' type='number' inputmode='decimal' style='width:104px;flex:none;margin:0;text-align:right;padding:7px 9px' value=\""+val(v)+"\"></div>";
+      +izq
+      +"<input id='"+id+"' type='number' inputmode='decimal' style='"+inpStyle+"' value=\""+val(v)+"\"></div>";
   }
   function bcRed(v,d){ return v==null?null:+(+v).toFixed(d); }   // sin colas de decimales (382.3529… → 382)
   h+="<div style='border:1px solid var(--line-soft);border-radius:12px;overflow:hidden;background:rgba(255,255,255,.02)'>"
@@ -10953,7 +10996,8 @@ function bcConfirmar(prod){
     + bcFila("Fibra alimentaria (g)","bc_fib",bcRed(prod.fib100,1),false,false)
     + bcFila("Proteínas (g)","bc_p",bcRed(prod.p100,1),true,false)
     + bcFila("Sal (g)","bc_sal",(prod.na100!=null?+((prod.na100*2.5/1000).toFixed(2)):null),false,false)
-    + bcFila("Cafeína (mg)","bc_caf",bcRed(prod.caf100,0),false,false)   // ☕ editable: OFF casi nunca la trae → cópiala de la lata
+    + bcFila("Cafeína (mg)","bc_caf",bcRed(prod.caf100,0),false,false,!!prod.cafEst,   // ☕ editable: OFF casi nunca la trae → cópiala de la lata
+        prod.cafEst?"☕ estimada por el tipo de bebida — ajústala si la lata lo dice":null)   // dato ESTIMADO (ámbar), no verificado
     +"</div>";
   // ⚠️ v0.27.1 [ETIQ] · badge de coherencia [ATWATER-PURE] TAMBIÉN en el resultado del escáner (antes
   // solo en la ficha y el buscador): energía⇄macros fuera de tolerancia → señal honesta, SIN bloquear
@@ -12644,7 +12688,7 @@ function resetTodo(){ if(!confirm("⚠️ Esto borra TODO: perfil, pesos, entren
 // Reemplazo total con confirmación. Reusa get/set, hoyLocal, toast, validar, render. NO toca motor ni gate.
 function exportarJSON(){ try{ set("jvf_last_export",hoyLocal()); }catch(e){}
   try{
-    var data={ app:"jvf", schema:1, app_version:"0.46.0", exportadoEl:new Date().toISOString(),
+    var data={ app:"jvf", schema:1, app_version:"0.47.0", exportadoEl:new Date().toISOString(),
       perfil:get(LS_P,null), pesos:get(LS_W,[]), entrenos:get(LS_E,[]), notas_ej:get("jvf_notas_ej",{}), comida:get("jvf_comida",[]), agua:get("jvf_agua",{}), suples_cfg:get("jvf_suples_cfg",null), suples_log:get("jvf_suples_log",{}),
       rutinas:get("jvf_rutinas",[]), meals:get("jvf_meals",[]), ent_start:get("jvf_ent_start",null),   // v0.10 · backup completo
       alimentos_propios:get("jvf_alimentos_propios",[]), barcode_cache:get("jvf_barcode_cache",{}),   // I5/I6 · también viajan en el backup
