@@ -626,7 +626,7 @@
 <header class="brandbar">
   <div class="logo"><span class="dot"></span>JV <b>Fitness</b></div>
   <div style="display:flex;align-items:center">
-    <span class="tag">MVP v0.45.0 · motor v0.7</span>
+    <span class="tag">MVP v0.46.0 · motor v0.7</span>
     <!-- ⚙️ tanda #22 · hub de AJUSTES (no es pestaña): modal a pantalla completa -->
     <button class="gearbtn" id="btn_hub" type="button" title="Ajustes" aria-label="Abrir ajustes" onclick="hubAbrir()">⚙️</button>
   </div>
@@ -12644,7 +12644,7 @@ function resetTodo(){ if(!confirm("⚠️ Esto borra TODO: perfil, pesos, entren
 // Reemplazo total con confirmación. Reusa get/set, hoyLocal, toast, validar, render. NO toca motor ni gate.
 function exportarJSON(){ try{ set("jvf_last_export",hoyLocal()); }catch(e){}
   try{
-    var data={ app:"jvf", schema:1, app_version:"0.45.0", exportadoEl:new Date().toISOString(),
+    var data={ app:"jvf", schema:1, app_version:"0.46.0", exportadoEl:new Date().toISOString(),
       perfil:get(LS_P,null), pesos:get(LS_W,[]), entrenos:get(LS_E,[]), notas_ej:get("jvf_notas_ej",{}), comida:get("jvf_comida",[]), agua:get("jvf_agua",{}), suples_cfg:get("jvf_suples_cfg",null), suples_log:get("jvf_suples_log",{}),
       rutinas:get("jvf_rutinas",[]), meals:get("jvf_meals",[]), ent_start:get("jvf_ent_start",null),   // v0.10 · backup completo
       alimentos_propios:get("jvf_alimentos_propios",[]), barcode_cache:get("jvf_barcode_cache",{}),   // I5/I6 · también viajan en el backup
@@ -14733,14 +14733,22 @@ function cbTopicsBuild(box){
 var CB_TRONCO_NOMBRE={
   alimentacion:"🍽 Superávit / Déficit", recomposicion:"🔄 Recomposición", calorias:"🔢 Calorías / TDEE",
   carbohidratos:"🍚 Carbohidratos", proteina:"🥩 Proteína", grasa:"🥑 Grasa", sueno:"😴 Sueño",
-  creatina:"💊 Creatina", suplementacion:"💊 Suplementos", esteroides:"⚗️ Esteroides", melatonina:"🌙 Melatonina",
+  creatina:"🧪 Creatina", suplementacion:"💊 Suplementos", esteroides:"⚗️ Esteroides", melatonina:"🌙 Melatonina",
   chicle:"🍬 Chicle", fatiga:"🪫 Fatiga", volumen:"📊 Volumen", fallo:"🎯 Fallo / RIR", orden:"🔀 Orden de ejercicios",
   repeticiones:"🔁 Repeticiones", tecnica:"🧩 Técnica", sodio:"🧂 Sal / Sodio", agua:"💧 Agua", fibra:"🌾 Fibra",
   cardio:"🏃 Cardio", pasos:"👟 Pasos / NEAT", bascula:"⚖️ Báscula", ayuno:"⏳ Ayuno", comidas:"🍽 Nº de comidas",
   saciedad:"🥗 Saciedad / no pasar hambre",
   estado:"🛌 Cómo estoy hoy", estimulo:"⚡ Estímulo", pecho:"💪 Pecho", abdomen:"🔺 Abdomen", biceps:"💪 Bíceps",
-  entreno:"🏋️ Entreno"
+  entreno:"🏋️ Entreno",
+  // v0.46.0 · completados los 16 troncos que caían al slug crudo (orden de Pablo: «faltan emojis para los temas»)
+  musculo:"💪 Músculo", empezar:"🚀 Empezar", diagnostico:"🔍 Diagnóstico", mitos:"🚫 Mitos",
+  expectativas:"📈 Expectativas", mujer:"🚺 Mujer", lesiones:"🩹 Lesiones", fibras:"🧬 Fibras musculares",
+  estres:"😰 Estrés", estetica:"✨ Estética", habitos:"✅ Hábitos", vegetariano:"🥦 Vegetariano",
+  termorregulacion:"🌡️ Termorregulación", embarazo:"🤰 Embarazo", alcohol:"🍺 Alcohol", adherencia:"🧲 Adherencia"
 };
+// v0.46.0 · etiqueta de un tronco para los chips: mapa curado o, si es un tronco futuro sin entrada,
+// fallback con emoji neutro 💬 + capitalizado (NUNCA el slug crudo). Puro y testeable (test-cerebro).
+function cbTroncoLabel(tr){ return CB_TRONCO_NOMBRE[tr] || ("💬 "+String(tr||"tema").charAt(0).toUpperCase()+String(tr||"tema").slice(1)); }
 function cbRamaLabel(e){
   var s=String(e.rama||"").replace(/^ESTADO-/,"").replace(/-/g," ").trim();
   return s ? s.charAt(0).toUpperCase()+s.slice(1) : (e.claves&&e.claves[0]||"tema");
@@ -14752,14 +14760,14 @@ function cbNavTroncos(){
   CEREBRO_KB.forEach(function(e){ if(seen.indexOf(e.tronco)<0) seen.push(e.tronco); });
   seen.forEach(function(tr){
     var b=document.createElement("button"); b.type="button"; b.className="cb-chip";
-    b.textContent=CB_TRONCO_NOMBRE[tr]||tr;
+    b.textContent=cbTroncoLabel(tr);
     b.onclick=function(){ cbNavTronco(tr); };
     box.appendChild(b);
   });
 }
 function cbNavTronco(tr){
   var box=$("cb_chips"); if(!box) return; box.innerHTML="";
-  cbMsg("j", esc((CB_TRONCO_NOMBRE[tr]||tr)+" — elige lo que quieras saber:"));
+  cbMsg("j", esc(cbTroncoLabel(tr)+" — elige lo que quieras saber:"));
   var back=document.createElement("button"); back.type="button"; back.className="cb-chip cb-chip-back";
   back.textContent="← Temas"; back.onclick=cbNavTroncos; box.appendChild(back);
   CEREBRO_KB.forEach(function(e){
