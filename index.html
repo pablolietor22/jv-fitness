@@ -626,7 +626,7 @@
 <header class="brandbar">
   <div class="logo"><span class="dot"></span>JV <b>Fitness</b></div>
   <div style="display:flex;align-items:center">
-    <span class="tag">MVP v0.44.0 · motor v0.7</span>
+    <span class="tag">MVP v0.45.0 · motor v0.7</span>
     <!-- ⚙️ tanda #22 · hub de AJUSTES (no es pestaña): modal a pantalla completa -->
     <button class="gearbtn" id="btn_hub" type="button" title="Ajustes" aria-label="Abrir ajustes" onclick="hubAbrir()">⚙️</button>
   </div>
@@ -12629,7 +12629,7 @@ document.addEventListener('DOMContentLoaded',function(){
     setTimeout(function(){ try{ dbxAutoProvision(); }catch(e){} }, 4000);   // 🗄️ E9 · auto-provisión/actualización de la base, tras el primer render
   }catch(e){}
 });
-function resetTodo(){ if(!confirm("⚠️ Esto borra TODO: perfil, pesos, entrenos, rutinas, comidas, alimentos propios, agua, suplementos, lo hablado con el Cerebro y las fotos de progreso. ¿Seguro?")) return; try{ localStorage.removeItem(LS_P); localStorage.removeItem(LS_W); localStorage.removeItem(LS_E); localStorage.removeItem("jvf_notas_ej"); localStorage.removeItem("jvf_comida"); localStorage.removeItem("jvf_agua"); localStorage.removeItem("jvf_agua_log"); localStorage.removeItem("jvf_suples_cfg"); localStorage.removeItem("jvf_suples_log"); localStorage.removeItem("jvf_rutinas"); localStorage.removeItem("jvf_ent_start"); localStorage.removeItem("jvf_meals"); localStorage.removeItem("jvf_alimentos_propios"); localStorage.removeItem("jvf_barcode_cache"); localStorage.removeItem("jvf_foto_ajustes"); localStorage.removeItem("jvf_warmup_stats"); localStorage.removeItem("jvf_plate_barra"); localStorage.removeItem("jvf_rest_seg"); localStorage.removeItem("jvf_cerebro_diario"); localStorage.removeItem("jvf_cerebro_norec"); localStorage.removeItem("jvf_fotos_consent"); localStorage.removeItem("jvf_fotos_meta"); localStorage.removeItem("jvf_flex_cfg"); localStorage.removeItem("jvf_flex_visto"); localStorage.removeItem("jvf_tono"); localStorage.removeItem("jvf_deporte_sesiones"); localStorage.removeItem("jvf_favoritos"); localStorage.removeItem("jvf_uso_alim"); localStorage.removeItem("jvf_hist_alim"); localStorage.removeItem("jvf_lesiones"); localStorage.removeItem("jvf_notif_cfg"); localStorage.removeItem("jvf_notif_shown"); localStorage.removeItem("jvf_pasos_log"); localStorage.removeItem("jvf_pasos_sync_cfg"); localStorage.removeItem("jvf_pasos_sync_last"); localStorage.removeItem("jvf_apodo"); localStorage.removeItem("jvf_clima"); localStorage.removeItem("jvf_agua_colapsada"); localStorage.removeItem("jvf_levantar_semana"); localStorage.removeItem("jvf_levantar_finde"); localStorage.removeItem("jvf_overrides"); localStorage.removeItem("jvf_sinonimos"); localStorage.removeItem("jvf_desvios"); localStorage.removeItem("jvf_vol_ajuste"); }catch(e){} _mem={};
+function resetTodo(){ if(!confirm("⚠️ Esto borra TODO: perfil, pesos, entrenos, rutinas, comidas, alimentos propios, agua, suplementos, lo hablado con el Cerebro y las fotos de progreso. ¿Seguro?")) return; try{ localStorage.removeItem(LS_P); localStorage.removeItem(LS_W); localStorage.removeItem(LS_E); localStorage.removeItem("jvf_notas_ej"); localStorage.removeItem("jvf_comida"); localStorage.removeItem("jvf_agua"); localStorage.removeItem("jvf_agua_log"); localStorage.removeItem("jvf_suples_cfg"); localStorage.removeItem("jvf_suples_log"); localStorage.removeItem("jvf_rutinas"); localStorage.removeItem("jvf_ent_start"); localStorage.removeItem("jvf_meals"); localStorage.removeItem("jvf_alimentos_propios"); localStorage.removeItem("jvf_barcode_cache"); localStorage.removeItem("jvf_foto_ajustes"); localStorage.removeItem("jvf_warmup_stats"); localStorage.removeItem("jvf_plate_barra"); localStorage.removeItem("jvf_rest_seg"); localStorage.removeItem("jvf_cerebro_diario"); localStorage.removeItem("jvf_cerebro_norec"); localStorage.removeItem("jvf_cerebro_stats"); localStorage.removeItem("jvf_fotos_consent"); localStorage.removeItem("jvf_fotos_meta"); localStorage.removeItem("jvf_flex_cfg"); localStorage.removeItem("jvf_flex_visto"); localStorage.removeItem("jvf_tono"); localStorage.removeItem("jvf_deporte_sesiones"); localStorage.removeItem("jvf_favoritos"); localStorage.removeItem("jvf_uso_alim"); localStorage.removeItem("jvf_hist_alim"); localStorage.removeItem("jvf_lesiones"); localStorage.removeItem("jvf_notif_cfg"); localStorage.removeItem("jvf_notif_shown"); localStorage.removeItem("jvf_pasos_log"); localStorage.removeItem("jvf_pasos_sync_cfg"); localStorage.removeItem("jvf_pasos_sync_last"); localStorage.removeItem("jvf_apodo"); localStorage.removeItem("jvf_clima"); localStorage.removeItem("jvf_agua_colapsada"); localStorage.removeItem("jvf_levantar_semana"); localStorage.removeItem("jvf_levantar_finde"); localStorage.removeItem("jvf_overrides"); localStorage.removeItem("jvf_sinonimos"); localStorage.removeItem("jvf_desvios"); localStorage.removeItem("jvf_vol_ajuste"); }catch(e){} _mem={};
   // 📸 v0.13-C · las fotos viven en IndexedDB: se borra la base entera ANTES de recargar (con
   // timeout de seguridad — si el borrado se quedara bloqueado, la app no se cuelga: recarga igual
   // y el intento de borrado sigue en cola del navegador).
@@ -12644,13 +12644,14 @@ function resetTodo(){ if(!confirm("⚠️ Esto borra TODO: perfil, pesos, entren
 // Reemplazo total con confirmación. Reusa get/set, hoyLocal, toast, validar, render. NO toca motor ni gate.
 function exportarJSON(){ try{ set("jvf_last_export",hoyLocal()); }catch(e){}
   try{
-    var data={ app:"jvf", schema:1, app_version:"0.44.0", exportadoEl:new Date().toISOString(),
+    var data={ app:"jvf", schema:1, app_version:"0.45.0", exportadoEl:new Date().toISOString(),
       perfil:get(LS_P,null), pesos:get(LS_W,[]), entrenos:get(LS_E,[]), notas_ej:get("jvf_notas_ej",{}), comida:get("jvf_comida",[]), agua:get("jvf_agua",{}), suples_cfg:get("jvf_suples_cfg",null), suples_log:get("jvf_suples_log",{}),
       rutinas:get("jvf_rutinas",[]), meals:get("jvf_meals",[]), ent_start:get("jvf_ent_start",null),   // v0.10 · backup completo
       alimentos_propios:get("jvf_alimentos_propios",[]), barcode_cache:get("jvf_barcode_cache",{}),   // I5/I6 · también viajan en el backup
       foto_ajustes:get("jvf_foto_ajustes",{}),   // F-FOTO-2 · lo aprendido de tus correcciones viaja en el backup
       warmup_stats:get("jvf_warmup_stats",false), plate_barra:get("jvf_plate_barra",20), rest_seg:get("jvf_rest_seg",120),   // D v0.12 · ajustes del pack Hevy (+ el descanso global, que faltaba)
       cerebro_diario:get("jvf_cerebro_diario",[]), cerebro_norec:get("jvf_cerebro_norec",[]),   // 🧠 v0.13-B · lo capturado por el Cerebro + cola de preguntas sin patrón (el flywheel, visible en el export)
+      cerebro_stats:get("jvf_cerebro_stats",{}),   // 🧠 v0.39.0 · métrica de matching {preguntas,nulls,hubs,directas,calificadores} — viaja en el backup
       // 📸 v0.13-C · SOLO metadatos de las fotos (fecha/pose/score/origen): los blobs viven en
       // IndexedDB y NO viajan en este JSON a propósito (dispararían el tamaño). Export de fotos
       // aparte: PENDIENTE (documentado; de momento las fotos no se pueden migrar de dispositivo).
@@ -12714,6 +12715,7 @@ function procesarImport(file){
     // 🧠 v0.13-B · diario del Cerebro + cola de preguntas sin patrón (los backups antiguos no los traen: se dejan como están)
     if(Array.isArray(data.cerebro_diario)) set("jvf_cerebro_diario", data.cerebro_diario.filter(function(x){ return x && x.f; }));
     if(Array.isArray(data.cerebro_norec)) set("jvf_cerebro_norec", data.cerebro_norec.filter(function(x){ return x && x.q; }));
+    if(data.cerebro_stats && typeof data.cerebro_stats==="object" && !Array.isArray(data.cerebro_stats)) set("jvf_cerebro_stats", data.cerebro_stats);   // 🧠 v0.39.0 · métrica (objeto; guarda de tipo)
     // M · capa FLEX (los backups antiguos no la traen: se deja como está)
     if(data.flex_cfg && typeof data.flex_cfg==="object") set("jvf_flex_cfg", data.flex_cfg);
     if(typeof data.tono==="string" && ["amable","directo","motivador","sargento"].indexOf(data.tono)>=0) set("jvf_tono", data.tono);   // A24 · tono del coach (backups antiguos no lo traen: se deja como está)
@@ -13233,7 +13235,7 @@ var CEREBRO_KB=[
   // ─────────────── ESTADO: CAPTURA SIN FRICCIÓN ───────────────
   {
     tronco:"estado", rama:"ESTADO-no-puedo-ir-gym",
-    claves:["no puedo ir al gym","no puedo entrenar","me salto el gym hoy","hoy no voy al gym","no me da tiempo de entrenar","no puedo ir a entrenar","me toca saltarme el gym","no voy a poder entrenar","hoy no entreno","no ire al gym","muevo el dia","pierdo musculo por un dia"],
+    claves:["no puedo ir al gym","no puedo ir al gimnasio","no puedo entrenar","me salto el gym hoy","hoy no voy al gym","hoy no voy al gimnasio","no me da tiempo de entrenar","no puedo ir a entrenar","me toca saltarme el gym","no voy a poder entrenar","hoy no entreno","no ire al gym","no ire al gimnasio","muevo el dia","pierdo musculo por un dia"],
     r:"Anotado. Saltarte un día no arruina nada: NO compenses doblando volumen mañana (eso solo suma fatiga). Simplemente mueve el día si puedes, o retoma tu plan en la siguiente sesión como si nada. La constancia es la media de las semanas, no un día suelto. (— Tema 4/24, adherencia / Tesis #10)",
     chips:["¿recuérdamelo mañana?","¿muevo el día?","¿pierdo músculo por un día?"]
   },
@@ -13662,7 +13664,7 @@ var CEREBRO_KB=[
   },
   {
     tronco:"diagnostico", rama:"no-gano-musculo",
-    claves:["no gano musculo","no crezco","no gano masa","no aumento de musculo","no veo cambios en el musculo","no me crece el musculo"],
+    claves:["no gano musculo","no crezco","no gano masa","no aumento de musculo","no veo cambios en el musculo","no me crece el musculo","no consigo ganar musculo","no logro ganar musculo","no puedo ganar musculo"],
     r:"Ganar músculo pide tres cosas a la vez: 1) ESTÍMULO suficiente (10-20 series por músculo a la semana, cerca del fallo); 2) PROTEÍNA suficiente (~1,6 g/kg); 3) ENERGÍA suficiente (en déficit fuerte cuesta; un superávit pequeño ayuda, salvo que seas principiante o tengas grasa que perder). ¿Cuál crees que te falla? (— Tema 1/3/19)",
     chips:["como poca proteína","no sé cuánto entrenar","engordo sin ganar músculo"]
   },
@@ -13969,6 +13971,24 @@ var CEREBRO_KB=[
     claves:["relacion omega 6 omega 3","ratio omega 6 omega 3","tengo mal la relacion de omegas","proporcion omega 6 y omega 3","demasiado omega 6","como equilibro los omegas","añadir omega 3 o quitar omega 6","desequilibrio de omegas","como mejoro mi ratio de omegas","el desbalance de omega 6","estoy comiendo mucho omega 6"],
     r:"La relación moderna omega-6 a omega-3 (~15-20:1) está desequilibrada frente a la recomendada (~1-4:1), y sí es un área de investigación activa. Pero el consejo práctico no es demonizar el omega-6: es AÑADIR omega-3. Mete pescado graso, lino o chía en tu dieta, en vez de obsesionarte con eliminar omega-6, que está en alimentos sanos como nueces y huevos. Corriges la proporción sumando lo que falta, no quitando lo que asusta en las redes. (— Tema 30, regla JV Fitness / Eaton 1997)",
     chips:["¿El omega-6 engorda?","¿Cuánto omega-3 tomo?","¿Los aceites de semilla son malos?"]
+  },
+
+  // ─────────────── HUBS DE TEMA (F-M1.2 · arregla CR1) — fichas rama "hub": pregunta corta/genérica
+  // sin frase exacta → el hub del tema guía en vez de adivinar o caer en null. NO compiten en el score
+  // normal (cerebroMatch/cerebroTroncosDetectados los saltan); sus `claves` son los ALIAS del tema y sus
+  // `chips` son copia LITERAL de claves de ramas que EXISTEN hoy (regla anti-callejón del árbol). M2 los
+  // ampliará. Verificados uno a uno con cerebroMatch (smoke de hubs en el gate).
+  {
+    tronco:"musculo", rama:"hub",
+    claves:["musculo","musculos","masa muscular","gains","hipertrofia"],
+    r:"El músculo da para mucho y casi nadie empieza con la pregunta afinada. ¿Qué quieres saber? Toca lo que más te encaje y lo vamos concretando. (— hub temático, CEREBRO 2.0)",
+    chips:["¿cuánto peso gano por semana?","ganar músculo y perder grasa a la vez","¿cuánto músculo gano al mes?","¿cuánto entreno para mantener músculo?"]
+  },
+  {
+    tronco:"empezar", rama:"hub",
+    claves:["empezar","empiezo","soy nuevo","nuevo","novato","principiante","primera vez","primer dia","recien empiezo","empezar de cero"],
+    r:"Bienvenido: empezar bien es más fácil de lo que parece, y no hay pregunta tonta. ¿Por dónde quieres arrancar? (— hub temático, CEREBRO 2.0)",
+    chips:["vuelvo de un parón","¿cuántas reps de principiante?","¿cuál es el mejor plan?"]
   }
 ];
 
@@ -14050,29 +14070,173 @@ function cerebroTokEq(tok,w){
   // (creatina ≈ creatinina) y el motor respondería a OTRA pregunta. Mejor corto que equivocado.
   return cerebroLev(tok,w,1)<=1;
 }
+// F-M1.3 · GUARDIÁN DE PALABRA ÚNICA endurecido (arregla CR3). Cuando la clave se reduce a UNA sola
+// palabra-contenido, casar por raíz/prefijo es peligroso: «mejor» disparaba «mejorar», «cardio»↔«cardias»,
+// etc. Con una sola palabra no hay contexto que desambigüe → exigimos token EXACTO, y solo toleramos 1 typo
+// (dictado) si la palabra es LARGA (≥8 letras: creatina, superavit, carbohidratos…). Sin prefijo. Las claves
+// de VARIAS palabras siguen con cerebroTokEq (su contexto ya evita la confusión — CASO 3 intacto).
+function cerebroTokEqUni(tok,w){
+  if(tok===w) return true;
+  if(w.length>=8 && cerebroLev(tok,w,1)<=1) return true;   // typo de dictado en palabra larga
+  return false;                                            // sin prefijo: «mejor» ya no dispara «mejorar»
+}
 // Palabras vacías: no puntúan por sí solas en el match difuso (sí dentro de la frase exacta).
 // Incluye las palabras-pregunta («cuánta», «cómo»…): solas no dicen el TEMA, solo la forma.
-var CEREBRO_STOP=["el","la","los","las","de","del","que","y","o","u","a","en","un","una","unos","unas","al","me","mi","mis","tu","tus","te","es","si","se","lo","le","por","para","con","sin","he","ha","has","hay","muy","mas","ya","no","hoy","cuanto","cuanta","cuantos","cuantas","como","cual","cuales","cuando","donde","quien","porque","deberia","debo"];
+// F-M1.1: «no» y «sin» SALEN de aquí — ya no se tiran en silencio: pasan a MARCADORES de polaridad
+// (abajo). Antes eran stopwords y por eso «no gano musculo» colapsaba a «gano musculo» y secuestraba
+// las preguntas positivas respondiendo LO CONTRARIO (CR2). «nunca»/«tampoco» nunca estuvieron aquí.
+var CEREBRO_STOP=["el","la","los","las","de","del","que","y","o","u","a","en","un","una","unos","unas","al","me","mi","mis","tu","tus","te","es","si","se","lo","le","por","para","con","he","ha","has","hay","muy","mas","ya","hoy","cuanto","cuanta","cuantos","cuantas","como","cual","cuales","cuando","donde","quien","porque","deberia","debo"];
 var CEREBRO_UMBRAL=10;
+// ─────────────── F-M1.1 · POLARIDAD (arregla CR2, el bug que respondía LO CONTRARIO) ───────────────
+// «no»/«sin»/«nunca»/«tampoco»/«jamás» dejan de ser stopwords y pasan a ser MARCADORES de polaridad. Un
+// marcador NIEGA las palabras-contenido que le SIGUEN dentro de su cláusula (la negación pre-nominal del
+// español: «no gano», «sin pesas», «nunca entreno»). No inflan la puntuación ni exigen presencia literal:
+// solo fijan el SIGNO. GATE (solo en el match DIFUSO; la FRASE EXACTA sigue mandando con su +10, ver
+// cerebroScore): una palabra-contenido de la clave con signo negativo solo casa con un token del texto del
+// MISMO signo, y viceversa. Así «como gano musculo» (positivo) deja de secuestrar la clave negativa «no
+// gano musculo», y «no gano musculo» (negativo, exacto Y difuso) sí la alcanza.
+var CEREBRO_NEG_MARK={ no:1, sin:1, nunca:1, tampoco:1, jamas:1 };
+// Falsos marcadores del español (excepciones léxicas documentadas): NO niegan el tema.
+//  · «sin duda» / «sin embargo» → locución afirmativa / adversativa, no negación.
+//  · «no sé …» + interrogativo (si/qué/cómo/cuándo/dónde/cuál/quién/por qué/cuánto) → niega el SABER, no
+//    el tema que viene detrás («no se si ganar musculo» pregunta por GANAR músculo, en positivo → hub).
+var CEREBRO_SIN_EXC={ duda:1, embargo:1 };
+// F-M1.4b · «solo» ADVERBIAL de énfasis («solo quiero = simplemente quiero») NO es el calificador restrictivo
+// («solo CON X»). Si a «solo/solamente/únicamente» le sigue un verbo de volición, es adverbio → no es matiz.
+var CEREBRO_SOLO_ADV={ quiero:1, quieres:1, quiere:1, queria:1, quisiera:1, querria:1, busco:1, buscas:1, busca:1, deseo:1, necesito:1, necesitas:1, necesita:1, pretendo:1, intento:1, pienso:1, quiere:1 };
+var CEREBRO_NOSE_NEXT={ si:1, que:1, como:1, cuando:1, donde:1, cual:1, cuales:1, quien:1, por:1, cuanto:1, cuanta:1, cuantos:1, cuantas:1 };
+// Conectores que CIERRAN la cláusula y resetean el ámbito de negación («no puedo ir pero entreno en casa»).
+var CEREBRO_NEG_RESET={ pero:1, aunque:1, sino:1 };
+// F-M1.1c · Verbos CONJUGADOS (presente) que abren la cláusula principal tras un «sin X»: cierran el ámbito
+// de «sin». Los INFINITIVOS NO están (son complemento del propio «sin»: «sin comer», «sin ir al gimnasio»).
+var CEREBRO_VERB_CONJ={ gano:1, ganas:1, gana:1, ganan:1, crezco:1, crece:1, creces:1, crecen:1, entreno:1, entrenas:1, entrena:1, entrenan:1, tengo:1, tienes:1, tiene:1, tienen:1, quiero:1, quieres:1, quiere:1, quieren:1, subo:1, sube:1, subes:1, pierdo:1, pierde:1, pierdes:1, hago:1, haces:1, hace:1, hacen:1, voy:1, vas:1, va:1, van:1, rindo:1, rinde:1, rindes:1, mejoro:1, engordo:1, adelgazo:1, tomo:1, tomas:1, toma:1, uso:1, usas:1, usa:1 };
+// F-M1.1d · locuciones de RECHAZO POST-nominal («X no es lo mío / no me va / …»): niegan el TEMA que las precede
+// (el español coloca aquí la negación DESPUÉS del tema, no delante). Cierra el último caso del bloqueante CR2.
+var CEREBRO_RECHAZO_POST=[["no","es","lo","mio"],["no","es","para","mi"],["no","me","va"],["no","me","gusta"],["no","me","interesa"],["no","va","conmigo"]];
+// Etiqueta de polaridad por token (true = bajo negación). Pura y determinista; recorre TODOS los tokens
+// (incluidos stop y marcadores) para propagar bien el ámbito. Es «la función de etiquetado por segmento».
+function cerebroNegFlags(toks){
+  var neg=new Array(toks.length), active=false, bySin=false, i;
+  for(i=0;i<toks.length;i++){
+    var w=toks[i], nxt=(i+1<toks.length)?toks[i+1]:"", nxt2=(i+2<toks.length)?toks[i+2]:"";
+    if(CEREBRO_NEG_RESET[w]){ active=false; bySin=false; }
+    // F-M1.1c · «sin» es PREPOSICIÓN: niega su sintagma NOMINAL, no la cláusula que sigue. Su ámbito se cierra
+    // al llegar al VERBO conjugado principal («sin gluten [gano] musculo» → «gano musculo» POSITIVO), salvo que
+    // el verbo sea el objeto inmediato del propio «sin» (toks[i-1]==="sin": «sin ganas»/«sin uso» siguen negados).
+    // Sólo afecta a la negación abierta por «sin» (bySin); «no/nunca/tampoco/jamás» conservan su ámbito de cláusula.
+    else if(active && bySin && CEREBRO_VERB_CONJ[w] && toks[i-1]!=="sin"){ active=false; bySin=false; }
+    if(CEREBRO_NEG_MARK[w]){
+      if(w==="sin" && CEREBRO_SIN_EXC[nxt]){ /* «sin duda/embargo»: no niega */ }
+      else if(w==="no" && nxt==="se" && CEREBRO_NOSE_NEXT[nxt2]){ active=false; bySin=false; } // «no sé [interrog]»
+      else { active=true; bySin=(w==="sin"); }
+    }
+    neg[i]=active;
+  }
+  // F-M1.1d · segunda pasada: rechazo POST-nominal. Si aparece una locución de rechazo, se NIEGA la
+  // palabra-contenido inmediatamente anterior (el tema rechazado). Sólo AÑADE negación, nunca la quita; los
+  // TÓPICOS que casan por frase exacta (sin gate) no se ven afectados — sólo se suprime lo que el usuario rechaza.
+  for(i=0;i<toks.length;i++){
+    var idm=CEREBRO_RECHAZO_POST.some(function(id){ return id.every(function(x,z){ return toks[i+z]===x; }); });
+    if(!idm) continue;
+    for(var p2=i-1;p2>=0;p2--){ if(CEREBRO_STOP.indexOf(toks[p2])<0 && !CEREBRO_NEG_MARK[toks[p2]]){ neg[p2]=true; break; } }
+  }
+  return neg;
+}
+// Palabras-contenido de una clave/texto ya normalizado, con su SIGNO. Excluye stopwords y marcadores
+// (el marcador solo fija el signo, no cuenta como contenido). Devuelve [{w,neg}] en orden. Usada por
+// cerebroScore y cerebroScoreDetalle para que compartan exactamente la misma noción de «contenido».
+function cerebroContSign(cw){
+  var neg=cerebroNegFlags(cw), out=[], k;
+  for(k=0;k<cw.length;k++){ var w=cw[k];
+    // F-M1.4b · la 2ª palabra de la locución «sin duda»/«sin embargo» NO es contenido (era un fantasma que
+    // inflaba el conteo: «sin duda quiero ganar musculo» sumaba 4 palabras-contenido y mataba el hub-músculo).
+    if(k>0 && cw[k-1]==="sin" && CEREBRO_SIN_EXC[w]) continue;
+    if(CEREBRO_STOP.indexOf(w)<0 && !CEREBRO_NEG_MARK[w]) out.push({ w:w, neg:neg[k] });
+  }
+  return out;
+}
+// F-M1.1b · GATE DE POLARIDAD también en la FRASE EXACTA — MODULADO por clave-OBJETIVO (cierra el hueco de
+// CR2 por el que «no quiero adelgazar» caía en la ficha de ADELGAZAR: la rama exacta puntuaba +10 SIN mirar
+// el signo, sólo la difusa lo comprobaba). CLAVE del diseño: el gate NO puede ser ciego. Negar un TÓPICO
+// («no tengo agujetas», «no tomo creatina») NO cambia de qué va la pregunta → esas claves DEBEN seguir
+// casando (como antes). Sólo negar una META de recomposición («no quiero adelgazar/definir/perder peso»)
+// invierte la intención → servir el protocolo contrario es el daño real. Por eso el gate se aplica SÓLO a
+// las claves-OBJETIVO de abajo; el resto de claves conservan el match exacto sin gate (byte-idéntico).
+var CEREBRO_OBJ_META={ "adelgazar":1,"secar":1,"engordar":1,"definir":1,"quiero definir":1,"definicion":1,"dieta de definicion":1,"perder grasa":1,"perder peso":1,"bajar peso":1,"bajar de peso":1,"deficit":1,"cuanto deficit":1,"dieta para marcar":1,"cut":1,"estoy en cut":1 };
+function cerebroClaveObjetivo(c){ return CEREBRO_OBJ_META[c]===1; }
+// ¿La clave, al aparecer como frase literal, cae con el signo correcto? Una clave ocupa un tramo CONTIGUO de
+// tokens del texto; si algún token-contenido de ese tramo va bajo un signo distinto al de la clave (la clave
+// positiva «adelgazar» bajo el «no» de «no quiero adelgazar»), la aparición NO cuenta. Devuelve true si hay
+// AL MENOS una aparición del tramo con el signo correcto (así «adelgazar no, pero adelgazar sí» aún casa).
+// cw = tokens de la clave; cneg = cerebroNegFlags(cw) (signo intrínseco de la clave); negT = signo del texto.
+function cerebroExactoSigno(toks, negT, cw, cneg){
+  for(var p=0;p+cw.length<=toks.length;p++){
+    var span=true, k;
+    for(k=0;k<cw.length;k++){ if(toks[p+k]!==cw[k]){ span=false; break; } }
+    if(!span) continue;
+    var ok=true;
+    for(k=0;k<cw.length;k++){
+      if(CEREBRO_STOP.indexOf(cw[k])<0 && !CEREBRO_NEG_MARK[cw[k]] && negT[p+k]!==cneg[k]){ ok=false; break; }
+    }
+    if(ok) return true;
+  }
+  return false;
+}
 // Puntúa un texto (ya normalizado + tokens) contra las claves de una entrada:
 //  · frase exacta contenida (límites de palabra) → 10 + 4·palabras con contenido (la clave rica gana)
 //  · difuso: TODAS las palabras con contenido aparecen (typo/raíz tolerado) → 7 + 4·palabras.
 //    Guardia anti-secuestro: el difuso exige ≥2 palabras con contenido o una sola de ≥6 letras.
 //  · desempate determinista: + longitud de la clave / 100 (la clave más específica gana el empate).
 function cerebroScore(t, toks, claves){
-  var best=0, i, s;
+  var best=0, i, s, negT=null;
   for(i=0;i<claves.length;i++){
     var c=cerebroNorm(claves[i]); if(!c) continue;
     var cw=c.split(" ");
-    var cont=cw.filter(function(w){ return CEREBRO_STOP.indexOf(w)<0; });
+    var cs=cerebroContSign(cw);                       // [{w,neg}] — contenido con polaridad (F-M1.1)
+    var cont=cs.map(function(p){ return p.w; });      // membresía idéntica a antes → score byte-idéntico
     s=0;
-    if((" "+t+" ").indexOf(" "+c+" ")>=0){ s=10+cont.length*4+c.length/100; }
-    else if(cont.length>=2 || (cont.length===1 && cont[0].length>=6)){
-      if(cont.every(function(w){ return toks.some(function(tok){ return cerebroTokEq(tok,w); }); })) s=7+cont.length*4+c.length/100;
+    if((" "+t+" ").indexOf(" "+c+" ")>=0){        // FRASE EXACTA manda
+      var okE=true;
+      if(cerebroClaveObjetivo(c)){                // F-M1.1b: SÓLO las claves-OBJETIVO aplican gate de signo
+        if(negT===null) negT=cerebroNegFlags(toks);
+        okE=cerebroExactoSigno(toks, negT, cw, cerebroNegFlags(cw));
+      }
+      if(okE) s=10+cont.length*4+c.length/100;
+    }
+    if(s===0 && (cont.length>=2 || (cont.length===1 && cont[0].length>=6))){   // difuso (o exacto-objetivo sin signo)
+      if(negT===null) negT=cerebroNegFlags(toks);
+      var eq=(cont.length===1)?cerebroTokEqUni:cerebroTokEq;   // F-M1.3: palabra única → guardián duro
+      if(cs.every(function(p){ return toks.some(function(tok,j){ return eq(tok,p.w) && negT[j]===p.neg; }); }))
+        s=7+cont.length*4+c.length/100;
     }
     if(s>best) best=s;
   }
   return best;
+}
+// ─────────────── F-M1.2 · CLAVES CORTAS + HUBS DE TEMA (arregla CR1) ───────────────
+// Palabras-contenido GENÉRICAS (dirección/relleno): no son un TEMA por sí solas. Si, quitado el tema del
+// hub, lo único que queda es genérico → la pregunta es genérica → responde el hub (no adivina rama).
+var CEREBRO_HUB_GEN={ ganar:1, gano:1, ganas:1, quiero:1, coger:1, cojo:1, aumentar:1, subir:1, sube:1, subo:1, crecer:1, crezco:1, perder:1, pierdo:1, bajar:1, hacer:1, hago:1, haga:1, tener:1, tengo:1, saber:1, soy:1, estoy:1, gimnasio:1, gym:1, gimnasios:1, mejor:1, mejores:1 };
+// cerebroHub: pregunta CORTA/GENÉRICA (≤3 palabras-contenido) SIN frase exacta ganadora + un HUB cuyo
+// tema (sus claves-alias) casa y cuyo resto es genérico → devuelve el hub. Determinista; no inventa.
+function cerebroHub(t, toks, m, kb){
+  kb=kb||CEREBRO_KB;
+  var cs=cerebroContSign(toks);
+  var cont=cs.map(function(p){ return p.w; });
+  if(cont.length===0 || cont.length>3) return null;                 // "corta": hasta 3 palabras-contenido
+  if(cs.some(function(p){ return p.neg; })) return null;            // consulta NEGADA (nunca/no gano…) no es browse de tema → ficha/diagnóstico
+  if(m){ var d=cerebroScoreDetalle(t, toks, m.entrada.claves); if(d.exacto) return null; } // frase exacta manda
+  for(var i=0;i<kb.length;i++){
+    if(kb[i].rama!=="hub") continue;
+    var al=kb[i].claves;                                            // las claves del hub SON sus alias de tema
+    var vocab=[]; al.forEach(function(a){ cerebroNorm(a).split(" ").forEach(function(x){ if(x&&vocab.indexOf(x)<0) vocab.push(x); }); });
+    var hit=al.some(function(a){ var aw=cerebroNorm(a).split(" ").filter(function(x){ return x; });
+      return aw.length && aw.every(function(x){ return cont.some(function(w){ return cerebroTokEq(w,x); }); }); });
+    if(!hit) continue;                                              // ningún alias completo presente
+    var resto=cont.filter(function(w){ return !vocab.some(function(x){ return cerebroTokEq(w,x); }); });
+    if(resto.every(function(w){ return CEREBRO_HUB_GEN[w]===1; })) return kb[i];   // lo no-tema es genérico
+  }
+  return null;
 }
 // Motor de intención: texto libre → {entrada, score} o null (fallback honesto; JAMÁS inventa).
 function cerebroMatch(texto, kb){
@@ -14081,10 +14245,56 @@ function cerebroMatch(texto, kb){
   var toks=t.split(" ");
   var best=null, bestScore=0, i;
   for(i=0;i<kb.length;i++){
+    if(kb[i].rama==="hub") continue;                 // los hubs no compiten en el score normal (F-M1.2)
     var s=cerebroScore(t, toks, kb[i].claves);
     if(s>bestScore){ bestScore=s; best=kb[i]; }
   }
-  return (best && bestScore>=CEREBRO_UMBRAL) ? {entrada:best, score:bestScore} : null;
+  var m=(best && bestScore>=CEREBRO_UMBRAL) ? {entrada:best, score:bestScore} : null;
+  var h=cerebroHub(t, toks, m, kb);                  // F-M1.2: hub de tema si es corta/genérica sin exacta
+  return h ? {entrada:h, score:(m?m.score:CEREBRO_UMBRAL), hub:true} : m;
+}
+// ─────────────── F-M1.4 · CALIFICADORES v1 (arregla CR5, versión mínima honesta) ───────────────
+// «sin X» / «solo X» / «en casa» son MODIFICADORES de la pregunta. cerebroCalificadores los detecta y
+// devuelve las palabras-contenido que gobiernan. JAMÁS respondemos ignorando el matiz: si la ficha ganadora
+// NO lo cubre en sus claves, servimos la respuesta general del TEMA (núcleo, quitado el calificador) con un
+// AVISO honesto y lo registramos en el flywheel (LS_CEREBRO_NOREC tipo "calificador"). Puro y determinista;
+// el aviso y el push viven en cbResponder (impuro). v1: detectar y no contradecir (el routing fino → M2).
+function cerebroCalificadores(texto){
+  var t=cerebroNorm(texto); if(!t) return [];
+  var toks=t.split(" "), out=[], i, j;
+  for(i=0;i<toks.length;i++){
+    var w=toks[i], nxt=(i+1<toks.length)?toks[i+1]:"", tipo=null;
+    if(w==="sin" && nxt && !CEREBRO_SIN_EXC[nxt]) tipo="sin";
+    else if((w==="solo"||w==="solamente"||w==="unicamente") && nxt && !CEREBRO_SOLO_ADV[nxt]) tipo="solo";
+    else if(w==="en" && nxt==="casa") tipo="encasa";
+    if(!tipo) continue;
+    if(tipo==="encasa"){ out.push({ tipo:tipo, desde:i, frase:"en casa", palabras:["casa"] }); continue; }
+    var pals=[];                                        // palabras-contenido gobernadas por el calificador
+    for(j=i+1;j<toks.length;j++){ var x=toks[j];
+      if(CEREBRO_NEG_RESET[x]) break;                   // corta en pero/aunque/sino
+      if(CEREBRO_STOP.indexOf(x)<0 && !CEREBRO_NEG_MARK[x]) pals.push(x);
+    }
+    if(!pals.length) continue;                          // «sin» sin sustantivo detrás → no es calificador
+    out.push({ tipo:tipo, desde:i, frase:toks.slice(i).join(" "), palabras:pals });
+  }
+  return out;
+}
+// cerebroMatchCalif: match consciente del calificador. Devuelve {match, aviso}. aviso≠null ⇒ hay un «sin/solo/
+// en casa» que la ficha ganadora NO cubre → cbResponder antepone el matiz honesto y lo empuja al flywheel.
+function cerebroMatchCalif(texto){
+  var full=cerebroMatch(texto);
+  var califs=cerebroCalificadores(texto);
+  if(!califs.length) return { match:full, aviso:null };
+  if(full && !full.hub){                               // ¿la clave ganadora (no-hub) CUBRE el calificador?
+    var t=cerebroNorm(texto), toks=t.split(" ");
+    var claveN=" "+cerebroNorm(cerebroScoreDetalle(t, toks, full.entrada.claves).clave)+" ";
+    var cubierto=califs.every(function(k){ return k.palabras.every(function(w){ return claveN.indexOf(" "+w+" ")>=0; }); });
+    if(cubierto) return { match:full, aviso:null };     // el matiz está en la ficha → sin aviso
+  }
+  var desde=califs.reduce(function(a,k){ return k.desde<a?k.desde:a; }, 1e9);   // núcleo = antes del 1er calificador
+  var core=cerebroNorm(texto).split(" ").slice(0,desde).join(" ");
+  var coreMatch=core?cerebroMatch(core):null;
+  return { match:(coreMatch||full), aviso:{ tipo:"calificador", frase:califs[0].frase, calif:califs } };
 }
 // ─────────────── O4 · motor multi-concepto (v0.13-D) ───────────────
 // cerebroScoreDetalle: idéntico a cerebroScore pero devuelve TAMBIÉN la clave ganadora (para saber por
@@ -14092,15 +14302,26 @@ function cerebroMatch(texto, kb){
 // (que sigue byte-idéntico) para NO tocar el motor de intención existente; la lógica de puntos es la
 // MISMA (si algún día cambia una, el test 'cerebroScoreDetalle.score === cerebroScore' lo caza).
 function cerebroScoreDetalle(t, toks, claves){
-  var best=0, bc="", bex=false, i;
+  var best=0, bc="", bex=false, i, negT=null;
   for(i=0;i<claves.length;i++){
     var c=cerebroNorm(claves[i]); if(!c) continue;
     var cw=c.split(" ");
-    var cont=cw.filter(function(w){ return CEREBRO_STOP.indexOf(w)<0; });
+    var cs=cerebroContSign(cw);                       // idéntico a cerebroScore (F-M1.1) → mantiene la
+    var cont=cs.map(function(p){ return p.w; });      // invariante 'cerebroScoreDetalle.score === cerebroScore'
     var s=0, ex=false;
-    if((" "+t+" ").indexOf(" "+c+" ")>=0){ s=10+cont.length*4+c.length/100; ex=true; }
-    else if(cont.length>=2 || (cont.length===1 && cont[0].length>=6)){
-      if(cont.every(function(w){ return toks.some(function(tok){ return cerebroTokEq(tok,w); }); })) s=7+cont.length*4+c.length/100;
+    if((" "+t+" ").indexOf(" "+c+" ")>=0){        // FRASE EXACTA manda (F-M1.1b, espejo modulado)
+      var okE=true;
+      if(cerebroClaveObjetivo(c)){                // SÓLO las claves-OBJETIVO aplican gate de signo
+        if(negT===null) negT=cerebroNegFlags(toks);
+        okE=cerebroExactoSigno(toks, negT, cw, cerebroNegFlags(cw));
+      }
+      if(okE){ s=10+cont.length*4+c.length/100; ex=true; }
+    }
+    if(s===0 && (cont.length>=2 || (cont.length===1 && cont[0].length>=6))){   // difuso (o exacto-objetivo sin signo)
+      if(negT===null) negT=cerebroNegFlags(toks);
+      var eq=(cont.length===1)?cerebroTokEqUni:cerebroTokEq;   // F-M1.3: palabra única → guardián duro
+      if(cs.every(function(p){ return toks.some(function(tok,j){ return eq(tok,p.w) && negT[j]===p.neg; }); }))
+        s=7+cont.length*4+c.length/100;
     }
     if(s>best){ best=s; bc=c; bex=ex; }
   }
@@ -14115,6 +14336,7 @@ function cerebroTroncosDetectados(texto, kb){
   var toks=t.split(" ");
   var by={}, i;
   for(i=0;i<kb.length;i++){
+    if(kb[i].rama==="hub") continue;                 // los hubs no aportan troncos multi-concepto (F-M1.2)
     var d=cerebroScoreDetalle(t, toks, kb[i].claves);
     if(d.score<CEREBRO_UMBRAL) continue;
     var tr=kb[i].tronco;
@@ -14158,7 +14380,7 @@ function cerebroDesambiguacion(texto, kb, combos){
   if(a.exacto) return null;
   // GUARDA 2 (subsunción): si la clave más corta está contenida en la más larga («definicion» ⊂ «proteina
   // en definicion»), el 2º concepto es un MODIFICADOR, no un tema independiente → tampoco se desambigua.
-  function cont(s){ return cerebroNorm(s).split(" ").filter(function(w){ return CEREBRO_STOP.indexOf(w)<0; }); }
+  function cont(s){ return cerebroNorm(s).split(" ").filter(function(w){ return CEREBRO_STOP.indexOf(w)<0 && !CEREBRO_NEG_MARK[w]; }); }
   var wa=cont(a.clave), wb=cont(b.clave);
   var corta=wa.length<=wb.length?wa:wb, larga=wa.length<=wb.length?wb:wa;
   if(corta.length && corta.every(function(w){ return larga.indexOf(w)>=0; })) return null;
@@ -14652,6 +14874,14 @@ function lesVerFicha(id){
 }
 function lesGuardarUI(id){ lesionesGuardar(id); lesRenderActivas(); lesVerFicha(id); try{ entLesionesAviso(); }catch(e){} toastCard("📌", "Lesión registrada", "Adapto tu rutina — cuídate esa zona, "+apodo()+"."); }   // v0.19-UI · aviso importante → tarjeta
 function lesQuitarUI(id){ lesionesQuitar(id); lesRenderActivas(); lesVerFicha(id); try{ entLesionesAviso(); }catch(e){} toast("💪 ¡Recuperado! Te la quito"); }
+// F-M1 · MÉTRICA de matching del Cerebro: {preguntas, nulls, hubs, directas, calificadores}. Solo cuenta
+// (nada de datos personales); mide EN REAL la caída de nulls que arreglan F-M1.1..1.4. Clave LS nueva que
+// viaja en export/import/reset (mismo patrón que las claves de v0.31.2).
+function cbStat(bucket){
+  try{ var s=get("jvf_cerebro_stats",{preguntas:0,nulls:0,hubs:0,directas:0,calificadores:0});
+    s.preguntas=(s.preguntas||0)+1; if(bucket) s[bucket]=(s[bucket]||0)+1;
+    set("jvf_cerebro_stats",s); }catch(e){}
+}
 function cbResponder(txt){
   // SALUDO · un «hola/buenas/qué tal» suelto merece bienvenida cálida que ORIENTA (no el fallback frío
   // «no reconozco patrón»). Solo dispara con saludo PURO; si lleva pregunta detrás, sigue el pipeline.
@@ -14674,9 +14904,18 @@ function cbResponder(txt){
     cbChips(des.chips||[]);
     return;
   }
-  var m=cerebroMatch(txt);
+  var _cal=cerebroMatchCalif(txt);            // F-M1.4: match consciente de «sin X»/«solo X»/«en casa»
+  var m=_cal.match;
   if(m){
     var e=m.entrada;
+    if(_cal.aviso){                           // calificador NO cubierto → aviso honesto + flywheel (jamás ignorar el «sin»)
+      cbStat("calificadores");
+      var _arrC=get(LS_CEREBRO_NOREC,[]); _arrC.push({f:hoyLocal(), q:txt, tipo:"calificador", frase:_cal.aviso.frase}); set(LS_CEREBRO_NOREC,_arrC);
+      cbMsg("j", "<p><em>"+esc("Ojo: preguntas por «"+_cal.aviso.frase+"» — esta es la respuesta general del tema; ese matiz concreto aún no lo tengo afinado.")+"</em></p>"+cbHtmlRespuesta(e.r));
+      cbChips(e.chips||[]);
+      return;
+    }
+    cbStat(m.hub?"hubs":"directas");          // F-M1 · métrica: hub de tema vs respuesta directa
     if(e.rama.indexOf("ESTADO-")===0){ cbCaptura(e, txt); return; }
     cbMsg("j", cbHtmlRespuesta(e.r));
     cbChips(e.chips||[]);
@@ -14692,6 +14931,7 @@ function cbResponder(txt){
     _cbLesionUltima=les.id; cbLesionRender(les); cbChips(["📌 Recordar esta lesión","¿Cómo comer con una lesión?","¿El BPC-157 sirve?"]); return;
   }
   // Fallback honesto (doctrina): lo digo y guardo la pregunta — cola de ampliación del flywheel.
+  cbStat("nulls");                            // F-M1 · métrica: pregunta sin patrón (el número a bajar)
   var arr=get(LS_CEREBRO_NOREC,[]); arr.push({f:hoyLocal(), q:txt}); set(LS_CEREBRO_NOREC,arr);
   cbMsg("j", esc(t("cb_fallback")));
   cbChips(["¿Cuánta proteína al día?","¿Cuántos carbos?","¿Cuánto hay que dormir?"]);
