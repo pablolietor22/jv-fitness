@@ -626,7 +626,7 @@
 <header class="brandbar">
   <div class="logo"><span class="dot"></span>JV <b>Fitness</b></div>
   <div style="display:flex;align-items:center">
-    <span class="tag">MVP v0.43.0 · motor v0.7</span>
+    <span class="tag">MVP v0.44.0 · motor v0.7</span>
     <!-- ⚙️ tanda #22 · hub de AJUSTES (no es pestaña): modal a pantalla completa -->
     <button class="gearbtn" id="btn_hub" type="button" title="Ajustes" aria-label="Abrir ajustes" onclick="hubAbrir()">⚙️</button>
   </div>
@@ -1004,6 +1004,19 @@
     <p class="hint" style="margin-top:8px">Bebe antes, durante y después de entrenar: llegar deshidratado resta rendimiento (Savoie 2015). El objetivo es orientativo (~35 ml/kg/día); con calor o mucho entreno, más.</p>
     <p class="hint" style="margin-top:4px">🌡️ El aviso de agua en verano (con el clima real de tu zona) se enciende o apaga en <b style="color:var(--soft)">⚙️ Ajustes → 🔔 Notificaciones</b>.</p>
   </div>
+  <!-- ☕ CAFEÍNA del día (idea #12 Jorge · v0.30) — se AUTO-RELLENA sumando el campo `caf` de lo que
+       registras en Comida (café, Monster, cola…). Sin contador aparte: metes la bebida una sola vez.
+       Panel estilo agua (total + barra + aviso EFSA). Lo pinta renderCafe(); la lógica es [CAFE-PURE].
+       💧☕ Vive en la pestaña Agua desde v0.44.0 (orden de Pablo 19-07: Comida despejada). Ids INTACTOS
+       (cafe_panel / cafe_resumen / cafe_suelta_mg): solo se mudó el DOM, cero cambios de lógica. -->
+  <div id="cafe_panel" class="card" style="margin-top:8px;padding:12px 14px">
+    <div class="eyebrow-lbl" style="margin-top:0">☕ Cafeína de hoy</div>
+    <div id="cafe_resumen" style="margin-top:6px"></div>
+    <div class="row" style="gap:6px;margin-top:8px;align-items:flex-end">
+      <div style="flex:1"><label style="font-size:.72rem">➕ Cafeína suelta (pastilla, pre-entreno… mg)</label><input id="cafe_suelta_mg" type="number" inputmode="numeric" min="0" step="10" placeholder="mg a mano" onkeydown="if(event.key==='Enter'){event.preventDefault();cafeSueltaAdd();}"></div>
+      <button class="sec" type="button" style="flex:0 0 auto;width:auto;margin:0" onclick="cafeSueltaAdd()">＋ Añadir</button>
+    </div>
+  </div>
 </div>
 
 <!-- COMIDA (Fase 3 — diario de comida con base curada) -->
@@ -1022,30 +1035,22 @@
     <button class="sec" type="button" style="flex:1;width:auto;margin:0;padding:8px" onclick="comCopiarAyer()">⧉ Copiar ayer</button>
   </div>
 
+  <!-- 🎚️ v0.19-UI · JERARQUÍA: escanear = LA acción primaria. v0.44.0 (orden de Pablo 19-07): sube al
+       arranque de Comida, lo primero tras la fecha; la cafeína se mudó a la pestaña Agua para despejar. -->
+  <button class="btn-lg" type="button" style="margin-top:10px" onclick="bcAbrir()">📷 Escanear código</button>
+  <!-- ⭐ v0.44.0 · favoritos/atajos justo bajo el escáner (orden de Pablo 19-07). Antes com_favoritos,
+       com_recientes, com_fav_sug y com_historial compartían una línea; se SEPARAN: suben favoritos +
+       sugerencia + recientes; com_historial (lista larga del día) baja tras el buscador para no enterrarlo. -->
+  <div id="com_favoritos"></div><div id="com_fav_sug"></div><div id="com_recientes"></div>
   <!-- 💧 tanda #22 · el agua vive en SU PESTAÑA: aquí queda solo el mini-resumen con link «ver Agua»
        (spec Pablo 10-07). Mismo dato (lo pinta renderAgua en #agua_mini_txt); cero lógica duplicada. -->
   <div class="agua-mini" id="agua_mini">
     <span class="am-txt" id="agua_mini_txt" onclick="abrir('agua')" title="Ir a la pestaña Agua">💧 —</span>
     <button class="sec" type="button" onclick="abrir('agua')" title="Ir a la pestaña Agua">ver Agua →</button>
   </div>
-  <!-- ☕ CAFEÍNA del día (idea #12 Jorge · v0.30) — se AUTO-RELLENA sumando el campo `caf` de lo que
-       registras en Comida (café, Monster, cola…). Sin contador aparte: metes la bebida una sola vez.
-       Panel estilo agua (total + barra + aviso EFSA). Lo pinta renderCafe(); la lógica es [CAFE-PURE]. -->
-  <div id="cafe_panel" class="card" style="margin-top:8px;padding:12px 14px">
-    <div class="eyebrow-lbl" style="margin-top:0">☕ Cafeína de hoy</div>
-    <div id="cafe_resumen" style="margin-top:6px"></div>
-    <div class="row" style="gap:6px;margin-top:8px;align-items:flex-end">
-      <div style="flex:1"><label style="font-size:.72rem">➕ Cafeína suelta (pastilla, pre-entreno… mg)</label><input id="cafe_suelta_mg" type="number" inputmode="numeric" min="0" step="10" placeholder="mg a mano" onkeydown="if(event.key==='Enter'){event.preventDefault();cafeSueltaAdd();}"></div>
-      <button class="sec" type="button" style="flex:0 0 auto;width:auto;margin:0" onclick="cafeSueltaAdd()">＋ Añadir</button>
-    </div>
-  </div>
   <!-- 🗄️ E9 · mini-indicador discreto de la auto-descarga de la base ("🗄️ preparando base… 3/8");
        lo pinta dbxAutoDescargar y desaparece solo al terminar. -->
   <div id="dbx_mini" class="hint hidden" style="margin-top:6px;font-size:.72rem;text-align:center"></div>
-  <div id="com_favoritos"></div><div id="com_recientes"></div><div id="com_fav_sug"></div><div id="com_historial"></div>
-  <!-- 🎚️ v0.19-UI · JERARQUÍA: escanear = LA acción primaria (grande, junto al buscador — los
-       usuarios de prueba no la encontraban abajo del todo). -->
-  <button class="btn-lg" type="button" style="margin-top:10px" onclick="bcAbrir()">📷 Escanear código</button>
   <div class="row" style="gap:6px;align-items:flex-end;margin-top:6px">
     <div style="flex:2"><label>Alimento</label><input id="com_nombre" placeholder="Busca: pollo, arroz, huevo…" oninput="comUnidadSync();favSyncBtn();comPorcSync()" onfocus="comNombreFoco(this)"></div>
     <div style="flex:1"><label id="com_g_label">Gramos</label><input id="com_gramos" type="number" inputmode="numeric" placeholder="g"></div>
@@ -1104,6 +1109,10 @@
       <button type="button" style="flex:2;width:auto;margin:0" onclick="qaAdd()">⚡ Añadir</button>
     </div>
   </div>
+  <!-- 🕑 v0.44.0 · Historial (quick-add) REUBICADO aquí, tras los controles de añadir y por DEBAJO del
+       buscador (orden de Pablo 19-07): antes vivía arriba (línea junto a favoritos) y enterraba el buscador.
+       Es la lista larga del día. Mismo id com_historial → renderHistorial() lo localiza por id, sin tocar JS. -->
+  <div id="com_historial"></div>
   <!-- 🍽️ Generador de menú (v0.14) · el nº1 de Laura — propone comidas concretas con gramos desde tu objetivo -->
   <div class="row" style="gap:6px;margin-top:8px">
     <button class="sec" type="button" style="flex:1;width:auto;margin:0" onclick="menuGenerarHoy()">🍽️ Generar menú de hoy</button>
@@ -7198,6 +7207,10 @@ function renderAgua(){
       }).join("")+"</div>";
     }
   }
+  // ☕ v0.44.0 · la cafeína ahora vive en ESTA pestaña (se mudó desde Comida): al abrir Agua refrescamos
+  // su panel para que muestre el total de hoy. renderCafe() es idempotente y usa ids globales (cafe_resumen);
+  // si el DOM aún no tuviera el panel, sale solo. Antes solo se refrescaba en el ciclo de Comida.
+  try{ renderCafe(); }catch(e){}
 }
 var SUPLES=[
   {id:"creatina", n:"Creatina · ~1 g por 10 kg/día (monohidrato Creapure)", ev:"ALTA", diario:true},
@@ -12631,7 +12644,7 @@ function resetTodo(){ if(!confirm("⚠️ Esto borra TODO: perfil, pesos, entren
 // Reemplazo total con confirmación. Reusa get/set, hoyLocal, toast, validar, render. NO toca motor ni gate.
 function exportarJSON(){ try{ set("jvf_last_export",hoyLocal()); }catch(e){}
   try{
-    var data={ app:"jvf", schema:1, app_version:"0.43.0", exportadoEl:new Date().toISOString(),
+    var data={ app:"jvf", schema:1, app_version:"0.44.0", exportadoEl:new Date().toISOString(),
       perfil:get(LS_P,null), pesos:get(LS_W,[]), entrenos:get(LS_E,[]), notas_ej:get("jvf_notas_ej",{}), comida:get("jvf_comida",[]), agua:get("jvf_agua",{}), suples_cfg:get("jvf_suples_cfg",null), suples_log:get("jvf_suples_log",{}),
       rutinas:get("jvf_rutinas",[]), meals:get("jvf_meals",[]), ent_start:get("jvf_ent_start",null),   // v0.10 · backup completo
       alimentos_propios:get("jvf_alimentos_propios",[]), barcode_cache:get("jvf_barcode_cache",{}),   // I5/I6 · también viajan en el backup
