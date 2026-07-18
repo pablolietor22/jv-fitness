@@ -228,6 +228,13 @@
   .wchip.done{color:var(--soft);border-color:var(--ink-2);cursor:pointer}
   .wchip.cur{color:var(--jade);border-color:var(--jade);font-weight:600}
   .wstep .hint{margin-top:6px}
+  /* Build F · silueta anatómica de la ficha: silueta (izq) + chips (dcha), envuelve a 360px sin scroll lateral */
+  .ficha-muscu-row{display:flex;gap:12px;align-items:flex-start;flex-wrap:wrap;margin:0 0 10px}
+  .ficha-muscu{flex:0 0 auto;max-width:100%}
+  .ficha-muscu-svg{display:flex;gap:6px;align-items:flex-start}
+  .ficha-muscu-fig{height:118px;width:auto;display:block}
+  .ficha-muscu-leg{margin:4px 0 0;font-size:.7rem;text-align:center}
+  .ficha-muscu-chips{flex:1 1 130px;margin:0;min-width:0}
   /* bienvenida · vídeo + copy motivador antes de la 1ª pregunta del onboarding */
   .bienve-video{position:relative;width:100%;aspect-ratio:16/9;border-radius:14px;overflow:hidden;
     background:var(--ink-3);border:1px solid var(--line);margin:2px 0 14px}
@@ -619,7 +626,7 @@
 <header class="brandbar">
   <div class="logo"><span class="dot"></span>JV <b>Fitness</b></div>
   <div style="display:flex;align-items:center">
-    <span class="tag">MVP v0.42.0 · motor v0.7</span>
+    <span class="tag">MVP v0.43.0 · motor v0.7</span>
     <!-- ⚙️ tanda #22 · hub de AJUSTES (no es pestaña): modal a pantalla completa -->
     <button class="gearbtn" id="btn_hub" type="button" title="Ajustes" aria-label="Abrir ajustes" onclick="hubAbrir()">⚙️</button>
   </div>
@@ -12624,7 +12631,7 @@ function resetTodo(){ if(!confirm("⚠️ Esto borra TODO: perfil, pesos, entren
 // Reemplazo total con confirmación. Reusa get/set, hoyLocal, toast, validar, render. NO toca motor ni gate.
 function exportarJSON(){ try{ set("jvf_last_export",hoyLocal()); }catch(e){}
   try{
-    var data={ app:"jvf", schema:1, app_version:"0.42.0", exportadoEl:new Date().toISOString(),
+    var data={ app:"jvf", schema:1, app_version:"0.43.0", exportadoEl:new Date().toISOString(),
       perfil:get(LS_P,null), pesos:get(LS_W,[]), entrenos:get(LS_E,[]), notas_ej:get("jvf_notas_ej",{}), comida:get("jvf_comida",[]), agua:get("jvf_agua",{}), suples_cfg:get("jvf_suples_cfg",null), suples_log:get("jvf_suples_log",{}),
       rutinas:get("jvf_rutinas",[]), meals:get("jvf_meals",[]), ent_start:get("jvf_ent_start",null),   // v0.10 · backup completo
       alimentos_propios:get("jvf_alimentos_propios",[]), barcode_cache:get("jvf_barcode_cache",{}),   // I5/I6 · también viajan en el backup
@@ -16690,6 +16697,84 @@ function volObjetivoDe(musculo){
 // La lista de músculos que dibuja el muñequito (idea #19): cada uno en UNA vista (frente/espalda).
 var MUNECO_FRENTE=["Hombros","Pecho","Bíceps","Antebrazo","Abdomen","Cuádriceps","Aductor"];
 var MUNECO_ESPALDA=["Trapecio","Espalda","Tríceps","Glúteo","Femoral","Gemelo"];
+// [FICHA-MUSCU-INICIO] Silueta anatómica de la FICHA (Build F) — el encargo literal de Pablo:
+// «en nuestras fotos incluir en ROJO los músculos que trabaja». En CADA ficha de ejercicio pinta la
+// misma silueta del muñequito con el músculo PRINCIPAL (e.m) en ROJO, los SECUNDARIOS (e.m2) en
+// NARANJA suave y el resto en gris neutro. Es OTRA instancia, informativa: SIN onclick / SIN munecoTap.
+// Reutiliza la misma lista de músculos (MUNECO_FRENTE/_ESPALDA) que el muñequito de volumen.
+// ⚠️ Los path 'd' se copian aquí (mínimo imprescindible) EN VEZ de factorizar munecoHTML: así el
+//    muñequito del VOLUMEN queda BYTE-IDÉNTICO (su función y su salida no se tocan; el gate lo verifica
+//    por hash contra origin/master). Si algún día se factoriza, hacerlo con snapshot de salida verde.
+var MUNECO_EJ_ROJO="#e05252", MUNECO_EJ_NARANJA="#f4a04e", MUNECO_EJ_GRIS="#5b6472";
+var _MUNECO_D_FRENTE={
+  "Hombros":"M38,40 q-8,2 -10,10 q6,-3 12,-2 q0,-5 -2,-8 M82,40 q8,2 10,10 q-6,-3 -12,-2 q0,-5 2,-8",
+  "Pecho":"M42,44 h16 v12 q-8,4 -16,0 z M62,44 h16 v12 q-8,4 -16,0 z",
+  "Bíceps":"M27,50 h10 v16 q-5,2 -10,0 z M83,50 h10 v16 q-5,2 -10,0 z",
+  "Antebrazo":"M27,70 h10 v16 q-5,2 -10,0 z M83,70 h10 v16 q-5,2 -10,0 z",
+  "Abdomen":"M46,58 h28 v34 q-14,6 -28,0 z",
+  "Cuádriceps":"M45,98 h13 v34 q-6,3 -13,0 z M62,98 h13 v34 q-6,3 -13,0 z",
+  "Aductor":"M58,100 h6 v26 h-6 z"
+};
+var _MUNECO_D_ESPALDA={
+  "Trapecio":"M166,40 h28 v10 q-14,4 -28,0 z",
+  "Espalda":"M164,52 h32 v30 q-16,7 -32,0 z",
+  "Tríceps":"M147,50 h10 v18 q-5,2 -10,0 z M203,50 h10 v18 q-5,2 -10,0 z",
+  "Glúteo":"M164,84 h32 v16 q-16,6 -32,0 z",
+  "Femoral":"M165,102 h13 v30 q-6,3 -13,0 z M182,102 h13 v30 q-6,3 -13,0 z",
+  "Gemelo":"M165,136 h13 v18 q-6,3 -13,0 z M182,136 h13 v18 q-6,3 -13,0 z"
+};
+function _munecoEjColor(m, principal, secund){
+  if(m===principal) return MUNECO_EJ_ROJO;       // 🔴 principal
+  if(secund.indexOf(m)>=0) return MUNECO_EJ_NARANJA; // 🟠 secundario
+  return MUNECO_EJ_GRIS;                          // resto: gris neutro
+}
+function _munecoEjBlobs(mapa, principal, secund){
+  var s="";
+  for(var m in mapa){ if(!Object.prototype.hasOwnProperty.call(mapa,m)) continue;
+    s+="<path d='"+mapa[m]+"' fill='"+_munecoEjColor(m, principal, secund)+"' stroke='#0d1017' stroke-width='0.6'></path>";
+  }
+  return s;
+}
+function _munecoEjVista(cual, principal, secund){   // UNA figura (frente|espalda) como <svg> pequeño
+  var baseF="#2a2f3a", head="#3a4150";
+  if(cual==="frente"){
+    return "<svg class='ficha-muscu-fig' viewBox='18 4 84 168' aria-hidden='true'>"
+      +"<circle cx='60' cy='20' r='11' fill='"+head+"'/>"
+      +"<rect x='40' y='40' width='40' height='58' rx='12' fill='"+baseF+"'/>"
+      +"<rect x='26' y='42' width='12' height='46' rx='6' fill='"+baseF+"'/><rect x='82' y='42' width='12' height='46' rx='6' fill='"+baseF+"'/>"
+      +"<rect x='44' y='96' width='14' height='58' rx='7' fill='"+baseF+"'/><rect x='62' y='96' width='14' height='58' rx='7' fill='"+baseF+"'/>"
+      +_munecoEjBlobs(_MUNECO_D_FRENTE, principal, secund)
+      +"<text x='60' y='166' fill='var(--mute)' font-size='9' text-anchor='middle'>frente</text>"
+      +"</svg>";
+  }
+  return "<svg class='ficha-muscu-fig' viewBox='140 4 84 168' aria-hidden='true'>"
+    +"<circle cx='180' cy='20' r='11' fill='"+head+"'/>"
+    +"<rect x='160' y='40' width='40' height='58' rx='12' fill='"+baseF+"'/>"
+    +"<rect x='146' y='42' width='12' height='46' rx='6' fill='"+baseF+"'/><rect x='202' y='42' width='12' height='46' rx='6' fill='"+baseF+"'/>"
+    +"<rect x='164' y='96' width='14' height='58' rx='7' fill='"+baseF+"'/><rect x='182' y='96' width='14' height='58' rx='7' fill='"+baseF+"'/>"
+    +_munecoEjBlobs(_MUNECO_D_ESPALDA, principal, secund)
+    +"<text x='180' y='166' fill='var(--mute)' font-size='9' text-anchor='middle'>espalda</text>"
+    +"</svg>";
+}
+// Silueta de la ficha: elige la(s) vista(s) mínima(s) necesaria(s) y pinta los músculos por color.
+function munecoEjercicioHTML(e){
+  if(!e || !e.m) return "";
+  var principal=e.m, secund=(e.m2||[]).slice();
+  var todos=[principal].concat(secund);
+  var showFrente=todos.some(function(m){ return MUNECO_FRENTE.indexOf(m)>=0; });
+  var showEspalda=todos.some(function(m){ return MUNECO_ESPALDA.indexOf(m)>=0; });
+  // Fallback: músculo desconocido (no cae en ninguna vista) → silueta gris de frente, nunca revienta.
+  if(!showFrente && !showEspalda) showFrente=true;
+  var figs="";
+  if(showFrente) figs+=_munecoEjVista("frente", principal, secund);
+  if(showEspalda) figs+=_munecoEjVista("espalda", principal, secund);
+  var etq=secund.length ? ("Trabaja: "+principal+"; también "+secund.join(", ")) : ("Trabaja: "+principal);
+  return "<div class='ficha-muscu'>"
+    +"<div class='ficha-muscu-svg' role='img' aria-label='"+escAttr(etq)+"'>"+figs+"</div>"
+    +"<div class='hint ficha-muscu-leg'>🔴 principal · 🟠 secundario</div>"
+    +"</div>";
+}
+// [FICHA-MUSCU-FIN]
 function _munecoColorDe(m, acc){
   var c=(acc&&acc[m])||0, obj=volObjetivoDe(m), st=volEstadoMusculo(c, obj);
   return volColorEstado(st.estado);
@@ -19257,7 +19342,8 @@ function bibVer(nombre){
     '<button class="sec" type="button" style="width:auto;padding:6px 12px" onclick="bibRender()">← Volver</button>'
     +'<h3 style="margin:10px 0 4px">'+esc(e.n)+'</h3>'
     +cabecera
-    +'<div style="margin:10px 0 4px" class="eyebrow-lbl">Músculos que trabaja</div><div class="wizchips" style="margin:0 0 10px">'+chips+'</div>'
+    +'<div style="margin:10px 0 4px" class="eyebrow-lbl">Músculos que trabaja</div>'
+    +'<div class="ficha-muscu-row">'+munecoEjercicioHTML(e)+'<div class="wizchips ficha-muscu-chips">'+chips+'</div></div>'
     +(e.d?'<div id="bib_instr" style="margin:0 0 10px"></div>':'')
     +'<button class="btn-lg" type="button" onclick="bibElegir('+arg+')">Usar este ejercicio</button>'
     +'<p class="hint" style="margin-top:8px">🎬 Vídeo para principiantes: llegará en una versión futura.</p>';
