@@ -626,7 +626,7 @@
 <header class="brandbar">
   <div class="logo"><span class="dot"></span>JV <b>Fitness</b></div>
   <div style="display:flex;align-items:center">
-    <span class="tag">MVP v0.47.0 · motor v0.7</span>
+    <span class="tag">MVP v0.48.0 · motor v0.7</span>
     <!-- ⚙️ tanda #22 · hub de AJUSTES (no es pestaña): modal a pantalla completa -->
     <button class="gearbtn" id="btn_hub" type="button" title="Ajustes" aria-label="Abrir ajustes" onclick="hubAbrir()">⚙️</button>
   </div>
@@ -12688,7 +12688,7 @@ function resetTodo(){ if(!confirm("⚠️ Esto borra TODO: perfil, pesos, entren
 // Reemplazo total con confirmación. Reusa get/set, hoyLocal, toast, validar, render. NO toca motor ni gate.
 function exportarJSON(){ try{ set("jvf_last_export",hoyLocal()); }catch(e){}
   try{
-    var data={ app:"jvf", schema:1, app_version:"0.47.0", exportadoEl:new Date().toISOString(),
+    var data={ app:"jvf", schema:1, app_version:"0.48.0", exportadoEl:new Date().toISOString(),
       perfil:get(LS_P,null), pesos:get(LS_W,[]), entrenos:get(LS_E,[]), notas_ej:get("jvf_notas_ej",{}), comida:get("jvf_comida",[]), agua:get("jvf_agua",{}), suples_cfg:get("jvf_suples_cfg",null), suples_log:get("jvf_suples_log",{}),
       rutinas:get("jvf_rutinas",[]), meals:get("jvf_meals",[]), ent_start:get("jvf_ent_start",null),   // v0.10 · backup completo
       alimentos_propios:get("jvf_alimentos_propios",[]), barcode_cache:get("jvf_barcode_cache",{}),   // I5/I6 · también viajan en el backup
@@ -12803,6 +12803,462 @@ var LS_CEREBRO_DIARIO="jvf_cerebro_diario";  // [{f, tipo, texto, sueno_h?, moti
 // tronco/rama (tolerante a typos y dictado por voz) -> {entrada, score} o null. JAMÁS inventa.
 // CEREBRO_KB: cada entrada sale del master-file.md REAL (Reglas/Temas/Tesis). Nada inventado.
 var CEREBRO_KB=[
+
+  // ═══════════════ M2 · BANCOS TEMA-PARÁMETRO (PLIEGO_CEREBRO_2.0, Sesión M2 · v0.48.0) ═══════════════
+  // 67 fichas naive notariadas (molde = árbol de diagnóstico, 0 callejones). Re-validadas contra el KB
+  // REAL: 0 colisiones de clave/rama. Podas declaradas (claves greedy que robaban tests INTOCABLES por
+  // desempate de longitud): entrenar-musculo-a-diario −2 (frecuencia), perder-musculo-general −4 (dupes
+  // {pierde,musculo}), dejar-de-entrenar-timeline −1, entrenar-con-agujetas −1. Troncos: músculo, proteína,
+  // empezar-desde-cero (la señora de 60 y el chaval de 14) y motivación/constancia (hueco CR4 del recon).
+  {
+    tronco:"musculo", rama:"perder-musculo-general",
+    claves:["se pierde el musculo","se pierde musculo","por que se pierde masa muscular","que hace perder musculo","razones para perder musculo","perder masa"],
+    r:"El músculo se pierde por tres vías, ninguna misteriosa: (1) dejar de estimularlo (si no lo usas, se atrofia y encoge); (2) comer por debajo de lo que necesitas, sobre todo con poca proteína o un déficit muy agresivo; y (3) la edad, si además no entrenas fuerza. Lo que NO ocurre es que \"se convierta en grasa\": son tejidos distintos. Y la buena noticia: lo perdido se recupera bastante rápido en cuanto vuelves (memoria muscular). (— guía general, fisiología del ejercicio)",
+    chips:["¿el músculo se convierte en grasa si dejo de entrenar?","¿si dejo de entrenar pierdo músculo?","¿adelgazar sin perder músculo?","¿recuperar músculo perdido?"]
+  },
+  {
+    tronco:"musculo", rama:"dejar-de-entrenar-timeline",
+    claves:["cuanto tardo en perder musculo","si dejo de entrenar pierdo musculo","cuanto aguanta el musculo sin entrenar","si paro de entrenar que pasa","dejo de entrenar y pierdo lo ganado","cuanto tiempo sin gym para perder musculo","pierdo el musculo en vacaciones","perder lo ganado"],
+    r:"Menos rápido de lo que te temes. Mantener músculo cuesta muchísimo menos que construirlo: según Bickel 2011 (en adultos jóvenes) lo conservas entrenando con solo 1/3 a 1/9 del volumen con el que lo ganaste, y la fuerza aguanta aún más. Si tienes 60 años o más, ojo: en ese mismo estudio esa dosis mínima no fue suficiente, así que necesitas algo más de volumen de mantenimiento. Para el resto, un parón de unos días o unas vacaciones apenas te afecta. Y si pierdes algo tras semanas parado, la memoria muscular lo devuelve ~2x más rápido (lo de 1-2 meses vuelve en 4-8 semanas). No entres en pánico por descansar. (— Tema 25/4, Bickel 2011 / Rahmati 2022)",
+    chips:["¿recuperar músculo perdido?","¿cuánto entreno para mantener músculo?","¿por qué se pierde el músculo?"]
+  },
+  {
+    tronco:"musculo", rama:"mejor-musculo",
+    claves:["cual es el musculo mas importante","cual es el musculo mas importante para entrenar","que musculo es el mas importante","hay un musculo mejor que otro","el musculo mas importante del cuerpo","que musculo es mejor entrenar","musculo importante","musculo mas importante"],
+    r:"No hay un músculo \"mejor\": el cuerpo trabaja como un conjunto y descuidar unos por otros crea desequilibrios (y hasta molestias). Si tu meta es VERTE más grande, hombros y espalda dan amplitud; si es rendir en el día a día, piernas y core mandan. Pero para la mayoría lo útil es un plan equilibrado de cuerpo entero. Y si quieres priorizar uno, ponlo el PRIMERO del entreno: con el sistema fresco recibe el mejor estímulo. (— guía general + Tema 24, orden del entreno)",
+    chips:["¿qué músculos me hacen ver grande?","¿cuántas series por músculo?","¿cuál es la mejor rutina?"]
+  },
+  {
+    tronco:"musculo", rama:"me-duelen-los-musculos",
+    claves:["me duelen los musculos","por que me duelen los musculos","me duele el musculo","tengo dolor en los musculos","me duelen los musculos despues de entrenar","dolor en los musculos","me duele todo despues del gym","dolor muscular"],
+    r:"Depende de qué dolor sea. Si es un dolor sordo que aparece 1-2 días DESPUÉS de entrenar, son agujetas: normales, no peligrosas y NO significan que crezcas más. Se van solas moviéndote suave, bebiendo y durmiendo. Pero si es un dolor AGUDO, que pincha, es articular o no te deja moverte, eso no son agujetas: puede ser una lesión, y ahí conviene parar y consultarlo (el dolor de lesiones lo lleva otro apartado, no este). Ante la duda, no fuerces. (— Tema 13 · Damas 2016 · Tema 17 REFORZADO · Schoenfeld & Contreras 2013 · el dolor articular/lesión es sub-motor aparte)",
+    chips:["¿siempre tengo agujetas?","¿semana de descarga?"]
+  },
+  {
+    tronco:"musculo", rama:"musculo-vs-fuerza",
+    claves:["musculo o fuerza","musculo vs fuerza","diferencia entre musculo y fuerza","es lo mismo fuerza que musculo","entrenar para musculo o para fuerza","quiero musculo no fuerza","ganar fuerza o tamaño","diferencia fuerza e hipertrofia"],
+    r:"Se solapan pero no son lo mismo. La FUERZA es cuánto peso mueves: mejora mucho al principio porque tu sistema nervioso aprende el gesto, y se entrena con reps bajas y descansos largos. El MÚSCULO (hipertrofia) es cuánto crece el tejido, y crece en un rango amplio de reps mientras te acerques al fallo. Un músculo más grande tiene potencial de más fuerza, pero puedes ganar fuerza sin crecer mucho y al revés. Para la mayoría que quiere \"verse bien\": entrena hipertrofia (~5-8 reps pesado cerca del fallo) y la fuerza vendrá de propina. (— Temas 13 y 23, regla v2)",
+    chips:["¿fuerza o hipertrofia?","¿qué rango de repeticiones?","¿cómo crece el músculo?"]
+  },
+  {
+    tronco:"musculo", rama:"musculo-sin-pesas",
+    claves:["ganar musculo sin pesas","musculo sin pesas","se puede ganar musculo sin pesas","como gano musculo sin pesas","hacer musculo sin pesas","ganar musculo sin mancuernas","musculo solo con mi peso","musculo con peso corporal","peso corporal"],
+    r:"Sí se puede, sobre todo si empiezas. Lo que hace crecer es acercar la serie al fallo con una carga que te suponga esfuerzo e ir subiéndola la dificultad con el tiempo (sobrecarga progresiva); el motor es la tensión mecánica, y a esa tensión le da igual si viene de una mancuerna, una banda o tu propio peso. Con flexiones, dominadas, sentadillas y fondos progresas subiendo reps, empeorando el ángulo o frenando la bajada. El límite llega en piernas y espalda cuando ya eres fuerte y cuesta añadir dificultad sin carga externa. (— consenso ciencia del entrenamiento: la tensión mecánica cerca del fallo es lo que hace crecer el músculo, no la herramienta · pesos libres = máquinas, Hernández-Belmonte 2023)",
+    chips:["¿se puede ganar músculo en casa sin máquinas?","¿cómo crece el músculo?","¿cómo progreso?"]
+  },
+  {
+    tronco:"musculo", rama:"solo-proteina",
+    claves:["ganar musculo solo con proteina","musculo solo con proteina","solo con proteina se gana musculo","basta con proteina para el musculo","solo tomando proteina gano musculo","la proteina es lo unico que importa para el musculo","solo necesito proteina para ganar musculo","solo proteina"],
+    r:"La proteína es imprescindible (es el ladrillo del músculo), pero ella sola NO construye nada: la orden de crecer la da el ENTRENAMIENTO de fuerza. Puedes tomarte tres batidos al día que, sin estímulo, no crece un gramo; y el exceso de proteína no se guarda como músculo, se usa como energía o se elimina. La fórmula real es: entrenar cerca del fallo y progresar + comer suficiente proteína (~1,6 g/kg al día, repartida) + calorías suficientes + descanso. La proteína permite; el entreno ordena. (— Tema 3 / Tema 17, tensión mecánica manda)",
+    chips:["¿cuánta proteína tengo que comer?","¿cómo crece el músculo?","¿el batido cuenta?"]
+  },
+  {
+    tronco:"musculo", rama:"solo-abdominales",
+    claves:["solo hago abdominales","solo con abdominales","hacer solo abdominales","solo entreno abdominales","solo abdominales para marcar","hago abdominales todos los dias para la tableta","con abdominales tengo tableta","solo abdominales"],
+    r:"Los abdominales ya los tienes; que se VEAN depende de tu porcentaje de grasa, no de cuántos crunches hagas. No existe la reducción localizada: hacer abdominales no quema la grasa de la barriga (esa se pierde con déficit calórico global). Y entrenar solo el abdomen te deja un cuerpo descompensado. Lo útil: baja grasa con la dieta para que se marquen, y entrena el abdomen como un músculo más (flexión cargada y progresiva, no solo planchas). (— Tema 9 · six-pack / Vispute et al. 2011 · mito de la reducción localizada)",
+    chips:["¿hacer abdominales quita la barriga?","¿por qué no veo el six pack?","¿cómo saco abdominales?"]
+  },
+  {
+    tronco:"musculo", rama:"cuanto-tarda-en-verse",
+    claves:["cuanto tarda en verse el musculo","cuanto tarda en notarse el musculo","cuando se empieza a notar el musculo","en cuanto tiempo se ve el musculo","cuanto para que se note el gym","cuanto tarda en crecer el musculo","se nota el musculo","cuando se nota el musculo"],
+    r:"Antes de lo que crees en fuerza, más tarde de lo que quieres en el espejo. La fuerza sube pronto; pero cuidado, porque gran parte de lo que \"se nota\" ahí al principio es hinchazón por daño muscular y agua retenida —sobre todo en principiantes durante el primer mes (semanas 1-4)— no fibra nueva todavía. El músculo visible DE VERDAD no tiene fecha de fábrica: depende de tu punto de partida, tu grasa corporal y tu constancia real con dieta y entreno, así que desconfía de quien te dé un número cerrado tipo \"en 6 semanas\" o \"en 3 meses\" — ese dato exacto no existe. Lo que sí es fiable: si eres principiante notarás cambios antes que alguien con años de gimnasio, y para \"marcarte\" no basta ganar músculo, también hace falta bajar grasa. Paciencia y constancia ganan a la prisa. (— Damas 2016, PMID 26280652: la hinchazón/edema de las primeras semanas de entreno no es músculo nuevo; no hay dato verificado sobre en cuántas semanas o meses se nota el cambio a simple vista)",
+    chips:["¿cuándo veré resultados?","¿cuánto músculo gano al mes?","¿el pump significa crecimiento?"]
+  },
+  {
+    tronco:"musculo", rama:"como-ganar-musculo-esencial",
+    claves:["como se gana musculo","que necesito para ganar musculo","que se necesita para ganar musculo","pasos para ganar musculo","claves para ganar musculo","como se construye musculo","como construir musculo","que hace falta para ganar musculo","construir musculo","lo basico del musculo"],
+    r:"Tres pilares, sin humo: (1) ENTRENA fuerza acercándote al fallo (deja 0-3 reps en la recámara) y súbele la dificultad con el tiempo, más peso o más reps: es la sobrecarga progresiva. (2) COME suficiente proteína (~1,6 g/kg al día basta; por encima no se ha demostrado que ganes más músculo, así que no hace falta subir más) y calorías de sobra (un superávit pequeño si ya no eres principiante). (3) DESCANSA: el músculo repara y crece durmiendo, entre entreno y entreno (duerme 7-9h). Con eso y constancia de meses, creces. Lo demás (suplementos, \"trucos\") es la guinda, no el pastel. (— reglas maestras del master, Temas 1/3/4/17/27)",
+    chips:["¿cuánta proteína tengo que comer?","¿cuántas series por músculo?","¿cuánto superávit?","¿cómo crece el músculo?"]
+  },
+  {
+    tronco:"musculo", rama:"musculo-blando",
+    claves:["mi musculo esta blando","el musculo blando","tengo el musculo blando","por que mi musculo esta blando","el musculo se pone duro","mi musculo no esta duro","el musculo tiene que estar duro","musculo blando"],
+    r:"Tranquilo, no es grasa ni señal de que \"no entrenas\". Un músculo sano en reposo está blando; solo se pone duro cuando lo contraes. La \"dureza\" que notas justo tras entrenar es el pump: sangre y agua llenándolo, algo temporal. Lo que de verdad mide tu progreso no es lo duro que lo notes al tacto, sino la fuerza que ganas y cómo te va quedando la ropa y las medidas. (— guía general · el pump es edema, Tema 20)",
+    chips:["¿el pump significa crecimiento?","¿cuándo veré resultados?","¿cómo sé si progreso?"]
+  },
+  {
+    tronco:"musculo", rama:"musculo-genetica",
+    claves:["es todo genetica","sin genetica no gano musculo","tengo mala genetica para el musculo","la genetica lo decide todo","el musculo es genetico","si no tengo genetica no crezco","cuanto influye la genetica en el musculo","mala genetica"],
+    r:"La genética influye en la FORMA, las inserciones y la velocidad a la que creces, pero NO decide si puedes mejorar: con estímulo y constancia todo el mundo gana músculo respecto a su punto de partida. Los \"genéticos\" que ves llevan además años de método (y a veces ayudas). No te compares con ellos, compárate con tu yo de hace seis meses. La genética pone un techo lejano al que casi nadie llega, así que no es tu límite hoy. (— guía general, consenso)",
+    chips:["¿cuánto músculo gano al mes?","¿por qué ya no crezco como al principio?","¿cuál es la mejor rutina?"]
+  },
+  {
+    tronco:"musculo", rama:"mas-proteina-mas-musculo",
+    claves:["mas proteina mas musculo","cuanta mas proteina mejor","si como mas proteina crezco mas","la proteina extra da mas musculo","cuanta proteina es demasiada","tomar muchisima proteina para crecer","el exceso de proteina se hace musculo","proteina extra"],
+    r:"No funciona así. Pasado tu umbral (~1,5-1,6 g/kg al día para la mayoría) la proteína de más NO se convierte en más músculo: se usa como energía o se elimina. Comerte 300 g al día no te hace crecer más que 150 si ya cubres tu objetivo. El músculo lo dispara el ENTRENO; la proteína solo tiene que estar por encima del umbral. Más allá de ahí es gasto de dinero y de digestión, no más crecimiento. (— Tema 3, Tagawa/Morton, meseta de proteína)",
+    chips:["¿cuánta proteína tengo que comer?","¿cómo crece el músculo?","¿de golpe o repartida?"]
+  },
+  {
+    tronco:"musculo", rama:"entrenar-musculo-a-diario",
+    claves:["entrenar el mismo musculo todos los dias","puedo entrenar el musculo a diario","entrenar musculo todos los dias","entreno el mismo musculo cada dia","hay que entrenar el musculo a diario","musculo a diario"],
+    r:"Más no siempre es mejor. A igual volumen semanal, entrenar el mismo músculo más veces no lo hace crecer más por sí solo: la frecuencia es logística, no magia. Lo que suma de verdad es el total de series de calidad en la semana, no meter sesión todos los días — y si lo machacas a diario sin dejarle margen para asimilar el estímulo, acumulas fatiga y entrenas peor, no mejor. Para la mayoría, el default práctico es entrenar cada músculo unas 2 veces por semana, repartiendo ahí las series que toquen. (— Tema 4, frecuencia 2x y recuperación)",
+    chips:["¿cuántas series por músculo?","¿más series = más músculo?","¿semana de descarga?"]
+  },
+  {
+    tronco:"musculo", rama:"suplementos-para-musculo",
+    claves:["necesito suplementos para ganar musculo","hacen falta suplementos para el musculo","necesito proteina en polvo para ganar musculo","sin suplementos se gana musculo","que suplementos para ganar musculo","los suplementos son necesarios para el musculo","necesito batidos para ganar musculo","necesito suplementos"],
+    r:"No, ningún suplemento es obligatorio para ganar músculo. La proteína en polvo es solo una forma cómoda y barata de llegar a tu proteína diaria; si la cubres con comida, no la necesitas. La creatina es el único con respaldo fuerte y ayuda algo al rendimiento (da ~1-1,4 kg de masa magra, buena parte agua, no músculo mágico). El resto (BCAA, quemadores, pre-entrenos) es casi todo prescindible. Primero comida, entreno y descanso; los suplementos son la guinda. (— Tema 10 / Tema 26)",
+    chips:["¿cuánta proteína tengo que comer?","¿cómo crece el músculo?","¿el batido cuenta?"]
+  },
+  {
+    tronco:"musculo", rama:"cuanto-peso-para-crecer",
+    claves:["cuanto peso para que crezca el musculo","con cuanto peso crece el musculo","hay que levantar muy pesado para crecer","pesado o ligero para ganar musculo","que peso levanto para hipertrofia","levantar pesado para crecer","tengo que levantar mucho para crecer","pesado o ligero"],
+    r:"No hay un peso mágico: el músculo crece en un rango amplio de cargas (de ~5 a ~30 reps dan un crecimiento parecido) SIEMPRE que lleves la serie cerca del fallo, es decir, que las últimas reps cuesten de verdad. Pesado a pocas reps o más ligero a muchas reps crece parecido; lo que manda de verdad es acercarte al fallo, no acertar el número exacto de reps. Regla práctica: elige un peso con el que el fallo técnico te caiga sobre ~5-8 reps (hasta 12 también vale) y ve subiéndolo con el tiempo — mismo crecimiento, con menos fatiga acumulada y un progreso mucho más fácil de medir. (— Tema 23, Schoenfeld 2021)",
+    chips:["¿qué rango de repeticiones?","¿fuerza o hipertrofia?","¿más series = más músculo?"]
+  },
+  {
+    tronco:"musculo", rama:"musculo-con-la-edad",
+    claves:["se puede ganar musculo con 40","ganar musculo a los 50","soy mayor puedo ganar musculo","ganar musculo con la edad","a los 60 se gana musculo","se gana musculo de mayor","es tarde para ganar musculo","musculo de mayor"],
+    r:"Sí, a cualquier edad se gana músculo. La capacidad baja algo con los años, pero el entrenamiento de fuerza funciona igual de bien en personas mayores (de hecho es de lo más importante para la salud al envejecer). Con la edad conviene cuidar algo más la técnica y las articulaciones, repartir bien la proteína entre comidas —una ración generosa en cada una, no hace falta subir el total del día— porque el músculo responde más \"sordo\" a dosis pequeñas, y respetar el descanso. Ojo: a partir de los 60 hace falta algo más de volumen incluso para MANTENER. Nunca es tarde para empezar. (— consenso · Bickel 2011, mayores necesitan más volumen · T36, proteína por comida no por día)",
+    chips:["¿cambia con la edad?","¿cuánto entreno para mantener músculo?","¿cuánta proteína tengo que comer?"]
+  },
+  {
+    tronco:"proteina", rama:"proteina-sin-entrenar",
+    claves:["tomar proteina sin entrenar","si tomo batidos sin entrenar","proteina en polvo sin ir al gym","engordo si tomo proteina y no entreno","sirve la proteina si no entreno","tomar whey sin entrenar","proteina sin hacer ejercicio","proteina sin entrenar"],
+    r:"La proteína no es un músculo instantáneo: sin el estímulo del entreno, tomar batidos no crea músculo. Y como cualquier alimento, si esos batidos te hacen pasarte de calorías, engordas (grasa), no músculo. La proteína en polvo es solo comida cómoda; fuera de un plan con entrenamiento de fuerza no tiene ninguna magia. Si no entrenas, no necesitas batidos: te basta con comer normal y equilibrado. (— Tema 3, Helms 2014 / Tema 1)",
+    chips:["¿cuánta proteína tengo que comer?","¿el batido cuenta?","¿cómo crece el músculo?"]
+  },
+  {
+    tronco:"musculo", rama:"musculo-rapido",
+    claves:["como gano musculo mas rapido","trucos para ganar musculo rapido","ganar musculo rapido","como crecer mas rapido","musculo en poco tiempo","acelerar el crecimiento muscular","truco para ganar musculo","musculo rapido"],
+    r:"No hay atajos legales que lo aceleren de verdad: el músculo se construye despacio (como referencia orientativa, un principiante ronda ~0,5-1 kg al mes COMO MUCHO, y bastante menos según pasan los años de entreno). Lo que \"acelera\" de verdad es no cometer errores: entrenar cerca del fallo y progresar, cubrir la proteína, dormir y ser constante meses sin saltártelo. Los \"trucos\" (más suplementos, machaque diario, buscar la quemazón) no suman y a veces restan — eso es volumen basura, no estímulo extra. La prisa solo se traduce en grasa, si comes de más, o en lesión. Hacerlo bien y esperar ES lo rápido. (— guía general/consenso; progresión Tema 4 · proteína Tema 3 · sueño Tema 27)",
+    chips:["¿cuánto músculo gano al mes?","¿cuándo veré resultados?","¿cuánto superávit?"]
+  },
+  {
+    tronco:"musculo", rama:"musculo-se-desinfla",
+    claves:["se me baja el musculo si no entreno un dia","un dia sin entrenar y se baja el musculo","se me deshincha el musculo","el musculo se baja al descansar","se ve mas pequeno cuando no entreno","el musculo se desinfla","descansar me baja el musculo","musculo se desinfla"],
+    r:"Tranquilo: un día sin entrenar no te baja el músculo ni te lo \"desinfla\". Lo que notas más plano es que baja el pump —el agua y la sangre extra que llenan el músculo al entrenar— y eso es hinchazón, no músculo real. Perder músculo de verdad exige semanas seguidas sin entrenar, no un día suelto: hace falta 1-2 MESES parado para que haya algo que \"recuperar\", y ese músculo perdido se recupera el doble de rápido de lo que costó ganarlo la primera vez. Un día de descanso no es retroceder, es parte del plan. (— Tema 20: el pump es edema / Tema 4: vuelta de parón, recuperas 2x más rápido)",
+    chips:["¿el pump significa crecimiento?","¿pierdo músculo por un día?","¿cuánto tardo en perder músculo?"]
+  },
+  {
+    tronco:"musculo", rama:"musculo-mujer",
+    claves:["las mujeres entrenan distinto para ganar musculo","la mujer gana musculo igual","como gana musculo una mujer","entrenamiento de musculo para mujeres","las chicas ganan musculo","la mujer necesita entrenar diferente","ganar musculo siendo mujer","musculo para mujer"],
+    r:"El músculo se construye IGUAL en hombres y mujeres: mismos principios (fuerza cerca del fallo, progresar, proteína, descanso) y mismos ejercicios. La diferencia es la cantidad y la velocidad: las mujeres ganan menos masa en kilos absolutos (menos testosterona), y justo por eso levantar pesado NO las pone \"grandes ni masculinas\", las pone firmes y fuertes. Nada de rutinas \"de chica\" con pesos rosas: entrenad pesado como cualquiera. (— guía general)",
+    chips:["¿las mujeres se ponen grandes si levantan pesado?","¿cuánta proteína tengo que comer?","¿cuánto músculo gano al mes?"]
+  },
+  {
+    tronco:"musculo", rama:"entrenar-con-agujetas",
+    claves:["puedo entrenar con agujetas","entrenar con agujetas","es malo entrenar con agujetas","hay que entrenar con agujetas","con agujetas se puede entrenar","que hago si tengo agujetas","entreno el musculo con agujetas"],
+    r:"Con agujetas ligeras puedes entrenar sin problema; moverte incluso ayuda a que se pasen antes. Si son fuertes y te limitan el movimiento o la fuerza, entrena OTRO grupo muscular ese día o baja la intensidad: forzar un músculo muy dolorido rinde peor y sube el riesgo. Y ojo, agujetas que duran más de 3-4 días o un dolor articular/agudo no son normales, ahí toca descansar. Recuerda: las agujetas no son obligatorias ni miden el progreso. (— guía general)",
+    chips:["¿me duelen los músculos?","¿siempre tengo agujetas?"]
+  },
+  {
+    tronco:"musculo", rama:"que-ejercicio-para-musculo",
+    claves:["que ejercicios para ganar musculo","ejercicios para ganar musculo","que ejercicio hace crecer el musculo","mejores ejercicios para el musculo","que ejercicios hacen crecer","ejercicios basicos para musculo","que ejercicio da mas musculo","ejercicios para musculo"],
+    r:"No hay UN ejercicio mágico, pero sí unos más eficientes: los básicos multiarticulares (sentadilla, peso muerto, press banca, dominadas, remo, press militar) mueven mucha masa por ejercicio y permiten progresar cargando peso, así que son la base. Para un músculo concreto, el mejor ejercicio es el que lo pone en tensión de forma estable y te deja añadir peso con el tiempo (a veces una máquina firme aísla mejor que un básico inestable). Elige pocos, hazlos bien y progrésalos. (— Tema 21, selección por estabilidad / Tema 14, selección por biomecánica)",
+    chips:["¿cuántas series por músculo?","¿cuál es el músculo más importante?","¿cómo crece el músculo?"]
+  },
+  {
+    tronco:"musculo", rama:"asimetria-un-lado",
+    claves:["un brazo mas grande que el otro","tengo un lado mas grande","un lado mas fuerte que el otro","un biceps mas grande que el otro","como igualar los dos lados","tengo un musculo mas grande que el otro","un lado del cuerpo mas desarrollado","asimetria muscular"],
+    r:"Es normalísimo tener un lado algo más fuerte o grande, casi todos lo tenemos (el lado dominante). Se corrige con el tiempo trabajando con MANCUERNAS o a una mano (unilateral), empezando el ejercicio por el lado débil e igualando las reps al lado flojo (no hagas de más con el fuerte). No te obsesiones: las diferencias pequeñas apenas se notan y son parte de la anatomía. Si es muy marcado y con dolor, que lo mire un profesional. (— guía general, consenso del entrenamiento)",
+    chips:["¿qué músculos me hacen ver grande?","¿cuántas series por músculo?","¿cuál es la mejor rutina?"]
+  },
+  {
+    tronco:"musculo", rama:"musculo-con-poco-tiempo",
+    claves:["puedo ganar musculo entrenando poco","ganar musculo con poco tiempo","cuanto tiempo minimo para ganar musculo","musculo entrenando pocos dias","no tengo tiempo para el gym","entreno poco puedo ganar musculo","ganar musculo en poco tiempo de gym","entrenar poco"],
+    r:"Sí: para ganar músculo no hace falta vivir en el gimnasio. Con 2-3 sesiones a la semana, de en torno a una hora, centradas en pocos ejercicios básicos, cerca del fallo y progresando, la mayoría avanza de sobra. Incluso el mínimo eficaz es sorprendentemente bajo (unas pocas series duras por músculo a la semana ya dan resultados). Lo que NO puede faltar es la constancia y la proteína. Mejor 3 días que mantienes que 6 que abandonas en un mes. (— Tema 4, mínimo eficaz / regla 10, adherencia)",
+    chips:["¿cuántas series por músculo?","¿cuál es la mejor rutina?","¿cuánto entreno para mantener músculo?"]
+  },
+  {
+    tronco:"musculo", rama:"fibroso-o-voluminoso",
+    claves:["quiero musculo fibroso no voluminoso","musculo definido no grande","quiero estar fibroso","musculo fibroso","como conseguir musculo definido","fibroso o voluminoso","quiero definicion no volumen","entrenar para estar fibroso"],
+    r:"\"Fibroso/definido\" y \"voluminoso\" no son dos tipos de entreno distintos: el músculo se construye igual; lo que cambia el ASPECTO es tu porcentaje de grasa. Definido = el mismo músculo con poca grasa encima (se ven las líneas). Voluminoso = más masa y/o más grasa. No existe un entreno que \"seque y no infle\": construyes músculo entrenando fuerte y decides cómo verte con la DIETA (bajar grasa para definir). Más reps con menos peso no \"definen\" más. (— guía general / Tema 3, la definición la hace el déficit)",
+    chips:["¿entreno distinto para definir?","¿por qué no veo el six pack?","¿ganar músculo y perder grasa a la vez?"]
+  },
+  {
+    tronco:"empezar", rama:"primeros-pasos",
+    claves:["que hago para empezar","por donde empiezo del todo","primeros pasos","por donde arranco","que hago el primer dia para empezar","como empiezo desde cero","por donde empiezo siendo nuevo"],
+    r:"Tranquilo, empezar es más sencillo de lo que parece. Tres pasos y ya estás dentro: 1) elige 2 o 3 días fijos a la semana; 2) haz cuerpo entero con máquinas, que te enseñan el movimiento y perdonan los fallos de técnica; 3) apunta lo que haces para ver que progresas. No necesitas el plan perfecto: necesitas uno que cumplas. (— master-file, principio 10: el mejor plan es el que sostienes)",
+    chips:["¿cuántos días a la semana?","¿máquinas o pesas?","¿cuál es el mejor plan?","me da vergüenza ir"]
+  },
+  {
+    tronco:"empezar", rama:"primer-dia-gym",
+    claves:["primer dia en el gimnasio","que hago el primer dia en el gym","es mi primera vez en el gimnasio","primer dia de gym que hago","que hago en mi primer entreno","mi primer dia en la sala","mi primer dia"],
+    r:"El primer día no vas a batir ningún récord, y está bien. Da una vuelta tranquila, mira dónde está cada máquina, y haz un circuito suave de cuerpo entero probando pesos ligeros para aprender el gesto. Sal con ganas de volver, no reventado. Lo importante hoy es perderle el respeto al sitio, no dejarte la vida. (— guía general)",
+    chips:["¿máquinas o pesas?","¿cuánto dura una sesión?","¿qué ropa me pongo?","me da vergüenza ir"]
+  },
+  {
+    tronco:"empezar", rama:"me-da-verguenza",
+    claves:["me da verguenza ir","me da verguenza el gimnasio","me da corte ir al gym","me da verguenza que me miren","me da corte que me miren","paso verguenza en el gimnasio","me da apuro el gimnasio","verguenza gimnasio"],
+    r:"Esa vergüenza la hemos sentido todos el primer día, y desaparece antes de lo que crees. La verdad incómoda y liberadora: nadie te está mirando, cada uno va a lo suyo y con los cascos puestos. Empieza por las máquinas de un rincón, ve en horas más tranquilas si te agobia, y dale unas semanas: antes de lo que piensas el gimnasio será tu terreno. (— guía general)",
+    chips:["¿por dónde empiezo del todo?","primer día en el gimnasio","¿necesito entrenador?"]
+  },
+  {
+    tronco:"empezar", rama:"nunca-hecho-deporte",
+    claves:["nunca he hecho deporte","no he hecho deporte en mi vida","nunca he entrenado","jamas he pisado un gimnasio","parto de cero total","no he hecho ejercicio nunca","cero deporte en mi vida"],
+    r:"Perfecto, entonces todo lo que hagas suma desde hoy: los que parten de cero son justo los que más rápido notan los cambios al principio. No arrastras vicios que corregir. Empieza suave, con máquinas y poco peso, y sube muy poco a poco. Tu cuerpo lleva toda la vida esperando esto; solo hay que darle tiempo. (— guía general)",
+    chips:["¿por dónde empiezo del todo?","¿cuántos días a la semana?","me canso enseguida"]
+  },
+  {
+    tronco:"empezar", rama:"soy-muy-mayor",
+    claves:["soy muy mayor para empezar","soy demasiado mayor para el gimnasio","ya soy mayor para esto","a mi edad para que","soy muy viejo para empezar","ya estoy mayor para entrenar",
+      // Fix adversarial 18-07 (menor 2): «a mi edad puedo …» no dice 'mayor' ni 'viejo' y caía en null;
+      // esta ficha es la respuesta agnóstica de edad (la numérica 55-95 vive en tengo-60).
+      "a mi edad puedo empezar","a mi edad puedo entrenar","a mi edad puedo ir al gimnasio","a mi edad puedo hacer pesas","a mi edad puedo ponerme a hacer ejercicio"],
+    r:"No eres mayor para empezar: es justo al revés. Cuanto más años cumples, MÁS te protege entrenar, porque a partir de cierta edad se pierde músculo y hueso solos, y la fuerza es lo que te mantiene autónomo y sin caídas. Nunca es tarde y se gana músculo a cualquier edad. Empieza con máquinas, poco peso y con calma. (— guía general)",
+    chips:["tengo 60 años, ¿puedo?","¿por dónde empiezo del todo?","mi médico me dijo que camine"]
+  },
+  {
+    tronco:"empezar", rama:"tengo-60",
+    claves:["60 años puedo","60 anos puedo","65 años puedo","65 anos puedo","tengo 60 años puedo","con 60 años puedo ir al gimnasio","empezar con 60 años","a los 60 puedo empezar en el gym","empezar con 60",
+      // Fix adversarial 18-07 (bloqueante 1): la edad REAL de la usuaria casi nunca es 60/65 clavados. El motor
+      // solo casa números EXACTOS, así que se enumeran 55-95 con las dos plantillas reales de pregunta
+      // («NN años puedo …» difuso cubre cualquier orden; «empezar con NN años» cubre el fraseo sin 'puedo').
+      "55 años puedo","55 anos puedo","56 años puedo","56 anos puedo","57 años puedo","57 anos puedo","58 años puedo","58 anos puedo","59 años puedo","59 anos puedo","61 años puedo","61 anos puedo","62 años puedo","62 anos puedo","63 años puedo","63 anos puedo","64 años puedo","64 anos puedo","66 años puedo","66 anos puedo","67 años puedo","67 anos puedo","68 años puedo","68 anos puedo","69 años puedo","69 anos puedo","70 años puedo","70 anos puedo","71 años puedo","71 anos puedo","72 años puedo","72 anos puedo","73 años puedo","73 anos puedo","74 años puedo","74 anos puedo","75 años puedo","75 anos puedo","76 años puedo","76 anos puedo","77 años puedo","77 anos puedo","78 años puedo","78 anos puedo","79 años puedo","79 anos puedo","80 años puedo","80 anos puedo","81 años puedo","81 anos puedo","82 años puedo","82 anos puedo","83 años puedo","83 anos puedo","84 años puedo","84 anos puedo","85 años puedo","85 anos puedo","86 años puedo","86 anos puedo","87 años puedo","87 anos puedo","88 años puedo","88 anos puedo","89 años puedo","89 anos puedo","90 años puedo","90 anos puedo","91 años puedo","91 anos puedo","92 años puedo","92 anos puedo","93 años puedo","93 anos puedo","94 años puedo","94 anos puedo","95 años puedo","95 anos puedo",
+      "empezar con 55 años","empezar con 56 años","empezar con 57 años","empezar con 58 años","empezar con 59 años","empezar con 61 años","empezar con 62 años","empezar con 63 años","empezar con 64 años","empezar con 65 años","empezar con 66 años","empezar con 67 años","empezar con 68 años","empezar con 69 años","empezar con 70 años","empezar con 71 años","empezar con 72 años","empezar con 73 años","empezar con 74 años","empezar con 75 años","empezar con 76 años","empezar con 77 años","empezar con 78 años","empezar con 79 años","empezar con 80 años","empezar con 81 años","empezar con 82 años","empezar con 83 años","empezar con 84 años","empezar con 85 años","empezar con 86 años","empezar con 87 años","empezar con 88 años","empezar con 89 años","empezar con 90 años","empezar con 91 años","empezar con 92 años","empezar con 93 años","empezar con 94 años","empezar con 95 años"],
+    r:"Claro que puedes, y además es de las mejores decisiones a tu edad. Ganar fuerza a esa edad protege los huesos, el equilibrio y la independencia para años. Empieza con máquinas guiadas (más seguras que la barra al principio), pesos suaves, y no te compliques con la proteína: por la edad no hace falta más cantidad total, sino repartirla bien — unos 40 g en cada comida, para que el cuerpo la aproveche de verdad. Ve a tu ritmo: constancia por encima de intensidad. (— master-file Tema 36, proteína por edad; guía general)",
+    chips:["¿por dónde empiezo del todo?","mi médico me dijo que camine","¿necesito entrenador?"]
+  },
+  {
+    tronco:"empezar", rama:"tengo-14",
+    claves:["14 años puedo","14 anos puedo","tengo 14 años puedo","con 14 años puedo entrenar","tengo 15 años puedo hacer pesas","empezar con 14 años","soy menor puedo ir al gym","empezar con 14",
+      // Fix adversarial 18-07 (bloqueante 3): edades 12-17 enumeradas (el motor solo casa números exactos),
+      // fraseología real del MITO (frena el crecimiento / es malo / es peligroso / me hago grande — la
+      // respuesta desmonta justo eso), menor-de-edad y la pregunta de edad mínima.
+      "12 años puedo","12 anos puedo","13 años puedo","13 anos puedo","15 años puedo","15 anos puedo","16 años puedo","16 anos puedo","17 años puedo","17 anos puedo",
+      "empezar con 12 años","empezar con 13 años","empezar con 15 años","empezar con 16 años","empezar con 17 años",
+      "pesas con 12 años es malo","pesas con 12 años es peligroso","entrenar con 12 años es malo","entrenar con 12 años es peligroso","el gimnasio con 12 años es malo","12 años me hago grande",
+      "pesas con 13 años es malo","pesas con 13 años es peligroso","entrenar con 13 años es malo","entrenar con 13 años es peligroso","el gimnasio con 13 años es malo","13 años me hago grande",
+      "pesas con 14 años es malo","pesas con 14 años es peligroso","entrenar con 14 años es malo","entrenar con 14 años es peligroso","el gimnasio con 14 años es malo","14 años me hago grande",
+      "pesas con 15 años es malo","pesas con 15 años es peligroso","entrenar con 15 años es malo","entrenar con 15 años es peligroso","el gimnasio con 15 años es malo","15 años me hago grande",
+      "pesas con 16 años es malo","pesas con 16 años es peligroso","entrenar con 16 años es malo","entrenar con 16 años es peligroso","el gimnasio con 16 años es malo","16 años me hago grande",
+      "pesas con 17 años es malo","pesas con 17 años es peligroso","entrenar con 17 años es malo","entrenar con 17 años es peligroso","el gimnasio con 17 años es malo","17 años me hago grande",
+      "las pesas frenan el crecimiento","el gimnasio frena el crecimiento","soy muy joven para el gimnasio","soy muy joven para entrenar",
+      "soy menor de edad puedo entrenar","menor de edad puedo hacer pesas","siendo menor puedo entrenar","siendo menor puedo hacer pesas",
+      "a que edad puedo ir al gimnasio","a que edad puedo hacer pesas","a que edad puedo empezar","a partir de que edad puedo ir al gimnasio"],
+    r:"Sí puedes, y entrenar fuerza a tu edad es seguro y sano cuando se hace con cabeza; lo dañino es el mito, no las pesas. Las claves para ti: aprende bien la técnica antes que meter kilos, no vayas al fallo ni busques máximos, entrena con supervisión de un adulto o monitor, y come de todo para crecer. Nada de dietas raras a tu edad. (— guía general; esto no sustituye a un médico)",
+    chips:["¿por dónde empiezo del todo?","¿máquinas o pesas?","¿necesito entrenador?"]
+  },
+  {
+    tronco:"empezar", rama:"estoy-muy-delgado",
+    claves:["estoy muy delgado","estoy muy flaco","soy muy delgado y quiero empezar","estoy delgado por donde empiezo","soy delgado como gano musculo","muy delgado"],
+    r:"Buena noticia: partir de delgado no es un problema, es tu punto de partida. La palanca número uno para ti no es matarte en el gym, es comer lo suficiente — mucha gente muy delgada, sin darse cuenta, come menos de lo que gasta. No hace falta obsesionarte con un superávit exacto: al empezar puedes ganar músculo incluso sin comer de más, pero como partes muy flaco, comer un poco extra te lo pone más fácil. Proteína suficiente y sin miedo a los carbohidratos. Entrena cuerpo entero 2-3 días, sube el peso poco a poco, y sobre todo: no te quedes corto de comida. (— master-file Tema 1: reglas de superávit · Tema 3: recomposición en principiantes)",
+    chips:["¿cuánto músculo gano al mes?","¿qué como para empezar?","¿cuántos días a la semana?"]
+  },
+  {
+    tronco:"empezar", rama:"estoy-gordo",
+    claves:["estoy gordo por donde empiezo","estoy gordo y quiero empezar","tengo sobrepeso por donde empiezo","estoy muy gordo para el gimnasio","soy gordo puedo empezar","peso mucho por donde empiezo","estoy gordo"],
+    r:"No tienes que adelgazar primero para empezar: se empieza HOY, tal y como estás. Tienes una ventaja real: quien parte con sobrepeso suele poder ganar músculo y perder grasa a la vez al principio. Combina fuerza con máquinas, camina cada día para gastar más, y cuida la comida sin dietas milagro. El gimnasio es para ti tanto como para cualquiera. (— Tema 28, Radfar 2026 / Tema 1)",
+    chips:["ganar músculo y perder grasa a la vez","¿cuántos pasos al día?","¿por dónde empiezo del todo?"]
+  },
+  {
+    tronco:"empezar", rama:"me-pondre-grande",
+    claves:["me pondre muy grande","no quiero ponerme muy grande","me voy a poner cachas sin querer","tengo miedo de ponerme muy musculado","me pondre demasiado grande","no quiero ponerme como un armario"],
+    r:"Tranquilo, ponerse \"grande\" de verdad cuesta años de comer de más y entrenar con intención; no le pasa a nadie sin querer. Lo que consigues al empezar es fuerza, tono y una figura más firme, no hincharte. Si algún día quisieras más volumen, tendrías que buscarlo a propósito. Así que entrena sin ese miedo. (— guía general)",
+    chips:["¿por dónde empiezo del todo?","¿cuándo veo resultados?","ganar músculo y perder grasa a la vez"]
+  },
+  {
+    tronco:"empezar", rama:"cuantos-dias-empezando",
+    claves:["cuantos dias a la semana","cuantos dias empiezo entrenando","cuantos dias para empezar","cuantos dias voy si soy nuevo","con cuantos dias empiezo","dias para empezar"],
+    r:"Para empezar, con 2 o 3 días a la semana vas de sobra: cuerpo entero cada día y descansando entre medias. Más días no te hacen crecer más al principio, y sí hacen que lo dejes. Elige días fijos (por ejemplo lunes-miércoles-viernes) y trátalos como una cita. Cuando eso sea un hábito sólido, ya subiremos. (— master-file C85 y Tema 4: la adherencia manda / la frecuencia sola no añade músculo; guía general)",
+    chips:["¿y si un día no puedo ir al gimnasio?","¿cuánto dura una sesión?","¿cuál es el mejor plan?"]
+  },
+  {
+    tronco:"empezar", rama:"cuanto-dura-sesion",
+    claves:["cuanto dura una sesion","cuanto dura un entreno","cuanto tiempo entreno cada dia","cuanto tardo en el gimnasio","cuanto dura entrenar","cuanto tiempo en el gym"],
+    r:"Menos de lo que te imaginas. Con 45 a 60 minutos vas perfecto para empezar; no necesitas dos horas ni vivir en el gimnasio. De hecho, sesiones más cortas y bien hechas se sostienen mejor en el tiempo, que es lo que de verdad da resultados. Entra, haz lo tuyo con foco, y a casa. (— guía general)",
+    chips:["¿cuántos días a la semana?","¿qué ropa me pongo?"]
+  },
+  {
+    tronco:"empezar", rama:"que-ropa",
+    claves:["que ropa me pongo","que ropa llevo al gimnasio","que me pongo para el gym","que llevo al gimnasio","que ropa para entrenar","que me llevo al gimnasio",
+      // Fix adversarial 18-07 (menor 2): «que me pongo para ir al gimnasio» no dice 'ropa' y caía en null.
+      "que me pongo para ir al gimnasio","que me pongo para entrenar"],
+    r:"Nada de equipación especial: ropa cómoda con la que puedas moverte y sudar, y unas zapatillas planas y firmes (las de correr, muy blandas, van peor para las pesas). Llévate una botella de agua y una toalla pequeña para el banco, y ya está. No hace falta comprar nada caro para empezar. (— guía general)",
+    chips:["primer día en el gimnasio","¿qué como para empezar?","¿necesito entrenador?"]
+  },
+  {
+    tronco:"empezar", rama:"que-como-empezar",
+    claves:["que como para empezar","que tengo que comer si empiezo","que como cuando empiezo el gym","que dieta hago para empezar","como empiezo a comer bien","que comida para empezar",
+      // Fix adversarial 18-07 (bloqueante 5): «que como antes de empezar a entrenar» — 'como' (verbo comer)
+      // es stopword, pero el guardián de typo empareja comer↔como, y 'antes' ancla la clave (sin greed).
+      "que comer antes de empezar a entrenar"],
+    r:"No compliques la comida al empezar: dos reglas y a correr. Una, mete proteína en cada comida (huevos, pollo, pescado, lácteos, legumbres). Dos, no te saltes los carbohidratos, que son tu gasolina para entrenar. Nada de dietas extremas ni de eliminar grupos de alimentos; eso no se sostiene. Comer bien de forma sencilla gana siempre. (— guía general, con base en master-file Tema 3)",
+    chips:["¿qué comer antes de entrenar?","ganar músculo y perder grasa a la vez","¿por dónde empiezo del todo?"]
+  },
+  {
+    tronco:"empezar", rama:"necesito-entrenador",
+    claves:["necesito entrenador","necesito un entrenador personal","hace falta entrenador para empezar","tengo que pagar un entrenador","puedo empezar sin entrenador","me hace falta un monitor"],
+    r:"No es obligatorio, pero al principio ayuda mucho. Un buen monitor te enseña la técnica y te quita miedos en las primeras semanas, que es cuando más se agradece. Si no puedes o no quieres pagarlo, se empieza igual: tira de máquinas (que ya te guían el movimiento), pide al personal de sala que te enseñe un par de aparatos, y apóyate en la app. (— guía general)",
+    chips:["¿máquinas o pesas?","primer día en el gimnasio","¿por dónde empiezo del todo?"]
+  },
+  {
+    tronco:"empezar", rama:"necesito-gimnasio",
+    claves:["necesito gimnasio para empezar","hace falta gimnasio para empezar","tengo que apuntarme a un gimnasio","puedo empezar sin gimnasio","necesito ir a un gimnasio","se puede empezar en casa","necesito gimnasio"],
+    r:"Para empezar no es imprescindible: en casa, con tu propio peso o unas mancuernas, ya se progresa mucho al principio, sobre todo si partes de cero. El gimnasio ayuda cuando quieras seguir subiendo, porque tiene más variedad y peso disponible. Lo que de verdad decide es que entrenes de forma constante, no dónde lo hagas. (— guía general)",
+    chips:["¿se puede ganar músculo en casa sin máquinas?","¿por dónde empiezo del todo?"]
+  },
+  {
+    tronco:"empezar", rama:"maquinas-o-pesas",
+    claves:["maquinas o pesas","empiezo por maquinas o pesas","mejor maquinas o pesas para empezar","uso maquinas o mancuernas de nuevo","empiezo con maquinas o con pesas","maquinas o pesas siendo novato"],
+    r:"Para empezar, tira de máquinas sin complejos. Te guían el recorrido, son más seguras cuando aún no dominas la técnica y te dejan concentrarte en apretar el músculo sin miedo a que se te caiga nada. El peso libre (barra y mancuernas) es genial y lo irás metiendo poco a poco. Al final, para el músculo, bien usadas dan resultados parecidos. (— Tema 17, Hernández-Belmonte 2023 / Haugen 2023)",
+    chips:["¿máquina o peso libre?","¿las máquinas dan menos músculo que las mancuernas?","¿primer día en el gimnasio?"]
+  },
+  {
+    tronco:"empezar", rama:"me-canso-enseguida",
+    claves:["me canso enseguida","me canso muy rapido","me quedo sin aire enseguida","me fatigo enseguida empezando","me ahogo al hacer ejercicio","me canso a la primera"],
+    r:"Es completamente normal al empezar, y es justo lo que vas a mejorar: el cuerpo se adapta rapidísimo las primeras semanas. No te compares con nadie ni fuerces de más. Empieza con pesos suaves, descansa lo que necesites entre series, y suma caminar cada día, que te sube el fondo sin machacarte. En nada notarás que aguantas mucho más. Eso sí: si el ahogo es muy exagerado, con dolor en el pecho, mareo o no se te pasa al bajar el ritmo, para y coméntalo con un médico antes de seguir — no es lo mismo que la falta de aire normal de quien empieza. (— master-file Tema 11, caminar/NEAT; guía general)",
+    chips:["me canso enseguida en las series","¿cuántos pasos al día?","¿cuánto dura una sesión?"]
+  },
+  {
+    tronco:"empezar", rama:"no-tengo-tiempo",
+    claves:["no tengo tiempo para entrenar","no me da tiempo a empezar","tengo poco tiempo para el gimnasio","no tengo tiempo de nada para entrenar","con poco tiempo puedo empezar","no tengo tiempo"],
+    r:"Se puede empezar con muy poco tiempo, en serio: si de verdad vas justo, la ciencia dice que con ~4 series por músculo a la semana ya hay estímulo suficiente para arrancar o mantener (no es lo ideal a largo plazo, pero cuenta). Eso te cabe en un par de sesiones cortas, así que no hace falta más para dar el primer paso. Si un día no llegas al gimnasio, camina o haz algo en casa: sumar poco de forma constante gana por goleada a un plan \"perfecto\" que no te cabe en la agenda y acabas abandonando. (— master-file, Tema 4: mínimo eficaz + principio 10: adherencia)",
+    chips:["¿cuántos días a la semana?","¿cuánto dura una sesión?","¿se puede ganar músculo en casa sin máquinas?"]
+  },
+  {
+    tronco:"empezar", rama:"medico-camina",
+    claves:["mi medico me dijo que camine","el medico me manda caminar","me han dicho que camine","mi doctor me dijo que ande","el medico me recomendo caminar","tengo que caminar por el medico","me dijo que camine",
+      // Fix adversarial 18-07 (bloqueante 2): el motor NO empareja ande↔camine ni ande↔andar (formas verbales
+      // distintas), así que se cubre la matriz medico/doctor(a) × dijo/dice/manda/recomendo/han-dicho ×
+      // camine/caminar/ande/andar. 'doctora'≈'doctor' y 'medica'≈'medico' ya los resuelve el guardián de raíz.
+      "mi medico me dijo que ande","el medico me dice que ande","el medico me dice que camine","el medico me recomendo andar","el doctor me recomendo caminar","el medico me manda andar","me han dicho que ande","mi doctor me dijo que camine"],
+    r:"Tu médico te ha dado un consejo buenísimo: caminar es de lo mejor que existe para la salud y para gastar energía, y es un sitio estupendo por donde empezar. Ponte un objetivo de pasos al día y ve subiéndolo poco a poco. Cuando te veas con ganas, puedes sumar algo de fuerza suave. Y respeta siempre lo que te haya indicado tu médico: esto no es consejo médico. (— master-file Tema 11, pasos/NEAT)",
+    chips:["¿cuántos pasos al día?","¿puedo empezar caminando?","¿por dónde empiezo del todo?"]
+  },
+  {
+    tronco:"empezar", rama:"puedo-caminando",
+    claves:["puedo empezar caminando","empiezo solo caminando","vale con caminar para empezar","puedo empezar andando","es suficiente caminar al principio","arranco caminando"],
+    r:"Sí, caminar es un comienzo excelente, sobre todo si llevas tiempo parado: mueve el cuerpo, gasta energía y no te machaca nada. Empieza por ahí sin culpa. Eso sí, cuando puedas, añade un poco de fuerza (aunque sea con máquinas suaves), porque caminar cuida el corazón pero el músculo se gana levantando. Un paso cada vez. (— master-file Tema 11, caminar/NEAT)",
+    chips:["¿cuántos pasos al día?","¿por dónde empiezo del todo?","me canso enseguida"]
+  },
+  {
+    tronco:"empezar", rama:"cuanto-tardo-notar",
+    claves:["cuanto tardare en notar algo","cuanto tardo en notar cambios empezando","cuando empezare a notar algo","cuanto tardo en ver algo si empiezo","en cuanto tiempo noto algo","cuanto tardare en verme mejor","cuanto tardo en notar"],
+    r:"En cómo te SIENTES, notarás cambios antes de lo que crees: más fuerza y energía ya en las primeras semanas. Para VERTE diferente en el espejo hace falta más (semanas, no días). Truco: no te mires cada mañana, los cambios de verdad se ven de mes en mes. Aguanta las primeras semanas, que son las que más gente abandona justo antes de notar la diferencia. (— guía general)",
+    chips:["¿cuándo veo resultados?","¿cuánto músculo gano al mes?","me duele todo el primer día"]
+  },
+  {
+    tronco:"empezar", rama:"me-duele-primer-dia",
+    claves:["me duele todo el primer dia","me duele todo despues de empezar","tengo agujetas de empezar","me duele todo tras el primer entreno","agujetas de novato","despues del gym me duele todo"],
+    r:"Esas son agujetas de novato y son normalísimas: aparecen fuerte los primeros días porque el músculo no está acostumbrado, y cada semana irán a menos. No significan que te hayas lesionado ni que hayas entrenado \"bien\" por doler más. Muévete suave, hidrátate y descansa; no dejes de ir por las agujetas, que se pasan solas. Eso sí: si el dolor es de articulación (no de músculo), te deja casi sin poder moverte, o no mejora en varios días, eso ya no es agujeta normal — para y coméntaselo a un médico. (— master-file, agujetas y crecimiento)",
+    chips:["tengo agujetas","me canso enseguida","¿cuánto dura una sesión?"]
+  },
+  {
+    tronco:"empezar", rama:"tengo-miedo-lesion",
+    claves:["tengo miedo a lesionarme","me da miedo hacerme dano","tengo miedo de romperme algo","me da miedo lesionarme empezando","miedo a hacerme dano en el gym","y si me lesiono empezando"],
+    r:"Es un miedo sano que además juega a tu favor, porque te hará ir con cabeza. La receta para no hacerte daño es sencilla: calienta un poco antes, empieza con pesos ligeros y sube despacio, prioriza la técnica sobre los kilos, y si te da más confianza, apóyate en máquinas al principio, que suelen ser más fáciles de controlar mientras coges el patrón. El error clásico del novato es meter mucho peso el primer día; evita eso y vas sobrado. (— guía general)",
+    chips:["¿máquinas o pesas?","primer día en el gimnasio","¿necesito entrenador?"]
+  },
+  {
+    tronco:"motivacion", rama:"hub",
+    claves:["motivacion","motivarme","recuperar la motivacion","quiero motivarme","tema motivacion","desmotivacion","estoy desmotivado","estoy desmotivada","como motivarme","necesito motivacion"],
+    r:"La motivación va y viene, y eso es de lo más normal: casi nadie tiene ganas siempre. Lo que de verdad sostiene el entreno no es la chispa del primer día, sino el hábito y la constancia. Dime qué se te está atragantando y lo vamos desmontando, sin sermones. (— hub temático, CEREBRO 2.0)",
+    chips:["no tengo ganas de entrenar","me da pereza","me aburro en el gym","siempre lo dejo a las dos semanas","como creo el habito","la disciplina puede mas que la motivacion"]
+  },
+  {
+    tronco:"motivacion", rama:"no-tengo-ganas-de-entrenar",
+    claves:["no tengo ganas de entrenar","no tengo ganas","no tengo motivacion","sin motivacion","no quiero entrenar hoy","hoy no tengo ganas","me da palo entrenar","no me apetece entrenar","no me apetece ir al gym","paso del gym hoy"],
+    r:"Que hoy no tengas ganas no significa que te falte fuerza de voluntad: la motivación es una emoción y sube y baja sola. El truco es no negociar cada día contigo mismo. Baja el listón: comprométete solo a ponerte la ropa e ir a hacer la primera serie; casi siempre, una vez estás dentro, sigues. La acción suele venir ANTES que las ganas, no al revés. Y recuerda: la constancia es la media de las semanas, no de un día suelto. El mejor plan es el que cumples. (— guía general de hábitos y adherencia; el cierre conecta con la Tesis #10 del máster: 'el mejor protocolo es el que de verdad cumples')",
+    chips:["me da pereza","la disciplina puede mas que la motivacion","empezar por lo minimo","no soy constante"]
+  },
+  {
+    tronco:"motivacion", rama:"me-da-pereza",
+    claves:["me da pereza","que pereza","me da pereza ir al gym","me da pereza entrenar","que pereza el gym","tengo mucha pereza","pereza de ir a entrenar","me da palo ir al gym"],
+    r:"La pereza es de lo más humano, y casi siempre está en la PUERTA, no dentro: lo que cuesta es ir, no entrenar. Así que atácala en la fase de salir de casa, no en el gym. Deja la bolsa preparada la noche antes, ve directo sin sentarte al llegar a casa, y hazte una promesa pequeña: solo caliento y hago un ejercicio. Empezar es el grueso del trabajo; el cuerpo suele arrancar solo cuando se pone en marcha. (— guía general)",
+    chips:["no tengo ganas de entrenar","hacer el gym mas ameno","empezar por lo minimo"]
+  },
+  {
+    tronco:"motivacion", rama:"me-aburro-en-el-gym",
+    claves:["me aburro en el gym","me aburro","me aburro entrenando","el gym me aburre","entrenar me aburre","me aburro haciendo pesas","es aburrido el gym",
+      // Fix adversarial 18-07 (bloqueante 6): fraseo coloquial 'rollo' en positivo (el negado
+      // «que el gym no sea un rollo» vive en hacer-el-gym-mas-divertido y el gate de signo los separa).
+      "el gym es un rollo","entrenar es un rollo"],
+    r:"Si te aburres tienes un problema de adherencia, y eso sí importa: un entreno aburrido acaba siendo un entreno que dejas. La buena noticia es que hay margen de sobra para disfrutarlo dentro de la ciencia. Elige ejercicios y un formato que te gusten (máquinas, clases, calistenia, un deporte), ponte buena música o busca compañía, y convierte el progreso en un juego anotando tus marcas. Variar está bien, pero cambia el formato, no los fundamentos: cambiarlo todo cada semana te quita la referencia para ver si mejoras. (— Tesis #10 del máster / adherencia)",
+    chips:["musica para motivarme","entrenar solo o acompañado","hago siempre lo mismo","hacer el gym mas ameno"]
+  },
+  {
+    tronco:"motivacion", rama:"siempre-lo-dejo-a-las-dos-semanas",
+    claves:["siempre lo dejo a las dos semanas","siempre lo dejo","lo dejo a las dos semanas","siempre abandono","empiezo y lo dejo","lo dejo siempre","nunca aguanto mas de un mes"],
+    r:"Que lo dejes a las dos semanas no es falta de carácter: casi siempre es que empiezas demasiado fuerte. Arrancar a tope (todos los días, dos horas, dieta estricta) es insostenible, y a las dos semanas el cuerpo y la cabeza dicen basta. Dale la vuelta: empieza por MENOS de lo que crees que puedes, tan poco que te parezca fácil, y sube despacio. Cuenta con que la novedad se apaga sobre esa fecha; ahí es donde el hábito, y no las ganas, tiene que sostenerte. (— guía general de adherencia y hábitos)",
+    chips:["como creo el habito","miedo a quemarme","la disciplina puede mas que la motivacion","no soy constante"]
+  },
+  {
+    tronco:"motivacion", rama:"como-crear-el-habito",
+    claves:["como creo el habito","como crear el habito","crear el habito de entrenar","como hago del gym un habito","empezar por lo minimo","hacer del gym una rutina fija","como me acostumbro a entrenar","cuando se hace automatico entrenar"],
+    r:"Un hábito de entrenar no se crea con fuerza de voluntad ni con un número mágico de días: se crea repitiendo la misma sesión, en el mismo momento, con la menor fricción posible. Ánclalo a una señal fija (mismos días, misma hora, justo después del trabajo o nada más levantarte) y haz que el primer paso sea diminuto: a veces basta con ponerte la ropa de entreno y hacer 5 minutos, no la sesión perfecta. Ten paciencia — entrenar se vuelve automático a base de semanas, no de golpe — y si un día fallas no se borra nada: simplemente retomas al día siguiente, sin darle más vueltas. (— guía general)",
+    chips:["siempre lo dejo a las dos semanas","no soy constante","miedo a quemarme"]
+  },
+  {
+    tronco:"motivacion", rama:"no-veo-resultados-y-me-desanimo",
+    claves:["no veo resultados y me desanimo","no veo cambios y me desanimo","no progreso y me frustro","llevo semanas sin ver nada","me desanimo porque no avanzo","no noto mejoria y lo dejo","no veo resultados y lo dejo"],
+    r:"Es de lo más desmoralizante, y también de lo más normal: los resultados tardan y no van en línea recta. El espejo y la báscula son ruidosos y engañan a corto plazo. Mide mejor: fotos cada varias semanas, tus pesos y repeticiones en la libreta, cómo te queda la ropa. Al principio mucho del progreso es de técnica y fuerza antes de que se vea en tamaño. No lo dejes justo en el valle; y si de verdad llevas tiempo sin avanzar en nada, ahí sí toca revisar el plan. (— guía general)",
+    chips:["me comparo con los demas","como me pongo metas realistas","hago siempre lo mismo","la motivacion va y viene"]
+  },
+  {
+    tronco:"motivacion", rama:"entrenar-solo-o-acompanado",
+    claves:["entrenar solo o acompañado","entrenar solo o acompanado","entrenar acompañado","mejor entrenar solo o acompañado","entreno solo o con alguien","ir al gym solo o con amigos","me viene bien un compañero de gym","entrenar con un compañero",
+      // Fix adversarial 18-07 (bloqueante 4): «es mejor entrenar solo o con alguien» caía en cuanto-entrenar
+      // con aviso-calificador falso ('solo' de soledad ≠ 'solo' de únicamente). La clave en infinitivo casa
+      // como frase exacta y CUBRE el calificador ('alguien' está en la clave) → sin aviso falso.
+      "entrenar solo o con alguien","es mejor entrenar solo","mejor solo o con alguien","entrenar solo o en grupo","entrenar con amigos"],
+    r:"Ni una opción es mejor que la otra: es mejor la que a TI te mantenga constante. Un buen compañero te da chispa, te empuja una serie más y te hace aparecer los días flojos. Un mal compañero (mucha charla, objetivos distintos) te destroza la sesión. Ir solo te da foco y flexibilidad de horarios, con tus cascos y tu plan. Prueba las dos cosas y quédate con la que haga que vuelvas. (— Tesis #10 del máster / adherencia)",
+    chips:["música para motivarme","me aburro en el gym","cómo me pongo metas realistas"]
+  },
+  {
+    tronco:"motivacion", rama:"musica-para-motivarme",
+    claves:["musica para motivarme","musica en el gym","escuchar musica entrenando","la musica ayuda a entrenar","playlist para el gym","me motiva la musica","auriculares en el gym",
+      // Fix adversarial 18-07 (bloqueante 4): «que musica pongo para entrenar» caía en cuanto-entrenar
+      // porque solo casaba 'musica' (1 palabra) frente a 'entrenar' del card de volumen.
+      "que musica pongo para entrenar","musica para entrenar","que musica escucho para entrenar"],
+    r:"La música ayuda de verdad: te anima, hace que el esfuerzo se sienta más llevadero y te mete en faena. Móntate una lista que te ponga las pilas y úsala como señal de empezar. Es una herramienta de adherencia estupenda, aunque no sustituye a tener un plan y a ir progresando. Y si quieres afinar la parte mental para rendir más, hay más trucos. (— guía general)",
+    chips:["trucos mentales para rendir mas","entrenar solo o acompañado","hacer el gym mas ameno"]
+  },
+  {
+    tronco:"motivacion", rama:"disciplina-vs-motivacion",
+    claves:["la disciplina puede mas que la motivacion","disciplina vs motivacion","disciplina o motivacion","la motivacion no dura","la motivacion va y viene","mejor disciplina que motivacion","no dependas de la motivacion","como ser disciplinado","no consigo ser constante"],
+    r:"La motivación es una emoción: va y viene, y por eso no puedes construir sobre ella. Lo que sostiene el entreno es un sistema: decides una vez tus días fijos, quitas la pregunta diaria de si te apetece, bajas la fricción y dejas que la identidad tire de ti (soy alguien que entrena). Disciplina no es apretar los dientes cada día; es diseñar las cosas para no depender de las ganas. (— guía general)",
+    chips:["como creo el habito","no soy constante","me da pereza"]
+  },
+  {
+    tronco:"motivacion", rama:"no-tengo-tiempo-para-entrenar",
+    claves:["nunca tengo tiempo","nunca tengo tiempo de entrenar","no me da la vida para el gym","siempre me falta tiempo para entrenar","no tengo tiempo para ir al gym"],
+    r:"Casi siempre hace falta menos tiempo del que crees. Pocas sesiones bien aprovechadas, con ejercicios básicos que trabajan mucho músculo a la vez, rinden más que muchas sesiones a medias. Si vas justo, acorta la sesión, no la semana: sesiones cortas y constantes mantienen y hasta construyen. Agenda el entreno como una cita fija contigo. El mejor plan es el que encaja en tu vida. (— Tema 4 del máster / volumen mínimo eficaz + Tesis #10 / adherencia)",
+    chips:["cómo creo el hábito","la disciplina puede más que la motivación","miedo a quemarme"]
+  },
+  {
+    tronco:"motivacion", rama:"me-comparo-con-los-demas",
+    claves:["me comparo con los demas","me comparo","me comparo con otros en el gym","todos levantan mas que yo","me comparo y me desanimo","me siento inferior en el gym","me da corte por ser el mas flojo"],
+    r:"Compararte es el mayor ladrón de constancia. Ese que levanta más empezó siendo el novato que se sentía observado, igual que tú ahora. La única comparación justa es contigo mismo hace un mes. Y tranquilo: nadie te mira ni la mitad de lo que temes, cada uno va a lo suyo. Mira tu libreta, no la barra del de al lado. (— guía general)",
+    chips:["como me pongo metas realistas","no veo resultados y me desanimo","trucos mentales para rendir mas"]
+  },
+  {
+    tronco:"motivacion", rama:"como-me-pongo-metas-realistas",
+    claves:["como me pongo metas realistas","metas realistas","ponerme metas realistas","que objetivos me pongo","como fijar objetivos en el gym","objetivos realistas fitness","no se que meta ponerme"],
+    r:"Ponte metas de PROCESO (aparecer X días, sumar una repetición) más que de resultado (verte como fulano). Que sean pequeñas, concretas y a corto plazo: son fáciles de cumplir y cada logro te recarga. Celebra la racha, no solo la báscula, y ve ajustando sobre la marcha. Una meta realista protege la motivación; una meta imposible la funde. (— guía general)",
+    chips:["como creo el habito","no veo resultados y me desanimo","la disciplina puede mas que la motivacion"]
+  },
+  {
+    tronco:"motivacion", rama:"hacer-el-gym-mas-divertido",
+    claves:["hacer el gym mas ameno","hacer el gym mas divertido","como disfrutar el gym","que el entreno sea divertido","hacer el entreno mas llevadero","divertirme entrenando","que el gym no sea un rollo",
+      // Fix adversarial 18-07 (bloqueante 6): el usuario naive conjuga («como HAGO el gym mas divertido»)
+      // y el motor no empareja hago↔hacer; sin estas paráfrasis solo disparaba la clave casi-verbatim.
+      "como hago el gym mas divertido","el gym mas divertido"],
+    r:"Disfrutarlo no es un capricho: es justo lo que hace que sigas yendo — la adherencia multiplica la ciencia, y el plan «perfecto» que abandonas rinde menos que uno algo menos óptimo que sostienes. Guía general para conseguirlo: elige una modalidad que te guste (clases, calistenia, un deporte, máquinas), convierte el progreso en un juego (supera lo de la semana pasada), ponte buena música o busca compañía, y mete algo de novedad dentro de un plan estable. Si vas con pavor, cambia el formato, no los fundamentos. (— Tesis #10 del máster / adherencia; tácticas = guía general)",
+    chips:["musica para motivarme","entrenar solo o acompañado","me aburro en el gym"]
+  },
+  {
+    tronco:"motivacion", rama:"cuantos-dias-entreno-sin-quemarme",
+    claves:["cuantos dias entreno sin quemarme","miedo a quemarme","estoy quemado del gym","no me quiero quemar entrenando","cuantos dias voy al gym sin saturarme","no quiero saturarme entrenando","entrenar sin agobiarme","cuantos dias para no quemarme"],
+    r:"Más no es mejor. A igual volumen, entrenar más días no te hace progresar más rápido — la frecuencia por sí sola apenas cambia la hipertrofia, es logística. El músculo se construye de verdad en el DESCANSO, no acumulando sesiones. Pasarte de los días que luego puedes recuperar no suma, resta: un plan que no aguantas rinde menos que uno algo más flojo que sí cumples semana tras semana — la adherencia multiplica más que la ciencia sola. Elige los días que sostengas hasta en tu peor semana y deja algo en la recámara al principio. Sostenible siempre gana a máximo. (— Tema 24, Schoenfeld 2019 / Tesis #10)",
+    chips:["como creo el habito","siempre lo dejo a las dos semanas","la disciplina puede mas que la motivacion"]
+  },
+  {
+    tronco:"motivacion", rama:"recaer-y-volver-a-empezar",
+    claves:["recaer y volver a empezar","lo deje y quiero volver","volver al gym despues de dejarlo","he vuelto a caer","me he rendido otra vez","como retomo despues de meses","vuelvo despues de un tiempo parado","recaida en el gym",
+      // Fix adversarial 18-07 (bloqueante 5): «recai y quiero volver a empezar» — el motor no empareja
+      // recai↔recaer (formas distintas) pero sí recai↔recaido (raíz común), y la clave corta cubre el resto.
+      "he recaido y quiero volver a empezar","quiero volver a empezar"],
+    r:"Recaer no es fracasar: forma parte del proceso. Los que lo consiguen no son los que nunca paran, sino los que vuelven a empezar más veces. No entrenes el doble para recuperar lo perdido: el riesgo real no es ganar menos, es lesionarte, porque el tendón readapta más despacio que el músculo. Retoma hoy con cargas más suaves que las de antes (no al peso que dejaste), sube poco a poco cada semana y para si algo te duele. La buena noticia: el músculo vuelve hasta 2 veces más rápido la segunda vez. (— Tema 4: vuelta de parón / Rahmati 2022)",
+    chips:["como creo el habito","siempre lo dejo a las dos semanas","soy nuevo"]
+  },
+  {
+    tronco:"motivacion", rama:"no-me-veo-capaz",
+    claves:["no me veo capaz","no creo que pueda con esto","no valgo para el gym","siento que no puedo con esto","me falta confianza en el gym","creo que no lo voy a lograr","no me veo haciendolo"],
+    r:"Esa vocecita de 'yo no valgo para esto' la hemos tenido casi todos, y no es un veredicto: la capacidad se construye, no se nace con ella. Empieza por debajo de tu límite para ganar pronto y ve acumulando pequeñas pruebas de que sí puedes. Casi siempre, el que cree que no está hecho para el gym solo empezó demasiado fuerte o se comparó demasiado pronto. Si apareces, tu cuerpo se adapta. (— guía general)",
+    chips:["como me pongo metas realistas","me comparo con los demas","como creo el habito"]
+  },
 
   // ─────────────── TRONCO: ALIMENTACIÓN / SUPERÁVIT / DÉFICIT ───────────────
   {
@@ -13259,7 +13715,7 @@ var CEREBRO_KB=[
   // ─────────────── TRONCO: AYUNO / COMIDAS ───────────────
   {
     tronco:"ayuno", rama:"entrenar-en-ayunas",
-    claves:["entrenar en ayunas","ayunas gym","entrenar sin comer","ayuno intermitente","gym en ayunas","entrenar por la mañana sin comer","ayuno y musculo","hago ayuno","ayuno","y si entreno en ayunas","rindo peor en ayunas"],
+    claves:["entrenar en ayunas","entreno en ayunas","ayunas gym","entrenar sin comer","ayuno intermitente","gym en ayunas","entrenar por la mañana sin comer","ayuno y musculo","hago ayuno","ayuno","y si entreno en ayunas","rindo peor en ayunas"],
     r:"Entrenar en ayunas o comido da las MISMAS adaptaciones de hipertrofia y rendimiento a largo plazo (RCT 12 sem): no pierdes músculo por hacerlo en ayunas. El único caso donde comer antes ayuda es en sesiones muy largas, de mucho volumen o si te falta energía. Lo que manda es tu total de comida DIARIO, no el ayuno en sí. (— Tema 5, Vieira 2025 / Henselmans 2022)",
     chips:["¿rindo peor en ayunas?","¿carbos antes de entrenar?","¿cuántas comidas al día?"]
   },
@@ -13672,7 +14128,11 @@ var CEREBRO_KB=[
   },
   {
     tronco:"diagnostico", rama:"no-se-que-falla",
-    claves:["no se que me falla","no se que me pasa","no estoy seguro de que falla","ni idea de que me pasa","no se por donde empezar","no lo tengo claro"],
+    // Fix adversarial 18-07 (bloqueante 5): fuera la clave greedy 'no se por donde empezar' — su difuso
+    // ('empezar' a secas) se tragaba CUALQUIER pregunta de principiante y la mandaba al troubleshooter.
+    // La frase literal ahora cae en el hub de empezar (mejor destino para quien no ha empezado); ningún
+    // test ni chip dependía de esa clave (verificado antes de quitarla).
+    claves:["no se que me falla","no se que me pasa","no estoy seguro de que falla","ni idea de que me pasa","no lo tengo claro"],
     r:"Sin problema, vamos por descarte. Elige un área y te hago un par de preguntas para acotarlo. (— diagnóstico del coach)",
     chips:["revisar mi entreno","revisar mi comida","revisar mi descanso","revisar mi intensidad"]
   },
@@ -13812,7 +14272,7 @@ var CEREBRO_KB=[
   },
   {
     tronco:"mitos", rama:"peso-libre-vs-maquina-hipertrofia",
-    claves:["es mejor peso libre o maquina para ganar musculo","las maquinas dan menos musculo que las mancuernas","peso libre vs maquina hipertrofia","hay que hacer pesas libres para crecer","maquinas o mancuernas para masa muscular","las maquinas sirven para ponerse mamado","es verdad que el peso libre es mas efectivo en el gym","barra o maquina para hipertrofia"],
+    claves:["es mejor peso libre o maquina para ganar musculo","las maquinas dan menos musculo que las mancuernas","peso libre vs maquina hipertrofia","hay que hacer pesas libres para crecer","maquinas o mancuernas para masa muscular","las maquinas sirven para ponerse mamado","es verdad que el peso libre es mas efectivo en el gym","barra o maquina para hipertrofia","el peso libre no es inestable"],
     r:"Mito: para ganar músculo, peso libre y máquina crecen prácticamente igual cuando igualas volumen, esfuerzo (cercanía al fallo) y progresión de carga. El peso libre exige más estabilizadores y transfiere mejor al deporte o a movimientos cotidianos; la máquina es más fácil de aprender, aísla mejor un músculo y te deja apretar cerca del fallo con menos riesgo. Lo que de verdad decide no es la herramienta, sino que entrenes duro, subas cargas con el tiempo y seas constante; lo mejor suele ser combinar ambos. (— consenso en ciencia del ejercicio)",
     chips:["¿Cuánto cerca del fallo tengo que entrenar para crecer?","¿Qué es exactamente el volumen de entrenamiento?","¿qué hago para mejorar?"]
   },
@@ -13934,7 +14394,7 @@ var CEREBRO_KB=[
   },
   {
     tronco:"volumen", rama:"volumen-de-mantenimiento",
-    claves:["volumen de mantenimiento","cuanto entreno para mantener musculo","mantener musculo con poco entreno","si entreno menos pierdo musculo","cuanto para no perder musculo","mantener gains en vacaciones","entrenar poco mantiene musculo","cuanto para no perder gains","cuantas series para mantener","pierdo musculo si entreno menos","mantengo con menos series","cuanto para conservar el musculo"],
+    claves:["volumen de mantenimiento","cuanto entreno para mantener musculo","mantener musculo con poco entreno","si entreno menos pierdo musculo","cuanto para no perder musculo","mantener gains en vacaciones","entrenar poco mantiene musculo","cuanto para no perder gains","cuantas series para mantener","pierdo musculo si entreno menos","mantengo con menos series","cuanto para conservar el musculo","pierdo musculo en vacaciones","cuanto aguanta la fuerza"],
     r:"Buena noticia: mantener músculo cuesta MUCHO menos que construirlo. Según Bickel 2011, se conserva la hipertrofia entrenando con solo 1/3 a 1/9 del volumen con el que la ganaste (y la fuerza aguanta aún más, incluso sin entrenar). O sea, en una semana liada o de vacaciones te sobra con mucho menos volumen del habitual para no perder gains. Ojo por perfil: los mayores de 60 necesitan MÁS volumen de mantenimiento que los jóvenes (en el estudio la dosis mínima no les bastó). No entres en pánico por entrenar poco unos días. (— Tema 25, Bickel 2011)",
     chips:["¿Cuántas series para crecer?","¿Pierdo músculo en vacaciones?","¿Y si soy mayor de 60?","¿Cuánto aguanta la fuerza?"]
   },
@@ -14026,13 +14486,13 @@ var CEREBRO_KB=[
     tronco:"musculo", rama:"hub",
     claves:["musculo","musculos","masa muscular","gains","hipertrofia"],
     r:"El músculo da para mucho y casi nadie empieza con la pregunta afinada. ¿Qué quieres saber? Toca lo que más te encaje y lo vamos concretando. (— hub temático, CEREBRO 2.0)",
-    chips:["¿cuánto peso gano por semana?","ganar músculo y perder grasa a la vez","¿cuánto músculo gano al mes?","¿cuánto entreno para mantener músculo?"]
+    chips:["¿cómo se gana músculo?","¿por qué se pierde el músculo?","¿cuál es el músculo más importante?","¿me duelen los músculos?","¿músculo o fuerza?","¿se puede ganar músculo sin pesas?","¿necesito el gimnasio o vale entrenar en casa?","¿ganar músculo solo con proteína?","¿solo abdominales para marcar?","¿cuánto tarda en verse el músculo?"]
   },
   {
     tronco:"empezar", rama:"hub",
     claves:["empezar","empiezo","soy nuevo","nuevo","novato","principiante","primera vez","primer dia","recien empiezo","empezar de cero"],
     r:"Bienvenido: empezar bien es más fácil de lo que parece, y no hay pregunta tonta. ¿Por dónde quieres arrancar? (— hub temático, CEREBRO 2.0)",
-    chips:["vuelvo de un parón","¿cuántas reps de principiante?","¿cuál es el mejor plan?"]
+    chips:["¿por dónde empiezo del todo?","me da vergüenza ir","¿cuántos días a la semana?","tengo 60 años, ¿puedo?","tengo 14 años, ¿puedo?","¿necesito entrenador?","¿máquinas o pesas?","estoy muy delgado","estoy gordo, ¿por dónde empiezo?"]
   }
 ];
 
@@ -14788,7 +15248,9 @@ var CB_TRONCO_NOMBRE={
   musculo:"💪 Músculo", empezar:"🚀 Empezar", diagnostico:"🔍 Diagnóstico", mitos:"🚫 Mitos",
   expectativas:"📈 Expectativas", mujer:"🚺 Mujer", lesiones:"🩹 Lesiones", fibras:"🧬 Fibras musculares",
   estres:"😰 Estrés", estetica:"✨ Estética", habitos:"✅ Hábitos", vegetariano:"🥦 Vegetariano",
-  termorregulacion:"🌡️ Termorregulación", embarazo:"🤰 Embarazo", alcohol:"🍺 Alcohol", adherencia:"🧲 Adherencia"
+  termorregulacion:"🌡️ Termorregulación", embarazo:"🤰 Embarazo", alcohol:"🍺 Alcohol", adherencia:"🧲 Adherencia",
+  // v0.48.0 · M2 · tronco nuevo motivación/constancia (hueco CR4 del recon cerrado con los bancos tema-parámetro)
+  motivacion:"🔥 Motivación"
 };
 // v0.46.0 · etiqueta de un tronco para los chips: mapa curado o, si es un tronco futuro sin entrada,
 // fallback con emoji neutro 💬 + capitalizado (NUNCA el slug crudo). Puro y testeable (test-cerebro).
