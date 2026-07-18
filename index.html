@@ -619,7 +619,7 @@
 <header class="brandbar">
   <div class="logo"><span class="dot"></span>JV <b>Fitness</b></div>
   <div style="display:flex;align-items:center">
-    <span class="tag">MVP v0.37.0 · motor v0.7</span>
+    <span class="tag">MVP v0.38.0 · motor v0.7</span>
     <!-- ⚙️ tanda #22 · hub de AJUSTES (no es pestaña): modal a pantalla completa -->
     <button class="gearbtn" id="btn_hub" type="button" title="Ajustes" aria-label="Abrir ajustes" onclick="hubAbrir()">⚙️</button>
   </div>
@@ -12372,7 +12372,7 @@ function resetTodo(){ if(!confirm("⚠️ Esto borra TODO: perfil, pesos, entren
 // Reemplazo total con confirmación. Reusa get/set, hoyLocal, toast, validar, render. NO toca motor ni gate.
 function exportarJSON(){ try{ set("jvf_last_export",hoyLocal()); }catch(e){}
   try{
-    var data={ app:"jvf", schema:1, app_version:"0.37.0", exportadoEl:new Date().toISOString(),
+    var data={ app:"jvf", schema:1, app_version:"0.38.0", exportadoEl:new Date().toISOString(),
       perfil:get(LS_P,null), pesos:get(LS_W,[]), entrenos:get(LS_E,[]), notas_ej:get("jvf_notas_ej",{}), comida:get("jvf_comida",[]), agua:get("jvf_agua",{}), suples_cfg:get("jvf_suples_cfg",null), suples_log:get("jvf_suples_log",{}),
       rutinas:get("jvf_rutinas",[]), meals:get("jvf_meals",[]), ent_start:get("jvf_ent_start",null),   // v0.10 · backup completo
       alimentos_propios:get("jvf_alimentos_propios",[]), barcode_cache:get("jvf_barcode_cache",{}),   // I5/I6 · también viajan en el backup
@@ -13605,6 +13605,98 @@ var CEREBRO_KB=[
     claves:["ventana anabolica es real","tengo que tomar proteina justo despues de entrenar","si no como en 30 minutos pierdo el musculo","batido de proteina nada mas terminar el gym","cuanto tiempo tengo para comer despues de entrenar","se pierden las ganancias si no como rapido tras entrenar","importa el momento de tomar la proteina post entreno","hay que meter proteina justo al acabar el gym"],
     r:"La \"ventana anabólica\" de 30 minutos es un mito exagerado: tras entrenar el músculo sigue receptivo a los nutrientes durante varias horas, no solo un ratito. Lo que de verdad manda es la proteína total del día (en torno a 1,6-2,2 g por kg de peso) repartida en varias comidas, no correr a por el batido nada más soltar la mancuerna. Si entrenas en ayunas o llevas muchas horas sin comer, conviene no demorar mucho la siguiente comida; para el resto, no hace falta agobiarse con el cronómetro. (— Aragon & Schoenfeld 2013)",
     chips:["¿Cuánta proteína necesito al día para ganar músculo?","¿Sirve de algo entonces el batido justo después de entrenar?","¿Y si entreno en ayunas por la mañana, cambia algo?"]
+  },
+
+  // ─────────────── LOTE /ajedrez 2026-07-18 · fichas 176-190 (cantera pendiente 14-07 + refuerzos, verificación adversarial por ficha) ───────────────
+  {
+    tronco:"mujer", rama:"regla-abundante-hierro",
+    claves:["reglas muy abundantes","sangrado abundante cansancio","regla abundante hierro","mucha regla me deja sin fuerzas","perdida de hierro por la regla","anemia por la menstruacion","menorragia","reglas fuertes hierro","estoy anemica por la regla","hierro y menstruacion abundante","me baja mucho la regla y estoy cansada","reglas abundantes anemia"],
+    r:"Si tu regla es abundante (menorragia), pierdes 5-6 veces más hierro por ciclo que con un sangrado normal, y eso la convierte en la causa más común de déficit de hierro y anemia ferropénica en mujeres en edad fértil (afecta a 1 de cada 4). Si marcas \"menstruación abundante\" en la app, te subimos la necesidad de hierro y te destacamos alimentos ricos en él. (— Tema 38, Munro et al. 2023)",
+    chips:["¿por qué me afecta más a mí el hierro?","¿qué alimentos con hierro?","¿es por la dieta o por la regla?"]
+  },
+  {
+    tronco:"volumen", rama:"volumen-de-mantenimiento",
+    claves:["volumen de mantenimiento","cuanto entreno para mantener musculo","mantener musculo con poco entreno","si entreno menos pierdo musculo","cuanto para no perder musculo","mantener gains en vacaciones","entrenar poco mantiene musculo","cuanto para no perder gains","cuantas series para mantener","pierdo musculo si entreno menos","mantengo con menos series","cuanto para conservar el musculo"],
+    r:"Buena noticia: mantener músculo cuesta MUCHO menos que construirlo. Según Bickel 2011, se conserva la hipertrofia entrenando con solo 1/3 a 1/9 del volumen con el que la ganaste (y la fuerza aguanta aún más, incluso sin entrenar). O sea, en una semana liada o de vacaciones te sobra con mucho menos volumen del habitual para no perder gains. Ojo por perfil: los mayores de 60 necesitan MÁS volumen de mantenimiento que los jóvenes (en el estudio la dosis mínima no les bastó). No entres en pánico por entrenar poco unos días. (— Tema 25, Bickel 2011)",
+    chips:["¿Cuántas series para crecer?","¿Pierdo músculo en vacaciones?","¿Y si soy mayor de 60?","¿Cuánto aguanta la fuerza?"]
+  },
+  {
+    tronco:"fibra", rama:"demasiada-fibra",
+    claves:["demasiada fibra","me paso de fibra","cuanta fibra es demasiada","limite de fibra","exceso de fibra","comer mucha fibra","fibra de mas","75 gramos de fibra","pasarse con la fibra","tope de fibra","fibra alta en definicion","mucha fibra es mala"],
+    r:"No hay un tope 'tóxico', pero pasada la diana (25-35 g/día) la fibra extra sobre todo te da gases e hinchazón sin premio de salud claro. Excepción: en una definición agresiva, comer MUCHA fibra (incluso unos 75 g) puede ser una jugada deliberada, porque llena mucho con pocas calorías y ayuda a aguantar el déficit. El precio son molestias digestivas: si la subes, aléjala del entreno. 'Pasarse' no siempre es error, depende de tu tolerancia. (— Tema 33, Quagliani 2017 / @leoonpham)",
+    chips:["¿Cuánta fibra al día?","¿La fibra me hincha en el gym?","¿Cómo no paso hambre en definición?","¿Fibra soluble o insoluble?"]
+  },
+  {
+    tronco:"fibra", rama:"fibra-soluble",
+    claves:["fibra soluble","fibra insoluble","diferencia entre fibra soluble e insoluble","que es la fibra soluble","tipos de fibra","fibra soluble o insoluble","fibra viscosa","fibra fermentable","que hace cada tipo de fibra","fibra soluble para que sirve","que fibra es mejor","avena o salvado"],
+    r:"Hay dos tipos y hacen cosas distintas. La SOLUBLE/viscosa (avena, legumbre, fruta) forma un gel que enlentece la digestión, aplana los picos de glucosa e insulina y sacia. La INSOLUBLE (integral, piel de la verdura) da volumen a las heces y mejora el tránsito. Y la parte fermentable alimenta a tu microbiota (produce butirato). La diana práctica son 25-35 g al día de comida real: verdura, fruta con piel, legumbre y avena integral, y ya te llevas las dos. (— Tema 33, Zhang 2023)",
+    chips:["¿Cuánta fibra al día?","¿La fibra ayuda a adelgazar?","¿Me hincha antes de entrenar?","¿Qué alimentos tienen más fibra?"]
+  },
+  {
+    tronco:"estetica", rama:"verse-mas-grande",
+    claves:["verse mas grande","como verme mas mazado","parecer mas grande","verme mas ancho","hombros mas anchos","verse mazado","como verme mas grande sin esteroides","que musculos me hacen ver grande","verme mas grande de lo que soy","parecer mas musculoso","ilusion de tamaño","verme mas fuerte sin serlo"],
+    r:"Verse 'grande' es en buena parte una ilusión de proporciones, no solo de kilos de músculo. Las tres palancas: 1) estar SECO (un % graso bajo marca todo); 2) priorizar deltoides laterales, que dan anchura de hombros (entrénalos 2-5 veces/semana); 3) sumar pecho superior, bíceps y trapecios. Luego, luz y poses hacen el resto. Con eso te ves 'mazado' sin necesidad de química. (— Tema 15, @jeffnippardfitness)",
+    chips:["¿Cómo entreno los deltoides laterales?","¿Qué % de grasa para verme marcado?","¿Cuántas veces por semana el hombro?","¿Definir baja la testosterona?"]
+  },
+  {
+    tronco:"sueno", rama:"la-siesta-ayuda",
+    claves:["la siesta ayuda","dormir siesta recupera","siesta despues de entrenar","echarme una siesta","la siesta recupera fuerza","siesta antes de entrenar","cuanto dura la siesta ideal","siesta para el gym","power nap","dormir de dia recupera","a que hora la siesta","siesta si dormi mal"],
+    r:"La siesta ayuda si dormiste mal, pero con reglas: 20-90 minutos, mejor entre la 1 y las 4 de la tarde, y deja unos 30 minutos antes de entrenar (nunca justo antes). Recupera potencia, energía y ánimo, pero NO devuelve la fuerza máxima perdida por una mala noche. Es un apoyo puntual: la base sigue siendo dormir bien de noche. (— Tema 27, refuerzos ciencia 2026-07-05)",
+    chips:["¿la siesta quita el sueño de noche?","¿cuánto debo dormir de noche?","¿café o siesta si dormí mal?","¿entreno igual tras mala noche?"]
+  },
+  {
+    tronco:"tecnica", rama:"sirve-entrenar-en-bosu",
+    claves:["sirve entrenar en bosu","bosu para el core","ejercicios de equilibrio sirven","entrenar en superficie inestable","bosu hipertrofia","fitball para entrenar fuerza","plataforma inestable gym","balance board","entrenar sobre pelota","inestabilidad para el core","sentadillas en bosu","ejercicios funcionales de equilibrio"],
+    r:"Entrenar sobre superficies inestables (bosu, plataformas, pelota) baja la producción de fuerza casi un 60%, así que es MALA herramienta para ganar músculo o fuerza: no puedes cargar suficiente. Otra cosa es el peso libre, que ya te obliga a estabilizar de forma útil. Para hipertrofia y fuerza, pisa suelo firme y carga; deja los trucos de equilibrio para otra cosa. (— Refuerzos jul-2026, Anderson & Behm 2004)",
+    chips:["¿y el peso libre no es inestable?","¿cómo entreno bien el core?","¿los funcionales sirven de algo?","¿mejor máquina o peso libre?"]
+  },
+  {
+    tronco:"mitos", rama:"self-talk-imagineria-rendimiento-gym",
+    claves:["hablarme a mi mismo en el gym","self talk","sirve hablarme a mi mismo entrenando","motivarme hablando para la serie","decirme frases para aguantar","visualizar el ejercicio","visualizar el levantamiento","imaginar el ejercicio antes","visualizacion mejora la fuerza","imagineria motora","trucos mentales para rendir mas"],
+    r:"Hablarte a ti mismo (self-talk) y visualizar el levantamiento (imaginería motora) tienen estudios reales detrás, pero no prueban lo que se vende para el gimnasio. El de self-talk es de ciclismo de resistencia: bajó el esfuerzo percibido y alargó el tiempo hasta el agotamiento, pero no midió reps, fuerza ni hipertrofia. El de imaginería metió 6 semanas de visualización dentro de un programa de entrenamiento real y solo hubo una ganancia pequeña en fuerza de pierna (nula en press banca); tampoco midió activación muscular. Son técnicas plausibles para aguantar una serie dura, pero no un truco mágico agudo para levantar más ahora mismo. (— Tema 12, Blanchfield 2014 / Lebon 2010)",
+    chips:["¿hablarme a mí mismo mejora mis levantamientos?","¿visualizar el ejercicio aumenta la fuerza?","¿sirve para hipertrofia?"]
+  },
+  {
+    tronco:"carbohidratos", rama:"enjuague-bucal-de-carbos",
+    claves:["enjuague bucal de carbos","enjuagarme la boca con carbos","carb mouth rinse","escupir la bebida de carbos","enjuague de carbohidratos","buchear carbos sin tragar","mojarme la boca con azucar para rendir","enjuagar la boca mejora el gym","enjuague bucal rendimiento"],
+    r:"Enjuagarte la boca con bebida de carbos y escupir tiene un mecanismo real (receptores en la boca mandan señal de recompensa al cerebro y bajan el esfuerzo percibido), pero el efecto es pequeño y propio del ejercicio AERÓBICO, no del gimnasio: en fuerza/anaeróbico es prácticamente cero y no sube nada tu fuerza máxima. Rinde algo más en ayunas y en sesiones largas. Para tu sesión de pesas normal, ni te molestes: no 'desbloquea' rendimiento. (— Tema 5, Brietzke 2025 / Sieljacks 2022)",
+    chips:["¿y las chuches intra-entreno sirven?","¿carbos antes de entrenar?","¿sirve para cardio?","¿sube la fuerza máxima?"]
+  },
+  {
+    tronco:"tecnica", rama:"saltar-da-musculo",
+    claves:["saltar da musculo","los saltos dan musculo","movimientos explosivos dan musculo","pliometria hipertrofia","ejercicios explosivos para musculo","levantar rapido da musculo","mover rapido da musculo","los sprints dan musculo","entrenar explosivo para hipertrofia","los saltos hipertrofian","la velocidad explosiva hace musculo","lanzar da musculo"],
+    r:"Poco. Los movimientos muy rápidos o explosivos (saltar, lanzar, sprintar) reclutan muchas fibras, pero generan poca o ninguna hipertrofia: por la relación fuerza-velocidad, cuanto más rápido mueves menos tensión sufre cada fibra, y esa tensión por fibra es la que hace crecer. Reclutar muchas fibras no es lo mismo que estimularlas para que crezcan. La pliometría da algo de músculo, pero pequeño. Para hipertrofia: contraer fuerte cerca del fallo, no mover explosivo. (— Tema 17, Wackerhage 2019 / Beardsley)",
+    chips:["¿qué es la tensión mecánica?","¿reclutar más fibras es crecer?","¿qué hace crecer el músculo?","¿importa el tempo?"]
+  },
+  {
+    tronco:"tecnica", rama:"la-activacion-muscular",
+    claves:["la activacion muscular","emg","electromiografia","mas activacion mas musculo","que ejercicio activa mas el musculo","activacion muscular e hipertrofia","el emg dice que crece","mirar la activacion muscular","que ejercicio recluta mas","el que mas activa es el mejor","sirve la activacion muscular"],
+    r:"No. La activación muscular medida con EMG NO predice cuánto crece un músculo: un ejercicio puede 'activar más' en el EMG agudo y no dar más hipertrofia. El crecimiento de verdad se mide con ecografía o resonancia, no con el EMG ni con 'lo que sientes'. Por eso elige el ejercicio por biomecánica (qué rango trabaja, dónde carga el músculo), no por cuál 'se activa o se siente más'. (— Tema 18, Vigotsky 2022)",
+    chips:["¿cómo elijo el ejercicio?","¿sirve sentir el músculo?","¿puedo aislar una zona?","¿qué hace crecer de verdad?"]
+  },
+  {
+    tronco:"estimulo", rama:"me-salen-fibras-nuevas",
+    claves:["me salen fibras nuevas","el musculo crea fibras nuevas","hiperplasia","el musculo hace mas fibras","crecen las fibras o salen nuevas","el musculo crece con fibras nuevas","tengo mas fibras musculares","hipertrofia o hiperplasia","el musculo crece por fibras mas grandes","salen fibras nuevas entrenando","mas fibras o fibras mas grandes"],
+    r:"Con las mismas fibras, más grandes. En humanos el músculo crece por HIPERTROFIA (cada fibra aumenta de tamaño), no por hiperplasia (fabricar fibras nuevas): eso último, si existe, es marginal y en humanos domina la hipertrofia. O sea, entrenar no te da más fibras musculares, engorda las que ya tienes. Lo que las hace crecer es la tensión mecánica cerca del fallo con sobrecarga progresiva. (— Tema 17, Schiaffino 2021)",
+    chips:["¿qué es la tensión mecánica?","¿qué hace crecer el músculo?","¿cuántas series por músculo?","¿cuánto músculo gano al mes?"]
+  },
+  {
+    tronco:"fibras", rama:"las-fibras-rapidas-crecen-mas",
+    claves:["las fibras rapidas crecen mas","fibras tipo 1 y tipo 2","fibras rapidas y lentas","entrenar explosivo para fibras rapidas","que fibras crecen mas","tipo de fibra muscular","fibras rapidas hipertrofia","tengo mas fibras rapidas o lentas","como entreno las fibras rapidas","fibras tipo ii","fibras blancas y rojas","las fibras lentas crecen"],
+    r:"Las fibras rápidas (tipo II) parecen tener más señalización anabólica y tenderían a crecer algo más, pero ojo: la evidencia fuerte es en animales y en señalización aguda, no en humanos entrenando. En la práctica NO cambies tu entreno por esto: no necesitas 'entrenar explosivo para fibras rápidas'. Acercándote al fallo ya reclutas todas las fibras. Céntrate en tensión, técnica y progresión. (— Tema 20, Roberts 2020)",
+    chips:["¿Hay que entrenar al fallo?","¿Qué hace crecer de verdad?","¿El entreno explosivo sirve?"]
+  },
+  {
+    tronco:"suplementacion", rama:"el-bicarbonato-de-sodio-sirve",
+    claves:["el bicarbonato de sodio sirve","bicarbonato sodico para entrenar","el bicarbonato sirve para el gym","bicarbonato para el rendimiento","el bicarbonato da mas musculo","bicarbonato me da diarrea","bicarbonato me sienta mal","tomar bicarbonato antes de entrenar","bicarbonato de sodio para el deporte","el bicarbonato para esfuerzos cortos","sirve el bicarbonato de cocina"],
+    r:"El bicarbonato de sodio es de los pocos suplementos con respaldo real, pero para RENDIMIENTO, no para músculo: actúa como tampón fuera de la célula y ayuda en esfuerzos anaeróbicos cortos e intensos. No construye ni un gramo de músculo. Y ojo con las molestias gastrointestinales, que son su gran pega. Si lo que buscas es masa, tu base es creatina, proteína y cafeína; el bicarbonato solo tiene sentido si compites en esfuerzos cortos donde exprimir un poco más marca la diferencia. (— Tema 26, Grgic 2021, JISSN)",
+    chips:["¿Y la beta-alanina qué hace?","¿Qué suplementos sí valen?","¿Cuánta cafeína tomo?"]
+  },
+  {
+    tronco:"grasa", rama:"relacion-omega-6-omega-3",
+    claves:["relacion omega 6 omega 3","ratio omega 6 omega 3","tengo mal la relacion de omegas","proporcion omega 6 y omega 3","demasiado omega 6","como equilibro los omegas","añadir omega 3 o quitar omega 6","desequilibrio de omegas","como mejoro mi ratio de omegas","el desbalance de omega 6","estoy comiendo mucho omega 6"],
+    r:"La relación moderna omega-6 a omega-3 (~15-20:1) está desequilibrada frente a la recomendada (~1-4:1), y sí es un área de investigación activa. Pero el consejo práctico no es demonizar el omega-6: es AÑADIR omega-3. Mete pescado graso, lino o chía en tu dieta, en vez de obsesionarte con eliminar omega-6, que está en alimentos sanos como nueces y huevos. Corriges la proporción sumando lo que falta, no quitando lo que asusta en las redes. (— Tema 30, regla JV Fitness / Eaton 1997)",
+    chips:["¿El omega-6 engorda?","¿Cuánto omega-3 tomo?","¿Los aceites de semilla son malos?"]
   }
 ];
 
