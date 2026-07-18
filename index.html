@@ -619,7 +619,7 @@
 <header class="brandbar">
   <div class="logo"><span class="dot"></span>JV <b>Fitness</b></div>
   <div style="display:flex;align-items:center">
-    <span class="tag">MVP v0.40.0 · motor v0.7</span>
+    <span class="tag">MVP v0.42.0 · motor v0.7</span>
     <!-- ⚙️ tanda #22 · hub de AJUSTES (no es pestaña): modal a pantalla completa -->
     <button class="gearbtn" id="btn_hub" type="button" title="Ajustes" aria-label="Abrir ajustes" onclick="hubAbrir()">⚙️</button>
   </div>
@@ -1333,6 +1333,25 @@ Tus datos se guardan solo en este dispositivo.</p>
           </details>
         </div>
       </div>
+      <div class="hub-conector">
+        <!-- 🧠 F-V5 · CAPA 4 (visión IA) del lector de etiquetas. La PWA solo conoce la URL del Worker;
+             la clave de Groq vive SOLO como secret binding del Worker (charter): aquí NO hay ningún
+             secreto. El recorte se envía SOLO cuando Pablo pulsa «🧠 Leer con IA» tras un fallo del OCR. -->
+        <b>🧠 Lector de etiquetas con IA (opcional)</b>
+        <p class="hint" style="margin-top:4px">Cuando el OCR local no consigue leer una etiqueta (brillos, curvas, tipografías raras), puedes enviar <b style="color:var(--soft)">solo el recorte</b> a un modelo de visión y que te lo rellene. <b style="color:var(--soft)">Sin claves en la app</b>: aquí solo se pega la URL de tu Worker (la clave vive en el Worker). El resultado pasa por los mismos guardarraíles y lo revisas tú, como cualquier lectura.</p>
+        <label style="margin-top:8px">URL de tu Worker de visión</label>
+        <input id="aj_etiq_ia_url" type="url" placeholder="https://jvfitness-vision.TU-SUBDOMINIO.workers.dev" onchange="etiqVisionUrlGuardar(this.value)">
+        <div id="aj_etiq_ia_estado" style="margin-top:4px"></div>
+        <details style="margin-top:8px;border:1px solid var(--line);border-radius:12px;padding:10px 12px">
+          <summary style="cursor:pointer;color:var(--jade);font-weight:600">🖐️ Cómo montarlo (una sola vez, 3 pasos)</summary>
+          <p class="hint" style="margin-top:8px">El código del Worker ya está listo en el repo (<code>workers/etiqueta-vision/</code>). Estos son clics TUYOS (🖐️) — Claude no entra en tu cuenta de Cloudflare ni ve tu clave.</p>
+          <ol style="margin:8px 0 0 18px;padding:0;font-size:.85rem;color:var(--mute);line-height:1.5">
+            <li><b>Despliega el Worker</b> 🖐️ — en tu cuenta de Cloudflare, crea el Worker con el <code>worker.js</code> y <code>wrangler.toml</code> del repo, y crea un namespace KV llamado <b>RL</b> (rate-limit). Pon tu dominio real en <code>ALLOWED_ORIGIN</code>.</li>
+            <li><b>Pega la clave de Groq</b> 🖐️ — <code>wrangler secret put GROQ_API_KEY</code> (o panel → Settings → Variables, «Encrypt»). La clave la metes TÚ; nunca va a git ni a esta app. Verifica antes en console.groq.com el ID del modelo de visión y tus límites free.</li>
+            <li><b>Pega aquí la URL</b> 🖐️ — la dirección <code>…workers.dev</code> del Worker, arriba. A partir de ahí, cuando el OCR falle verás el botón «🧠 Leer con IA».</li>
+          </ol>
+        </details>
+      </div>
     </div>
 
     <!-- 🔔 NOTIFICACIONES — recordatorios existentes (agua-verano, pesaje) MOVIDOS desde Ajustar (tanda #22) -->
@@ -1820,10 +1839,14 @@ Tus datos se guardan solo en este dispositivo.</p>
       <button class="sec" type="button" id="bc_btn_cam" style="width:100%;margin:0 0 8px" onclick="bcIniciarCamara()">📷 Escanear con la cámara</button>
       <div id="bc_vwrap" style="position:relative">
         <video id="bc_video" class="hidden" playsinline muted autoplay style="width:100%;max-height:240px;object-fit:cover;border-radius:12px;background:var(--ink-3)"></video>
-        <!-- 🏷️ recuadro guía del modo etiqueta (mismos %s que el recorte de etiqPreprocesar: 8% lados, 12% arriba/abajo) -->
+        <!-- 🏷️ recuadro guía del modo etiqueta. 📷 F-V1 · su rect REAL en pantalla se mapea al frame del sensor por object-fit (etiqMapearGuia); ya NO depende de que estos %s coincidan con el recorte. -->
         <div id="etiq_guia" class="hidden" style="position:absolute;inset:12% 8%;border:2px dashed var(--jade);border-radius:10px;pointer-events:none"></div>
       </div>
+      <!-- 🔍 F-V2 · miniatura del recorte REAL que se envió al OCR: enseña SIEMPRE lo que se capturó, encima del estado. -->
+      <img id="etiq_thumb" class="hidden" alt="lo que capturó la cámara" style="display:block;width:100%;max-width:220px;margin:8px auto 0;border-radius:8px;border:1px solid var(--line)">
       <div id="bc_estado" class="hint" style="margin-top:6px;min-height:1.1em"></div>
+      <!-- 🔍 F-V2/F-V6 · acciones de diagnóstico bajo un fallo: «ver lo que leí» + «leer con IA» (si hay Worker). -->
+      <div id="etiq_diag" class="hint hidden" style="margin-top:4px"></div>
       <button class="sec hidden" type="button" id="etiq_cap" style="width:100%;margin:2px 0 0" onclick="etiqCapturar()">📸 Capturar etiqueta</button>
       <canvas id="etiq_canvas" class="hidden" style="display:none"></canvas>
       <label>o escribe el código a mano</label>
@@ -9974,6 +9997,42 @@ function etiqParse(texto){
   return {campos:campos, base:b.base, u:b.u, racionG:b.racionG||null, nombre:nombre,
           correcciones:correcciones, preguntas:preguntas, avisos:avisos, nPreguntas:preguntas.length, energia:en};
 }
+// F-V5 · CAPA 4 (visión IA): el JSON que devuelve el modelo de visión {kcal,p,c,f,sat,az,fib,sal_g,
+// na_mg,caf_mg,base} NO se cree a ciegas (I8). Pasa por LOS MISMOS guardarraíles que el OCR clásico:
+// sal↔sodio (F5), rangos físicos (F5a), Atwater (F4) y coherencias (F5b). Devuelve la MISMA forma que
+// etiqParse para desembocar por el mismo embudo. Un valor imposible se anula (no se inventa). PURA.
+function etiqParseVision(j){
+  if(!j || typeof j!=="object") return null;
+  function num(v){ if(v==null) return null; var n=(typeof v==="number")?v:etiqNum(v); return (n!=null && isFinite(n))?n:null; }
+  var kcal=num(j.kcal), p=num(j.p), c=num(j.c), f=num(j.f), sat=num(j.sat), az=num(j.az), fib=num(j.fib), caf=num(j.caf_mg);
+  var salG=num(j.sal_g), naMg=num(j.na_mg);
+  var na=etiqSalSodio(salG, naMg);
+  var base=(j.base==="100ml")?"100ml":(j.base==="porcion"?"racion":"100g");
+  var u=(base==="100ml")?"ml":"g";
+  var racionG=num(j.racion_g);
+  var campos={kcal:kcal, p:p, c:c, f:f, sat:sat, az:az, fib:fib, na:na, caf:caf};
+  var avisos=[], correcciones=[], preguntas=[];
+  // F-V5 BLOQUEANTE: si la IA devolvió los valores POR RACIÓN, normalizar a por-100 ANTES de los
+  // guardarraíles (que asumen por-100) y de desembocar como *100. Si no hay gramaje de ración, NO se
+  // puede convertir → aviso honesto (el error por-ración vs por-100 es invisible a la vista, hay que decirlo).
+  if(base==="racion"){
+    if(racionG!=null && racionG>0){
+      var facV=100/racionG;
+      ["kcal","p","c","f","sat","az","fib","na","caf"].forEach(function(k){
+        if(campos[k]!=null){ var ent=(k==="kcal"||k==="na"||k==="caf"); campos[k]=+(campos[k]*facV).toFixed(ent?0:1); }
+      });
+      avisos.push("La IA leyó los valores POR RACIÓN ("+racionG+" g) y los he pasado a 100 g. Revísalo con el envase.");
+    } else {
+      avisos.push("⚠️ La IA leyó valores POR RACIÓN pero no el tamaño de la ración: estos números NO son por 100 g. Corrígelos a mano con el envase.");
+    }
+  }
+  var r=etiqRangos(campos); campos=r.campos; avisos=avisos.concat(r.avisos);
+  var f4=etiqAtwaterCorrige(campos); campos=f4.campos; correcciones=correcciones.concat(f4.correcciones); preguntas=preguntas.concat(f4.preguntas);
+  var f5=etiqCoherencias(campos); campos=f5.campos; preguntas=preguntas.concat(f5.preguntas);
+  return {campos:campos, base:base, u:u, racionG:null, nombre:(j.nombre?String(j.nombre):null),
+          correcciones:correcciones, preguntas:preguntas, avisos:avisos, nPreguntas:preguntas.length,
+          racionGVision:racionG, energia:{kcal:campos.kcal, kj:null, fuente:"vision", coherente:true}, fuente:"vision"};
+}
 
 // ——— 📷 v0.37.0 · OJOS NUEVOS del lector (matemática PURA del pipeline de imagen/texto) ———
 // Diagnóstico del fallo real (foto de Pablo 18-07, etiqueta legible a ojo): el estiramiento GLOBAL de
@@ -9983,13 +10042,30 @@ function etiqParse(texto){
 // ventana local (integral images → O(N)). k=0.2 y R=128 son los valores canónicos de la literatura.
 // Si la foto es mayormente oscura (texto claro sobre fondo oscuro), se invierte ANTES (el OCR quiere
 // texto negro sobre blanco). Devuelve Uint8Array de 0|255, o null si la entrada no es válida.
+// F-V4 · media de la REGIÓN CENTRAL (caja 60%×60% centrada). La decisión de invertir de Sauvola no
+// puede fiarse de la media GLOBAL: si el recorte trae un marco/fondo oscuro dominante alrededor de una
+// etiqueta clara, la media global cae por debajo del umbral y el binarizador invierte MAL (funde el
+// texto). El texto útil vive en el centro del recuadro-guía, así que la polaridad se decide con lo que
+// hay AHÍ. Pura y testeable. Devuelve la media central o null si la entrada no es válida.
+function etiqMediaCentral(gris, W, H){
+  W=W|0; H=H|0; var N=W*H;
+  if(!gris || !N || gris.length<N) return null;
+  var x0=Math.floor(W*0.2), x1=Math.ceil(W*0.8), y0=Math.floor(H*0.2), y1=Math.ceil(H*0.8);
+  if(x1<=x0){ x0=0; x1=W; } if(y1<=y0){ y0=0; y1=H; }
+  var suma=0, n=0, x, y;
+  for(y=y0;y<y1;y++){ var fila=y*W; for(x=x0;x<x1;x++){ suma+=gris[fila+x]; n++; } }
+  return n?suma/n:null;
+}
 function etiqBinarizaSauvola(gris, W, H, win, k){
   W=W|0; H=H|0; var N=W*H, i;
   if(!gris || !N || gris.length<N) return null;
   win=win|0; if(win<3) win=3; if(win%2===0) win++;
   k=(typeof k==="number" && isFinite(k))?k:0.2;
-  var suma=0; for(i=0;i<N;i++) suma+=gris[i];
-  if(suma/N<110){ var inv=new Uint8Array(N); for(i=0;i<N;i++) inv[i]=255-gris[i]; gris=inv; }   // clara-sobre-oscuro → invertir
+  // F-V4 · polaridad por la REGIÓN CENTRAL (no la media global): así un marco oscuro dominante no
+  // fuerza una inversión que destruiría la tabla clara del centro. Fallback a media global si algo raro.
+  var med=etiqMediaCentral(gris,W,H);
+  if(med==null){ var sg=0; for(i=0;i<N;i++) sg+=gris[i]; med=sg/N; }
+  if(med<110){ var inv=new Uint8Array(N); for(i=0;i<N;i++) inv[i]=255-gris[i]; gris=inv; }   // clara-sobre-oscuro → invertir
   var R=128, r=(win-1)/2, x, y, v;
   var S=new Float64Array((W+1)*(H+1)), S2=new Float64Array((W+1)*(H+1));
   for(y=0;y<H;y++){
@@ -10030,6 +10106,49 @@ function etiqPalabrasOCR(data){
       for(var l=0;l<ls.length;l++){ var ws=ls[l].words||[];
         for(var w=0;w<ws.length;w++) mete(ws[w]); } } }
   return out;
+}
+// F-V3 · PALABRAS con caja desde la salida TSV de Tesseract (vía robusta e inmune al bug de shape de
+// blocks en v5.1.x). El TSV del core son 12 columnas por tab: level, page, block, par, line, word,
+// left, top, width, height, conf, text. level=5 = palabra. Devuelve [{t,x0,y0,x1,y1}] igual que
+// etiqPalabrasOCR, para que etiqFilasDesdePalabras las reconstruya sin distinguir la fuente.
+function etiqPalabrasDesdeTSV(tsv){
+  var out=[];
+  if(tsv==null) return out;
+  var lineas=String(tsv).split(/\r?\n/);
+  for(var i=0;i<lineas.length;i++){
+    var c=lineas[i].split("\t");
+    if(c.length<12) continue;
+    if(c[0]!=="5") continue;                                   // nivel 5 = palabra
+    var t=c[11]; if(t==null || !/\S/.test(t)) continue;
+    var left=+c[6], top=+c[7], w=+c[8], h=+c[9];
+    if(!isFinite(left)||!isFinite(top)||!isFinite(w)||!isFinite(h)) continue;
+    out.push({t:String(t), x0:left, y0:top, x1:left+w, y1:top+h});
+  }
+  return out;
+}
+// F-V1 · mapea el recuadro-guía (coordenadas de PANTALLA, relativas a la esquina del <video>) a
+// coordenadas del FRAME CRUDO del sensor, respetando la transformación de object-fit. Sin esto, el
+// recorte usaba %s fijos sobre el sensor, que solo coinciden con lo que el usuario VE si la caja de
+// pantalla tiene la MISMA relación de aspecto que el sensor — en móvil vertical con `cover` NO la tiene
+// (el vídeo se escala y se RECORTA), así que el %-fijo capturaba una banda desplazada de la etiqueta.
+// cover→escala max (recorta); contain→escala min (letterbox). object-position se asume centrado (50%).
+// Devuelve {cx,cy,cw,ch} en píxeles del sensor, clampado a sus límites, o null si la entrada no es válida.
+function etiqMapearGuia(videoW, videoH, dispW, dispH, guia, fit){
+  videoW=+videoW; videoH=+videoH; dispW=+dispW; dispH=+dispH;
+  if(!(videoW>0)||!(videoH>0)||!(dispW>0)||!(dispH>0)||!guia) return null;
+  var sx=dispW/videoW, sy=dispH/videoH;
+  var s=(fit==="contain")?Math.min(sx,sy):Math.max(sx,sy);    // cover (por defecto) = max; contain = min
+  if(!(s>0)) return null;
+  var renderW=videoW*s, renderH=videoH*s;
+  var ox=(dispW-renderW)/2, oy=(dispH-renderH)/2;             // offset por centrado (object-position 50%)
+  var gx=+guia.x, gy=+guia.y, gw=+guia.w, gh=+guia.h;
+  if(!isFinite(gx)||!isFinite(gy)||!isFinite(gw)||!isFinite(gh)) return null;
+  var cx=(gx-ox)/s, cy=(gy-oy)/s, cw=gw/s, ch=gh/s;           // pantalla → sensor: (p - offset) / escala
+  cx=Math.max(0, Math.min(videoW, cx));
+  cy=Math.max(0, Math.min(videoH, cy));
+  cw=Math.max(1, Math.min(videoW-cx, cw));
+  ch=Math.max(1, Math.min(videoH-cy, ch));
+  return {cx:Math.round(cx), cy:Math.round(cy), cw:Math.round(cw), ch:Math.round(ch)};
 }
 // Reconstruye las FILAS VISUALES de la tabla desde las palabras con caja: clustering por centro Y
 // (tolerancia = 0,6 × mediana de altura de palabra) + orden por X dentro de cada fila. Arregla el
@@ -10412,10 +10531,95 @@ function bcAltaMostrador(ean, pesoG){
 // la carga LAZY de Tesseract.js y la desembocadura por el embudo bcConfirmar EXISTENTE. =====
 var _etiqModo=false, _etiqEan=null, _etiqBusy=false, _etiqTess=null, _etiqTessCargando=null;
 var LS_ETIQ_STATS="jvf_etiq_stats";   // métrica {etiquetas, preguntas} para verificar que la pregunta es la EXCEPCIÓN
+var LS_ETIQ_DEBUG="jvf_etiq_debug";   // 🔍 F-V2 · telemetría VOLÁTIL del último escaneo (texto/filas/campos/mini). Cero red.
+var LS_ETIQ_VISION_URL="jvf_etiq_vision_url";   // 🧠 F-V5 · URL del Worker de visión (configurable en Ajustes; vacío = capa 4 apagada). NUNCA una clave.
+var _etiqVisionImg=null;              // 🧠 F-V5 · dataURL COLOR del último recorte, para «Leer con IA» (no sale salvo que Pablo lo pida)
+var _etiqDbg=null;                    // 🔍 F-V2 · acumulador de telemetría del escaneo en curso
 var ETIQ_TESS_VER="5.1.1";
+// 🔍 F-V2 · miniatura (dataURL JPEG) de un canvas, downscalada a maxW. Para enseñar SIEMPRE lo que se
+// capturó (encima del estado) y guardarla pequeña en la telemetría. Devuelve "" si algo falla.
+function etiqMiniatura(cv, maxW){
+  try{
+    maxW=maxW||160; var w=cv.width||1, h=cv.height||1, sc=Math.min(1, maxW/w);
+    var mw=Math.max(1,Math.round(w*sc)), mh=Math.max(1,Math.round(h*sc));
+    var t=document.createElement("canvas"); t.width=mw; t.height=mh;
+    t.getContext("2d").drawImage(cv,0,0,mw,mh);
+    return t.toDataURL("image/jpeg",0.5);
+  }catch(e){ return ""; }
+}
+// 🔍 F-V2 · enseña la miniatura del recorte real ENCIMA del estado (siempre, tras capturar): si el
+// recorte no es lo que el usuario encuadró, se VE al instante (valida F-V1 en producción).
+function etiqMostrarThumb(url){
+  var im=$("etiq_thumb"); if(!im) return;
+  if(url){ im.src=url; im.classList.remove("hidden"); } else { im.removeAttribute("src"); im.classList.add("hidden"); }
+}
+// 🔍 F-V2 · panel de diagnóstico bajo el estado (enlace «ver lo que leí», botón «Leer con IA»…).
+function etiqDiag(html){
+  var el=$("etiq_diag"); if(!el) return;
+  if(html){ el.innerHTML=html; el.classList.remove("hidden"); } else { el.innerHTML=""; el.classList.add("hidden"); }
+}
+// 🧠 F-V5 · URL del Worker de visión, solo si es https válida. Vacío = capa 4 desactivada.
+function etiqVisionURL(){ try{ var u=get(LS_ETIQ_VISION_URL,""); return (typeof u==="string" && /^https:\/\/\S+/.test(u))?u.trim():""; }catch(e){ return ""; } }
+// 🔍 F-V2 · guarda la telemetría del escaneo (cap ~200 KB: trunca la mini si hiciera falta). Volátil.
+function etiqGuardarDebug(dbg){
+  try{
+    if(!dbg) return;
+    var copia=JSON.parse(JSON.stringify(dbg));
+    var s=JSON.stringify(copia);
+    if(s.length>200000){ copia.mini=null; }   // la mini es lo más pesado: fuera si nos pasamos del cap
+    set(LS_ETIQ_DEBUG, copia);
+  }catch(e){}
+}
+// 🔍 F-V2 · abre el panel «ver lo que leí» con el texto crudo/filas de cada pasada + la miniatura, para
+// diagnosticar un fallo en un minuto (sin adivinar). Se pinta en bc_res (vacío en un fallo). Cero red.
+function etiqVerDebug(){
+  var res=$("bc_res"); if(!res) return;
+  var d=get(LS_ETIQ_DEBUG,null);
+  if(!d){ res.innerHTML="<div class='aviso'>No hay lectura guardada todavía.</div>"; res.classList.remove("hidden"); return; }
+  var h="<div class='eyebrow-lbl' style='margin-top:0'>🔍 Lo que leí (diagnóstico)</div>";
+  if(d.mini) h+="<img src=\""+escAttr(d.mini)+"\" alt=\"recorte capturado\" style='display:block;width:100%;max-width:240px;margin:6px auto;border-radius:8px;border:1px solid var(--line)'>";
+  h+="<div class='hint'>Recorte: "+esc(String(d.crop||"?"))+" · palabras con caja: <b>"+esc(String(d.nPalabras==null?"?":d.nPalabras))+"</b>"+(d.fuentePal?(" ("+esc(String(d.fuentePal))+")"):"")+"</div>";
+  var ps=(d.pasadas||[]);
+  for(var i=0;i<ps.length;i++){
+    var p=ps[i];
+    h+="<div style='margin-top:8px'><b class='hint'>Pasada "+esc(String(p.etq||(i+1)))+" · "+esc(String(p.nPal||0))+" palabras</b>";
+    h+="<pre style='white-space:pre-wrap;font-size:.72rem;background:var(--ink-3);border-radius:8px;padding:8px;margin:4px 0;max-height:160px;overflow:auto'>"+esc(String(p.filas||p.crudo||"(vacío)"))+"</pre></div>";
+  }
+  if(d.campos) h+="<div class='hint'>Campos parseados: <code>"+esc(JSON.stringify(d.campos))+"</code></div>";
+  h+="<button class='sec' type='button' style='width:100%;margin-top:8px' onclick=\"var r=$('bc_res'); if(r){r.innerHTML='';r.classList.add('hidden');}\">Cerrar</button>";
+  res.innerHTML=h; res.classList.remove("hidden");
+}
+// 🧠 F-V5 · «Leer con IA»: manda EL RECORTE (no el frame) al Worker configurado; su JSON pasa por los
+// MISMOS guardarraíles (etiqParseVision) y desemboca por el embudo único. La clave vive SOLO en el
+// Worker (charter): aquí solo se conoce la URL. Nunca auto-confía: Pablo revisa como en cualquier lectura.
+function etiqLeerConIA(){
+  var url=etiqVisionURL();
+  if(!url){ toast("Configura el lector con IA en ⚙️ Ajustes → Conectores"); return; }
+  if(!_etiqVisionImg){ toast("Captura la etiqueta primero"); return; }
+  if(_etiqBusy) return;
+  _etiqBusy=true; etiqDiag(""); bcEstado("Leyendo con IA… (unos segundos)");
+  fetch(url, {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({image:_etiqVisionImg})})
+    .then(function(r){ if(!r.ok) throw new Error("http"); return r.json(); })
+    .then(function(j){
+      if(!j || !j.ok || !j.nutrition) throw new Error("shape");
+      var r=null; try{ r=etiqParseVision(j.nutrition); }catch(e){}
+      _etiqBusy=false;
+      if(!r || (r.campos.kcal==null && r.campos.p==null)){ bcEstado("La IA tampoco encontró kcal ni proteínas en la foto — escribe los datos a mano."); return; }
+      etiqProcesarParse(r, "[IA] "+JSON.stringify(j.nutrition));
+    })
+    .catch(function(){ _etiqBusy=false; bcEstado("No se pudo leer con IA (¿sin conexión o servicio no configurado?). Escribe los datos a mano."); });
+}
+// 🧠 F-V5 · guarda la URL del Worker de visión desde Ajustes (validación mínima: vacío o https).
+function etiqVisionUrlGuardar(v){
+  var s=String(v==null?"":v).trim();
+  set(LS_ETIQ_VISION_URL, s);
+  var est=$("aj_etiq_ia_estado");
+  if(est) est.innerHTML=s ? (/^https:\/\/\S+/.test(s)?"<span class='hint' style='color:var(--jade)'>✓ Guardada. El botón «🧠 Leer con IA» aparecerá cuando el OCR no abra el embudo.</span>":"<span class='hint' style='color:var(--ember)'>Debe empezar por https:// — revísala.</span>") : "<span class='hint'>Vacío = lector con IA desactivado (solo OCR local).</span>";
+}
 // Reinicia el modo etiqueta a «código» (lo llama bcAbrir): oculta guía/captura, marca el toggle.
 function etiqReset(){
   _etiqModo=false; _etiqEan=null; _etiqBusy=false;
+  try{ etiqMostrarThumb(null); etiqDiag(""); }catch(e){}   // 🔍 F-V2 · limpia miniatura y panel de diagnóstico
   var g=$("etiq_guia"); if(g) g.classList.add("hidden");
   var cap=$("etiq_cap"); if(cap) cap.classList.add("hidden");
   var bc=$("bc_modo_cod"); if(bc){ bc.style.borderColor="var(--jade)"; bc.style.color="var(--jade)"; bc.style.fontWeight="700"; }
@@ -10429,6 +10633,7 @@ function etiqModo(on){
   mark("bc_modo_cod",!on); mark("bc_modo_etiq",on);
   var g=$("etiq_guia"); if(g) g.classList.toggle("hidden", !on);
   var cap=$("etiq_cap"); if(cap) cap.classList.toggle("hidden", !on);
+  if(!on){ try{ etiqMostrarThumb(null); etiqDiag(""); }catch(e){} }   // 🔍 F-V2 · al volver a código, limpia miniatura/diagnóstico
   if(on){
     bcEstado("Encuadra la tabla nutricional dentro del recuadro y pulsa «Capturar etiqueta».");
     if(!_bcStream) bcIniciarCamara();
@@ -10461,12 +10666,34 @@ function etiqLazyCargar(){
 // pasada del OCR y el gris para la 2ª (otro modo de fallo, otra oportunidad — mismo worker).
 function etiqPreprocesar(video){
   var vw=video.videoWidth||640, vh=video.videoHeight||480;
-  var cx=Math.round(vw*0.08), cy=Math.round(vh*0.12), cw=Math.round(vw*0.84), ch=Math.round(vh*0.76);   // mismo recuadro que #etiq_guia
+  var cx=Math.round(vw*0.08), cy=Math.round(vh*0.12), cw=Math.round(vw*0.84), ch=Math.round(vh*0.76);   // fallback: %s fijos (solo válidos si caja y sensor comparten relación de aspecto)
+  // 📷 F-V1 · mapea el recuadro-guía REAL en pantalla (getBoundingClientRect del vídeo y de la guía)
+  // al frame crudo del sensor a través de object-fit — así el recorte captura EXACTAMENTE lo que el
+  // usuario encuadró, no una banda desplazada. Si no hay rects (vídeo oculto / test), cae al %-fijo.
+  try{
+    var vEl=$("bc_video"), gEl=$("etiq_guia");
+    var vr=vEl&&vEl.getBoundingClientRect?vEl.getBoundingClientRect():null;
+    if(gEl && vr && vr.width>0 && vr.height>0){
+      var gr=gEl.getBoundingClientRect();
+      var guia={ x:gr.left-vr.left, y:gr.top-vr.top, w:gr.width, h:gr.height };
+      var fit="cover"; try{ fit=getComputedStyle(vEl).objectFit||"cover"; }catch(e){}
+      var mp=etiqMapearGuia(vw, vh, vr.width, vr.height, guia, fit);
+      if(mp){ cx=mp.cx; cy=mp.cy; cw=mp.cw; ch=mp.ch; }
+    }
+  }catch(e){}
   var scale=Math.min(2.5, Math.max(1, 1700/(cw||1))); if(cw*scale>2048) scale=2048/(cw||1);
   var W=Math.max(1,Math.round(cw*scale)), H=Math.max(1,Math.round(ch*scale));
   var cv=$("etiq_canvas"); cv.width=W; cv.height=H;
   var ctx=cv.getContext("2d");
   ctx.drawImage(video, cx, cy, cw, ch, 0, 0, W, H);
+  // 🧠 F-V5 · snapshot COLOR del recorte (antes de binarizar) para «Leer con IA»: JPEG downscalado a
+  // ≤1000 px (Groq exige ≤4 MB base64). Se guarda en _etiqVisionImg; jamás sale salvo que Pablo lo pida.
+  try{
+    var mvw=Math.min(1000, W), sc=mvw/W, mvh=Math.max(1,Math.round(H*sc));
+    var cvV=document.createElement("canvas"); cvV.width=mvw; cvV.height=mvh;
+    cvV.getContext("2d").drawImage(cv,0,0,mvw,mvh);
+    _etiqVisionImg=cvV.toDataURL("image/jpeg",0.75);
+  }catch(e){ _etiqVisionImg=null; }
   var img=ctx.getImageData(0,0,W,H), d=img.data, N=W*H, i, j, g;
   var gris=new Uint8Array(N);
   for(i=0;i<N;i++){ j=i*4; g=(d[j]*0.299+d[j+1]*0.587+d[j+2]*0.114)|0; gris[i]=g; }
@@ -10478,7 +10705,7 @@ function etiqPreprocesar(video){
   var bin=null; try{ bin=etiqBinarizaSauvola(gris,W,H,win,0.2); }catch(e){}
   if(bin){ for(i=0;i<N;i++){ j=i*4; var v=bin[i]; d[j]=d[j+1]=d[j+2]=v; d[j+3]=255; } ctx.putImageData(img,0,0); }
   else { ctx.drawImage(cvG,0,0); }                                           // sin Sauvola (entrada rara): al menos gris
-  return {bin:cv, gris:cvG};
+  return {bin:cv, gris:cvG, cw:cw, ch:ch, W:W, H:H};                          // F-V2 · tamaños del recorte para la telemetría
 }
 // Captura la etiqueta — 📷 v0.37.0 «ojos nuevos»: preprocesa (bin+gris) → OCR spa+eng con PSM 6
 // («bloque uniforme»: la tabla recortada por la guía ES eso; el auto PSM 3 fragmenta tablas y
@@ -10489,17 +10716,28 @@ function etiqCapturar(){
   var v=$("bc_video");
   if(!v || !_bcStream || v.readyState<2){ toast("Enciende la cámara y encuadra la etiqueta"); return; }
   if(_etiqBusy) return;
-  _etiqBusy=true; bcEstado("Leyendo la etiqueta… (unos segundos)");
+  _etiqBusy=true; etiqDiag(""); bcEstado("Leyendo la etiqueta… (unos segundos)");
   var lienzos; try{ lienzos=etiqPreprocesar(v); }catch(e){ _etiqBusy=false; bcEstado("No pude capturar la imagen — reintenta."); return; }
+  // 🔍 F-V2 · abre la telemetría del escaneo y enseña YA la miniatura del recorte real (encima del estado)
+  _etiqDbg={ ts:Date.now(), crop:(lienzos.cw+"×"+lienzos.ch+" px → "+lienzos.W+"×"+lienzos.H), pasadas:[], nPalabras:0, fuentePal:null, mini:null, campos:null };
+  try{ _etiqDbg.mini=etiqMiniatura(lienzos.bin,160); etiqMostrarThumb(_etiqDbg.mini); }catch(e){}
   etiqLazyCargar().then(function(T){
     if(!T || !T.createWorker){ _etiqBusy=false; bcEstado("No se pudo cargar el lector de etiquetas (¿sin internet?). Escribe el código o crea el alimento a mano."); return; }
     var worker=null;
-    function reconoce(cv){
-      // blocks:true → cajas de palabra (v5 ya no da data.words plano; etiqPalabrasOCR entiende ambos)
-      return worker.recognize(cv, {}, {blocks:true, text:true}).then(function(r){
+    function reconoce(cv, etq){
+      // F-V3 · pide blocks Y tsv: v5.1.1 puebla data.blocks con cajas {x0,y0,x1,y1}, pero si viniera
+      // vacío (bug de shape de blocks en 5.1.x), el TSV (nivel 5 = palabra) es la vía estable de respaldo.
+      return worker.recognize(cv, {}, {blocks:true, text:true, tsv:true}).then(function(r){
         var data=(r && r.data)||{};
-        var crudo=data.text||"", filas="";
-        try{ filas=etiqFilasDesdePalabras(etiqPalabrasOCR(data)); }catch(e){}
+        var crudo=data.text||"", filas="", pal=[], fuente="blocks";
+        try{ pal=etiqPalabrasOCR(data); }catch(e){}
+        if((!pal || !pal.length) && data.tsv){ try{ pal=etiqPalabrasDesdeTSV(data.tsv); fuente="tsv"; }catch(e){} }   // F-V3 · respaldo TSV
+        try{ filas=etiqFilasDesdePalabras(pal); }catch(e){}
+        try{
+          var n=pal?pal.length:0;
+          _etiqDbg.pasadas.push({etq:etq, nPal:n, fuente:(n?fuente:null), crudo:String(crudo).slice(0,1200), filas:String(filas).slice(0,1200)});
+          _etiqDbg.nPalabras+=n; if(n && !_etiqDbg.fuentePal) _etiqDbg.fuentePal=fuente;
+        }catch(e){}
         return [crudo, filas];
       });
     }
@@ -10512,12 +10750,12 @@ function etiqCapturar(){
       worker=w;
       return w.setParameters({tessedit_pageseg_mode:"6", preserve_interword_spaces:"1"}).catch(function(){});
     })
-    .then(function(){ return reconoce(lienzos.bin); })
+    .then(function(){ return reconoce(lienzos.bin, "binarizada"); })
     .then(function(cands){
       var m1=etiqParseMejor(cands);
       if(abre(m1)) return {mejor:m1, cands:cands};
       bcEstado("Afinando la lectura… (segunda pasada)");
-      return reconoce(lienzos.gris).then(function(c2){
+      return reconoce(lienzos.gris, "gris").then(function(c2){
         var todos=cands.concat(c2);
         return {mejor:etiqParseMejor(todos), cands:todos};
       });
@@ -10526,8 +10764,16 @@ function etiqCapturar(){
       try{ worker.terminate(); }catch(e){}
       etiqProcesarParse(res && res.mejor ? res.mejor.r : null, ((res && res.cands)||[]).join("\n"));
     })
-    .catch(function(){ try{ if(worker) worker.terminate(); }catch(e){} _etiqBusy=false; bcEstado("No pude leer la etiqueta. Prueba con más luz y el envase plano, o escribe los datos a mano."); });
+    .catch(function(){ try{ if(worker) worker.terminate(); }catch(e){} _etiqBusy=false; bcEstado("No pude leer la etiqueta. Prueba con más luz y el envase plano, o escribe los datos a mano."); etiqDiagFallo(); });
   });
+}
+// 🔍 F-V6 · panel de acciones bajo un fallo: «ver lo que leí» (telemetría F-V2) SIEMPRE, y el botón
+// «🧠 Leer con IA» SOLO si Pablo configuró el Worker de visión (capa 4) y hay recorte que enviar.
+function etiqDiagFallo(){
+  var h="<a href='#' onclick='etiqVerDebug();return false;' style='color:var(--jade);text-decoration:underline'>🔍 ver lo que leí</a>";
+  if(etiqVisionURL() && _etiqVisionImg)
+    h+=" · <a href='#' onclick='etiqLeerConIA();return false;' style='color:var(--jade);text-decoration:underline'>🧠 leer con IA</a>";
+  etiqDiag(h);
 }
 // Desemboca el texto OCR: parser puro → producto → bcConfirmar (hereda clamp de sodio + fila cafeína +
 // badge ATWATER + overrides). Mide preguntas-por-etiqueta. Si no leyó ni kcal ni proteína, no inventa:
@@ -10541,14 +10787,19 @@ function etiqProcesarTexto(texto){
 // (problema de encuadre: reencuadra SOLO la tabla). Antes todo era «foto borrosa» y no guiaba.
 function etiqProcesarParse(r, textoLeido){
   _etiqBusy=false;
-  if(!r){ bcEstado("No entendí la etiqueta — escribe los datos a mano."); return; }
+  // 🔍 F-V2 · cierra y guarda la telemetría del escaneo (campos finales incluidos). Volátil, cero red.
+  try{ if(_etiqDbg){ _etiqDbg.campos=r?r.campos:null; etiqGuardarDebug(_etiqDbg); } }catch(e){}
+  if(!r){ bcEstado("No entendí la etiqueta — escribe los datos a mano."); etiqDiagFallo(); return; }
   try{ var st=get(LS_ETIQ_STATS,{etiquetas:0,preguntas:0}); st.etiquetas=(+st.etiquetas||0)+1; st.preguntas=(+st.preguntas||0)+(r.nPreguntas||0); set(LS_ETIQ_STATS, st); }catch(e){}
   var cp=r.campos;
   if(cp.kcal==null && cp.p==null){
     var letras=String(textoLeido||"").replace(/[^a-z0-9]/gi,"").length;
+    // 🔍 F-V6 · el mensaje DIAGNOSTICA con la miniatura ya visible arriba: poco texto (problema de
+    // imagen: acércate/luz) ≠ texto-sin-valores (problema de encuadre: reencuadra solo la tabla).
     bcEstado(letras<25
-      ? "Casi no llegó texto al lector: acércate hasta que la tabla LLENE el recuadro, busca más luz y evita reflejos."
-      : "Leí texto pero no encontré los valores (kcal/proteínas): reencuadra SOLO la tabla nutricional, o escribe el código / crea el alimento a mano.");
+      ? "Casi no llegó texto al lector: mira la miniatura de arriba — acércate hasta que la tabla LLENE el recuadro, busca más luz y evita reflejos."
+      : "Leí texto pero no encontré los valores (kcal/proteínas): mira la miniatura de arriba — si no salió la tabla, reencuadra SOLO la tabla nutricional; o escribe el código / crea el alimento a mano.");
+    etiqDiagFallo();
     return;
   }
   bcPararCamara();
@@ -12353,6 +12604,7 @@ document.addEventListener('DOMContentLoaded',function(){
     aguaNfcCheck();   // 📶 pegatina NFC: procesa ?agua=NNN al abrir la app (una sola vez, ver [AGUA-NFC-PURE])
     pasosSyncUI();          // 👟 spec 4 · refleja toggle+URL del sync de pasos en Ajustes
     pasosSyncFetch(false);  // 👟 spec 4 · primera lectura del steps.json al abrir la app
+    try{ var _iu=$("aj_etiq_ia_url"); if(_iu && document.activeElement!==_iu){ _iu.value=get(LS_ETIQ_VISION_URL,"")||""; etiqVisionUrlGuardar(_iu.value); } }catch(e){}   // 🧠 F-V5 · refleja la URL del Worker de visión en Ajustes
     dbxEstado(function(){ dbxUIRender(); });   // 🗄️ Base España: refresca _dbxInfo (lo usan escáner y supermercado) + pinta el estado en Ajustes
     setTimeout(function(){ try{ dbxAutoProvision(); }catch(e){} }, 4000);   // 🗄️ E9 · auto-provisión/actualización de la base, tras el primer render
   }catch(e){}
@@ -12372,7 +12624,7 @@ function resetTodo(){ if(!confirm("⚠️ Esto borra TODO: perfil, pesos, entren
 // Reemplazo total con confirmación. Reusa get/set, hoyLocal, toast, validar, render. NO toca motor ni gate.
 function exportarJSON(){ try{ set("jvf_last_export",hoyLocal()); }catch(e){}
   try{
-    var data={ app:"jvf", schema:1, app_version:"0.40.0", exportadoEl:new Date().toISOString(),
+    var data={ app:"jvf", schema:1, app_version:"0.42.0", exportadoEl:new Date().toISOString(),
       perfil:get(LS_P,null), pesos:get(LS_W,[]), entrenos:get(LS_E,[]), notas_ej:get("jvf_notas_ej",{}), comida:get("jvf_comida",[]), agua:get("jvf_agua",{}), suples_cfg:get("jvf_suples_cfg",null), suples_log:get("jvf_suples_log",{}),
       rutinas:get("jvf_rutinas",[]), meals:get("jvf_meals",[]), ent_start:get("jvf_ent_start",null),   // v0.10 · backup completo
       alimentos_propios:get("jvf_alimentos_propios",[]), barcode_cache:get("jvf_barcode_cache",{}),   // I5/I6 · también viajan en el backup
