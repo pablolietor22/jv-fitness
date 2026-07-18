@@ -619,7 +619,7 @@
 <header class="brandbar">
   <div class="logo"><span class="dot"></span>JV <b>Fitness</b></div>
   <div style="display:flex;align-items:center">
-    <span class="tag">MVP v0.35.1 · motor v0.7</span>
+    <span class="tag">MVP v0.36.0 · motor v0.7</span>
     <!-- ⚙️ tanda #22 · hub de AJUSTES (no es pestaña): modal a pantalla completa -->
     <button class="gearbtn" id="btn_hub" type="button" title="Ajustes" aria-label="Abrir ajustes" onclick="hubAbrir()">⚙️</button>
   </div>
@@ -5442,6 +5442,84 @@ var FOODS=[
   {n:"Bocadillo de atún (Pans & Company)",kcal:201,p:10.1,c:15.7,f:10.2,fib:0,az:1.6,sat:1.6,na:360,porc:"unidad:279"},
   {n:"Bocadillo Club (Pans & Company)",kcal:198,p:11.9,c:20.3,f:6.7,fib:0,az:2.1,sat:1.3,na:520,porc:"unidad:345"},
   {n:"Bocadillo de pollo crispy BBQ (Pans & Company)",kcal:269,p:9.7,c:23.9,f:14.7,fib:0,az:1.8,sat:2.3,na:560,porc:"unidad:322"}
+  // [MOSTRADOR-INICIO] — F9 · genéricos de mostrador «al corte» (charcutería/quesos/pescadería/
+  // carnicería/panadería). Valores por 100 g BEDCA/tablas ES; CADA uno pasa Atwater (validado por
+  // _tests/test-peso-variable.node.js). mos:1 los marca como genérico de mostrador para el panel F8
+  // (peso variable → estos no llevan EAN: los asigna la caja del súper). Sodio alto en salazones es real.
+  ,{n:"Jamón serrano (al corte)",kcal:241,p:31,c:0.3,f:12.9,fib:0,az:0,sat:4.5,na:2400,mos:1}
+  ,{n:"Jamón ibérico de cebo (al corte)",kcal:310,p:43,c:0.5,f:15,fib:0,az:0,sat:5.5,na:2000,mos:1}
+  ,{n:"Jamón ibérico de bellota (al corte)",kcal:375,p:43,c:0,f:22,fib:0,az:0,sat:7,na:1600,mos:1}
+  ,{n:"Paleta ibérica (al corte)",kcal:330,p:40,c:0.5,f:19,fib:0,az:0,sat:6.5,na:2100,mos:1}
+  ,{n:"Lacón cocido (al corte)",kcal:160,p:20,c:0.5,f:9,fib:0,az:0,sat:3.2,na:1100,mos:1}
+  ,{n:"Lacón asado (al corte)",kcal:180,p:22,c:0.8,f:10,fib:0,az:0,sat:3.5,na:1200,mos:1}
+  ,{n:"Chorizo (al corte)",kcal:350,p:22,c:2,f:28,fib:0,az:1,sat:11,na:1900,mos:1}
+  ,{n:"Chorizo ibérico (al corte)",kcal:400,p:24,c:1.5,f:33,fib:0,az:0.8,sat:12,na:1800,mos:1}
+  ,{n:"Salchichón (al corte)",kcal:390,p:26,c:1.5,f:31,fib:0,az:0.8,sat:11.5,na:1900,mos:1}
+  ,{n:"Fuet (al corte)",kcal:430,p:25,c:2,f:36,fib:0,az:1,sat:13,na:2000,mos:1}
+  ,{n:"Lomo embuchado (al corte)",kcal:250,p:38,c:1,f:10,fib:0,az:0.5,sat:3.5,na:2200,mos:1}
+  ,{n:"Cecina de vacuno (al corte)",kcal:250,p:39,c:0.5,f:10,fib:0,az:0,sat:4,na:2600,mos:1}
+  ,{n:"Mortadela (al corte)",kcal:300,p:15,c:2,f:26,fib:0,az:1,sat:9.5,na:1000,mos:1}
+  ,{n:"Chópped (al corte)",kcal:230,p:14,c:3,f:18,fib:0,az:1.5,sat:6.5,na:900,mos:1}
+  ,{n:"Jamón cocido york (al corte)",kcal:110,p:18,c:1.5,f:3.5,fib:0,az:1,sat:1.2,na:900,mos:1}
+  ,{n:"Pechuga de pavo cocida (al corte)",kcal:105,p:18,c:1.5,f:3,fib:0,az:1,sat:0.9,na:850,mos:1}
+  ,{n:"Sobrasada (al corte)",kcal:470,p:8,c:2,f:48,fib:0,az:1,sat:17,na:1300,mos:1}
+  ,{n:"Bacón (al corte)",kcal:400,p:14,c:0.5,f:38,fib:0,az:0,sat:14,na:1500,mos:1}
+  ,{n:"Morcilla (al corte)",kcal:350,p:12,c:8,f:30,fib:1,az:1,sat:12,na:1200,mos:1}
+  ,{n:"Queso fresco (al corte)",kcal:95,p:12,c:3.5,f:4,fib:0,az:3.5,sat:2.6,na:300,mos:1}
+  ,{n:"Requesón (al corte)",kcal:96,p:11,c:3,f:4.3,fib:0,az:3,sat:2.8,na:130,mos:1}
+  ,{n:"Queso tierno (al corte)",kcal:300,p:20,c:1,f:24,fib:0,az:1,sat:15,na:600,mos:1}
+  ,{n:"Queso semicurado (al corte)",kcal:370,p:25,c:1,f:30,fib:0,az:0.8,sat:19,na:700,mos:1}
+  ,{n:"Queso curado (al corte)",kcal:400,p:27,c:0.5,f:33,fib:0,az:0.5,sat:21,na:800,mos:1}
+  ,{n:"Queso viejo (al corte)",kcal:420,p:30,c:0.5,f:34,fib:0,az:0.5,sat:22,na:900,mos:1}
+  ,{n:"Queso de cabra curado (al corte)",kcal:400,p:24,c:1,f:33,fib:0,az:1,sat:23,na:700,mos:1}
+  ,{n:"Queso de oveja curado (al corte)",kcal:410,p:26,c:1,f:34,fib:0,az:1,sat:22,na:750,mos:1}
+  ,{n:"Queso manchego semicurado (al corte)",kcal:380,p:25,c:0.5,f:31,fib:0,az:0.5,sat:20,na:700,mos:1}
+  ,{n:"Queso manchego curado (al corte)",kcal:430,p:28,c:0.5,f:35,fib:0,az:0.5,sat:23,na:800,mos:1}
+  ,{n:"Queso azul (al corte)",kcal:350,p:21,c:1,f:29,fib:0,az:1,sat:19,na:1400,mos:1}
+  ,{n:"Queso de mezcla (al corte)",kcal:390,p:25,c:1,f:32,fib:0,az:1,sat:20,na:750,mos:1}
+  ,{n:"Mozzarella (al corte)",kcal:250,p:18,c:2,f:19,fib:0,az:1,sat:12,na:250,mos:1}
+  ,{n:"Queso de untar (al corte)",kcal:250,p:6,c:4,f:24,fib:0,az:3.5,sat:16,na:550,mos:1}
+  ,{n:"Merluza (al corte)",kcal:71,p:17,c:0,f:0.8,fib:0,az:0,sat:0.2,na:100,mos:1}
+  ,{n:"Salmón fresco (al corte)",kcal:200,p:20,c:0,f:13,fib:0,az:0,sat:3,na:60,mos:1}
+  ,{n:"Lubina (al corte)",kcal:97,p:18,c:0,f:2.5,fib:0,az:0,sat:0.6,na:80,mos:1}
+  ,{n:"Dorada (al corte)",kcal:100,p:19,c:0,f:2.5,fib:0,az:0,sat:0.7,na:80,mos:1}
+  ,{n:"Boquerón fresco (al corte)",kcal:130,p:20,c:0,f:5.5,fib:0,az:0,sat:1.3,na:90,mos:1}
+  ,{n:"Sardina (al corte)",kcal:150,p:19,c:0,f:8,fib:0,az:0,sat:2,na:100,mos:1}
+  ,{n:"Gamba (al corte)",kcal:85,p:18,c:0.5,f:1,fib:0,az:0,sat:0.2,na:150,mos:1}
+  ,{n:"Langostino (al corte)",kcal:90,p:19,c:0.5,f:1,fib:0,az:0,sat:0.2,na:160,mos:1}
+  ,{n:"Mejillón (al corte)",kcal:85,p:12,c:3,f:2,fib:0,az:0,sat:0.4,na:290,mos:1}
+  ,{n:"Pulpo cocido (al corte)",kcal:82,p:15,c:2,f:1,fib:0,az:0,sat:0.3,na:230,mos:1}
+  ,{n:"Bacalao fresco (al corte)",kcal:80,p:18,c:0,f:0.7,fib:0,az:0,sat:0.1,na:90,mos:1}
+  ,{n:"Rape (al corte)",kcal:68,p:15,c:0,f:0.7,fib:0,az:0,sat:0.2,na:95,mos:1}
+  ,{n:"Atún fresco (al corte)",kcal:145,p:23,c:0,f:6,fib:0,az:0,sat:1.5,na:45,mos:1}
+  ,{n:"Trucha (al corte)",kcal:120,p:20,c:0,f:4.5,fib:0,az:0,sat:1,na:50,mos:1}
+  ,{n:"Calamar (al corte)",kcal:82,p:16,c:1,f:1.4,fib:0,az:0,sat:0.4,na:160,mos:1}
+  ,{n:"Sepia (al corte)",kcal:80,p:16,c:0.7,f:1.2,fib:0,az:0,sat:0.3,na:160,mos:1}
+  ,{n:"Pechuga de pollo (al corte)",kcal:108,p:23,c:0,f:1.8,fib:0,az:0,sat:0.5,na:70,mos:1}
+  ,{n:"Muslo de pollo (al corte)",kcal:155,p:19,c:0,f:8.5,fib:0,az:0,sat:2.4,na:85,mos:1}
+  ,{n:"Contramuslo de pollo (al corte)",kcal:165,p:18.5,c:0,f:10,fib:0,az:0,sat:2.7,na:88,mos:1}
+  ,{n:"Filete de ternera (al corte)",kcal:130,p:21,c:0,f:5,fib:0,az:0,sat:2,na:55,mos:1}
+  ,{n:"Solomillo de ternera (al corte)",kcal:145,p:21,c:0,f:6.5,fib:0,az:0,sat:2.6,na:55,mos:1}
+  ,{n:"Carne picada mixta (al corte)",kcal:220,p:18,c:0,f:16,fib:0,az:0,sat:6.5,na:75,mos:1}
+  ,{n:"Lomo de cerdo (al corte)",kcal:145,p:21,c:0,f:6.5,fib:0,az:0,sat:2.3,na:55,mos:1}
+  ,{n:"Costilla de cerdo (al corte)",kcal:250,p:18,c:0,f:20,fib:0,az:0,sat:7.5,na:65,mos:1}
+  ,{n:"Secreto ibérico (al corte)",kcal:290,p:17,c:0,f:25,fib:0,az:0,sat:9,na:60,mos:1}
+  ,{n:"Panceta de cerdo fresca (al corte)",kcal:380,p:12,c:0,f:37,fib:0,az:0,sat:13,na:60,mos:1}
+  ,{n:"Chuleta de cordero (al corte)",kcal:250,p:18,c:0,f:20,fib:0,az:0,sat:9,na:70,mos:1}
+  ,{n:"Pierna de cordero (al corte)",kcal:210,p:19,c:0,f:15,fib:0,az:0,sat:6.5,na:70,mos:1}
+  ,{n:"Hígado de ternera (al corte)",kcal:130,p:20,c:3.5,f:3.8,fib:0,az:0,sat:1.3,na:80,mos:1}
+  ,{n:"Pechuga de pavo fresca (al corte)",kcal:105,p:22,c:0,f:1.5,fib:0,az:0,sat:0.4,na:60,mos:1}
+  ,{n:"Barra de pan blanco (al corte)",kcal:270,p:9,c:55,f:1.2,fib:2.7,az:2,sat:0.3,na:500,mos:1}
+  ,{n:"Chapata (al corte)",kcal:275,p:9,c:54,f:2,fib:2.5,az:1.5,sat:0.4,na:520,mos:1}
+  ,{n:"Pan integral (al corte)",kcal:240,p:9.5,c:45,f:2.5,fib:6.5,az:2,sat:0.5,na:480,mos:1}
+  ,{n:"Pan de centeno (al corte)",kcal:250,p:8,c:48,f:1.5,fib:6,az:2,sat:0.3,na:470,mos:1}
+  ,{n:"Pan de pueblo (al corte)",kcal:260,p:8.5,c:52,f:1.5,fib:3,az:1.5,sat:0.3,na:500,mos:1}
+  ,{n:"Baguette (al corte)",kcal:270,p:9,c:55,f:1.3,fib:2.7,az:2,sat:0.3,na:510,mos:1}
+  ,{n:"Hogaza de masa madre (al corte)",kcal:255,p:8.5,c:51,f:1.4,fib:3,az:1.5,sat:0.3,na:490,mos:1}
+  ,{n:"Mollete (al corte)",kcal:265,p:8.5,c:52,f:2.5,fib:2.5,az:2,sat:0.5,na:480,mos:1}
+  ,{n:"Pan de semillas (al corte)",kcal:280,p:10,c:45,f:6,fib:6,az:2,sat:1,na:460,mos:1}
+  ,{n:"Pan de molde integral (al corte)",kcal:250,p:9,c:43,f:4,fib:5,az:3,sat:0.8,na:450,mos:1}
+  // [MOSTRADOR-FIN]
 ];
 // 🏷️ Base CURADA por código de barras: productos que OFF no tiene (incl. suplementos de gym tipo Weider Rush)
 // → escanearlos funciona sin depender de OFF. Se construye de las entradas de FOODS que llevan `ean`.
@@ -9378,6 +9456,7 @@ function mealBorrar(id){
 var LS_BC_CACHE="jvf_barcode_cache";   // {ean:{producto:{...por 100 g o 100 ml + u:"g"|"ml" + dens}, ts}} — cachear respeta el límite de OFF (15 req/min) y da offline en productos repetidos
 var LS_ALIM="jvf_alimentos_propios";   // [{id, nombre, marca, ean|null, porcion_g, kcal100, p100, c100, g100[, fib100, az100, sat100, na100]}] · los 4 últimos desde v0.26 (null = sin dato)
 var _bcStream=null, _bcTimer=null, _bcDetector=null, _bcProducto=null, _apEan=null;
+var _pvPesoG=null;                     // 🏷️ F8 · peso (g) leído de un code_128 GS1 (AI 310x); se precarga en la ración. Se resetea en cada detección/manual.
 var _bcUnidadIn="g";                   // unidad en la que el usuario apunta la CANTIDAD (g|ml); se resetea en cada confirmación
 
 // [BC-ML-PURE-INICIO] — bloque PURO (sin DOM ni red): los tests de node lo extraen y ejecutan tal cual.
@@ -9603,6 +9682,69 @@ function bcUrlsLookup(ean){
   return urls;
 }
 // [BC-FALLBACK-PURE-FIN]
+
+// [PESOVAR-PURE-INICIO] — 🏷️ F8 · PESO VARIABLE / código INTERNO de súper (Bloque B del pliego alimentos,
+// sesión 3). PURO (sin DOM/red/storage): _tests/test-peso-variable.node.js extrae este bloque y lo evalúa
+// tal cual. Un código de peso variable lo genera la BÁSCULA de la tienda (charcutería, pescadería, fruta
+// al peso) → NUNCA está en Open Food Facts ni en ninguna base por EAN: buscarlo son 4 fetches perdidos + el
+// mensaje engañoso «no existe». Se detecta por PREFIJO y se enruta a los genéricos de mostrador (F9), al
+// lector de etiqueta o al alta manual. Doctrina de la casa (I8): NO se inventa nada — de un EAN-13 interno
+// NO se saca el peso ni el precio (el "cuerpo" del código varía por cadena: sería adivinar). El peso SOLO
+// se lee de un code_128 GS1, donde el estándar lo fija sin ambigüedad (AI 310x = peso neto en kg).
+
+// bcEsPesoVariable(codigo): ¿es un código INTERNO de tienda (no un producto con EAN de fábrica)?
+//  · EAN-13 con prefijo 20–29 (primer dígito 2): rango GS1 reservado a numeración interna del punto de
+//    venta (tickets reales de Pablo: 2105075017705 jamón ibérico · 2103077005256 lacón asado).
+//  · EAN-8 con prefijo 2: rango interno corto.
+//  EL FALSO AMIGO — un UPC-A de 12 cifras que empieza por 2 (producto real de EE. UU.) se convierte a EAN-13
+//  anteponiendo un 0 → "02…" (primer dígito 0, NO 2) → NO se marca como interno. Por eso el criterio es
+//  "primer dígito === 2 sobre el código de 13", no "empieza por 2 sobre el de 12": la conversión antepone el
+//  0 y desambigua sola. (Prefijos 0 y 020–029… de UPC-A convertidos quedan fuera por construcción.)
+function bcEsPesoVariable(codigo){
+  var s=String(codigo==null?"":codigo).replace(/\D/g,"");
+  if(s.length===13) return s.charAt(0)==="2";      // prefijo 20–29 = numeración interna del súper
+  if(s.length===8)  return s.charAt(0)==="2";      // EAN-8 interno
+  return false;
+}
+
+var PESO_MAX_KG=50;   // tope de cordura del peso GS1 (AI 310n): un mostrador no vende > 50 kg al corte
+
+// bcGS1Parse(payload): lee un code_128 / GS1-128 y saca SOLO lo que el estándar fija sin ambigüedad:
+//  · AI 01  → GTIN (14 dígitos; se normaliza a 13 si viene con 0 delante, igual que bcExtraerGTIN).
+//  · AI 310n → peso neto en KG; n (0…6) = nº de decimales, seguido de 6 dígitos de valor.
+//  Cualquier OTRO AI se ignora con honestidad: sin la tabla de longitudes de GS1 no se sabe cuántos dígitos
+//  ocupa un AI variable, así que al primer AI desconocido se PARA (jamás se adivina). Devuelve {gtin,pesoKg,pesoG}.
+function bcGS1Parse(payload){
+  var out={gtin:null, pesoKg:null, pesoG:null};
+  var s=String(payload==null?"":payload).trim();
+  if(!s) return out;
+  s=s.replace(/^\][A-Za-z]\d/,"").replace(/[()]/g,"");   // fuera "]C1"/"]Q3", FNC1 (GS) y paréntesis del element-string
+  if(!/^\d/.test(s)) return out;                               // no empieza por dígito → no es GS1 numérico
+  var i=0;
+  while(i+2<=s.length){
+    if(s.substr(i,2)==="01"){                                  // AI 01 · GTIN-14
+      if(i+16>s.length) break;
+      var g=s.substr(i+2,14); if(!/^\d{14}$/.test(g)) break;
+      out.gtin=(g.charAt(0)==="0")?g.slice(1):g;               // GTIN-14 con 0 delante → EAN-13
+      i+=16; continue;
+    }
+    if(s.substr(i,3)==="310"){                                 // AI 310n · peso neto kg con n decimales
+      var dec=s.charAt(i+3);
+      if(!/[0-9]/.test(dec) || i+10>s.length) break;
+      var val=s.substr(i+4,6); if(!/^\d{6}$/.test(val)) break;
+      var kg=parseInt(val,10)/Math.pow(10, parseInt(dec,10));
+      // Cota de cordura (I8): un AI 310n legítimo de mostrador pesa de gramos a pocos kg; > PESO_MAX_KG es
+      // casi seguro un EAN-13 que EMPIEZA por «310…» (prefijo país Francia 300–379) mal-tomado como AI de
+      // peso → se descarta (no se inventa un peso absurdo). Un consumidor no compra > 50 kg al corte. Blinda
+      // a cualquier consumidor futuro de _pvPesoG aunque llegue por una ruta que no sea la de prefijo 2.
+      if(isFinite(kg) && kg>0 && kg<=PESO_MAX_KG){ out.pesoKg=+kg.toFixed(3); out.pesoG=Math.round(kg*1000); }
+      i+=10; continue;
+    }
+    break;   // AI desconocido: sin su longitud no se adivina — se PARA (honesto)
+  }
+  return out;
+}
+// [PESOVAR-PURE-FIN]
 
 // [ETIQ-OCR-PURE-INICIO] — 📷 MOTOR LECTOR DE ETIQUETAS (Bloque B del pliego alimentos, v0.34.1). PURO
 // (sin DOM/red/storage): _tests/test-etiqueta-ocr.node.js extrae este bloque + [ATWATER-PURE] y los
@@ -9938,6 +10080,9 @@ function bcDetectado(raw){
   }
   var ean=(gtin!=null)?gtin:raw.replace(/\D/g,"");
   if(!ean) return;
+  // 🏷️ F8 · peso de un code_128 GS1 (AI 310x): se guarda para precargar la ración del alta/panel de peso
+  // variable. bcGS1Parse es puro y honesto (solo AI 01/310x); un EAN normal deja _pvPesoG en null.
+  _pvPesoG=null; try{ var _gs=bcGS1Parse(raw); if(_gs && _gs.pesoG!=null && _gs.pesoG>0) _pvPesoG=_gs.pesoG; }catch(e){}
   // v0.13 · L1: vibración corta al detectar (feedback físico tipo caja de súper). Solo si el
   // dispositivo la soporta; en desktop navigator.vibrate no existe y no pasa nada.
   if(navigator.vibrate){ try{ navigator.vibrate(80); }catch(e){} }
@@ -9947,6 +10092,7 @@ function bcDetectado(raw){
 function bcBuscarManual(){
   var ean=((($("bc_manual")||{}).value)||"").replace(/\D/g,"");
   if(ean.length<8){ toast("El código tiene 8 o 13 cifras (EAN)"); return; }
+  _pvPesoG=null;   // 🏷️ F8 · un código TECLEADO no trae peso GS1; no arrastrar el de un escaneo anterior
   bcPararCamara();
   bcBuscar(ean);
 }
@@ -9971,6 +10117,12 @@ function bcBuscar(ean){
       porcion:(+propio.porcion_g>0?+propio.porcion_g:null)});
     return;
   }
+  // 🏷️ F8 · el chequeo de peso variable / código INTERNO del súper (prefijo 2) NO va aquí (regresión
+  // v0.36.0): iría ANTES de caché/curada/España y TAPARÍA los ~247 productos ENVASADOS con EAN-8/13 de
+  // prefijo 2 que la app SÍ cataloga a propósito (marcas blancas Lidl/Aldi: Alesto, Nixe, Dulano, Olearia,
+  // Moser Roth, Milsani…). Esos códigos de barras son FIJOS y escaneables. El chequeo se hace al FINAL, en
+  // bcTrasLocal, como salida REAL de «no está en ninguna base»: un código de báscula nunca llega a
+  // caché/curada/España, así que cae ahí solo — pero un envasado de prefijo 2 se encuentra antes.
   var cache=get(LS_BC_CACHE,{});
   if(cache[ean] && cache[ean].producto){
     var cp=cache[ean].producto;
@@ -10020,10 +10172,20 @@ function bcBuscar(ean){
           porcion:(e.porc?(+String(e.porc).split(":")[1]||null):null)});
         return;
       }
-      bcBuscarRedOFF(ean);
+      bcTrasLocal(ean);
     });
     return;
   }
+  bcTrasLocal(ean);
+}
+// 🏷️ F8 · SALIDA cuando el código NO está en ninguna base local (ni propios, ni caché, ni base curada,
+// ni base España). Aquí —y SOLO aquí— se resuelve el peso variable: un prefijo 2 es un código INTERNO de
+// la báscula del súper (charcutería/pescadería/fruta al peso) que JAMÁS está en Open Food Facts → panel
+// directo (mostrador F9 / etiqueta / alta manual), sin 4 fetches perdidos ni el «no existe» engañoso. Al
+// ir de ÚLTIMO, NO tapa los ~247 productos ENVASADOS con EAN-8/13 de prefijo 2 que SÍ están en la base
+// curada (marcas blancas Lidl/Aldi) ni sus equivalentes de España: esos se encuentran ANTES de llegar aquí.
+function bcTrasLocal(ean){
+  if(bcEsPesoVariable(ean)){ bcPesoVariablePanel(ean, _pvPesoG); return; }
   bcBuscarRedOFF(ean);
 }
 // Salida a red OFF (v0.18: factorizada de bcBuscar SIN cambios — bcBuscar la llama directo si no
@@ -10097,6 +10259,48 @@ function bcReintentar(){
   var res=$("bc_res"); if(res){ res.innerHTML=""; res.classList.add("hidden"); }
   try{ etiqReset(); }catch(e){}   // 📷 v0.34.1 · «↻ Escanear otro» vuelve al lector de CÓDIGOS; sin esto _etiqModo seguía activo y bcDetectado quedaba muerto por su guard
   bcIniciarCamara();
+}
+
+// 🏷️ F8 · PANEL del código de peso variable / interno del súper (la INTELIGENCIA es pura en [PESOVAR-PURE];
+// aquí solo el DOM). Ninguna búsqueda muere en un «no encontrado» seco: 3 salidas — (a) genéricos de
+// mostrador F9 con el buscador precargado, (b) leer la etiqueta con la cámara (etiqDesdeFallo, ya existe),
+// (c) alta manual con el EAN vinculado y, si el GS1 traía peso, la ración precargada.
+function bcPesoVariablePanel(ean, pesoG){
+  var res=$("bc_res"); if(!res) return;
+  bcPararCamara();
+  var man=$("bc_manual"); if(man) man.value=ean;
+  var tienePeso=(pesoG!=null && +pesoG>0);
+  var pesoTxt=tienePeso ? "<div class='hint'>⚖️ Peso leído del código: <b>"+esc(String(Math.round(+pesoG)))+" g</b> — lo precargo en la ración si creas el alimento.</div>" : "";
+  var altaArg=tienePeso ? '"'+escAttr(ean)+'",'+Math.round(+pesoG) : '"'+escAttr(ean)+'"';
+  res.innerHTML="<div class='aviso'>🏷️ Es un <b>código interno del súper</b> (producto al peso: charcutería, pescadería, fruta a granel…). No lleva código de fábrica, así que no está en ninguna base de productos — pero ningún alimento se queda sin salida:</div>"
+    +pesoTxt
+    +"<button type='button' class='btn-lg' onclick='bcMostradorBuscar(\"\")'>🥩 Genéricos de mostrador (al corte)</button>"
+    +"<div style='display:flex;flex-wrap:wrap;gap:6px;margin:6px 0'>"
+      +"<button class='sec' type='button' style='width:auto;margin:0;padding:6px 12px' onclick='bcMostradorBuscar(\"jamon\")'>🍖 Jamón</button>"
+      +"<button class='sec' type='button' style='width:auto;margin:0;padding:6px 12px' onclick='bcMostradorBuscar(\"queso\")'>🧀 Queso</button>"
+      +"<button class='sec' type='button' style='width:auto;margin:0;padding:6px 12px' onclick='bcMostradorBuscar(\"pollo\")'>🍗 Pollo</button>"
+      +"<button class='sec' type='button' style='width:auto;margin:0;padding:6px 12px' onclick='bcMostradorBuscar(\"pan\")'>🍞 Pan</button>"
+    +"</div>"
+    +"<button type='button' class='btn-lg' onclick='etiqDesdeFallo(\""+escAttr(ean)+"\")'>📷 Leer la etiqueta con la cámara</button>"
+    +"<button class='sec' type='button' onclick='bcAltaMostrador("+altaArg+")'>✍️ Crear alimento a mano</button>"
+    +"<button class='sec' type='button' onclick='bcReintentar()'>↻ Escanear otro</button>";
+  res.classList.remove("hidden");
+}
+// Abre el buscador de comida (Supermercado) precargado. term="" → «al corte» = TODOS los genéricos de
+// mostrador; un term de categoría (jamón/queso/pollo/pan) afina. Reutiliza el buscador EXISTENTE (superAbrir
+// copia #com_nombre → #super_buscar), no duplica lógica.
+function bcMostradorBuscar(term){
+  var q=(term && String(term).trim()) ? String(term).trim() : "al corte";
+  show("barcodeModal", false);
+  bcPararCamara();
+  var cn=$("com_nombre"); if(cn) cn.value=q;
+  if(typeof superAbrir==="function") superAbrir();
+}
+// Alta manual de un producto al peso: abre el modal de alimento propio con el EAN vinculado y, si el
+// code_128 GS1 traía peso, precarga la ración en gramos (apAbrir LIMPIA campos → se rellena DESPUÉS).
+function bcAltaMostrador(ean, pesoG){
+  apAbrir((typeof ean==="string" && ean)?ean:null);
+  if(pesoG!=null && +pesoG>0){ var el=$("ap_porcion"); if(el) el.value=Math.round(+pesoG); }
 }
 
 // ===== 📷 v0.34.1 · CAPA IMPURA del LECTOR DE ETIQUETAS (cámara/canvas/OCR/DOM). La INTELIGENCIA es
@@ -12014,7 +12218,7 @@ function resetTodo(){ if(!confirm("⚠️ Esto borra TODO: perfil, pesos, entren
 // Reemplazo total con confirmación. Reusa get/set, hoyLocal, toast, validar, render. NO toca motor ni gate.
 function exportarJSON(){ try{ set("jvf_last_export",hoyLocal()); }catch(e){}
   try{
-    var data={ app:"jvf", schema:1, app_version:"0.35.1", exportadoEl:new Date().toISOString(),
+    var data={ app:"jvf", schema:1, app_version:"0.36.0", exportadoEl:new Date().toISOString(),
       perfil:get(LS_P,null), pesos:get(LS_W,[]), entrenos:get(LS_E,[]), notas_ej:get("jvf_notas_ej",{}), comida:get("jvf_comida",[]), agua:get("jvf_agua",{}), suples_cfg:get("jvf_suples_cfg",null), suples_log:get("jvf_suples_log",{}),
       rutinas:get("jvf_rutinas",[]), meals:get("jvf_meals",[]), ent_start:get("jvf_ent_start",null),   // v0.10 · backup completo
       alimentos_propios:get("jvf_alimentos_propios",[]), barcode_cache:get("jvf_barcode_cache",{}),   // I5/I6 · también viajan en el backup
