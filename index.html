@@ -626,7 +626,7 @@
 <header class="brandbar">
   <div class="logo"><span class="dot"></span>JV <b>Fitness</b></div>
   <div style="display:flex;align-items:center">
-    <span class="tag">MVP v0.48.0 · motor v0.7</span>
+    <span class="tag">MVP v0.49.0 · motor v0.7</span>
     <!-- ⚙️ tanda #22 · hub de AJUSTES (no es pestaña): modal a pantalla completa -->
     <button class="gearbtn" id="btn_hub" type="button" title="Ajustes" aria-label="Abrir ajustes" onclick="hubAbrir()">⚙️</button>
   </div>
@@ -1420,6 +1420,8 @@ Tus datos se guardan solo en este dispositivo.</p>
         <b>🌍 Base mundial</b> <span class="hint" style="display:inline">· no disponible todavía</span>
         <div id="dbw_estado" class="hint" style="margin-top:4px">Llegará como descarga opcional aparte (tarea #18): productos de fuera de España para el escáner y el buscador.</div>
       </div>
+      <!-- ⚖️ ODbL · atribución obligatoria de la fuente de datos (licencia de Open Food Facts). Solo texto/enlaces, sin lógica. -->
+      <p class="hint" style="margin-top:10px">Datos de productos: <a href="https://openfoodfacts.org" target="_blank" rel="noopener" style="color:var(--jade)">Open Food Facts</a> — licencia <a href="https://opendatacommons.org/licenses/odbl/" target="_blank" rel="noopener" style="color:var(--jade)">ODbL</a>.</p>
     </div>
 
     <!-- 📦 DATOS — export/import/borrar MOVIDOS desde el pie de la app (tanda #22). Mismas funciones. -->
@@ -12688,7 +12690,7 @@ function resetTodo(){ if(!confirm("⚠️ Esto borra TODO: perfil, pesos, entren
 // Reemplazo total con confirmación. Reusa get/set, hoyLocal, toast, validar, render. NO toca motor ni gate.
 function exportarJSON(){ try{ set("jvf_last_export",hoyLocal()); }catch(e){}
   try{
-    var data={ app:"jvf", schema:1, app_version:"0.48.0", exportadoEl:new Date().toISOString(),
+    var data={ app:"jvf", schema:1, app_version:"0.49.0", exportadoEl:new Date().toISOString(),
       perfil:get(LS_P,null), pesos:get(LS_W,[]), entrenos:get(LS_E,[]), notas_ej:get("jvf_notas_ej",{}), comida:get("jvf_comida",[]), agua:get("jvf_agua",{}), suples_cfg:get("jvf_suples_cfg",null), suples_log:get("jvf_suples_log",{}),
       rutinas:get("jvf_rutinas",[]), meals:get("jvf_meals",[]), ent_start:get("jvf_ent_start",null),   // v0.10 · backup completo
       alimentos_propios:get("jvf_alimentos_propios",[]), barcode_cache:get("jvf_barcode_cache",{}),   // I5/I6 · también viajan en el backup
