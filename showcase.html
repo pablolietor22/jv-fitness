@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; form-action 'none'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; font-src 'self'; script-src 'self' 'unsafe-inline'; connect-src 'self'">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0A100E">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<title>JV Fitness — un producto real dirigido con IA agéntica · Pablo Andrés Martínez</title>
+<meta name="description" content="JV Fitness: app de nutrición y entrenamiento con base científica, desplegada y en desarrollo activo. Diseñada y dirigida por Pablo Andrés Martínez —estudiante de Derecho, sin formación técnica previa— con metodologías de IA agéntica: especificación cerrada, orquestación en paralelo y verificación adversarial.">
+<meta name="robots" content="index,follow">
+<meta property="og:type" content="website">
+<meta property="og:title" content="JV Fitness — un producto real, dirigido con IA agéntica">
+<meta property="og:description" content="Nutrición y entrenamiento con base científica. Diseñada y dirigida por un estudiante de Derecho con metodologías de IA agéntica. Desplegada, probada y en desarrollo casi a diario.">
+<meta property="og:image" content="assets/pablo.png">
+<meta name="twitter:card" content="summary">
+
+<style>
+/* ============ FUENTES (self-hosted · sin CDN) ============ */
+@font-face{
+  font-family:'Space Grotesk';font-style:normal;font-weight:400 700;font-display:swap;
+  src:url('assets/fonts/space-grotesk.woff2') format('woff2');
+}
+@font-face{
+  font-family:'IBM Plex Mono';font-style:normal;font-weight:400;font-display:swap;
+  src:url('assets/fonts/ibm-plex-mono-400.woff2') format('woff2');
+}
+@font-face{
+  font-family:'IBM Plex Mono';font-style:normal;font-weight:500;font-display:swap;
+  src:url('assets/fonts/ibm-plex-mono-500.woff2') format('woff2');
+}
+
+/* ============ TOKENS ============ */
+:root{
+  --bg:#0A100E; --bg-2:#0C1512; --panel:#101E19; --panel-2:#0D1B16;
+  --line:#1E3A31; --line-soft:#16281F;
+  --jade:#3DDC97; --jade-dim:#2ea877; --jade-glow:rgba(61,220,151,.14);
+  --ember:#FF6A3D; --ember-soft:rgba(255,106,61,.12);
+  --bone:#EEF2EC; --soft:#CBD8D1; --mute:#8CA69B; --mute-2:#5E756B;
+  --display:'Space Grotesk',system-ui,sans-serif;
+  --mono:'IBM Plex Mono',ui-monospace,'Cascadia Code',Consolas,monospace;
+  --body:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  --maxw:1080px;
+  --r:16px;
+}
+
+/* ============ RESET / BASE ============ */
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{
+  background:var(--bg);color:var(--bone);font-family:var(--body);
+  line-height:1.62;font-size:1.02rem;-webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+}
+img{max-width:100%;display:block}
+a{color:inherit;text-decoration:none}
+:focus-visible{outline:2px solid var(--jade);outline-offset:3px;border-radius:4px}
+
+/* ============ LAYOUT HELPERS ============ */
+.wrap{width:100%;max-width:var(--maxw);margin:0 auto;padding:0 22px}
+.eyebrow{
+  font-family:var(--mono);font-weight:500;font-size:.7rem;text-transform:uppercase;
+  letter-spacing:.2em;color:var(--jade);display:flex;width:fit-content;max-width:100%;
+  align-items:center;gap:.6em;
+}
+.eyebrow::before{content:"";width:16px;height:1px;background:var(--jade);opacity:.7}
+h1,h2,h3{font-family:var(--display);font-weight:700;letter-spacing:-.02em;line-height:1.08}
+.dim{color:var(--mute)}
+.mono{font-family:var(--mono)}
+.jade{color:var(--jade)}
+.ember{color:var(--ember)}
+
+/* ============ HERO ============ */
+.hero{position:relative;overflow:hidden;padding:clamp(28px,7vw,60px) 0 clamp(40px,8vw,80px);
+  border-bottom:1px solid var(--line-soft)}
+/* fondo tipo blueprint (CSS puro) */
+.hero::before{
+  content:"";position:absolute;inset:0;z-index:0;pointer-events:none;
+  background:
+    radial-gradient(920px 480px at 78% -6%, var(--jade-glow), transparent 62%),
+    radial-gradient(700px 420px at 8% 8%, rgba(255,106,61,.06), transparent 60%),
+    linear-gradient(transparent 0 39px, var(--line-soft) 39px 40px),
+    linear-gradient(90deg, transparent 0 39px, var(--line-soft) 39px 40px);
+  background-size:auto, auto, 40px 40px, 40px 40px;
+  -webkit-mask-image:linear-gradient(180deg,#000 0 62%,transparent);
+          mask-image:linear-gradient(180deg,#000 0 62%,transparent);
+  opacity:.5;
+}
+.hero__inner{position:relative;z-index:1;display:grid;gap:clamp(22px,4vw,34px);
+  grid-template-columns:1fr;align-items:center}
+.livebar{
+  display:inline-flex;align-items:center;gap:.7em;font-family:var(--mono);font-size:.72rem;
+  letter-spacing:.06em;color:var(--soft);border:1px solid var(--line);
+  background:rgba(16,30,25,.72);border-radius:100px;padding:8px 15px;
+}
+.livebar .dot{width:8px;height:8px;border-radius:50%;background:var(--jade);position:relative;
+  box-shadow:0 0 9px var(--jade);flex:none}
+.livebar b{color:var(--jade);font-weight:500}
+.livebar .lv{color:var(--bone)}
+h1.title{font-size:clamp(2.6rem,9vw,5rem);margin:.5rem 0 0}
+h1.title .brand{color:var(--bone)}
+h1.title .brand b{color:var(--jade);font-weight:700}
+.tagline{font-size:clamp(1.06rem,2.5vw,1.34rem);color:var(--soft);max-width:44ch;
+  margin-top:1.1rem;line-height:1.5;font-weight:400}
+.tagline strong{color:var(--bone);font-weight:600}
+.cta-row{display:flex;flex-wrap:wrap;gap:12px;margin-top:1.7rem}
+.btn{
+  display:inline-flex;align-items:center;gap:.55em;font-family:var(--display);font-weight:700;
+  font-size:.98rem;padding:13px 20px;border-radius:12px;cursor:pointer;border:1px solid transparent;
+  transition:transform .12s ease, box-shadow .18s ease, background .18s ease, border-color .18s ease;
+}
+.btn--primary{background:var(--jade);color:#05221a;box-shadow:0 8px 26px rgba(61,220,151,.24)}
+.btn--primary:hover{box-shadow:0 12px 34px rgba(61,220,151,.36);transform:translateY(-1px)}
+.btn--ghost{background:transparent;color:var(--soft);border-color:var(--line)}
+.btn--ghost:hover{border-color:var(--jade);color:var(--bone)}
+.btn .arw{transition:transform .18s ease}
+.btn:hover .arw{transform:translateX(3px)}
+.byline{display:flex;align-items:center;gap:13px;margin-top:2rem;
+  padding-top:1.4rem;border-top:1px solid var(--line-soft)}
+.byline img{width:52px;height:52px;border-radius:50%;object-fit:cover;object-position:center top;
+  border:1.5px solid var(--jade);background:var(--panel);flex:none}
+.byline .who{font-size:.9rem;line-height:1.4}
+.byline .who b{font-family:var(--display);color:var(--bone);font-weight:700}
+.byline .who span{color:var(--mute);font-family:var(--mono);font-size:.72rem;letter-spacing:.03em}
+
+/* ============ SECCIÓN GENÉRICA ============ */
+section{padding:clamp(48px,9vw,88px) 0}
+.sec-head{max-width:52ch}
+.sec-head h2{font-size:clamp(1.7rem,4.5vw,2.7rem);margin:.7rem 0 0}
+.sec-head p{color:var(--mute);margin-top:1rem;font-size:1.04rem}
+
+/* ============ FEATURES ============ */
+.features{border-bottom:1px solid var(--line-soft)}
+.frow{display:grid;grid-template-columns:1fr;gap:clamp(22px,4vw,52px);align-items:center;
+  padding:clamp(30px,5vw,52px) 0;border-top:1px solid var(--line-soft)}
+.frow:first-of-type{border-top:0}
+.frow__media{order:-1}
+.shot{border:1px solid var(--line);border-radius:20px;overflow:hidden;background:var(--panel-2);
+  box-shadow:0 24px 60px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.03);max-width:340px;margin:0 auto}
+.shot img{width:100%;height:auto}
+.feat-eyebrow{font-family:var(--mono);font-weight:500;font-size:.68rem;text-transform:uppercase;
+  letter-spacing:.19em;color:var(--jade)}
+.frow h3{font-size:clamp(1.4rem,3.4vw,2rem);margin:.55rem 0 .8rem}
+.frow p.lead{color:var(--soft);font-size:1.05rem;max-width:46ch}
+details.under{margin-top:1.2rem;border:1px solid var(--line-soft);border-radius:12px;
+  background:var(--panel-2);overflow:hidden}
+details.under>summary{
+  list-style:none;cursor:pointer;padding:12px 15px;display:flex;align-items:center;gap:.6em;
+  font-family:var(--mono);font-size:.74rem;letter-spacing:.05em;color:var(--soft);
+  text-transform:uppercase;user-select:none;
+}
+details.under>summary::-webkit-details-marker{display:none}
+details.under>summary .chev{margin-left:auto;color:var(--jade);transition:transform .2s ease;font-size:.9rem}
+details.under[open]>summary .chev{transform:rotate(90deg)}
+details.under>summary:hover{color:var(--bone)}
+details.under .body{padding:2px 15px 15px;color:var(--mute);font-size:.92rem;line-height:1.6}
+details.under .body code{font-family:var(--mono);color:var(--soft);background:rgba(61,220,151,.08);
+  padding:.05em .35em;border-radius:5px;font-size:.9em}
+
+/* dos "spec cards" (funciones sin captura) */
+.spec-grid{display:grid;grid-template-columns:1fr;gap:16px;margin-top:clamp(24px,4vw,40px)}
+.spec-card{border:1px solid var(--line-soft);border-radius:var(--r);padding:22px;
+  background:linear-gradient(180deg,var(--panel),var(--panel-2))}
+.spec-card .feat-eyebrow{display:block;margin-bottom:.5rem}
+.spec-card h3{font-size:1.2rem;margin:0 0 .5rem}
+.spec-card p{color:var(--mute);font-size:.96rem}
+
+/* ============ STATS / CONTADORES ============ */
+.stats{background:var(--bg-2);border-top:1px solid var(--line-soft);border-bottom:1px solid var(--line-soft)}
+.stat-grid{display:grid;grid-template-columns:1fr;gap:14px}
+.stat{border:1px solid var(--line-soft);border-radius:var(--r);padding:24px 22px;
+  background:linear-gradient(180deg,var(--panel),var(--panel-2))}
+.stat .num{font-family:var(--mono);font-weight:500;font-size:clamp(2.2rem,7vw,3.1rem);
+  line-height:1;color:var(--jade);letter-spacing:-.02em}
+.stat .num small{font-size:.5em;color:var(--mute);font-weight:400}
+.stat .lbl{color:var(--soft);font-size:.9rem;margin-top:.7rem;line-height:1.4}
+.stat.live .num{color:var(--bone);display:flex;align-items:center;gap:.4em;font-size:clamp(1.5rem,5vw,2.1rem)}
+.stat.live .pulse{width:10px;height:10px;border-radius:50%;background:var(--jade);flex:none;
+  box-shadow:0 0 10px var(--jade)}
+
+/* ============ MÉTODO (firma) ============ */
+.method{position:relative}
+.method .lead-note{border-left:2px solid var(--ember);padding:2px 0 2px 16px;margin:1.4rem 0 0;
+  color:var(--soft);max-width:56ch;font-size:1.05rem}
+.method .lead-note b{color:var(--bone)}
+.pipe{margin-top:clamp(30px,5vw,52px);position:relative;padding-left:34px}
+.pipe::before{content:"";position:absolute;left:9px;top:6px;bottom:6px;width:2px;
+  background:linear-gradient(180deg,var(--jade),var(--jade-dim) 55%,var(--line));border-radius:2px}
+.stage{position:relative;padding:0 0 clamp(26px,4vw,40px)}
+.stage:last-child{padding-bottom:0}
+.stage__node{position:absolute;left:-34px;top:1px;width:20px;height:20px;border-radius:50%;
+  background:var(--bg);border:2px solid var(--jade);display:grid;place-items:center}
+.stage__node::after{content:"";width:7px;height:7px;border-radius:50%;background:var(--jade);
+  box-shadow:0 0 8px var(--jade)}
+.stage__k{font-family:var(--mono);font-size:.7rem;letter-spacing:.16em;color:var(--jade);font-weight:500}
+.stage h3{font-size:clamp(1.2rem,3vw,1.5rem);margin:.25rem 0 .5rem}
+.stage p{color:var(--mute);max-width:52ch;font-size:.98rem}
+/* motivos visuales de dos etapas */
+.agents{display:flex;gap:6px;margin-top:.8rem}
+.agents span{height:8px;border-radius:4px;background:var(--jade);opacity:.85;flex:1;max-width:64px;
+  animation:none}
+.agents span:nth-child(2){opacity:.6}
+.agents span:nth-child(3){opacity:.4}
+.agents span:nth-child(4){opacity:.28}
+.adver{display:inline-flex;gap:8px;margin-top:.8rem;font-family:var(--mono);font-size:.72rem;color:var(--soft)}
+.adver .tag{border:1px solid var(--line);border-radius:7px;padding:3px 9px}
+.adver .tag.x{color:var(--ember);border-color:rgba(255,106,61,.5)}
+.adver .tag.ok{color:var(--jade);border-color:rgba(61,220,151,.5)}
+
+/* ============ FOOTER ============ */
+.foot{background:var(--bg-2);border-top:1px solid var(--line);padding:clamp(44px,7vw,72px) 0}
+.foot__cta{display:flex;flex-wrap:wrap;gap:14px;align-items:center}
+.foot__cta .btn--code{background:var(--jade);color:#05221a;font-size:1.02rem;padding:15px 24px;
+  box-shadow:0 8px 26px rgba(61,220,151,.22)}
+.foot__cta .btn--code:hover{transform:translateY(-1px);box-shadow:0 12px 34px rgba(61,220,151,.34)}
+.foot__try{font-family:var(--mono);font-size:.82rem;color:var(--mute);border-bottom:1px dashed var(--mute-2);
+  padding-bottom:1px}
+.foot__try:hover{color:var(--jade);border-color:var(--jade)}
+.foot__meta{margin-top:2.2rem;padding-top:1.6rem;border-top:1px solid var(--line-soft);
+  display:grid;gap:.5rem;color:var(--mute);font-size:.86rem}
+.foot__meta .honest{font-family:var(--mono);font-size:.76rem;letter-spacing:.03em;color:var(--soft)}
+.foot__meta a.mail{color:var(--jade)}
+.foot__sig{color:var(--mute-2);font-size:.78rem;margin-top:.6rem}
+
+/* ============ REVEAL (guardado tras .js) ============ */
+html.js .reveal{opacity:0;transform:translateY(22px);
+  transition:opacity .6s cubic-bezier(.2,.7,.2,1), transform .6s cubic-bezier(.2,.7,.2,1)}
+html.js .reveal.in{opacity:1;transform:none}
+html.js .reveal.d1{transition-delay:.08s}
+html.js .reveal.d2{transition-delay:.16s}
+
+/* ============ ANIMACIONES AMBIENTALES (solo si el usuario las permite) ============ */
+@media (prefers-reduced-motion: no-preference){
+  .livebar .dot::after{content:"";position:absolute;inset:-5px;border-radius:50%;
+    border:1px solid var(--jade);opacity:.5;animation:ring 2.6s ease-out infinite}
+  .stat.live .pulse{animation:beat 2.2s ease-in-out infinite}
+  html.js .stage__node{opacity:.35;transform:scale(.8);transition:opacity .5s ease, transform .5s ease}
+  html.js .stage.in .stage__node{opacity:1;transform:scale(1)}
+}
+@keyframes ring{0%{transform:scale(.6);opacity:.6}100%{transform:scale(2);opacity:0}}
+@keyframes beat{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.35);opacity:.65}}
+
+/* garantía dura: si el usuario pide menos movimiento, nada se oculta ni se transforma */
+@media (prefers-reduced-motion: reduce){
+  html{scroll-behavior:auto}
+  html.js .reveal{opacity:1 !important;transform:none !important;transition:none !important}
+  *{animation:none !important}
+}
+
+/* ============ RESPONSIVE ============ */
+@media (min-width:760px){
+  .stat-grid{grid-template-columns:repeat(3,1fr)}
+  .spec-grid{grid-template-columns:1fr 1fr}
+  .frow{grid-template-columns:1.05fr .95fr}
+  .frow__media{order:0}
+  .frow--flip .frow__media{order:-1}
+  .shot{max-width:360px}
+}
+@media (min-width:1000px){
+  h1.title{font-size:5.2rem}
+  .shot{max-width:400px}
+}
+</style>
+</head>
+<body>
+
+<!-- ================= HERO ================= -->
+<header class="hero">
+  <div class="wrap hero__inner">
+    <div>
+      <div class="livebar" role="status" aria-live="polite">
+        <span class="dot" aria-hidden="true"></span>
+        <b>EN&nbsp;VIVO</b>
+        <span class="lv" data-live-version>· sincronizando versión…</span>
+      </div>
+
+      <p class="eyebrow" style="margin-top:1.6rem">PWA de nutrición y entrenamiento · ciencia, no humo</p>
+      <h1 class="title"><span class="brand">JV&nbsp;<b>Fitness</b></span></h1>
+      <p class="tagline">Nutrición y entrenamiento con base científica, en el móvil. La diseño y la dirijo yo —estudiante de Derecho, <strong>sin formación técnica previa</strong>— con metodologías de IA agéntica. Está <strong>desplegada, en uso y en desarrollo casi a diario.</strong></p>
+
+      <div class="cta-row">
+        <a class="btn btn--primary" href="https://github.com/pablolietor22/jv-fitness" target="_blank" rel="noopener noreferrer">Ver el código <span class="arw" aria-hidden="true">→</span></a>
+        <a class="btn btn--ghost" href="index.html">Probar la app en vivo</a>
+      </div>
+
+      <div class="byline">
+        <img src="assets/pablo.png" alt="Retrato de Pablo Andrés Martínez" width="52" height="52">
+        <div class="who">
+          <b>Construido y dirigido por Pablo Andrés Martínez</b><br>
+          <span>Estudiante de Derecho · dirección técnica con IA</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- ================= FEATURES ================= -->
+<main>
+<section class="features">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <p class="eyebrow">Qué hace</p>
+      <h2>Herramientas de verdad, no una lista de promesas</h2>
+      <p>Cada función está construida, desplegada y en uso. Debajo de cada una, en <span class="mono">«bajo el capó»</span>, está el detalle técnico para quien quiera profundizar.</p>
+    </div>
+
+    <!-- Feature 1 · escáner de etiqueta -->
+    <div class="frow reveal">
+      <div class="frow__text">
+        <span class="feat-eyebrow">Cámara + OCR</span>
+        <h3>Lee la etiqueta con la cámara</h3>
+        <p class="lead">Apunta a la tabla nutricional de cualquier producto del súper y la app la lee: energía, macros, sal y azúcares. También escanea el código de barras —incluido el <strong>peso variable</strong> de la charcutería al corte.</p>
+        <details class="under">
+          <summary>Bajo el capó <span class="chev" aria-hidden="true">›</span></summary>
+          <div class="body">
+            OCR con <code>Tesseract.js</code> sobre un preprocesado de imagen propio: <strong>binarización adaptativa de Sauvola</strong> (umbral calculado por ventana, para que aguante brillos y sombras de una foto real de supermercado) y <strong>reconstrucción de las filas de la tabla por coordenadas</strong>. El escáner de códigos lee EAN-13/8, UPC, Code-128 y GS1 (QR y Data&nbsp;Matrix), extrayendo el peso variable del corte cuando el código lo trae.
+          </div>
+        </details>
+      </div>
+      <div class="frow__media">
+        <figure class="shot"><img src="assets/shots/label-scanner.webp" alt="Modo «Escanear etiqueta» de JV Fitness: una tabla de información nutricional encuadrada dentro del recuadro guía de la cámara, con las fuentes de datos Open Food Facts y BEDCA/AESAN al pie." width="720" height="1145" loading="lazy"></figure>
+      </div>
+    </div>
+
+    <!-- Feature 2 · biblioteca de ejercicios -->
+    <div class="frow frow--flip reveal">
+      <div class="frow__text">
+        <span class="feat-eyebrow">1.500 ejercicios</span>
+        <h3>Te enseña dónde tiene que apretar</h3>
+        <p class="lead">Cada ejercicio trae instrucciones paso a paso y una ilustración anatómica que pinta en <strong style="color:var(--ember)">rojo el músculo principal</strong> y en naranja los secundarios. Ves de un vistazo qué estás trabajando —no hace falta adivinar.</p>
+        <details class="under">
+          <summary>Bajo el capó <span class="chev" aria-hidden="true">›</span></summary>
+          <div class="body">
+            Biblioteca de ~1.500 ejercicios con buscador por músculo y equipo. Por cada ficha se genera una <strong>silueta anatómica frontal y dorsal</strong> que resalta el músculo trabajado (principal vs. secundario) y una animación del gesto. Las instrucciones se sirven desde un índice local, así que la ficha funciona aunque el gimnasio no tenga cobertura.
+          </div>
+        </details>
+      </div>
+      <div class="frow__media">
+        <figure class="shot"><img src="assets/shots/exercise-anatomy.webp" alt="Ficha del ejercicio «Press banca» en JV Fitness: foto del movimiento, dos siluetas anatómicas (frente y espalda) con el pecho resaltado en rojo y los hombros en naranja, chips de músculo, y las instrucciones «Cómo se hace» paso a paso." width="720" height="1649" loading="lazy"></figure>
+      </div>
+    </div>
+
+    <!-- Feature 3 · motor Jarvis -->
+    <div class="frow reveal">
+      <div class="frow__text">
+        <span class="feat-eyebrow">Motor conversacional «Jarvis»</span>
+        <h3>Pregunta y te cita la fuente</h3>
+        <p class="lead">Un motor conversacional responde tus dudas de entrenamiento y nutrición y —lo importante— <strong>cita de dónde sale cada respuesta</strong>. No inventa: si no lo sabe, lo dice.</p>
+        <details class="under">
+          <summary>Bajo el capó <span class="chev" aria-hidden="true">›</span></summary>
+          <div class="body">
+            Motor determinista basado en reglas, no un modelo que alucine: cada respuesta <strong>referencia su origen</strong> (p.&nbsp;ej. <code>Morton 2018 / Bagheri 2024</code>). Detecta preguntas ambiguas y <strong>desambigua antes de responder</strong> en vez de soltar media respuesta, y encadena preguntas de seguimiento.
+          </div>
+        </details>
+      </div>
+      <div class="frow__media">
+        <figure class="shot"><img src="assets/shots/jarvis-chat.webp" alt="Chat del motor Jarvis en JV Fitness: ante «¿cuánta proteína?» primero desambigua, y luego da una respuesta que cita la fuente «(← Tema 3, Morton 2018 / Bagheri 2024)», con preguntas de seguimiento encadenadas." width="720" height="1003" loading="lazy"></figure>
+      </div>
+    </div>
+
+    <!-- dos funciones más (spec cards) -->
+    <div class="spec-grid">
+      <div class="spec-card reveal">
+        <span class="feat-eyebrow">Offline</span>
+        <h3>Diario de comida sin internet</h3>
+        <p>Base curada de miles de alimentos —cocina española y Open Food Facts— que funciona en el metro, en el gimnasio, donde sea. Buscar y escanear no dependen de la conexión.</p>
+      </div>
+      <div class="spec-card reveal d1">
+        <span class="feat-eyebrow">Matemática auditada</span>
+        <h3>Calorías y macros que puedes creerte</h3>
+        <p>El motor de cálculo pasa por una revisión adversarial —varios agentes de IA objetando— y una suite de <strong>75+ tests automáticos</strong> antes de cada publicación.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= STATS ================= -->
+<section class="stats">
+  <div class="wrap">
+    <div class="sec-head reveal" style="margin-bottom:clamp(24px,4vw,40px)">
+      <p class="eyebrow">En números</p>
+      <h2>Nada de esto es una maqueta</h2>
+    </div>
+    <div class="stat-grid">
+      <div class="stat reveal">
+        <div class="num" data-count="1500" data-format="mil">0</div>
+        <div class="lbl">ejercicios con guía anatómica e instrucciones</div>
+      </div>
+      <div class="stat reveal d1">
+        <div class="num" data-count="75" data-suffix="+">0</div>
+        <div class="lbl">tests automáticos que corren antes de cada publicación</div>
+      </div>
+      <div class="stat live reveal d2">
+        <div class="num"><span class="pulse" aria-hidden="true"></span><span data-live-num>···</span></div>
+        <div class="lbl">versión pública en vivo ahora mismo <span data-live-motor class="dim mono" style="font-size:.82rem"></span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= MÉTODO (firma) ================= -->
+<section class="method">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <p class="eyebrow">Cómo lo construyo</p>
+      <h2>Dirección técnica con IA agéntica</h2>
+      <p class="lead-note"><b>No es «la IA lo hizo sola».</b> Yo diseño la arquitectura, fijo las restricciones y dirijo la verificación. La IA ejecuta a gran velocidad; el criterio, las decisiones y la responsabilidad son míos.</p>
+    </div>
+
+    <div class="pipe">
+      <div class="stage reveal">
+        <span class="stage__node" aria-hidden="true"></span>
+        <div class="stage__k">FASE 01</div>
+        <h3>Especificación cerrada</h3>
+        <p>Antes de tocar código escribo un pliego técnico completo: alcance exacto, restricciones y criterios de aceptación. Nada se construye «a ojo».</p>
+      </div>
+      <div class="stage reveal">
+        <span class="stage__node" aria-hidden="true"></span>
+        <div class="stage__k">FASE 02</div>
+        <h3>Orquestación en paralelo</h3>
+        <p>Varios agentes de IA construyen a la vez contra ese pliego, cada uno en su parcela.</p>
+        <div class="agents" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+      </div>
+      <div class="stage reveal">
+        <span class="stage__node" aria-hidden="true"></span>
+        <div class="stage__k">FASE 03</div>
+        <h3>Verificación adversarial</h3>
+        <p>Otros agentes revisan y objetan cada cambio antes de publicar: su trabajo es encontrar el fallo, no aplaudir.</p>
+        <div class="adver" aria-hidden="true"><span class="tag x">objeta</span><span class="tag x">rebate</span><span class="tag ok">aprueba</span></div>
+      </div>
+      <div class="stage reveal">
+        <span class="stage__node" aria-hidden="true"></span>
+        <div class="stage__k">FASE 04</div>
+        <h3>Puerta de calidad</h3>
+        <p>75+ tests automáticos y un escaneo de seguridad corren en cada publicación. Si algo falla, no sale.</p>
+      </div>
+      <div class="stage reveal">
+        <span class="stage__node" aria-hidden="true"></span>
+        <div class="stage__k">FASE 05</div>
+        <h3>Publicación y versionado</h3>
+        <p>Control de versiones real y changelog. Decenas de versiones desplegadas, con contribuciones externas vía <em>pull requests</em>.</p>
+      </div>
+    </div>
+  </div>
+</section>
+</main>
+
+<!-- ================= FOOTER ================= -->
+<footer class="foot">
+  <div class="wrap">
+    <div class="sec-head reveal" style="margin-bottom:1.6rem">
+      <p class="eyebrow">Míralo tú mismo</p>
+      <h2>El código está abierto</h2>
+    </div>
+    <div class="foot__cta reveal">
+      <a class="btn btn--code" href="https://github.com/pablolietor22/jv-fitness" target="_blank" rel="noopener noreferrer">Ver el código en GitHub <span class="arw" aria-hidden="true">→</span></a>
+      <a class="foot__try" href="index.html">o probar la app en vivo</a>
+    </div>
+
+    <div class="foot__meta reveal">
+      <div class="honest">Estado real: en desarrollo activo casi a diario · uso personal + testers externos · contribuciones vía pull requests. Sin cifras infladas.</div>
+      <div>Contacto: <a class="mail" href="mailto:paandr02@ucm.es">paandr02@ucm.es</a></div>
+      <div class="foot__sig">JV Fitness · diseñado y dirigido con metodologías de IA agéntica por Pablo Andrés Martínez · 2026</div>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  "use strict";
+  var root = document.documentElement;
+  root.classList.add('js');
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---------- Versión EN VIVO (fetch mismo-origen del index de la app) ---------- */
+  function paintVersion(full, appv, motor){
+    var lv = document.querySelector('[data-live-version]');
+    if(lv) lv.textContent = '· ' + full;
+    var ln = document.querySelector('[data-live-num]');
+    if(ln && appv) ln.textContent = 'v' + appv;
+    var lm = document.querySelector('[data-live-motor]');
+    if(lm && motor) lm.textContent = '· motor v' + motor;
+  }
+  function fallbackVersion(){
+    var lv = document.querySelector('[data-live-version]');
+    if(lv) lv.textContent = '· en desarrollo activo';
+    var ln = document.querySelector('[data-live-num]');
+    if(ln) ln.textContent = 'en vivo';
+  }
+  var RE = /MVP v(\d+\.\d+\.\d+)\s*[·•·]\s*motor v([\d.]+)/;
+  // Pide solo los primeros 80 KB del index (el tag de versión vive muy arriba, ~51 KB).
+  // GitHub Pages honra la cabecera Range y responde 206 con ese trozo: no descarga los 1,9 MB.
+  fetch('index.html', { cache:'no-store', headers:{ 'Range':'bytes=0-79999' } })
+    .then(function(res){ return res.text(); })
+    .then(function(t){
+      var m = t.match(RE);
+      if(m){ paintVersion(m[0], m[1], m[2]); }
+      else { fallbackVersion(); }
+    })
+    .catch(fallbackVersion);
+
+  /* ---------- Contadores ---------- */
+  function fmt(n, format){
+    if(format==='mil') return n.toLocaleString('es-ES');
+    return String(n);
+  }
+  function runCounter(el){
+    var target = parseInt(el.getAttribute('data-count'),10) || 0;
+    var suffix = el.getAttribute('data-suffix') || '';
+    var format = el.getAttribute('data-format') || '';
+    if(reduce){ el.textContent = fmt(target,format) + suffix; return; }
+    var dur = 1200, t0 = null;
+    function step(ts){
+      if(t0===null) t0 = ts;
+      var p = Math.min((ts - t0)/dur, 1);
+      var eased = 1 - Math.pow(1-p, 3);
+      el.textContent = fmt(Math.round(target*eased), format) + (p>=1?suffix:'');
+      if(p<1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  }
+
+  /* ---------- Reveal + disparo de contadores ---------- */
+  var reveals = Array.prototype.slice.call(document.querySelectorAll('.reveal'));
+  var stages  = Array.prototype.slice.call(document.querySelectorAll('.stage'));
+
+  if(reduce || !('IntersectionObserver' in window)){
+    reveals.forEach(function(el){ el.classList.add('in'); });
+    stages.forEach(function(el){ el.classList.add('in'); });
+    document.querySelectorAll('.num[data-count]').forEach(runCounter);
+  } else {
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(e){
+        if(!e.isIntersecting) return;
+        e.target.classList.add('in');
+        var c = e.target.querySelector ? e.target.querySelector('.num[data-count]') : null;
+        if(e.target.classList.contains('num') && e.target.hasAttribute('data-count')) runCounter(e.target);
+        else if(c) runCounter(c);
+        io.unobserve(e.target);
+      });
+    }, { threshold:0.18, rootMargin:'0px 0px -8% 0px' });
+    reveals.forEach(function(el){ io.observe(el); });
+    stages.forEach(function(el){ io.observe(el); });
+  }
+})();
+</script>
+</body>
+</html>
