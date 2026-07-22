@@ -10,10 +10,15 @@
 <meta name="description" content="JV Fitness: app de nutrición y entrenamiento con base científica, desplegada y en desarrollo activo. Diseñada y dirigida por Pablo Andrés Martínez —estudiante de Derecho, sin formación técnica previa— con metodologías de IA agéntica: especificación cerrada, orquestación en paralelo y verificación adversarial.">
 <meta name="robots" content="index,follow">
 <meta property="og:type" content="website">
+<meta property="og:url" content="https://pablolietor22.github.io/jv-fitness/showcase.html">
 <meta property="og:title" content="JV Fitness — un producto real, dirigido con IA agéntica">
 <meta property="og:description" content="Nutrición y entrenamiento con base científica. Diseñada y dirigida por un estudiante de Derecho con metodologías de IA agéntica. Desplegada, probada y en desarrollo casi a diario.">
-<meta property="og:image" content="assets/pablo.png">
-<meta name="twitter:card" content="summary">
+<!-- og:image ABSOLUTA (LinkedIn/WhatsApp ignoran rutas relativas) + tarjeta 1200×630 dedicada, no la foto de retrato -->
+<meta property="og:image" content="https://pablolietor22.github.io/jv-fitness/assets/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://pablolietor22.github.io/jv-fitness/assets/og.png">
 
 <style>
 /* ============ FUENTES (self-hosted · sin CDN) ============ */
@@ -501,10 +506,14 @@ html.js .reveal.d2{transition-delay:.16s}
 
   /* ---------- Contadores ---------- */
   function fmt(n, format){
-    if(format==='mil') return n.toLocaleString('es-ES');
+    /* separador de millar manual (1500 → «1.500»): toLocaleString('es-ES') depende del ICU del motor
+       y en algunos headless/bots devuelve «1500» — verificado en la revisión; esto es determinista */
+    if(format==='mil') return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
     return String(n);
   }
   function runCounter(el){
+    if(el.getAttribute('data-done')) return;   // guardia: el failsafe y el observer no re-animan
+    el.setAttribute('data-done','1');
     var target = parseInt(el.getAttribute('data-count'),10) || 0;
     var suffix = el.getAttribute('data-suffix') || '';
     var format = el.getAttribute('data-format') || '';
@@ -541,6 +550,17 @@ html.js .reveal.d2{transition-delay:.16s}
     }, { threshold:0.18, rootMargin:'0px 0px -8% 0px' });
     reveals.forEach(function(el){ io.observe(el); });
     stages.forEach(function(el){ io.observe(el); });
+
+    /* Failsafe de revelado: los bots de vista previa (Google, LinkedIn) y el prerender ejecutan JS
+       pero NO scrollean → sin esto capturarían la página en negro. A los 6 s (o al imprimir) todo
+       queda visible; para un humano es inapreciable (lo de bajo el pliegue ya estará revelado al llegar). */
+    function revealAll(){
+      reveals.forEach(function(el){ el.classList.add('in'); });
+      stages.forEach(function(el){ el.classList.add('in'); });
+      document.querySelectorAll('.num[data-count]').forEach(runCounter);
+    }
+    window.addEventListener('beforeprint', revealAll);
+    setTimeout(revealAll, 6000);
   }
 })();
 </script>
