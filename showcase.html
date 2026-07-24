@@ -134,6 +134,15 @@ section{padding:clamp(48px,9vw,88px) 0}
 .sec-head h2{font-size:clamp(1.7rem,4.5vw,2.7rem);margin:.7rem 0 0}
 .sec-head p{color:var(--mute);margin-top:1rem;font-size:1.04rem}
 
+/* subrayado SVG que se DIBUJA bajo el titular al revelarse.
+   Sin JS nuevo: se engancha a la clase .in que ya pone el revelado (y el failsafe). */
+.ul{display:block;width:min(230px,64%);height:9px;margin-top:.55rem;overflow:visible}
+.ul path{fill:none;stroke:var(--jade);stroke-width:2.4;stroke-linecap:round;
+  vector-effect:non-scaling-stroke;stroke-dasharray:1;stroke-dashoffset:0}
+html.js .sec-head .ul path{stroke-dashoffset:1;
+  transition:stroke-dashoffset .8s cubic-bezier(.3,.7,.2,1) .14s}
+html.js .sec-head.in .ul path{stroke-dashoffset:0}
+
 /* ============ FEATURES ============ */
 .features{border-bottom:1px solid var(--line-soft)}
 .frow{display:grid;grid-template-columns:1fr;gap:clamp(22px,4vw,52px);align-items:center;
@@ -162,7 +171,7 @@ details.under .body{padding:2px 15px 15px;color:var(--mute);font-size:.92rem;lin
 details.under .body code{font-family:var(--mono);color:var(--soft);background:rgba(61,220,151,.08);
   padding:.05em .35em;border-radius:5px;font-size:.9em}
 
-/* dos "spec cards" (funciones sin captura) */
+/* "spec cards" (funciones sin captura) */
 .spec-grid{display:grid;grid-template-columns:1fr;gap:16px;margin-top:clamp(24px,4vw,40px)}
 .spec-card{border:1px solid var(--line-soft);border-radius:var(--r);padding:22px;
   background:linear-gradient(180deg,var(--panel),var(--panel-2))}
@@ -182,6 +191,16 @@ details.under .body code{font-family:var(--mono);color:var(--soft);background:rg
 .stat.live .num{color:var(--bone);display:flex;align-items:center;gap:.4em;font-size:clamp(1.5rem,5vw,2.1rem)}
 .stat.live .pulse{width:10px;height:10px;border-radius:50%;background:var(--jade);flex:none;
   box-shadow:0 0 10px var(--jade)}
+
+/* ============ EN CONSTRUCCIÓN ============ */
+.wip{border-top:1px solid var(--line-soft);background:var(--bg-2)}
+.wip ul{list-style:none;margin-top:clamp(22px,3.5vw,34px);display:grid;gap:12px}
+.wip li{display:flex;gap:.85em;align-items:flex-start;border:1px solid var(--line-soft);
+  border-radius:12px;padding:15px 17px;background:linear-gradient(180deg,var(--panel),var(--panel-2));
+  color:var(--mute);font-size:.96rem;line-height:1.5}
+.wip li::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--ember);
+  flex:none;margin-top:.55em;box-shadow:0 0 9px rgba(255,106,61,.5)}
+.wip li b{color:var(--bone);font-family:var(--display);font-weight:700}
 
 /* ============ MÉTODO (firma) ============ */
 .method{position:relative}
@@ -249,13 +268,21 @@ html.js .reveal.d2{transition-delay:.16s}
 @media (prefers-reduced-motion: reduce){
   html{scroll-behavior:auto}
   html.js .reveal{opacity:1 !important;transform:none !important;transition:none !important}
+  html.js .sec-head .ul path{stroke-dashoffset:0 !important;transition:none !important}
   *{animation:none !important}
 }
 
 /* ============ RESPONSIVE ============ */
+@media (min-width:560px) and (max-width:759px){
+  .stat-grid{grid-template-columns:1fr 1fr}
+  .stat:last-child{grid-column:1 / -1}
+}
 @media (min-width:760px){
-  .stat-grid{grid-template-columns:repeat(3,1fr)}
-  .spec-grid{grid-template-columns:1fr 1fr}
+  /* 6 columnas virtuales: 3 tarjetas arriba (span 2) + 2 abajo (span 3) = filas siempre llenas */
+  .stat-grid{grid-template-columns:repeat(6,1fr)}
+  .stat{grid-column:span 2}
+  .stat:nth-child(4),.stat:nth-child(5){grid-column:span 3}
+  .spec-grid{grid-template-columns:repeat(3,1fr)}
   .frow{grid-template-columns:1.05fr .95fr}
   .frow__media{order:0}
   .frow--flip .frow__media{order:-1}
@@ -281,7 +308,7 @@ html.js .reveal.d2{transition-delay:.16s}
 
       <p class="eyebrow" style="margin-top:1.6rem">PWA de nutrición y entrenamiento · ciencia, no humo</p>
       <h1 class="title"><span class="brand">JV&nbsp;<b>Fitness</b></span></h1>
-      <p class="tagline">Nutrición y entrenamiento con base científica, en el móvil. La diseño y la dirijo yo —estudiante de Derecho, <strong>sin formación técnica previa</strong>— con metodologías de IA agéntica. Está <strong>desplegada, en uso y en desarrollo casi a diario.</strong></p>
+      <p class="tagline">Nutrición y entrenamiento con base científica, en el móvil. La dirijo yo —estudiante de Derecho, <strong>sin formación técnica previa</strong>— con IA agéntica.</p>
 
       <div class="cta-row">
         <a class="btn btn--primary" href="https://github.com/pablolietor22/jv-fitness" target="_blank" rel="noopener noreferrer">Ver el código <span class="arw" aria-hidden="true">→</span></a>
@@ -291,7 +318,7 @@ html.js .reveal.d2{transition-delay:.16s}
       <div class="byline">
         <img src="assets/pablo.png" alt="Retrato de Pablo Andrés Martínez" width="52" height="52">
         <div class="who">
-          <b>Construido y dirigido por Pablo Andrés Martínez</b><br>
+          <b>Pablo Andrés Martínez</b><br>
           <span>Estudiante de Derecho · dirección técnica con IA</span>
         </div>
       </div>
@@ -305,8 +332,9 @@ html.js .reveal.d2{transition-delay:.16s}
   <div class="wrap">
     <div class="sec-head reveal">
       <p class="eyebrow">Qué hace</p>
-      <h2>Herramientas de verdad, no una lista de promesas</h2>
-      <p>Cada función está construida, desplegada y en uso. Debajo de cada una, en <span class="mono">«bajo el capó»</span>, está el detalle técnico para quien quiera profundizar.</p>
+      <h2>Herramientas de verdad, no promesas</h2>
+      <svg class="ul" viewBox="0 0 200 9" preserveAspectRatio="none" aria-hidden="true" focusable="false"><path pathLength="1" d="M2 6 C46 2, 104 8.4, 198 3.4"/></svg>
+      <p>Todo esto está construido y en uso. <span class="mono">«Ver más»</span> abre el detalle técnico.</p>
     </div>
 
     <!-- Feature 1 · escáner de etiqueta -->
@@ -314,11 +342,11 @@ html.js .reveal.d2{transition-delay:.16s}
       <div class="frow__text">
         <span class="feat-eyebrow">Cámara + OCR</span>
         <h3>Lee la etiqueta con la cámara</h3>
-        <p class="lead">Apunta a la tabla nutricional de cualquier producto del súper y la app la lee: energía, macros, sal y azúcares. También escanea el código de barras —incluido el <strong>peso variable</strong> de la charcutería al corte.</p>
+        <p class="lead">Apunta a la tabla nutricional y la app la lee: energía, macros, sal y azúcares. También escanea <strong>códigos de barras</strong>.</p>
         <details class="under">
-          <summary>Bajo el capó <span class="chev" aria-hidden="true">›</span></summary>
+          <summary>Ver más <span class="chev" aria-hidden="true">›</span></summary>
           <div class="body">
-            OCR con <code>Tesseract.js</code> sobre un preprocesado de imagen propio: <strong>binarización adaptativa de Sauvola</strong> (umbral calculado por ventana, para que aguante brillos y sombras de una foto real de supermercado) y <strong>reconstrucción de las filas de la tabla por coordenadas</strong>. El escáner de códigos lee EAN-13/8, UPC, Code-128 y GS1 (QR y Data&nbsp;Matrix), extrayendo el peso variable del corte cuando el código lo trae.
+            OCR con <code>Tesseract.js</code> sobre un preprocesado de imagen propio: <strong>binarización adaptativa de Sauvola</strong> (umbral por ventana, para aguantar los brillos y sombras de una foto real de supermercado) y <strong>reconstrucción de las filas de la tabla por coordenadas</strong>. El escáner de códigos lee EAN-13/8, UPC, Code-128 y GS1 (QR y Data&nbsp;Matrix), y extrae el <strong>peso variable</strong> de la charcutería al corte cuando el código lo trae.
           </div>
         </details>
       </div>
@@ -332,11 +360,11 @@ html.js .reveal.d2{transition-delay:.16s}
       <div class="frow__text">
         <span class="feat-eyebrow">1.500 ejercicios</span>
         <h3>Te enseña dónde tiene que apretar</h3>
-        <p class="lead">Cada ejercicio trae instrucciones paso a paso y una ilustración anatómica que pinta en <strong style="color:var(--ember)">rojo el músculo principal</strong> y en naranja los secundarios. Ves de un vistazo qué estás trabajando —no hace falta adivinar.</p>
+        <p class="lead">Instrucciones paso a paso y una ilustración que pinta en <strong style="color:var(--ember)">rojo el músculo principal</strong> y en naranja los secundarios. De un vistazo sabes qué estás trabajando.</p>
         <details class="under">
-          <summary>Bajo el capó <span class="chev" aria-hidden="true">›</span></summary>
+          <summary>Ver más <span class="chev" aria-hidden="true">›</span></summary>
           <div class="body">
-            Biblioteca de ~1.500 ejercicios con buscador por músculo y equipo. Por cada ficha se genera una <strong>silueta anatómica frontal y dorsal</strong> que resalta el músculo trabajado (principal vs. secundario) y una animación del gesto. Las instrucciones se sirven desde un índice local, así que la ficha funciona aunque el gimnasio no tenga cobertura.
+            Biblioteca de 1.500 ejercicios con buscador por músculo y equipo. Por cada ficha se genera una <strong>silueta anatómica frontal y dorsal</strong> que resalta el músculo trabajado (principal vs. secundario) y una animación del gesto. Las instrucciones se sirven desde un índice local: la ficha se abre aunque el gimnasio no tenga cobertura.
           </div>
         </details>
       </div>
@@ -348,13 +376,13 @@ html.js .reveal.d2{transition-delay:.16s}
     <!-- Feature 3 · motor Jarvis -->
     <div class="frow reveal">
       <div class="frow__text">
-        <span class="feat-eyebrow">Motor conversacional «Jarvis»</span>
+        <span class="feat-eyebrow">Asistente «Jarvis» · 259 fichas</span>
         <h3>Pregunta y te cita la fuente</h3>
-        <p class="lead">Un motor conversacional responde tus dudas de entrenamiento y nutrición y —lo importante— <strong>cita de dónde sale cada respuesta</strong>. No inventa: si no lo sabe, lo dice.</p>
+        <p class="lead">Responde tus dudas de entreno y nutrición <strong>citando de dónde sale cada respuesta</strong>. Si no lo sabe, lo dice.</p>
         <details class="under">
-          <summary>Bajo el capó <span class="chev" aria-hidden="true">›</span></summary>
+          <summary>Ver más <span class="chev" aria-hidden="true">›</span></summary>
           <div class="body">
-            Motor determinista basado en reglas, no un modelo que alucine: cada respuesta <strong>referencia su origen</strong> (p.&nbsp;ej. <code>Morton 2018 / Bagheri 2024</code>). Detecta preguntas ambiguas y <strong>desambigua antes de responder</strong> en vez de soltar media respuesta, y encadena preguntas de seguimiento.
+            Motor determinista por reglas, no un modelo que alucine: cada una de sus <strong>259 fichas referencia su origen</strong> (p.&nbsp;ej. <code>Morton 2018 / Bagheri 2024</code>). Detecta preguntas ambiguas y <strong>desambigua antes de responder</strong> en vez de soltar media respuesta, y encadena preguntas de seguimiento.
           </div>
         </details>
       </div>
@@ -363,17 +391,22 @@ html.js .reveal.d2{transition-delay:.16s}
       </div>
     </div>
 
-    <!-- dos funciones más (spec cards) -->
+    <!-- tres funciones más (spec cards) -->
     <div class="spec-grid">
       <div class="spec-card reveal">
-        <span class="feat-eyebrow">Offline</span>
-        <h3>Diario de comida sin internet</h3>
-        <p>Base curada de miles de alimentos —cocina española y Open Food Facts— que funciona en el metro, en el gimnasio, donde sea. Buscar y escanear no dependen de la conexión.</p>
+        <span class="feat-eyebrow">176.150 alimentos</span>
+        <h3>Diario de comida sin cobertura</h3>
+        <p>176.150 fichas de alimentos de España, consultables sin cobertura: en el metro, en el gimnasio, donde sea.</p>
       </div>
       <div class="spec-card reveal d1">
+        <span class="feat-eyebrow">Agua y cafeína</span>
+        <h3>Lo que bebes, en un sitio</h3>
+        <p>Los vasos de agua y los miligramos de cafeína del día, en la misma pestaña.</p>
+      </div>
+      <div class="spec-card reveal d2">
         <span class="feat-eyebrow">Matemática auditada</span>
         <h3>Calorías y macros que puedes creerte</h3>
-        <p>El motor de cálculo pasa por una revisión adversarial —varios agentes de IA objetando— y una suite de <strong>75+ tests automáticos</strong> antes de cada publicación.</p>
+        <p>El motor de cálculo pasa una revisión adversarial y <strong>76 suites de tests</strong> antes de cada publicación.</p>
       </div>
     </div>
   </div>
@@ -385,21 +418,47 @@ html.js .reveal.d2{transition-delay:.16s}
     <div class="sec-head reveal" style="margin-bottom:clamp(24px,4vw,40px)">
       <p class="eyebrow">En números</p>
       <h2>Nada de esto es una maqueta</h2>
+      <svg class="ul" viewBox="0 0 200 9" preserveAspectRatio="none" aria-hidden="true" focusable="false"><path pathLength="1" d="M2 6 C46 2, 104 8.4, 198 3.4"/></svg>
     </div>
     <div class="stat-grid">
       <div class="stat reveal">
-        <div class="num" data-count="1500" data-format="mil">0</div>
-        <div class="lbl">ejercicios con guía anatómica e instrucciones</div>
+        <div class="num" data-count="176150" data-format="mil">0</div>
+        <div class="lbl">alimentos de España, consultables sin cobertura</div>
       </div>
       <div class="stat reveal d1">
-        <div class="num" data-count="75" data-suffix="+">0</div>
-        <div class="lbl">tests automáticos que corren antes de cada publicación</div>
+        <div class="num" data-count="1500" data-format="mil">0</div>
+        <div class="lbl">ejercicios con guía anatómica</div>
       </div>
-      <div class="stat live reveal d2">
+      <div class="stat reveal d2">
+        <div class="num" data-count="259">0</div>
+        <div class="lbl">fichas del asistente, cada una con su fuente</div>
+      </div>
+      <div class="stat reveal">
+        <div class="num" data-count="76">0</div>
+        <div class="lbl">suites de tests antes de cada publicación</div>
+      </div>
+      <div class="stat live reveal d1">
         <div class="num"><span class="pulse" aria-hidden="true"></span><span data-live-num>···</span></div>
         <div class="lbl">versión pública en vivo ahora mismo <span data-live-motor class="dim mono" style="font-size:.82rem"></span></div>
       </div>
     </div>
+  </div>
+</section>
+
+<!-- ================= EN CONSTRUCCIÓN (honesto) ================= -->
+<section class="wip">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <p class="eyebrow">A medias</p>
+      <h2>Lo que aún no está</h2>
+      <svg class="ul" viewBox="0 0 200 9" preserveAspectRatio="none" aria-hidden="true" focusable="false"><path pathLength="1" d="M2 6 C46 2, 104 8.4, 198 3.4"/></svg>
+      <p>Un producto real tiene obra abierta. Esta es la de hoy.</p>
+    </div>
+    <ul class="reveal">
+      <li><span><b>Alimentos por código de barras (~244.000):</b> hoy el proceso agrupa por nombre y se queda en 176.150.</span></li>
+      <li><span><b>Base mundial de alimentos:</b> en cola, detrás del rediseño anterior.</span></li>
+      <li><span><b>Asistente:</b> falta que aprenda de lo que no sabe responder y limpiar las sugerencias viejas.</span></li>
+    </ul>
   </div>
 </section>
 
@@ -409,7 +468,8 @@ html.js .reveal.d2{transition-delay:.16s}
     <div class="sec-head reveal">
       <p class="eyebrow">Cómo lo construyo</p>
       <h2>Dirección técnica con IA agéntica</h2>
-      <p class="lead-note"><b>No es «la IA lo hizo sola».</b> Yo diseño la arquitectura, fijo las restricciones y dirijo la verificación. La IA ejecuta a gran velocidad; el criterio, las decisiones y la responsabilidad son míos.</p>
+      <svg class="ul" viewBox="0 0 200 9" preserveAspectRatio="none" aria-hidden="true" focusable="false"><path pathLength="1" d="M2 6 C46 2, 104 8.4, 198 3.4"/></svg>
+      <p class="lead-note"><b>No es «la IA lo hizo sola».</b> Yo fijo la arquitectura y dirijo la verificación; la responsabilidad es mía.</p>
     </div>
 
     <div class="pipe">
@@ -417,35 +477,42 @@ html.js .reveal.d2{transition-delay:.16s}
         <span class="stage__node" aria-hidden="true"></span>
         <div class="stage__k">FASE 01</div>
         <h3>Especificación cerrada</h3>
-        <p>Antes de tocar código escribo un pliego técnico completo: alcance exacto, restricciones y criterios de aceptación. Nada se construye «a ojo».</p>
+        <p>Un pliego técnico con alcance, restricciones y criterios de aceptación.</p>
       </div>
       <div class="stage reveal">
         <span class="stage__node" aria-hidden="true"></span>
         <div class="stage__k">FASE 02</div>
         <h3>Orquestación en paralelo</h3>
-        <p>Varios agentes de IA construyen a la vez contra ese pliego, cada uno en su parcela.</p>
+        <p>Varios agentes construyen a la vez contra ese pliego.</p>
         <div class="agents" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
       </div>
       <div class="stage reveal">
         <span class="stage__node" aria-hidden="true"></span>
         <div class="stage__k">FASE 03</div>
         <h3>Verificación adversarial</h3>
-        <p>Otros agentes revisan y objetan cada cambio antes de publicar: su trabajo es encontrar el fallo, no aplaudir.</p>
+        <p>Otros agentes objetan cada cambio: su trabajo es encontrar el fallo.</p>
         <div class="adver" aria-hidden="true"><span class="tag x">objeta</span><span class="tag x">rebate</span><span class="tag ok">aprueba</span></div>
       </div>
       <div class="stage reveal">
         <span class="stage__node" aria-hidden="true"></span>
         <div class="stage__k">FASE 04</div>
         <h3>Puerta de calidad</h3>
-        <p>75+ tests automáticos y un escaneo de seguridad corren en cada publicación. Si algo falla, no sale.</p>
+        <p>76 suites de tests y un escaneo de secretos. Si algo falla, no sale.</p>
       </div>
       <div class="stage reveal">
         <span class="stage__node" aria-hidden="true"></span>
         <div class="stage__k">FASE 05</div>
         <h3>Publicación y versionado</h3>
-        <p>Control de versiones real y changelog. Decenas de versiones desplegadas, con contribuciones externas vía <em>pull requests</em>.</p>
+        <p>Versionado real y changelog. Decenas de versiones desplegadas.</p>
       </div>
     </div>
+
+    <details class="under reveal" style="max-width:52ch">
+      <summary>Ver más <span class="chev" aria-hidden="true">›</span></summary>
+      <div class="body">
+        El pliego se escribe <strong>antes</strong> de tocar código: nada se construye «a ojo». Los agentes que verifican no son los que construyen, y su encargo es objetar, no aplaudir; de ahí salen los bloqueantes que no habría visto solo. La puerta de calidad corre en cada publicación —tests, <code>node --check</code> y escaneo de secretos como paso independiente— y el trabajo externo entra por <em>pull request</em> revisada.
+      </div>
+    </details>
   </div>
 </section>
 </main>
@@ -456,6 +523,7 @@ html.js .reveal.d2{transition-delay:.16s}
     <div class="sec-head reveal" style="margin-bottom:1.6rem">
       <p class="eyebrow">Míralo tú mismo</p>
       <h2>El código está abierto</h2>
+      <svg class="ul" viewBox="0 0 200 9" preserveAspectRatio="none" aria-hidden="true" focusable="false"><path pathLength="1" d="M2 6 C46 2, 104 8.4, 198 3.4"/></svg>
     </div>
     <div class="foot__cta reveal">
       <a class="btn btn--code" href="https://github.com/pablolietor22/jv-fitness" target="_blank" rel="noopener noreferrer">Ver el código en GitHub <span class="arw" aria-hidden="true">→</span></a>
@@ -463,7 +531,7 @@ html.js .reveal.d2{transition-delay:.16s}
     </div>
 
     <div class="foot__meta reveal">
-      <div class="honest">Estado real: en desarrollo activo casi a diario · uso personal + testers externos · contribuciones vía pull requests. Sin cifras infladas.</div>
+      <div class="honest">En desarrollo casi a diario · uso personal + testers externos · sin cifras infladas.</div>
       <div>Contacto: <a class="mail jv-email" href="#">correo</a> · <a href="privacidad.html">Privacidad</a></div>
       <div class="foot__sig">JV Fitness · diseñado y dirigido con metodologías de IA agéntica por Pablo Andrés Martínez · 2026</div>
     </div>
@@ -527,7 +595,7 @@ html.js .reveal.d2{transition-delay:.16s}
     var suffix = el.getAttribute('data-suffix') || '';
     var format = el.getAttribute('data-format') || '';
     if(reduce){ el.textContent = fmt(target,format) + suffix; return; }
-    var dur = 1200, t0 = null;
+    var dur = 700, t0 = null;   /* odómetro corto: entra, cuenta y se quita de en medio */
     function step(ts){
       if(t0===null) t0 = ts;
       var p = Math.min((ts - t0)/dur, 1);
