@@ -1,0 +1,68 @@
+{
+ "version": "2026-07-24",
+ "fuente": "Open Food Facts (ODbL) · mundial (unique_scans_n>=3) + calidad JV Fitness",
+ "total": 245681,
+ "chunks": [
+  {
+   "file": "world-00.jsonl.gz",
+   "count": 25000,
+   "bytes": 920658,
+   "plano": 4154243
+  },
+  {
+   "file": "world-01.jsonl.gz",
+   "count": 25000,
+   "bytes": 902106,
+   "plano": 4151367
+  },
+  {
+   "file": "world-02.jsonl.gz",
+   "count": 25000,
+   "bytes": 887683,
+   "plano": 4144381
+  },
+  {
+   "file": "world-03.jsonl.gz",
+   "count": 25000,
+   "bytes": 895294,
+   "plano": 4146624
+  },
+  {
+   "file": "world-04.jsonl.gz",
+   "count": 25000,
+   "bytes": 858768,
+   "plano": 4107348
+  },
+  {
+   "file": "world-05.jsonl.gz",
+   "count": 25000,
+   "bytes": 903719,
+   "plano": 4117338
+  },
+  {
+   "file": "world-06.jsonl.gz",
+   "count": 25000,
+   "bytes": 885938,
+   "plano": 4165096
+  },
+  {
+   "file": "world-07.jsonl.gz",
+   "count": 25000,
+   "bytes": 897269,
+   "plano": 4175765
+  },
+  {
+   "file": "world-08.jsonl.gz",
+   "count": 25000,
+   "bytes": 903315,
+   "plano": 4143422
+  },
+  {
+   "file": "world-09.jsonl.gz",
+   "count": 20681,
+   "bytes": 731219,
+   "plano": 3431100
+  }
+ ],
+ "saneo": "mundial: R1 (sodio > sal pura) anulado + sales reales capadas al techo físico + rangos físicos verificados. R2/R3 (regexes de nombres en español) NO aplicadas: infra-disparan en nombres extranjeros. Sin cafeína curada. La base España manda en colisiones de EAN."
+}

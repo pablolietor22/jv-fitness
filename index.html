@@ -626,7 +626,7 @@
 <header class="brandbar">
   <div class="logo"><span class="dot"></span>JV <b>Fitness</b></div>
   <div style="display:flex;align-items:center">
-    <span class="tag">MVP v0.50.0 · motor v0.7</span>
+    <span class="tag">MVP v0.51.0 · motor v0.7</span>
     <!-- ⚙️ tanda #22 · hub de AJUSTES (no es pestaña): modal a pantalla completa -->
     <button class="gearbtn" id="btn_hub" type="button" title="Ajustes" aria-label="Abrir ajustes" onclick="hubAbrir()">⚙️</button>
   </div>
@@ -1414,11 +1414,16 @@ Tus datos se guardan solo en este dispositivo.</p>
       <button class="sec" type="button" id="dbx_btn_descargar" onclick="dbxUIDescargar()">↻ Re-descargar</button>
       <button class="sec hidden" type="button" id="dbx_btn_borrar" onclick="dbxUIBorrar()">🗑️ Borrar de este dispositivo</button>
       <div id="dbx_prog" class="hint"></div>
-      <!-- 🌍 hueco preparado para la BASE MUNDIAL (tarea #18): cuando exista, su panel de estado/descarga
-           se enchufa aquí con el mismo patrón que la base España (id dbw_estado reservado). -->
-      <div class="hub-conector off" style="margin-top:10px">
-        <b>🌍 Base mundial</b> <span class="hint" style="display:inline">· no disponible todavía</span>
-        <div id="dbw_estado" class="hint" style="margin-top:4px">Llegará como descarga opcional aparte (tarea #18): productos de fuera de España para el escáner y el buscador.</div>
+      <!-- 🌍 BASE MUNDIAL (v0.51 · A3 del pliego): descarga OPT-IN. NUNCA se baja sola. El peso en MB
+           lo pinta dbwUIRender leyendo world-manifest.json — aquí no hay ninguna cifra escrita a mano. -->
+      <div class="hub-conector" style="margin-top:10px">
+        <b>🌍 Base mundial</b> <span id="dbw_peso" class="hint" style="display:inline">· consultando tamaño…</span>
+        <p class="hint" style="margin-top:4px">Productos de <b style="color:var(--soft)">fuera de España</b> para el escáner (el buscador por nombre sigue siendo el español). <b style="color:var(--soft)">Solo si tú la pides</b>: no se descarga sola. Mejor con <b style="color:var(--soft)">wifi</b> y <b style="color:var(--soft)">tarda unos minutos en guardarse</b>; puedes cancelarla a mitad y borrarla cuando quieras.</p>
+        <div id="dbw_estado" class="hint" style="margin-top:4px">no descargada</div>
+        <button class="sec" type="button" id="dbw_btn_descargar" onclick="dbwUIDescargar()">⬇️ Descargar base mundial</button>
+        <button class="sec hidden" type="button" id="dbw_btn_cancelar" onclick="dbwUICancelar()">✋ Cancelar descarga</button>
+        <button class="sec hidden" type="button" id="dbw_btn_borrar" onclick="dbwUIBorrar()">🗑️ Borrar de este dispositivo</button>
+        <div id="dbw_prog" class="hint"></div>
       </div>
       <!-- ⚖️ ODbL · atribución obligatoria de la fuente de datos (licencia de Open Food Facts). Solo texto/enlaces, sin lógica. -->
       <p class="hint" style="margin-top:10px">Datos de productos: <a href="https://openfoodfacts.org" target="_blank" rel="noopener" style="color:var(--jade)">Open Food Facts</a> — licencia <a href="https://opendatacommons.org/licenses/odbl/" target="_blank" rel="noopener" style="color:var(--jade)">ODbL</a>.</p>
@@ -10436,16 +10441,18 @@ function bcBuscar(ean){
       porcion:(fc.porc?(+String(fc.porc).split(":")[1]||null):null)});
     return;
   }
-  // 🗄️ Base España descargada (IndexedDB) → por EAN sin red, ANTES de salir a OFF. dbxPorEan es
-  // asíncrono: si hay hit se confirma como el camino "base curada" (fuente:"cache"); si NO hay
-  // base descargada, o IDB falla, o el EAN no está → sigue el flujo actual EXACTO hacia OFF
-  // (bcBuscarRedOFF, factorizado abajo tal cual era): cero regresión sin base.
-  if(_dbxInfo){
-    dbxPorEan(ean, function(e){
+  // 🗄️ Bases descargadas (IndexedDB) → por EAN sin red, ANTES de salir a OFF. dbxPorEanCascada es
+  // asíncrona: mira España PRIMERO y, solo si la mundial está descargada (v0.51, opt-in), baja a ella;
+  // si hay hit se confirma como el camino "base curada" (fuente:"cache") y el confirmador recibe los
+  // MISMOS campos venga de donde venga (solo cambia el motivo que se le enseña al usuario). Si NO hay
+  // base descargada, o IDB falla, o el EAN no está en ninguna → sigue el flujo actual EXACTO hacia OFF
+  // (bcBuscarRedOFF, factorizado abajo tal cual era): cero regresión sin bases.
+  if(_dbxInfo || _dbwInfo){
+    dbxPorEanCascada(ean, function(e, origen){
       if(e){
         bcConfirmar({ean:ean, fuente:"cache", nombre:e.n, kcal100:(e.kcal==null?null:+e.kcal),
           p100:(e.p==null?null:+e.p), c100:(+e.c||0), g100:(+e.f||0), img:null, nutriscore:null,
-          u:"g", uMotivo:"base España descargada en tu móvil", dens:bcDensidad(e.n,null),
+          u:"g", uMotivo:(origen==="world"?"base mundial descargada en tu móvil":"base España descargada en tu móvil"), dens:bcDensidad(e.n,null),
           servingAviso:null, serving:null,
           fib100:(e.fib!=null?+e.fib:null), az100:(e.az!=null?+e.az:null),
           sat100:(e.sat!=null?+e.sat:null), na100:(e.na!=null?+e.na:null),
@@ -12236,7 +12243,7 @@ function dbxAbrir(){
   return new Promise(function(res, rej){
     if(_dbxDB){ res(_dbxDB); return; }
     if(typeof indexedDB==="undefined" || !indexedDB){ rej(new Error("este navegador no permite guardar la base (sin IndexedDB)")); return; }
-    var req=indexedDB.open("jvf_db", 1);
+    var req=indexedDB.open("jvf_db", 2);   // 🌍 v0.51: v1→v2 SOLO añade los stores de la base mundial (los de España NO se tocan: la base ya descargada sobrevive a la actualización)
     req.onupgradeneeded=function(){
       var db=req.result;
       if(!db.objectStoreNames.contains("alimentos")){
@@ -12245,8 +12252,21 @@ function dbxAbrir(){
         st.createIndex("ean","ean");
       }
       if(!db.objectStoreNames.contains("meta")) db.createObjectStore("meta",{keyPath:"k"});
+      // 🌍 BASE MUNDIAL (v0.51 · opt-in): stores SEPARADOS de los de España a propósito — borrar o
+      // re-descargar una NO toca la otra. Índice SOLO por `ean`: la búsqueda por NOMBRE sigue siendo
+      // solo-España A PROPÓSITO (decisión de producto: no inundar el buscador con nombres extranjeros;
+      // la mundial es la red de seguridad del ESCÁNER fuera de España). Sin índice `w` además ocupa menos.
+      if(!db.objectStoreNames.contains("alimentos_world")){
+        var sw=db.createObjectStore("alimentos_world",{autoIncrement:true});
+        sw.createIndex("ean","ean");
+      }
+      if(!db.objectStoreNames.contains("meta_world")) db.createObjectStore("meta_world",{keyPath:"k"});
     };
-    req.onsuccess=function(){ _dbxDB=req.result; try{ _dbxDB.onclose=function(){ _dbxDB=null; }; }catch(e){} res(_dbxDB); };
+    req.onsuccess=function(){ _dbxDB=req.result; try{ _dbxDB.onclose=function(){ _dbxDB=null; }; _dbxDB.onversionchange=function(){ try{ _dbxDB.close(); }catch(e2){} _dbxDB=null; }; }catch(e){} res(_dbxDB); };   // onversionchange: si una pestaña más nueva sube la versión, esta conexión se cierra sola en vez de bloquear la migración (mismo patrón que _pfDB, endurecimiento 25-07)
+    // v1→v2: si otra pestaña vieja tiene la base abierta, el navegador BLOQUEA la actualización. Sin este
+    // handler la promesa se quedaría colgada para siempre (y el candado de descarga con ella): mejor un
+    // error honesto — la app sigue funcionando con la base curada + red, como antes de existir IndexedDB.
+    req.onblocked=function(){ rej(new Error("tienes otra pestaña de la app abierta: ciérrala y vuelve a entrar para actualizar la base")); };
     req.onerror=function(){ rej(req.error||new Error("no se pudo abrir IndexedDB")); };
   });
 }
@@ -12379,6 +12399,201 @@ function dbxPorEan(ean, cb){
     req.onerror=function(){ cb(null); };
   }).catch(function(){ cb(null); });
 }
+// [DBW-INICIO] — 🌍 BASE MUNDIAL opt-in (sesión 4 · A3 del pliego «ningún alimento sin salida»).
+// Capa IMPURA (IndexedDB + red) gemela de la de España, con TRES diferencias que son DECISIONES,
+// no accidentes:
+//   1) NUNCA se auto-descarga. Pesa mucho más que la de España y sale de los datos y del espacio
+//      del móvil del usuario → botón explícito en Ajustes, con el peso REAL en MB por delante
+//      (calculado del world-manifest.json, jamás escrito a mano) y aviso de wifi.
+//   2) Sin índice de nombres: SOLO `ean`. El buscador por nombre sigue siendo solo-España a
+//      propósito. La mundial existe para que el ESCÁNER no muera con un producto de fuera.
+//   3) España MANDA: la cascada mira España primero; la mundial solo si allí no está.
+// _tests/test-mundial-optin.node.js ejerce esta capa con un IndexedDB de mentira y fixtures.
+var _dbwInfo=null;              // meta de la mundial ({version,total,fecha}) o null = no descargada
+var _dbwBajando=false;          // candado anti doble-descarga
+var _dbwCancelar=false;         // bandera de cancelación (se mira ENTRE chunks: cancelar es instantáneo de cara al usuario)
+var _dbwManifest=null;          // caché en memoria del world-manifest.json remoto (para enseñar el peso REAL)
+var _dbwManifestEstado="pendiente";   // "pendiente" | "ok" | "fallo" — para no mentir con el tamaño
+// Estado persistente: cb({version,total,fecha}) si está descargada, cb(null) si no (o si IDB falla).
+function dbwEstado(cb){
+  cb=cb||function(){};
+  dbxAbrir().then(function(db){
+    var req=db.transaction(["meta_world"],"readonly").objectStore("meta_world").get("info");
+    req.onsuccess=function(){
+      _dbwInfo=req.result||null;
+      if(_dbwInfo || _dbwBajando){ cb(_dbwInfo); return; }
+      // 🩹 AUTO-CURACIÓN (arreglo bloqueante 25-07): si la descarga murió con la pestaña (cerrada a
+      // mitad del import, sin catch que limpie), quedan filas huérfanas SIN meta — el panel dice
+      // «no descargada» (verdad) pero el botón borrar solo sale con meta: hasta ~40 MB muertos e
+      // IMBORRABLES en el móvil. España se auto-cura porque re-descarga sola en cada arranque; la
+      // mundial es opt-in y no tiene esa vía → se cura aquí (dbwEstado corre al arrancar y al abrir
+      // Ajustes): sin meta, cualquier resto del store se vacía — nadie usaba esos datos (la cascada
+      // exige _dbwInfo). Con _dbwBajando NO se toca: la descarga en curso aún no escribió su meta.
+      try{
+        var rc=db.transaction(["alimentos_world"],"readonly").objectStore("alimentos_world").count();
+        rc.onsuccess=function(){
+          if(!rc.result){ cb(null); return; }
+          dbwVaciar(db).then(function(){ cb(null); }).catch(function(){ cb(null); });
+        };
+        rc.onerror=function(){ cb(null); };
+      }catch(e){ cb(null); }
+    };
+    req.onerror=function(){ _dbwInfo=null; cb(null); };
+  }).catch(function(){ _dbwInfo=null; cb(null); });
+}
+function dbwVaciar(db){
+  return new Promise(function(res, rej){
+    var tx=db.transaction(["alimentos_world","meta_world"],"readwrite");
+    tx.objectStore("alimentos_world").clear();
+    tx.objectStore("meta_world").clear();
+    tx.oncomplete=function(){ res(); };
+    tx.onerror=function(){ rej(tx.error||new Error("no se pudo vaciar la base mundial")); };
+    tx.onabort=function(){ rej(tx.error||new Error("no se pudo vaciar la base mundial")); };
+  });
+}
+// Un chunk = UNA transacción (bulk put). A diferencia de España NO se calculan tokens `w`:
+// sin índice de nombres no hacen falta (y son bytes y CPU del móvil que nos ahorramos).
+function dbwMeterChunk(db, entradas){
+  return new Promise(function(res, rej){
+    var tx=db.transaction(["alimentos_world"],"readwrite");
+    var st=tx.objectStore("alimentos_world");
+    tx.oncomplete=function(){ res(entradas.length); };
+    tx.onerror=function(){ rej(tx.error||new Error("fallo guardando la base mundial")); };
+    tx.onabort=function(){ rej(tx.error||new Error("guardado abortado (¿sin espacio libre?)")); };
+    for(var i=0;i<entradas.length;i++) st.put(entradas[i]);
+  });
+}
+// Peso REAL de la descarga en MB = suma de `bytes` de los chunks del manifest. null si no se sabe.
+// MB DECIMALES (÷1e6, los que cuenta la operadora y el bono de datos), no MiB: dividir por 1048576
+// rotulándolo «MB» infra-reportaba un 9 % (hallazgo adversarial 25-07).
+function dbwPesoMB(m){
+  if(!m || !m.chunks || !m.chunks.length) return null;
+  var b=0;
+  for(var i=0;i<m.chunks.length;i++) b+=(+m.chunks[i].bytes||0);
+  return b?(b/1e6):null;
+}
+// Peso en el MÓVIL: suma de `plano` (bytes descomprimidos por chunk, los escribe chunk_db.js).
+// La descarga es pequeña pero descomprimida ocupa ~×4,6 más (+ overhead de IndexedDB): enseñar solo
+// el peso de descarga era mentir sobre lo que desaparece del teléfono (hallazgo adversarial 25-07).
+// null si el manifest no trae `plano` (manifest antiguo) → solo se enseña el peso de descarga.
+function dbwPesoPlanoMB(m){
+  if(!m || !m.chunks || !m.chunks.length) return null;
+  var b=0;
+  for(var i=0;i<m.chunks.length;i++) b+=(+m.chunks[i].plano||0);
+  return b?(b/1e6):null;
+}
+// Índice remoto (~2 KB). Se pide SOLO cuando el usuario abre Ajustes (nunca al arrancar la app):
+// sin esto no podríamos enseñarle el peso antes de que decida.
+function dbwPedirManifest(cb){
+  cb=cb||function(){};
+  if(_dbwManifest){ cb(_dbwManifest); return; }
+  if(typeof fetch!=="function"){ _dbwManifestEstado="fallo"; cb(null); return; }
+  fetch("data/db/world-manifest.json",{cache:"no-cache"}).then(function(r){ return r.ok?r.json():null; })
+    .then(function(m){
+      _dbwManifest=(m && m.chunks && m.chunks.length)?m:null;
+      _dbwManifestEstado=_dbwManifest?"ok":"fallo";
+      cb(_dbwManifest);
+    }).catch(function(){ _dbwManifestEstado="fallo"; cb(null); });
+}
+function dbwCancelar(){ if(_dbwBajando) _dbwCancelar=true; }
+// Descarga completa (opt-in, CANCELABLE): manifest → chunk a chunk → meta_world. onProgreso(i,n)
+// por chunk; fin(errorTexto|null, info). Cancelar o fallar deja la base mundial VACÍA y sin meta
+// (estado honesto «no descargada»): nunca media base haciéndose pasar por entera.
+function dbwDescargar(onProgreso, fin){
+  onProgreso=onProgreso||function(){}; fin=fin||function(){};
+  if(_dbwBajando){ fin("ya hay una descarga en marcha"); return; }
+  if(typeof DecompressionStream==="undefined"){ fin("tu navegador no soporta la descarga en segundo plano — actualiza Chrome/Samsung Internet"); return; }
+  _dbwBajando=true; _dbwCancelar=false;
+  var manifest=null, total=0, vacie=false;   // `vacie` = dbwVaciar ya corrió — lo mira el catch (sin esto, un fallo ANTES de tocar la base borraba la base ya descargada)
+  dbxAbrir().then(function(db){
+    return fetch("data/db/world-manifest.json",{cache:"no-cache"}).then(function(r){
+      if(!r.ok) throw new Error("HTTP "+r.status+" pidiendo el índice de la base mundial");
+      return r.json();
+    }).then(function(m){
+      if(!m || !m.chunks || !m.chunks.length) throw new Error("el índice de la base mundial llegó vacío o corrupto");
+      manifest=m; _dbwManifest=m; _dbwManifestEstado="ok";
+      return dbwVaciar(db).then(function(){ vacie=true; });   // re-descargar NUNCA duplica (el store es autoIncrement)
+    }).then(function(){
+      var i=0;
+      function paso(){
+        if(_dbwCancelar) return Promise.reject(new Error("__cancelada__"));
+        if(i>=manifest.chunks.length) return Promise.resolve();
+        onProgreso(i+1, manifest.chunks.length);
+        var ch=manifest.chunks[i]||{};
+        return fetch("data/db/"+ch.file).then(function(r){
+          if(!r.ok || !r.body) throw new Error("HTTP "+r.status+" bajando "+ch.file);
+          return new Response(r.body.pipeThrough(new DecompressionStream("gzip"))).text();
+        }).then(function(txt){
+          return dbwMeterChunk(db, dbxParseJSONL(txt));   // MISMO parser/validador físico que España
+        }).then(function(n){
+          // 🩹 ARREGLO (25-07): el parser descarta línea a línea sin tirar el chunk — un chunk TRUNCADO
+          // pero descomprimible colaría media base con el ✓ verde. El manifest declara cuántas fichas
+          // trae cada chunk (los 10 reales cuadran, verificado 25-07): si no cuadra, fallo honesto y
+          // el catch limpia (aquí `vacie` ya es true).
+          if(ch.count!=null && n!==+ch.count) throw new Error("el chunk "+ch.file+" llegó incompleto ("+n+" de "+ch.count+" fichas) — descarga anulada");
+          total+=n; i++; return paso();
+        });
+      }
+      return paso();
+    }).then(function(){
+      return new Promise(function(res, rej){
+        var info={k:"info", version:String(manifest.version||"?"), total:total, fecha:new Date().toISOString().slice(0,10)};
+        var tx=db.transaction(["meta_world"],"readwrite");
+        tx.objectStore("meta_world").put(info);
+        tx.oncomplete=function(){ res(info); };
+        tx.onerror=function(){ rej(tx.error||new Error("no se pudo guardar el estado de la descarga mundial")); };
+      });
+    });
+  }).then(function(info){
+    _dbwBajando=false; _dbwInfo=info;
+    try{ navigator.storage && navigator.storage.persist && navigator.storage.persist(); }catch(e){}
+    fin(null, info);
+  }).catch(function(err){
+    var cancelada=!!(err && err.message==="__cancelada__");
+    _dbwBajando=false; _dbwCancelar=false;
+    // 🩹 ARREGLO bloqueante (25-07): si el fallo llegó ANTES de vaciar (p.ej. re-descarga sin señal —
+    // el fetch del manifest revienta), la base que el usuario YA tenía está INTACTA: borrarla sería
+    // destruirle ~245k fichas offline por un fallo de red. Solo se limpia si dbwVaciar llegó a correr
+    // (= media descarga de verdad). España nunca tuvo este bug: su catch no borra, solo refresca estado.
+    if(!vacie){ fin((err && err.message)?err.message:"fallo de red o de almacenamiento"); return; }
+    dbwBorrar(function(){
+      fin(cancelada?"descarga cancelada — no se ha guardado nada":((err && err.message)?err.message:"fallo de red o de almacenamiento"));
+    });
+  });
+}
+function dbwBorrar(cb){
+  cb=cb||function(){};
+  dbxAbrir().then(function(db){ return dbwVaciar(db); })
+    .then(function(){ _dbwInfo=null; cb(null); })
+    .catch(function(err){ _dbwInfo=null; cb((err && err.message)||"no se pudo borrar la base mundial"); });
+}
+// Por código de barras en la base MUNDIAL: índice `ean` (sin índice de nombres, ver cabecera).
+function dbwPorEan(ean, cb){
+  cb=cb||function(){};
+  ean=String(ean==null?"":ean).replace(/\D/g,"");
+  if(!ean){ cb(null); return; }
+  dbxAbrir().then(function(db){
+    var req=db.transaction(["alimentos_world"],"readonly").objectStore("alimentos_world").index("ean").get(ean);
+    req.onsuccess=function(){ cb(req.result||null); };
+    req.onerror=function(){ cb(null); };
+  }).catch(function(){ cb(null); });
+}
+// 🔎 CASCADA de lectura por EAN — el ÚNICO punto por el que el escáner toca las bases descargadas.
+// cb(entrada|null, origen) con origen "es" | "world" | null. Reglas:
+//   · España PRIMERO y España MANDA: si el EAN está en las dos, gana la española (dato curado y
+//     saneado con las reglas ES; la mundial solo lleva el saneo independiente del idioma).
+//   · Si la mundial NO está descargada (_dbwInfo null) NI SE CONSULTA: cero coste para quien no
+//     la quiere — el flujo de siempre queda intacto.
+function dbxPorEanCascada(ean, cb){
+  cb=cb||function(){};
+  dbxPorEan(ean, function(e){
+    if(e){ cb(e, "es"); return; }
+    if(!_dbwInfo){ cb(null, null); return; }
+    dbwPorEan(ean, function(w){ cb(w||null, w?"world":null); });
+  });
+}
+// [DBW-FIN]
+
 // ── UI de Ajustes (estado + descargar con progreso + borrar). Solo pinta; la lógica está arriba. ──
 function dbxUIRender(){
   var est=$("dbx_estado"), bD=$("dbx_btn_descargar"), bB=$("dbx_btn_borrar"), prog=$("dbx_prog");
@@ -12448,6 +12663,64 @@ function dbxUIBorrar(){
     if(err){ toast("🗄️ "+err); return; }
     toast("🗄️ Base borrada de este dispositivo");
     dbxUIRender();
+  });
+}
+// ── 🌍 UI de Ajustes de la base MUNDIAL (opt-in). Solo pinta y pide confirmación; la lógica vive
+// en [DBW-*]. El peso en MB NO está escrito a mano en ningún sitio: sale del manifest remoto.
+function dbwUIRender(){
+  var est=$("dbw_estado"), bD=$("dbw_btn_descargar"), bC=$("dbw_btn_cancelar"), bB=$("dbw_btn_borrar"), pes=$("dbw_peso"), prog=$("dbw_prog");
+  if(!est) return;
+  if(pes){
+    var mb=dbwPesoMB(_dbwManifest), pl=dbwPesoPlanoMB(_dbwManifest);
+    pes.textContent=(mb!=null)?("· "+mb.toFixed(1).replace(".",",")+" MB de descarga"+((pl!=null)?(" · ~"+(Math.ceil(pl/5)*5)+" MB en el móvil"):""))
+      :(_dbwManifestEstado==="pendiente"?"· consultando tamaño…":"· tamaño no disponible ahora");
+  }
+  if(_dbwInfo){
+    est.innerHTML="v"+esc(_dbwInfo.version)+" · "+Number(_dbwInfo.total).toLocaleString("es-ES")+" alimentos (solo para el escáner) <b style='color:var(--jade)'>✓</b> · descargada el "+esc(String(_dbwInfo.fecha||"?"));
+  }else{
+    est.textContent="no descargada";
+  }
+  if(bD){
+    bD.textContent=_dbwInfo?"↻ Re-descargar":"⬇️ Descargar base mundial";
+    bD.classList.toggle("hidden", _dbwBajando);
+    bD.disabled=false;
+  }
+  if(bC) bC.classList.toggle("hidden", !_dbwBajando);
+  if(bB) bB.classList.toggle("hidden", !_dbwInfo || _dbwBajando);
+  if(prog && !_dbwBajando) prog.textContent="";
+}
+// Se llama al abrir Ajustes: refresca el estado guardado y pide el índice remoto para el peso.
+function dbwUIPreparar(){
+  dbwEstado(function(){ dbwUIRender(); });
+  dbwPedirManifest(function(){ dbwUIRender(); });
+}
+function dbwUIDescargar(){
+  var mb=dbwPesoMB(_dbwManifest), pl=dbwPesoPlanoMB(_dbwManifest);
+  var peso=(mb!=null)?(" ("+mb.toFixed(1).replace(".",",")+" MB de descarga"+((pl!=null)?(" · ~"+(Math.ceil(pl/5)*5)+" MB en el móvil"):"")+")"):"";
+  if(!confirm("Vas a descargar la BASE MUNDIAL"+peso+" en este dispositivo. Mejor con wifi.\n\n"
+    +"Es opcional: solo sirve para ESCANEAR productos de fuera de España (no salen en el buscador por nombre). La descarga es pequeña, pero GUARDARLA tarda varios minutos: deja la app abierta y a la vista hasta que termine (si se corta, no queda nada a medias y puedes reintentar).\n\n"
+    +"Puedes cancelarla a mitad y borrarla cuando quieras. ¿Descargar ahora?")) return;
+  var prog=$("dbw_prog");
+  if(prog) prog.textContent="preparando la descarga…";
+  dbwUIRender();
+  dbwDescargar(function(i, n){ if(prog) prog.textContent="descargando "+i+"/"+n+"…"; dbwUIRender(); }, function(err, info){
+    if(prog) prog.textContent="";
+    dbwUIRender();
+    if(err){ toast("🌍 "+err); return; }
+    toast("🌍 Base mundial lista: "+((info && info.total)?Number(info.total).toLocaleString("es-ES")+" ":"")+"productos de fuera de España para el escáner");
+  });
+}
+function dbwUICancelar(){
+  dbwCancelar();
+  var prog=$("dbw_prog");
+  if(prog) prog.textContent="cancelando…";
+}
+function dbwUIBorrar(){
+  if(!confirm("¿Borrar la base mundial de este dispositivo? La base España y tus datos NO se tocan.")) return;
+  dbwBorrar(function(err){
+    if(err){ toast("🌍 "+err); return; }
+    toast("🌍 Base mundial borrada de este dispositivo");
+    dbwUIRender();
   });
 }
 
@@ -12724,7 +12997,10 @@ document.addEventListener('DOMContentLoaded',function(){
     pasosSyncUI();          // 👟 spec 4 · refleja toggle+URL del sync de pasos en Ajustes
     pasosSyncFetch(false);  // 👟 spec 4 · primera lectura del steps.json al abrir la app
     try{ var _iu=$("aj_etiq_ia_url"); if(_iu && document.activeElement!==_iu){ _iu.value=get(LS_ETIQ_VISION_URL,"")||""; etiqVisionUrlGuardar(_iu.value); } }catch(e){}   // 🧠 F-V5 · refleja la URL del Worker de visión en Ajustes
-    dbxEstado(function(){ dbxUIRender(); });   // 🗄️ Base España: refresca _dbxInfo (lo usan escáner y supermercado) + pinta el estado en Ajustes
+    // 🗄️ Base España: refresca _dbxInfo (lo usan escáner y supermercado) + pinta el estado en Ajustes.
+    // 🌍 Encadenado: el estado de la MUNDIAL (solo una lectura local de IndexedDB, CERO red y CERO
+    // descarga) — sin esto la cascada del escáner no sabría que el usuario ya la tiene tras recargar.
+    dbxEstado(function(){ dbxUIRender(); dbwEstado(function(){ dbwUIRender(); }); });
     setTimeout(function(){ try{ dbxAutoProvision(); }catch(e){} }, 4000);   // 🗄️ E9 · auto-provisión/actualización de la base, tras el primer render
   }catch(e){}
 });
@@ -12743,7 +13019,7 @@ function resetTodo(){ if(!confirm("⚠️ Esto borra TODO: perfil, pesos, entren
 // Reemplazo total con confirmación. Reusa get/set, hoyLocal, toast, validar, render. NO toca motor ni gate.
 function exportarJSON(){ try{ set("jvf_last_export",hoyLocal()); }catch(e){}
   try{
-    var data={ app:"jvf", schema:1, app_version:"0.50.0", exportadoEl:new Date().toISOString(),
+    var data={ app:"jvf", schema:1, app_version:"0.51.0", exportadoEl:new Date().toISOString(),
       perfil:get(LS_P,null), pesos:get(LS_W,[]), entrenos:get(LS_E,[]), notas_ej:get("jvf_notas_ej",{}), comida:get("jvf_comida",[]), agua:get("jvf_agua",{}), suples_cfg:get("jvf_suples_cfg",null), suples_log:get("jvf_suples_log",{}),
       rutinas:get("jvf_rutinas",[]), meals:get("jvf_meals",[]), ent_start:get("jvf_ent_start",null),   // v0.10 · backup completo
       alimentos_propios:get("jvf_alimentos_propios",[]), barcode_cache:get("jvf_barcode_cache",{}),   // I5/I6 · también viajan en el backup
@@ -16562,7 +16838,7 @@ function hubQuienFilas(p){
 // [AJUSTES-PURE-FIN]
 // Apertura/render del hub (impuro: DOM). Los paneles movidos (notifs, base España, pasos, datos) ya
 // viven en el HTML del modal con sus ids de SIEMPRE — aquí solo se pinta la sección «Quién eres».
-function hubAbrir(){ hubQuienRender(); show("hubModal", true); }
+function hubAbrir(){ hubQuienRender(); show("hubModal", true); try{ dbwUIPreparar(); }catch(e){} }   // 🌍 el panel de la base mundial pide su índice (~2 KB) SOLO aquí: enseñar el peso real antes de que el usuario decida
 function hubCerrar(){ show("hubModal", false); }
 function hubQuienRender(){
   var el=$("hub_quien"); if(!el) return;
