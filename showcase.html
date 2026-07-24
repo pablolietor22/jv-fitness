@@ -464,7 +464,7 @@ html.js .reveal.d2{transition-delay:.16s}
 
     <div class="foot__meta reveal">
       <div class="honest">Estado real: en desarrollo activo casi a diario · uso personal + testers externos · contribuciones vía pull requests. Sin cifras infladas.</div>
-      <div>Contacto: <a class="mail" href="mailto:paandr02@ucm.es">paandr02@ucm.es</a></div>
+      <div>Contacto: <a class="mail jv-email" href="#">correo</a></div>
       <div class="foot__sig">JV Fitness · diseñado y dirigido con metodologías de IA agéntica por Pablo Andrés Martínez · 2026</div>
     </div>
   </div>
@@ -476,6 +476,15 @@ html.js .reveal.d2{transition-delay:.16s}
   var root = document.documentElement;
   root.classList.add('js');
   var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* Correo de contacto ensamblado por JS (anti-scraping): nunca aparece en crudo en el HTML,
+     ni siquiera partido en atributos. Mismo patrón que jvlegal_suite.html (JV_DEST). */
+  var JV_DEST = { usuario: 'jvlegalpam', dominio: 'gmail.com' };
+  document.querySelectorAll('.jv-email').forEach(function(el){
+    var addr = JV_DEST.usuario + '@' + JV_DEST.dominio;
+    el.href = 'mailto:' + addr;
+    el.textContent = addr;
+  });
 
   /* ---------- Versión EN VIVO (fetch mismo-origen del index de la app) ---------- */
   function paintVersion(full, appv, motor){
