@@ -626,7 +626,7 @@
 <header class="brandbar">
   <div class="logo"><span class="dot"></span>JV <b>Fitness</b></div>
   <div style="display:flex;align-items:center">
-    <span class="tag">MVP v0.49.0 · motor v0.7</span>
+    <span class="tag">MVP v0.50.0 · motor v0.7</span>
     <!-- ⚙️ tanda #22 · hub de AJUSTES (no es pestaña): modal a pantalla completa -->
     <button class="gearbtn" id="btn_hub" type="button" title="Ajustes" aria-label="Abrir ajustes" onclick="hubAbrir()">⚙️</button>
   </div>
@@ -1408,7 +1408,7 @@ Tus datos se guardan solo en este dispositivo.</p>
     <div id="hub_alimentos">
       <!-- 🗄️ BASE ESPAÑA COMPLETA (IndexedDB, descarga opcional). La lógica vive en [DBX-*]; esto solo pinta.
            Los datos (data/db/*.jsonl.gz) son públicos de Open Food Facts (ODbL): aquí no hay ningún secreto. -->
-      <b>🇪🇸 Base España completa (176.150 alimentos · 4,8 MB)</b>
+      <b>🇪🇸 Base España completa (234.976 alimentos · 5,8 MB)</b>
       <p class="hint" style="margin-top:4px">Se guarda EN tu móvil: buscar y escanear funcionan sin internet. <b style="color:var(--soft)">Se descarga y actualiza sola al abrir la app</b>; este panel es el estado + respaldo manual. Fuente: Open Food Facts (ODbL).</p>
       <div id="dbx_estado" class="hint" style="margin-top:4px">no descargada</div>
       <button class="sec" type="button" id="dbx_btn_descargar" onclick="dbxUIDescargar()">↻ Re-descargar</button>
@@ -11545,6 +11545,7 @@ function superRender(){
       var hueco=$("super_dbx"); if(!hueco) return;
       var lista=[];
       for(var i=0;i<hits.length;i++){ if(!yaListados[otroNorm(hits[i].n)]) lista.push(hits[i]); }
+      lista=dbxColapsar(dbxRankear(lista, q));   // 🔍 v0.50 · presentación: rankea (empieza-por) y colapsa idénticas (dbxBuscar NO cambia)
       if(!lista.length) return;
       _superDBX=lista;
       hueco.innerHTML='<div class="eyebrow-lbl" style="margin-top:10px">🗄️ Base España</div>'
@@ -12172,6 +12173,58 @@ function dbxMatch(entrada, tokensQuery){
 }
 // [DBX-PURE-FIN]
 
+// [DBXRANK-PURE-INICIO] — 🔍 v0.50 · presentación de resultados de la Base España: RANKEO + COLAPSO
+// PUROS (sin DOM/IDB/red). dbxBuscar NO cambia su contrato: estas funciones solo ORDENAN y DEDUPLICAN
+// lo que se PINTA en la vista Comida. _tests/test-dbx.node.js las extrae y evalúa tras [OTRO-PURE]
+// (reutilizan otroNorm, EL normalizador real de la app — el mismo que ya dedupe nombres en superRender
+// vía `yaListados`; elegido por conservador: respeta puntuación/espacios, no sobre-colapsa productos).
+//
+// dbxRankear(filas, query): reordena ESTABLE (no quita ni muta filas). Primero las filas cuyo nombre
+// normalizado EMPIEZA por la query normalizada completa; dentro de cada grupo, nombre más corto
+// primero; a igualdad, orden original. Query vacía/sin señal ⇒ copia en el mismo orden. Así la
+// «leche entera» real deja de quedar enterrada bajo el muro de «chocolate … leche».
+function dbxRankear(filas, query){
+  if(!filas || !filas.length) return [];
+  var nq=otroNorm(query==null?"":query).trim();
+  var dec=filas.map(function(f,i){
+    var nn=otroNorm(f&&f.n!=null?f.n:"");
+    var empieza=(nq && nn.indexOf(nq)===0)?0:1;   // 0 = empieza por la query completa (va antes)
+    var len=(f&&f.n!=null?String(f.n):"").length;
+    return {f:f, g:empieza, len:len, i:i};
+  });
+  dec.sort(function(a,b){ return (a.g-b.g) || (a.len-b.len) || (a.i-b.i); });
+  return dec.map(function(d){ return d.f; });
+}
+// ¿la fila A debe GANAR (sobrevivir en el colapso) frente a B? Con ean gana a sin-ean; entre dos ean,
+// el MENOR numéricamente (dígitos, sin ceros a la izquierda: longitud y luego lexicográfico). A sin
+// ean nunca desplaza; empate exacto conserva el primero visto (false). Se compara por dígitos, no por
+// Number: los EAN de 13 cifras rebasan la precisión exacta de un double.
+function dbxEanMenor(a, b){
+  var ea=(a&&a.ean!=null)?String(a.ean).replace(/\D/g,""):"";
+  var eb=(b&&b.ean!=null)?String(b.ean).replace(/\D/g,""):"";
+  if(ea && !eb) return true;
+  if(!ea) return false;
+  var na=ea.replace(/^0+/,""), nb=eb.replace(/^0+/,"");
+  if(na.length!==nb.length) return na.length<nb.length;
+  return na<nb;
+}
+// dbxColapsar(filas): colapsa filas cuya tupla (otroNorm(nombre), kcal, p, c, f) sea IDÉNTICA — de
+// cada grupo sobrevive UNA sola fila (dbxEanMenor: ean menor, sin-ean al final). SILENCIOSO (sin
+// badge). El orden de salida conserva la posición de PRIMERA aparición del grupo (estable). No muta
+// las filas ni el array de entrada. Dos «Atún» con kcal distinta NO se colapsan (tupla distinta).
+function dbxColapsar(filas){
+  if(!filas || !filas.length) return [];
+  var orden=[], grupos=Object.create(null);   // proto-null: claves como "__proto__" no dan sorpresas
+  for(var i=0;i<filas.length;i++){
+    var f=filas[i]; if(!f) continue;
+    var clave=otroNorm(f.n==null?"":f.n)+"\u0001"+(+f.kcal||0)+"\u0001"+(+f.p||0)+"\u0001"+(+f.c||0)+"\u0001"+(+f.f||0);
+    if(grupos[clave]===undefined){ grupos[clave]={rep:f}; orden.push(clave); }
+    else if(dbxEanMenor(f, grupos[clave].rep)){ grupos[clave].rep=f; }
+  }
+  return orden.map(function(k){ return grupos[k].rep; });
+}
+// [DBXRANK-PURE-FIN]
+
 // 🗄️ Capa IndexedDB de la Base España (IMPURA: navegador). BD jvf_db v1 — store `alimentos`
 // (autoIncrement) con índice `w` (multiEntry sobre los tokens del nombre) e índice `ean`;
 // store `meta` (keyPath "k") con {k:"info", version, total, fecha}. Separada de jvf_fotos a
@@ -12356,7 +12409,7 @@ function dbxUIDescargar(){
 // 🗄️ E9 · AUTO-PROVISIÓN (v0.19.1, orden Pablo 10-07: «el botón manual es fricción»): la base se
 // descarga SOLA al abrir la app y se ACTUALIZA sola cuando el manifest trae versión nueva (en cada
 // arranque con red solo se pide el manifest.json, ~2 KB; si la versión coincide, ni un byte más).
-// 4,8 MB sin preguntar = criterio de Pablo (sin diálogo). Robustez (criterio documentado, opción
+// 5,8 MB sin preguntar = criterio de Pablo (sin diálogo). Robustez (criterio documentado, opción
 // SIMPLE): dbxDescargar vacía la base ANTES de importar y escribe el meta AL FINAL → un fallo a
 // mitad deja el meta vacío y el PRÓXIMO arranque reintenta la descarga entera; mientras tanto la
 // app funciona como siempre (base curada + red). A cambio: cero estados corruptos y cero stores
@@ -12386,7 +12439,7 @@ function dbxAutoDescargar(etiqueta){
     pinta("");
     dbxUIRender();
     if(err) return;   // silencio honesto: el estado real queda visible en Ajustes y se reintenta solo
-    toast("🗄️ Base de "+((info && info.total)?Number(info.total).toLocaleString("es-ES"):"176.150")+" alimentos lista — buscar y escanear ya funcionan sin internet");
+    toast("🗄️ Base de "+((info && info.total)?Number(info.total).toLocaleString("es-ES")+" ":"")+"alimentos lista — buscar y escanear ya funcionan sin internet");
   });
 }
 function dbxUIBorrar(){
@@ -12690,7 +12743,7 @@ function resetTodo(){ if(!confirm("⚠️ Esto borra TODO: perfil, pesos, entren
 // Reemplazo total con confirmación. Reusa get/set, hoyLocal, toast, validar, render. NO toca motor ni gate.
 function exportarJSON(){ try{ set("jvf_last_export",hoyLocal()); }catch(e){}
   try{
-    var data={ app:"jvf", schema:1, app_version:"0.49.0", exportadoEl:new Date().toISOString(),
+    var data={ app:"jvf", schema:1, app_version:"0.50.0", exportadoEl:new Date().toISOString(),
       perfil:get(LS_P,null), pesos:get(LS_W,[]), entrenos:get(LS_E,[]), notas_ej:get("jvf_notas_ej",{}), comida:get("jvf_comida",[]), agua:get("jvf_agua",{}), suples_cfg:get("jvf_suples_cfg",null), suples_log:get("jvf_suples_log",{}),
       rutinas:get("jvf_rutinas",[]), meals:get("jvf_meals",[]), ent_start:get("jvf_ent_start",null),   // v0.10 · backup completo
       alimentos_propios:get("jvf_alimentos_propios",[]), barcode_cache:get("jvf_barcode_cache",{}),   // I5/I6 · también viajan en el backup

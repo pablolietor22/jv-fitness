@@ -32,8 +32,9 @@ manual sobre los datos:
 1. `off_dump_es.js` — descarga en streaming el dump completo de Open Food Facts
    (`https://static.openfoodfacts.org/data/en.openfoodfacts.org.products.csv.gz`, ODbL),
    filtra país `en:spain` + nutrición presente + rangos físicos, y emite un JSONL slim.
-2. `chunk_db.js` — dedupe por nombre + orden alfabético español + troceo en chunks gzip de 25.000
-   registros con `manifest.json`.
+2. `chunk_db.js` — dedupe por EAN (código de barras; los productos sin EAN se dedupan por
+   nombre) + orden alfabético español + troceo en chunks gzip de 25.000 registros con
+   `manifest.json`.
 3. `_ingest/sanea_base_es.py --db <db>` — saneo de sodio imposible (R1/R2/R3) y cafeína orientativa.
 
 Dump de origen usado en esta generación: export nocturno de Open Food Facts con
