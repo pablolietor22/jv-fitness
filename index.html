@@ -684,7 +684,7 @@
 <header class="brandbar">
   <div class="logo"><span class="dot"></span>JV <b>Fitness</b></div>
   <div style="display:flex;align-items:center">
-    <span class="tag">MVP v0.52.1 · motor v0.7</span>
+    <span class="tag">MVP v0.53.0 · motor v0.7</span>
     <!-- ⚙️ tanda #22 · hub de AJUSTES (no es pestaña): modal a pantalla completa -->
     <button class="gearbtn" id="btn_hub" type="button" title="Ajustes" aria-label="Abrir ajustes" onclick="hubAbrir()">⚙️</button>
   </div>
@@ -13165,7 +13165,7 @@ function resetTodo(){ if(!confirm("⚠️ Esto borra TODO: perfil, pesos, entren
 // Reemplazo total con confirmación. Reusa get/set, hoyLocal, toast, validar, render. NO toca motor ni gate.
 function exportarJSON(){ try{ set("jvf_last_export",hoyLocal()); }catch(e){}
   try{
-    var data={ app:"jvf", schema:1, app_version:"0.52.1", exportadoEl:new Date().toISOString(),
+    var data={ app:"jvf", schema:1, app_version:"0.53.0", exportadoEl:new Date().toISOString(),
       perfil:get(LS_P,null), pesos:get(LS_W,[]), entrenos:get(LS_E,[]), notas_ej:get("jvf_notas_ej",{}), comida:get("jvf_comida",[]), agua:get("jvf_agua",{}), suples_cfg:get("jvf_suples_cfg",null), suples_log:get("jvf_suples_log",{}),
       rutinas:get("jvf_rutinas",[]), meals:get("jvf_meals",[]), ent_start:get("jvf_ent_start",null),   // v0.10 · backup completo
       alimentos_propios:get("jvf_alimentos_propios",[]), barcode_cache:get("jvf_barcode_cache",{}),   // I5/I6 · también viajan en el backup
@@ -13742,25 +13742,25 @@ var CEREBRO_KB=[
     tronco:"alimentacion", rama:"superavit-ganar-musculo",
     claves:["superavit","super habit","superavit calorico","volumen para ganar musculo","cuanto superavit","hay que comer de mas","bulk","bulk sucio","comer mas para musculo","fase de volumen","etapa de volumen","engordar para ganar musculo","cuanto peso gano por semana","si soy principiante","bulk limpio o sucio"],
     r:"Para ganar músculo basta un superávit PEQUEÑO: +200-400 kcal/día o ganar 0,25-0,5% del peso a la semana. Más superávit no da más músculo, solo más grasa, y lo de \"músculo sin grasa\" es mentira: siempre hay algo de coste de grasa. Si eres principiante, tienes grasa que perder o retomas tras un parón, puedes crecer incluso en mantenimiento o déficit ligero. (— Tema 1, Slater 2019 / Helms 2023)",
-    chips:["¿cuánto peso gano por semana?","¿y si soy principiante?","¿bulk limpio o sucio?","¿cuánta proteína?"]
+    chips:["¿cuánto músculo gano al mes?","¿qué son las ganancias de principiante?","¿músculo limpio sin grasa?","¿cuánta proteína?"]
   },
   {
     tronco:"alimentacion", rama:"deficit-perder-grasa-reparto",
     claves:["definicion","deficit","perder grasa","adelgazar","secar","cut","estoy en cut","como reparto en definicion","dieta para marcar","bajar de peso","bajar peso","perder peso","cuanto deficit","dieta de definicion","quiero definir"],
     r:"En definición: déficit moderado (15-25%), proteína ~1,5-2,0 g/kg, carbos ALTOS para rendir en el gym y la grasa en su suelo (~0,5-0,8 g/kg). Lo que protege el músculo es entrenar duro (tensión + sobrecarga progresiva), y para eso necesitas los carbos; se recorta GRASA, no carbos. Cuanto más magro estés, más suave el déficit. (— Tema 3, Helms 2014 / cierre proteína 2026)",
-    chips:["¿cuántos carbos en cut?","¿bajo la proteína?","¿cuánto déficit?","¿puedo ganar músculo a la vez?"]
+    chips:["¿cuántos carbos en cut?","¿bajo la proteína?","¿cuánto déficit es demasiado?","¿puedo ganar músculo a la vez?"]
   },
   {
     tronco:"recomposicion", rama:"ganar-musculo-perder-grasa",
     claves:["recomposicion","recomp","ganar musculo y perder grasa a la vez","las dos cosas a la vez","musculo y grasa al mismo tiempo","recomposicion corporal","ganar musculo y perder grasa","puedo ganar musculo a la vez","funciona si soy avanzado"],
     r:"La recomposición (subir músculo y bajar grasa a la vez) SÍ es posible, sobre todo si eres principiante, tienes grasa que perder o vuelves tras un parón. En avanzados ya magros suele tocar alternar fases. La palanca es proteína ~1,6 g/kg + fuerza + no pasarte de déficit. (— Tema 28, Havers 2025 / Tema 3)",
-    chips:["¿funciona si soy avanzado?","¿cuánta proteína?","¿el músculo quema grasa?","¿cuánto déficit uso?"]
+    chips:["¿se acaban las ganancias fáciles?","¿cuánta proteína?","¿el músculo quema grasa?","¿cuánto déficit uso?"]
   },
   {
     tronco:"recomposicion", rama:"musculo-motor-metabolico",
     claves:["el musculo quema grasa","ganar musculo quema grasa","musculo motor metabolico","mas musculo mas quemo","el musculo acelera el metabolismo","cuanto quema el musculo"],
     r:"El músculo ayuda a la composición (mejor sensibilidad a la insulina, mioquinas), pero el efecto es MODESTO: 1 kg de músculo gasta solo ~13 kcal/día extra, no es magia quemagrasa. Un análisis de 99 estudios vio +1,9-3,3% de masa muscular → −4,1% de grasa. Real y útil, pero no anula el balance calórico: con superávit grande engordas igual. (— Tema 28, Havers 2025)",
-    chips:["¿entonces cuánto quema de verdad?","¿es posible la recomposición?","¿y las calorías siguen mandando?"]
+    chips:["¿cómo calculo mi gasto?","¿es posible la recomposición?","¿y las calorías siguen mandando?"]
   },
 
   // ─────────────── TRONCO: CALORÍAS / TDEE ───────────────
@@ -13774,7 +13774,7 @@ var CEREBRO_KB=[
     tronco:"calorias", rama:"estancado-no-bajo",
     claves:["no bajo de peso","estancado","estancamiento","no adelgazo","modo supervivencia","metabolismo parado","no pierdo peso","me he estancado","y si me estanco","metabolismo lento","no bajo peso","subo actividad o bajo calorias"],
     r:"El \"modo supervivencia que te para\" NO existe: con déficit real siempre pierdes. Lo que sí es real es que el gasto baja un poco al adelgazar (adaptación: ralentiza, no detiene). Antes de recortar más calorías: audita lo que comes de verdad 1 semana (salsas, aceites, picoteo), revisa tus pasos/NEAT y confirma con la media semanal de peso. El subregistro es casi universal, no es culpa tuya. (— Tema 6, Lichtman 1992 / Levine 1999)",
-    chips:["¿subo actividad o bajo calorías?","¿cómo mido el peso bien?","¿reviso mis pasos?"]
+    chips:["¿hasta dónde bajo calorías?","¿cómo mido el peso bien?","¿reviso mis pasos?"]
   },
 
   // ─────────────── TRONCO: CARBOHIDRATOS ───────────────
@@ -13788,25 +13788,25 @@ var CEREBRO_KB=[
     tronco:"carbohidratos", rama:"carbos-en-cut-altos",
     claves:["carbos en definicion","carbos en cut","carbos altos secando","muchos carbos en deficit","hidratos en definicion","carbos para marcar","por que no bajo los carbos","carbos altos en cut","cuantos carbos en cut"],
     r:"En definición los carbos GANAN importancia: sostienen el rendimiento del entreno, y mantener intensidad y sobrecarga es lo que de verdad protege el músculo en déficit. La regla de la casa: proteína ~1,5-1,6 g/kg, grasa en su suelo y todo el margen calórico restante a CARBOS. No protegen el músculo por sí solos, sino a través de que entrenes mejor. (— Tema 3, cierre proteína 2026 / Tesis #3)",
-    chips:["¿cuánta proteína en cut?","¿por qué no bajo los carbos?","¿hay un mínimo de carbos?","¿y la grasa?"]
+    chips:["¿cuánta proteína en cut?","¿bajo carbos el día de descanso?","¿hay un mínimo de carbos?","¿y la grasa?"]
   },
   {
     tronco:"carbohidratos", rama:"carbos-dia-descanso",
     claves:["carbos dia de descanso","bajar carbos descanso","carbos dia sin entrenar","hidratos dia de descanso","carb cycling","ciclado de carbos","bajo carbos el dia de descanso"],
     r:"NO hace falta bajar carbos los días de descanso. El glucógeno se repone de forma continua (no de un día para otro) y recortarlos no mejora \"mágicamente\" la sensibilidad a la insulina. Si necesitas recortar calorías ese día, baja proteína o grasa, no carbos, para no tocar el rendimiento del día siguiente. (— Tema 5, @izansimon / refuerzos tanda-5)",
-    chips:["¿y el ciclado de carbos?","¿cuántos carbos entonces?","¿carbos antes de entrenar?"]
+    chips:["¿qué engorda más, carbos o grasa?","¿cuántos carbos entonces?","¿carbos antes de entrenar?"]
   },
   {
     tronco:"carbohidratos", rama:"carbos-peri-entreno-chuches",
     claves:["carbos antes de entrenar","carbos intra entreno","chuches en el gym","gominolas gym","azucar antes de entrenar","carbos pre entreno","necesito comer antes de entrenar","platano antes del gym","fruta o azucar rapido","cuanto antes como"],
     r:"Para la sesión típica de gym (<45-60 min) de alguien que YA ha comido, los carbos intra-entreno son casi irrelevantes: las chuches no \"desbloquean\" rendimiento. Solo importan de verdad en sesiones largas (>45-60 min), de mucho volumen, en ayunas o con el glucógeno bajo. Lo que manda es tu total de carbos DIARIO, no una toma mágica pre-entreno. (— Tema 5, King/Helms 2022 / Henselmans 2022)",
-    chips:["¿y si entreno en ayunas?","¿la ventana anabólica existe?","¿cuánto antes como?","¿fruta o azúcar rápido?"]
+    chips:["¿y si entreno en ayunas?","¿la ventana anabólica existe?","¿qué comida pre-entreno?","¿azúcar rápido al terminar de entrenar?"]
   },
   {
     tronco:"carbohidratos", rama:"suelo-minimo-tiroides",
     claves:["minimo de carbos","suelo de carbos","carbos muy bajos","keto para musculo","cetogenica","bajar mucho los carbos","cuanto es lo minimo de carbos","keto","dieta keto","la keto pierde musculo","hay un minimo"],
     r:"Para fuerza e hipertrofia NO hay un suelo de carbos (incluso keto mantiene el 1RM). El único matiz es en DÉFICIT: no bajar de ~50 g/día protege la tiroides (la T3 cae con déficit sin carbos). Pero esos datos vienen de dietas muy bajas de los años 70-80, así que es un suelo blando, marcado para revisar. (— Tema 34, Spaulding 1976 / MDPI Nutrients 2024)",
-    chips:["¿los carbos son anabólicos?","¿carbos altos en cut?","¿la keto pierde músculo?"]
+    chips:["¿los carbos son anabólicos?","¿carbos altos en cut?","¿por qué se pierde masa muscular?"]
   },
 
   // ─────────────── TRONCO: PROTEÍNA ───────────────
@@ -13820,7 +13820,7 @@ var CEREBRO_KB=[
     tronco:"proteina", rama:"proteina-en-cut",
     claves:["proteina en definicion","proteina en cut","proteina secando","bajo la proteina en deficit","proteina en deficit","mas proteina para no perder musculo","bajo la proteina","por que no bajarla","cuanta proteina en cut"],
     r:"En definición la proteína SUBE, nunca baja (bajarla es un mito rojo). Déficit suave con grasa que perder → 1,6 basta; moderado → 1,8-2,2; agresivo o ya muy magro → hasta 2,2-2,7 g/kg. Pero el usuario normal NO hace cuts agresivos: con 1,6-2,0 g/kg y carbos altos vas sobrado. El ajuste se hace recortando grasa, no proteína ni carbos. (— Tema 3, Longland 2016 / cierre proteína 2026)",
-    chips:["¿por qué no bajarla?","¿cuánto déficit uso?","¿y los carbos?","¿cuánta grasa mínima?"]
+    chips:["¿pierdo músculo en definición?","¿cuánto déficit uso?","¿y los carbos?","¿cuánta grasa mínima?"]
   },
   {
     tronco:"proteina", rama:"entrenos-malos-en-cut-sube-carbos",
@@ -13832,13 +13832,13 @@ var CEREBRO_KB=[
     tronco:"proteina", rama:"repartida-o-de-golpe",
     claves:["proteina de golpe o repartida","cuantas veces proteina","reparto proteina","proteina por comida","cuanta proteina por comida","reparto de proteina al dia","distribucion proteina","de golpe o repartida","el total importa mas","cuanto por comida"],
     r:"Reparte la proteína en 3-4 comidas de ~30-40 g cada una (unos 2-3 g de leucina por toma para activar bien la síntesis). No pasa nada por concentrarla, pero repartida optimiza un poco. En mayores de 65 el reparto importa más: ~40 g por comida. Aun así, lo que de verdad manda es el TOTAL del día. (— Tema 3, Manescu 2025 / Kristiansen 2026)",
-    chips:["¿el total importa más?","¿cuánta al día?","¿y si soy mayor?","¿el batido cuenta como comida?"]
+    chips:["¿cuánta más proteína mejor?","¿cuánta al día?","¿y si soy mayor?","¿el batido cuenta como comida?"]
   },
   {
     tronco:"proteina", rama:"batido-timing-ventana",
     claves:["el batido cuenta","proteina en polvo","batido de proteina","ventana anabolica","proteina despues de entrenar","batido post entreno","hay que tomar proteina justo despues","batido","whey","la ventana anabolica existe","importa el timing"],
     r:"Sí, el batido cuenta igual que la proteína de la comida: es comida, no magia. Y la \"ventana anabólica\" post-entreno es mucho más amplia de lo que se vende: no hay prisa por meter el batido en 30 minutos. Lo que manda es llegar a tu total diario de proteína, no el minuto exacto. (— Refuerzos tanda-6, Aragon & Schoenfeld 2013)",
-    chips:["¿cuánta proteína al día?","¿de golpe o repartida?","¿importa el timing?"]
+    chips:["¿cuánta proteína al día?","¿de golpe o repartida?","¿cuántas comidas al día?"]
   },
   {
     tronco:"proteina", rama:"proteina-por-edad",
@@ -13858,7 +13858,7 @@ var CEREBRO_KB=[
     tronco:"grasa", rama:"grasa-baja-testosterona",
     claves:["poca grasa baja testosterona","grasa y testosterona","bajar grasa baja hormonas","grasa baja pierdo musculo","testosterona por comer poca grasa","dieta baja en grasa hormonas","testosterona","poca grasa baja la testosterona"],
     r:"Comer poca grasa puede bajar algo la testosterona (~10-15%), pero se queda DENTRO del rango normal, y en un hombre natural esa fluctuación NO predice cuánto músculo ganas: manda la tensión mecánica y el receptor local, no la testosterona en sangre. Así que \"poca grasa → menos T → menos músculo\" no se sostiene. Respeta el suelo (~0,5 g/kg) por salud, no por hormonas mágicas. (— Tema 15, Morton 2016 / Jeff Nippard 2025)",
-    chips:["¿cuánta grasa mínima?","¿y si tengo la testosterona baja de verdad?","¿subo la grasa entonces?"]
+    chips:["¿cuánta grasa mínima?","¿engordar baja la testosterona?","¿más grasa da más testosterona?"]
   },
   {
     tronco:"grasa", rama:"grasa-sube-testosterona",
@@ -13878,7 +13878,7 @@ var CEREBRO_KB=[
     tronco:"sueno", rama:"dormir-mal-pierdo-musculo",
     claves:["dormir poco pierdo musculo","dormir mal pierdo musculo","falta de sueño musculo","privacion de sueño","una noche sin dormir","no dormir afecta al musculo","que pasa si duermo mal una noche","una racha mala","entreno igual si no dormi","duermo mal"],
     r:"Una sola noche mala ya baja la síntesis de proteína ~18%, sube el cortisol ~21% y baja la testosterona ~24% (Lamon 2021). Pero una noche puntual NO te destruye músculo: el bajón agudo es sobre todo neuromuscular y recuperable. El problema real es la RACHA: 3+ noches de <6h ya es bandera roja para bajar volumen y priorizar dormir. (— Tema 27, Lamon 2021 / He 2024)",
-    chips:["¿entreno igual si dormí mal?","¿cuántas horas necesito?","¿una racha mala qué hago?"]
+    chips:["¿entreno igual si dormí mal?","¿cuántas horas necesito?","¿la siesta ayuda?"]
   },
   {
     tronco:"sueno", rama:"ESTADO-dormi-mal",
@@ -13904,7 +13904,7 @@ var CEREBRO_KB=[
     tronco:"creatina", rama:"fase-de-carga",
     claves:["fase de carga creatina","carga de creatina","hay que cargar creatina","cargar creatina","creatina carga necesaria","empezar creatina cargando","fase de carga","necesito fase de carga","carga si o no","en cuanto noto efecto","carga necesaria"],
     r:"No hace falta fase de carga. Cargar (20 g/día una semana) solo ACELERA la saturación (~1 semana vs ~4), pero NO da más resultado final y añade molestias digestivas e hinchazón. Toma tu dosis normal y sáltate la carga. (— Tema 10, Hultman 1996 / ISSN Kreider 2017)",
-    chips:["¿cuánta dosis diaria?","¿en cuánto noto efecto?","¿qué marca?"]
+    chips:["¿cuánta dosis diaria?","¿cuánto tardo en notar algo?","¿qué marca?"]
   },
   {
     tronco:"creatina", rama:"forma-marca",
@@ -13922,7 +13922,7 @@ var CEREBRO_KB=[
     tronco:"creatina", rama:"creatinina-analitica",
     claves:["creatina creatinina","creatina analisis","creatina riñon","creatina daño renal","creatina analitica","creatina sube creatinina","creatina es mala para el riñon","creatinina","sube la creatinina","es segura para el riñon"],
     r:"La creatina puede SUBIR la creatinina en sangre sin que sea daño renal (es un efecto normal del suplemento): avisa a tu médico de que la tomas antes de interpretar la analítica. Con riñón sano es segura; si tienes enfermedad renal previa o embarazo, consúltalo. (— Tema 10, ✅ Reglas Creatina)",
-    chips:["¿es segura para el riñón?","¿cuánta tomo?","¿qué marca?"]
+    chips:["¿la creatina deja calvo?","¿cuánta tomo?","¿qué marca?"]
   },
 
   // ─────────────── TRONCO: SUPLEMENTACIÓN ───────────────
@@ -13942,7 +13942,7 @@ var CEREBRO_KB=[
     tronco:"suplementacion", rama:"cafeina",
     claves:["cafeina","cafe antes de entrenar","cuanta cafeina","pre workout","cafeina pre entreno","cafe para entrenar","cafeina rendimiento","cafe","tomo cafeina","cafe o pre workout","cafeina cuanta","ayuda si dormi mal"],
     r:"La cafeína mejora el foco y baja la percepción del esfuerzo: 3-6 mg/kg unos 40-60 min antes (un café doble para ~70 kg). Un café basta, el pre-workout de marca no es necesario. Córtala con margen: un café ~9h antes de dormir; un pre-entreno, bastante más (lleva mucha más cafeína). (— Tema 26, Grgic 2018 / refuerzos tanda-4)",
-    chips:["¿café o pre-workout?","¿afecta al sueño?","¿ayuda si dormí mal?"]
+    chips:["¿la beta-alanina sirve?","¿afecta al sueño?","¿siesta si dormí mal?"]
   },
 
   // ─────────────── TRONCO: ESTEROIDES (política, NO ciencia del master) ───────────────
@@ -13950,7 +13950,7 @@ var CEREBRO_KB=[
     tronco:"esteroides", rama:"politica-adapta-no-prescribe",
     claves:["esteroides","ciclo","anabolicos","testosterona inyectada","sarms","me pincho","estoy en ciclo","uso anabolicos","esteroide","juice","chutarme","trembolona","winstrol","por que no me lo recomienda","esto es consejo medico"],
     r:"⚖️ JV Fitness NO recomienda ni pauta esteroides: son ilegales en España sin prescripción médica y conllevan riesgos serios de salud. Esto no es consejo médico. Si YA los usas por tu cuenta, la app no te juzga ni te asesora sobre sustancias, pero sí puede adaptar tu plan de entreno y recuperación (tu capacidad de volumen y recuperación cambian). Para cualquier tema de sustancias, un médico. (— Política de producto, revisable por Pablo)",
-    chips:["¿cómo adapto el volumen?","¿por qué no me lo recomienda?","¿esto es consejo médico?"]
+    chips:["¿cómo adapto el volumen?","¿qué hace falta para ganar músculo?","¿qué suplementos sí valen?"]
   },
 
   // ─────────────── TRONCO: MELATONINA (HUECO — no inventar) ───────────────
@@ -13958,7 +13958,7 @@ var CEREBRO_KB=[
     tronco:"melatonina", rama:"melatonina-cronobiotico-no-sedante-dosis-timing",
     claves:["melatonina para dormir","cuanta melatonina tomo para dormir","cuanta melatonina tomo","sirve la melatonina para dormir","cuanta melatonina tomar para dormir","melatonina 0.5 mg o 5 mg","a que hora tomar la melatonina","melatonina jet lag funciona","la melatonina crea dependencia","melatonina no es un somnifero","melatonina fase de sueno retrasada"],
     r:"Vamos en cristiano, sin venderte humo. La melatonina NO es una pastilla para dormir (un somnifero tipo benzodiacepina): no te \"noquea\", es la hormona con la que tu cerebro marca \"ya es de noche\". Por eso funciona como un reloj, no como un martillo. Donde SI hay evidencia decente: jet lag (sobre todo volando hacia el este cruzando 5+ husos), sindrome de fase de sueno retrasada (el clasico que se acuesta a las 3 y no puede antes), personas ciegas, y ayudar a conciliar un poco antes en insomnio primario. Donde es floja o no vale: como remedio general para el insomnio del estres o el mal dormir de siempre el efecto es pequeno, del orden de adelantar el sueno unos minutos, no horas. Lo importante, y aqui casi todo el mundo se equivoca: manda el CUANDO, no el CUANTO. Dosis pequena (0,5 a 5 mg) ya hace el trabajo; subir mg no te duerme mejor, solo sube el riesgo de somnolencia al dia siguiente. Tomala cerca de la hora de acostarte en el destino (grosso modo entre las 22 h y medianoche). Tomada a deshora, por la manana, hace lo contrario: te da sueno cuando no toca y retrasa la adaptacion. Uso corto y ocasional se considera seguro y no genera la dependencia de los somniferos, pero no es un caramelo cronico: si duermes mal muchas semanas, el problema es higiene de sueno / horarios / ansiedad, y eso la melatonina no lo arregla (— Herxheimer y Petrie 2002, revision Cochrane CD001520, y Auld et al. 2017, Sleep Medicine Reviews, PMID 27298885: la melatonina es notablemente eficaz para prevenir o reducir el jet lag y su uso ocasional a corto plazo parece seguro, con dosis de 0,5 a 5 mg tomadas cerca de la hora de acostarse; la mejor evidencia esta en reducir la latencia de sueno en el insomnio primario, el sindrome de fase de sueno retrasada y en regular el ciclo en personas ciegas)",
-    chips:["¿Y para el insomnio normal por estres?","¿Cuando la tomo si vuelo a Japon?","¿Puedo tomarla cada noche mucho tiempo?"]
+    chips:["¿Cómo afecta el estrés a la recuperación en el gym?","¿Cuando la tomo si vuelo a Japon?","¿Puedo tomarla cada noche mucho tiempo?"]
   },
 
   // ─────────────── TRONCO: CHICLE ───────────────
@@ -13966,7 +13966,7 @@ var CEREBRO_KB=[
     tronco:"chicle", rama:"mejora-rendimiento",
     claves:["chicle","mascar chicle","chicle entrenar","chicle gym","chicle rendimiento","apretar la mandibula","masticar chicle entrenando","y apretar la mandibula"],
     r:"Masticar chicle o apretar la mandíbula da un micro-efecto de alerta/explosividad (sube la velocidad de fuerza en gestos como saltos), pero NO sube tu pico de fuerza ni construye músculo. La evidencia del chicle es limitada y el propio divulgador admite que \"no multiplica resultados\". Micro-truco de activación, no palanca de hipertrofia. (— Tema 12, Ebben 2008 / Allen & Smith 2015)",
-    chips:["¿y apretar la mandíbula?","¿otros trucos de rendimiento?","¿la cafeína sí ayuda?"]
+    chips:["¿cuánto apretar en el gym?","¿otros trucos de rendimiento?","¿la cafeína sí ayuda?"]
   },
 
   // ─────────────── TRONCO: CANSANCIO / FATIGA ───────────────
@@ -13986,7 +13986,7 @@ var CEREBRO_KB=[
     tronco:"fatiga", rama:"deload",
     claves:["deload","semana de descarga","descarga","necesito deload","bajar carga una semana","semana ligera","descargar","que es un deload","cada cuanto deload","como se que lo necesito"],
     r:"El deload es gestión de fatiga, NO un dogma obligatorio (un RCT no vio beneficio en ganancias por descargar). Principiante: no lo necesita. Intermedio/avanzado: gatillado por señales (estancamiento, molestias, mal sueño/ánimo), cada ~4-8 semanas → bajar volumen 40-50% durante 5-7 días. Si vienes descansado de un parón, tampoco. (— Tema 4, Coleman 2024)",
-    chips:["¿cómo sé que lo necesito?","¿cómo minimizo la fatiga?"]
+    chips:["¿no me recupero bien?","¿cómo minimizo la fatiga?"]
   },
 
   // ─────────────── TRONCO: VOLUMEN ───────────────
@@ -14028,13 +14028,13 @@ var CEREBRO_KB=[
     tronco:"orden", rama:"importa-el-orden",
     claves:["orden de ejercicios","importa el orden","que ejercicio primero","orden entreno","por donde empiezo","primero el musculo debil","orden del entrenamiento","que hago primero","empiezo por compuestos"],
     r:"El orden es CLAVE: la primera serie/ejercicio, con el sistema nervioso fresco, recluta más fibras y da el mejor estímulo. Pon PRIMERO el músculo que más quieras mejorar (ej.: en push, si buscas tríceps, empieza por tríceps). Y si priorizar un músculo fatiga a otro que va después, haz ese otro AISLADO para que no sea el eslabón débil. (— Tema 24, Simão 2012 / Principio #6)",
-    chips:["¿cuántas veces por semana?","¿y si me fatiga otro músculo?","¿empiezo por compuestos?"]
+    chips:["¿cuántas veces por semana?","¿y si me fatiga otro músculo?","¿cómo hago crecer un músculo rezagado?"]
   },
   {
     tronco:"orden", rama:"frecuencia-veces-por-semana",
     claves:["cuantas veces por semana","frecuencia","frecuencia por musculo","cuantas veces entrenar musculo","ppl o fullbody","cuantos dias entrenar","frecuencia entrenamiento","veces por semana musculo","ppl o full body","cuantos dias voy al gym"],
     r:"A igual volumen, la frecuencia por sí sola casi no cambia la hipertrofia: es logística. Su ventaja es indirecta: repartir el volumen en 2-4 sesiones/músculo da más \"primeras series frescas\". Default: ~2x por músculo. Pero manda la ADHERENCIA: el mejor plan es el que cumples (un PPL que te hace entrenar duro y constante gana a un upper/lower \"óptimo\" que abandonas). (— Tema 24, Schoenfeld 2019 / Tesis #10)",
-    chips:["¿PPL o full body?","¿importa el orden?","¿cuánto volumen?"]
+    chips:["¿cuánto debo entrenar?","¿importa el orden?","¿cuánto volumen?"]
   },
 
   // ─────────────── TRONCO: REPETICIONES / RANGOS ───────────────
@@ -14042,7 +14042,7 @@ var CEREBRO_KB=[
     tronco:"repeticiones", rama:"que-rango-de-reps",
     claves:["cuantas repeticiones","rango de reps","cuantas reps","repeticiones para musculo","que rango de repeticiones","reps para hipertrofia","numero de repeticiones","cuantas reps hago","repeticiones","reps","y en aislamientos"],
     r:"Manda acercarse al fallo, no el rango exacto: de ~5 a ~30 reps dan crecimiento similar. El ideal de la casa es ~5-8 reps PESADO con técnica estandarizada y RIR 0-2: misma hipertrofia, menos fatiga y el fallo se juzga mejor. En aislamientos pequeños (laterales, abdominales, gemelo) sube a 8-15, donde cargar fino es impracticable. (— Tema 23, Schoenfeld 2021 / regla v2 2026)",
-    chips:["¿10-15 si soy principiante?","¿cómo progreso las reps?","¿tengo que ir al fallo?","¿y en aislamientos?"]
+    chips:["¿10-15 si soy principiante?","¿cómo progreso las reps?","¿tengo que ir al fallo?","¿hipertrofia 6-12?"]
   },
   {
     // v0.27.3 · /ajedrez — tumba el mito de manual «fuerza 3-6 / hipertrofia 6-12». Amplía que-rango-de-reps
@@ -14062,13 +14062,13 @@ var CEREBRO_KB=[
     tronco:"repeticiones", rama:"principiante-reps-altas",
     claves:["10-15 para principiante","reps altas principiante","principiante muchas reps","empezar con reps altas","reps para novato","cuantas reps de principiante","10-15 si soy principiante","que rango uso ya"],
     r:"El clásico \"10-15 reps por ser principiante\" NO como regla general. El rango medio-alto solo se justifica MIENTRAS aprendes el patrón (más seguro y controlable con menos carga); en cuanto la técnica está estandarizada, el principiante también progresa mejor en 5-8 pesado cerca del fallo. Excepción: aislamientos pequeños, donde sí vale 8-15. (— Tema 23, C-P3 / doctrina de la casa)",
-    chips:["¿qué rango uso ya?","¿cómo estandarizo la técnica?","¿cómo progreso?"]
+    chips:["¿cuántas reps hago?","¿cómo estandarizo la técnica?","¿cómo progreso?"]
   },
   {
     tronco:"repeticiones", rama:"progresion-doble-progresion",
     claves:["doble progresion","como progreso","subir peso o reps","sobrecarga progresiva","progresar reps","cuando subo peso","progresion de peso","como subir de peso en el gym","como progreso las reps","como se si progreso","por que reps bajas progresan mejor"],
     r:"Doble progresión: elige un rango (ej. 5-9), empieza con un peso para 5, suma reps sesión a sesión hasta llegar a 9 y SOLO ENTONCES subes peso y vuelves abajo. Anti-ego: subir peso a las 6-7 rompe la técnica y mata el estímulo. Además, progresar de 5→6 vale más que de 12→15: en series cortas cada rep extra es una señal limpia y medible; en las largas es ruido que el cansancio del día enmascara. (— Tema 4/23, @izansimon / C-P1)",
-    chips:["¿por qué reps bajas progresan mejor?","¿y si me estanco?","¿cuándo cambio de ejercicio?"]
+    chips:["¿cuántas series por músculo?","¿y si me estanco?","¿cuándo cambio de ejercicio?"]
   },
 
   // ─────────────── TRONCO: TÉCNICA / ESTANDARIZACIÓN ───────────────
@@ -14076,7 +14076,7 @@ var CEREBRO_KB=[
     tronco:"tecnica", rama:"ejercicio-nuevo-estandarizar",
     claves:["ejercicio nuevo","estandarizar tecnica","cambio de gimnasio","maquina nueva","empezar ejercicio nuevo","tecnica nueva","cambiar de maquina","primer dia ejercicio","como estandarizo la tecnica","cuando cambio de ejercicio","la tecnica importa tanto","tecnica","mismo peso","el mismo peso","hago el mismo peso","que peso hago","subo el peso","mantengo el peso"],
     r:"Ejercicio nuevo o cambio de gym/orden/máquina: baja un poco el peso, ESTANDARIZA la técnica y progresa sobre ella; nunca meterle muy pesado de primeras. Sin técnica estable no hay medida válida de progresión (comparas peras con manzanas) y la tensión se va de donde debe. Corolario: para comparar sesiones tienes que abrir siempre con el MISMO ejercicio. (— Tema 23, C-P2 / @izansimon)",
-    chips:["¿cómo progreso luego?","¿cuándo cambio de ejercicio?","¿la técnica importa tanto?"]
+    chips:["¿cómo progreso luego?","¿cada cuánto cambio de ejercicios?","¿sirve sentir el músculo?"]
   },
   {
     tronco:"tecnica", rama:"tempo-velocidad",
@@ -14088,19 +14088,19 @@ var CEREBRO_KB=[
     tronco:"tecnica", rama:"mente-musculo",
     claves:["conexion mente musculo","sentir el musculo","mente musculo","foco interno","notar el musculo","conexion mental musculo","pensar en el musculo","sirve sentir el musculo","y en compuestos"],
     r:"Depende del objetivo, no es ni mito ni verdad absoluta. Para HIPERTROFIA/aislamientos, el foco interno (\"aprieta el músculo\") aumenta el crecimiento (bíceps +12,4% vs +6,9%). Para FUERZA/compuestos pesados gana el foco externo (\"empuja el suelo, mueve la barra\"). Úsalo según lo que busques. (— Tema 14, Schoenfeld 2018 / Grgic 2021)",
-    chips:["¿y en compuestos?","¿el ardor indica buen estímulo?","¿cómo elijo ejercicio?"]
+    chips:["¿empiezo por compuestos?","¿el ardor indica buen estímulo?","¿cómo elijo ejercicio?"]
   },
   {
     tronco:"tecnica", rama:"excentrica-negativa",
     claves:["excentrica","negativa","la negativa es mejor","bajar despacio","enfatizar la negativa","excentrica acentuada","fase negativa","hacer la negativa lenta","la negativa es mas importante","hago excentrica acentuada"],
     r:"Controla la bajada, pero la idea de que \"la negativa es drásticamente más hipertrófica\" NO se sostiene: un meta-análisis de 26 estudios da hipertrofia SIMILAR entre enfatizar la negativa o la positiva. Solo en tren superior hay una ventaja pequeña por enfatizar algo la excéntrica (opcional). Lo que manda: volumen + proximidad al fallo + progresión. (— Tema 31, da Silva 2025 / Jeff Nippard)",
-    chips:["¿hago excéntrica acentuada?","¿qué tempo uso?"]
+    chips:["¿qué es la tensión mecánica?","¿qué tempo uso?"]
   },
   {
     tronco:"tecnica", rama:"seleccion-ejercicio-estabilidad",
     claves:["que ejercicio elijo","seleccion de ejercicios","ejercicio estable","sentado o de pie","maquina o peso libre","elegir ejercicio","mejor ejercicio para un musculo","banco vs de pie","como elijo ejercicio","como elijo el ejercicio","como maximizo un musculo","rango completo importa"],
     r:"Elige el ejercicio por biomecánica antes que retorcer la técnica: variantes más ESTABLES y menos técnicas (sentado/apoyado) concentran la tensión en el músculo objetivo, sin que se fugue a estabilizadores. Peso libre y máquina crecen igual: no hay mito que valga. Prioriza donde puedas progresar carga/reps con buena técnica y, si puedes, cargar el músculo en posición estirada. (— Tema 21/14, Maeo 2022 / Hernández-Belmonte 2023)",
-    chips:["¿máquina o peso libre?","¿rango completo importa?","¿cómo maximizo un músculo?"]
+    chips:["¿peso libre vs máquina hipertrofia?","¿rango completo o parciales para hipertrofia?","¿qué ejercicios para ganar músculo?"]
   },
 
   // ─────────────── TRONCO: AGUA / SAL / SODIO ───────────────
@@ -14108,19 +14108,19 @@ var CEREBRO_KB=[
     tronco:"sodio", rama:"miedo-a-la-sal",
     claves:["sal","sodio","le tengo miedo a la sal","cuanta sal","la sal es mala","sal para el pump","necesito sal","echar sal","sodio en el gym","y el sodio","mejora el pump"],
     r:"Si estás sano, activo y sudas, no le tengas miedo a la sal: repones el sodio que pierdes y restringirlo en exceso no tiene sentido. PERO esto NO aplica a hipertensos, sal-sensibles, enfermedad renal/cardíaca o mayores → ahí toca moderar. Y lo del \"pump\" con sal en pesas no está demostrado (es marketing); el sodio importa sobre todo en resistencia/calor. (— Tema 32, JAMA 2023)",
-    chips:["¿la sal marina es mejor?","¿cuánta agua bebo?","¿mejora el pump?"]
+    chips:["¿la sal marina es mejor?","¿cuánta agua bebo?","¿el pump significa crecimiento?"]
   },
   {
     tronco:"sodio", rama:"sal-marina",
     claves:["sal marina","sal del himalaya","sal rosa","sal marina mejor","sal marina o de mesa","que sal es mejor","sal premium","la sal marina es mejor","y el yodo","yodo"],
     r:"La sal marina y la de mesa son ~97-99% lo mismo (NaCl); los \"minerales\" de la marina son nutricionalmente despreciables. Encima, la sal de mesa YODADA aporta yodo (clave para el tiroides) y la marina normalmente no → recomendar marina puede empeorar tu yodo. La \"sal marina premium\" es humo. (— Tema 32, deficiencia de yodo)",
-    chips:["¿le tengo miedo a la sal?","¿cuánta sal?","¿y el yodo?"]
+    chips:["¿le tengo miedo a la sal?","¿cuánta sal?","¿cuánta agua bebo?"]
   },
   {
     tronco:"agua", rama:"cuanta-agua",
     claves:["cuanta agua","hidratacion","agua al dia","beber agua","cuanto agua bebo","hidratarme","litros de agua","agua","cuanta agua bebo","bebo mas en verano"],
     r:"Como orientación, ~35 ml/kg/día (la vieja regla de «2 litros» es solo eso, orientativa: manda el calor, el sudor y tu actividad). La mejor guía del día a día es simple: bebe cuando tengas sed y vigila que la orina salga clara-pálida, no oscura. El rendimiento SÍ se resiente al deshidratarte: desde ~2% de pérdida de peso caen la resistencia y la concentración, y hacia ~3-4% baja también la fuerza (~−5%). No hace falta hiperhidratarse: beber de más no mejora nada, y forzar mucha agua sin sales en esfuerzos largos es peligroso (hiponatremia). En verano y entrenando fuerte, algo más. (— Sawka 2007, ACSM Position Stand; umbral de fuerza Savoie 2015)",
-    chips:["¿y el sodio?","¿bebo más en verano?"]
+    chips:["¿y el sodio?","¿me canso muy rápido?"]
   },
 
   // ─────────────── TRONCO: FIBRA ───────────────
@@ -14134,7 +14134,7 @@ var CEREBRO_KB=[
     tronco:"fibra", rama:"fibra-hincha-entreno",
     claves:["fibra hincha","fibra antes de entrenar","fibra me hincha","mucha fibra molestias","fibra estomago","fibra cerca del entreno","fibra y gases","la fibra hincha","ayuda con el hambre"],
     r:"En definición con muchos carbos, baja la fibra CERCA del entreno (y 24-48h antes de sesiones largas) para no hincharte; concentra la fibra lejos del gym. Comer mucha fibra + comida voluminosa puede ser estrategia deliberada en un cut profundo (máxima saciedad por caloría), pero el trade-off son las molestias digestivas: depende de tu tolerancia. (— Tema 33, Mlinaric 2025 / @leoonpham)",
-    chips:["¿cuánta fibra al día?","¿ayuda con el hambre?","¿y los carbos pre-entreno?"]
+    chips:["¿cuánta fibra al día?","¿qué alimentos sacian más?","¿y los carbos pre-entreno?"]
   },
 
   // ─────────────── TRONCO: SACIEDAD / NO PASAR HAMBRE ───────────────
@@ -14150,7 +14150,7 @@ var CEREBRO_KB=[
     tronco:"cardio", rama:"cardio-interfiere-musculo",
     claves:["cardio","cardio pierde musculo","cardio interfiere","hago cardio","correr pierde musculo","cardio y musculo","cardio para definir","el cardio quita musculo","correr","interfiere con el musculo","el cardio sube el cortisol"],
     r:"Caminar es el cardio de MENOR interferencia con el músculo (no te roba ganancias) y encima mejora recuperación, NEAT y sensibilidad a la insulina. El cardio intenso y con mucho volumen sí puede interferir algo si compite por tu recuperación. Para la mayoría, andar es la mejor herramienta de gasto sin castigar el gym. (— Tema 11, interferencia concurrente SBS)",
-    chips:["¿cuántos pasos al día?","¿cardio en volumen?","¿el cardio sube el cortisol?"]
+    chips:["¿cuántos pasos al día?","¿cardio en volumen?","¿el cortisol engorda o me quita gains?"]
   },
 
   // ─────────────── TRONCO: PASOS / NEAT ───────────────
@@ -14158,7 +14158,7 @@ var CEREBRO_KB=[
     tronco:"pasos", rama:"cuantos-pasos",
     claves:["cuantos pasos","pasos al dia","caminar cuanto","neat","10000 pasos","cuantos pasos hago","pasos diarios","andar cuanto","pasos","cuantos pasos al dia","reviso mis pasos","cuentan para las calorias","reducen el cortisol"],
     r:"Apunta a 10.000 pasos/día como MÍNIMO, y cuantos más mejor sin obsesionarte. Caminar mucho mejora la sensibilidad a la insulina y dispara tu gasto (NEAT) — más fiable que las \"calorías\" del reloj. Honesto: el mayor salto de salud es pasar de sedentario a ~7-8k, pero de ahí a 10k+ sigue sumando (metabólico, apetito, recuperación). Si andas 14-15k sin pisar el gym, ya eres \"muy activo\". (— Tema 11/37, Ding 2025 / Tudor-Locke 2004)",
-    chips:["¿pasos en volumen también?","¿reducen el cortisol?","¿cuentan para las calorías?"]
+    chips:["¿pasos en volumen también?","¿caminar después de comer?","¿cuántas calorías de mantenimiento?"]
   },
   {
     tronco:"pasos", rama:"pasos-en-volumen",
@@ -14172,13 +14172,13 @@ var CEREBRO_KB=[
     tronco:"bascula", rama:"subi-de-un-dia-para-otro",
     claves:["subi de peso de un dia para otro","subi 2 kilos","engorde de un dia para otro","peso subio","subi peso rapido","peso de golpe","sube el peso al dia siguiente","he engordado en un dia","por que subo de un dia para otro","por que subo de peso al dia siguiente","he subido de peso de golpe","es normal tras una comida libre"],
     r:"Tranquilo, no es grasa: puedes subir 1-2 kg en un día por agua y glucógeno, no por engordar. Cada gramo de glucógeno retiene ~3 g de agua, así que más carbos (o una comida libre) = más báscula al día siguiente, y se va solo. Por eso no reacciones al peso diario: mira la MEDIA semanal. (— Capa 2, @izansimon / Tema 7)",
-    chips:["¿cómo me peso bien?","¿es normal tras una comida libre?","¿cada cuánto me peso?"]
+    chips:["¿cómo me peso bien?","¿qué pasa con la comida libre?","¿cada cuánto me peso?"]
   },
   {
     tronco:"bascula", rama:"como-pesarse",
     claves:["como pesarme","cuando pesarme","media semanal peso","pesarme cada dia","como me peso","cada cuanto peso","pesarse bien","peso diario","bascula","como me peso bien","cada cuanto me peso","como mido el peso bien","como ajusto con el peso","como ajusto calorias"],
     r:"Pésate a diario en las mismas condiciones (al levantarte, en ayunas, tras el baño) y quédate con la MEDIA semanal, no con el número de un día. El peso fluctúa por agua, glucógeno, sal, digestión y sueño; la tendencia de la semana es lo que dice si progresas. Con eso ajustas calorías. Protocolo exacto: tras orinar y hacer de vientre, ANTES de beber o comer nada — siempre igual, así la báscula no miente. (— Capa 2, @izansimon / @elgomasss)",
-    chips:["¿por qué subo de un día para otro?","¿cómo ajusto calorías?","¿estoy estancado?"]
+    chips:["¿por qué subo de un día para otro?","¿cuántas calorías al día?","¿estoy estancado?"]
   },
 
   // ─────────────── TRONCO: RELOJES / CALORÍAS QUEMADAS ───────────────
@@ -14186,7 +14186,7 @@ var CEREBRO_KB=[
     tronco:"calorias", rama:"reloj-calorias-quemadas",
     claves:["reloj calorias","calorias del reloj","cuantas calorias quemo","smartwatch calorias","garmin calorias","apple watch calorias","el reloj miente calorias","calorias que marca el reloj","por que no uso el reloj","para que si sirve el reloj","como calculo mi gasto"],
     r:"No uses las calorías del reloj para calcular tu déficit/superávit en pesas: se inflan muchísimo (Garmin +116%, Apple Watch +112% sobre lo real). El reloj mide bien la frecuencia cardíaca, pero en fuerza las calorías son prácticamente inventadas. Calcula el balance con fórmula (Mifflin-St Jeor) + registro de comida + tu peso real. (— Tema 29, Lee 2026)",
-    chips:["¿cómo calculo mi gasto?","¿para qué sí sirve el reloj?","¿y los pasos?"]
+    chips:["¿cuál es mi gasto calórico?","¿las pulsaciones del reloj valen?","¿y los pasos?"]
   },
 
   // ─────────────── TRONCO: AYUNO / COMIDAS ───────────────
@@ -14194,19 +14194,19 @@ var CEREBRO_KB=[
     tronco:"ayuno", rama:"entrenar-en-ayunas",
     claves:["entrenar en ayunas","entreno en ayunas","ayunas gym","entrenar sin comer","ayuno intermitente","gym en ayunas","entrenar por la mañana sin comer","ayuno y musculo","hago ayuno","ayuno","y si entreno en ayunas","rindo peor en ayunas"],
     r:"Entrenar en ayunas o comido da las MISMAS adaptaciones de hipertrofia y rendimiento a largo plazo (RCT 12 sem): no pierdes músculo por hacerlo en ayunas. El único caso donde comer antes ayuda es en sesiones muy largas, de mucho volumen o si te falta energía. Lo que manda es tu total de comida DIARIO, no el ayuno en sí. (— Tema 5, Vieira 2025 / Henselmans 2022)",
-    chips:["¿rindo peor en ayunas?","¿carbos antes de entrenar?","¿cuántas comidas al día?"]
+    chips:["¿no rindo en el gym en déficit?","¿carbos antes de entrenar?","¿cuántas comidas al día?"]
   },
   {
     tronco:"comidas", rama:"cuantas-comidas-al-dia",
     claves:["cuantas comidas","comidas al dia","cuantas veces comer","numero de comidas","comer 5 veces","frecuencia de comidas","cuantas comidas hago","cuantas comidas al dia","importa el desayuno"],
     r:"Para el músculo, el número de comidas importa poco: manda el TOTAL diario de proteína y calorías. Un reparto práctico es 3-4 comidas de ~30-40 g de proteína cada una para optimizar la síntesis, pero es un ajuste fino, no una regla rígida. Elige las comidas que mejor encajen con tu adherencia. (— Tema 3, Manescu 2025)",
-    chips:["¿cuánta proteína por comida?","¿de golpe o repartida?","¿importa el desayuno?"]
+    chips:["¿cuánta proteína por comida?","¿de golpe o repartida?","¿el desayuno es la comida más importante?"]
   },
   {
     tronco:"comidas", rama:"cheat-meal-comida-libre",
     claves:["cheat meal","comida libre","comida trampa","me pase comiendo","atracon","comida basura","salirme de la dieta","comer mal un dia","cheat","me he saltado la dieta","cuenta la semana","cada cuanto comida libre"],
     r:"Una comida libre cada 7-10 días es compatible con definición SI el déficit de la semana sigue intacto: la grasa la decide el balance semanal, no una comida. Subirás algo de peso al día siguiente (agua + glucógeno, no grasa). Si te pasas, mejor carbos que grasa, pero nunca creas que \"los carbos no engordan\". Si tienes mala relación con la comida, mejor dieta flexible que el marco \"cheat\". (— Tema 7, Westenhoefer 1999)",
-    chips:["¿por qué subo de peso al día siguiente?","¿cuenta la semana?"]
+    chips:["¿por qué subo de peso al día siguiente?","¿hago una pausa en el déficit?"]
   },
 
   // ─────────────── ESTADO: CAPTURA SIN FRICCIÓN ───────────────
@@ -14214,13 +14214,13 @@ var CEREBRO_KB=[
     tronco:"estado", rama:"ESTADO-no-puedo-ir-gym",
     claves:["no puedo ir al gym","no puedo ir al gimnasio","no puedo entrenar","me salto el gym hoy","hoy no voy al gym","hoy no voy al gimnasio","no me da tiempo de entrenar","no puedo ir a entrenar","me toca saltarme el gym","no voy a poder entrenar","hoy no entreno","no ire al gym","no ire al gimnasio","muevo el dia","pierdo musculo por un dia"],
     r:"Anotado. Saltarte un día no arruina nada: NO compenses doblando volumen mañana (eso solo suma fatiga). Simplemente mueve el día si puedes, o retoma tu plan en la siguiente sesión como si nada. La constancia es la media de las semanas, no un día suelto. (— Tema 4/24, adherencia / Tesis #10)",
-    chips:["¿recuérdamelo mañana?","¿muevo el día?","¿pierdo músculo por un día?"]
+    chips:["¿recuérdamelo mañana?","¿cómo hago del gym un hábito?","¿se me baja el músculo si no entreno un día?"]
   },
   {
     tronco:"estado", rama:"ESTADO-me-salte-entreno",
     claves:["me salte el entreno","falte al gym","no entrene ayer","perdi un entreno","no fui al gym","me salte un dia","falte a entrenar","ayer no entrene","me perdi el entreno","lo recupero","ajusto la semana","como lo hago mas sostenible"],
     r:"Anotado, sin dramas: un entreno perdido no borra tu progreso. Retoma tu rutina donde tocaba (no metas todo el volumen perdido de golpe). Si empieza a ser un patrón, ahí sí revisamos el plan para que sea más sostenible. El mejor plan es el que cumples. (— Tema 4, adherencia / Tesis #10)",
-    chips:["¿lo recupero?","¿ajusto la semana?","¿cómo lo hago más sostenible?"]
+    chips:["¿cuánto tardo en perder músculo?","¿cuánto entreno para mantener músculo?","¿cuál es el mejor plan?"]
   },
 
   // ─────────────── EXTRAS ÚTILES (Temas del master) ───────────────
@@ -14234,19 +14234,19 @@ var CEREBRO_KB=[
     tronco:"estimulo", rama:"pump-ardor-crecimiento",
     claves:["pump","el pump crece","ardor musculo","quemazon","el pump significa crecimiento","buscar el pump","congestion muscular","que arda el musculo","el ardor si cuenta","el ardor indica buen estimulo","que hace crecer","entonces que hace crecer","que hace crecer de verdad"],
     r:"El pump (hinchazón) es edema agudo, NO hipertrofia, y la quemazón tampoco mide un buen estímulo: actividades muy \"ardientes\" como el sprint hipertrofian poco. El pump incluso engaña midiendo \"crecimiento\" las primeras semanas, sobre todo en novatos. El motor es la tensión mecánica + sobrecarga progresiva. (— Tema 20/14, Dankel 2017 / Damas 2016)",
-    chips:["¿qué hace crecer de verdad?","¿las agujetas cuentan?","¿mente-músculo?"]
+    chips:["¿qué es la tensión mecánica?","¿las agujetas cuentan?","¿mente-músculo?"]
   },
   {
     tronco:"pecho", rama:"entrenar-pecho-regiones",
     claves:["entrenar pecho","pecho superior","pecho inferior","press inclinado","pecho por partes","como entreno el pecho","pecho clavicular","trabajar el pecho","pecho","codos metidos o abiertos","estirar ayuda"],
     r:"El pecho tiene 3 regiones y la hipertrofia regional es real. Base: press plano (medio) + trabajo INCLINADO dedicado para el superior (único caso con RCT directo); el inferior es opcional. Para enfatizar pectoral, codos algo ABIERTOS (metidos mandan carga al tríceps). Y el rango estirado (buen ROM) ayuda; los estiramientos pasivos no. (— Tema 8, Chaves 2020)",
-    chips:["¿codos metidos o abiertos?","¿cuánto volumen de pecho?","¿estirar ayuda?"]
+    chips:["¿qué ángulo de banco para pecho superior?","¿cuánto volumen de pecho?","¿parciales en estiramiento para ganar músculo?"]
   },
   {
     tronco:"abdomen", rama:"abs-vs-core",
     claves:["abdominales","core","abs","entrenar abdomen","six pack","planchas","como saco abdominales","abdomen vs core","marcar abdomen","abdomen","planchas o crunch cargado","el core previene lesiones","como bajo la grasa"],
     r:"Abs y core no son lo mismo. Para el SIX-PACK (hipertrofia del recto): flexión CARGADA y progresiva (crunch en polea/máquina), no solo planchas. Para el CORE (estabilidad): anti-movimiento (plancha, rueda, Pallof), útil para transferir fuerza pero NO \"blinda\" contra lesiones. Y ojo: los abdominales se ven con el porcentaje de grasa bajo, no a base de crunches. (— Tema 9, Escamilla)",
-    chips:["¿planchas o crunch cargado?","¿el core previene lesiones?","¿cómo bajo la grasa?"]
+    chips:["¿hacer abdominales quita la barriga?","¿calentar previene lesiones?","¿por qué no veo el six pack?"]
   },
   {
     tronco:"biceps", rama:"aislar-cabeza-biceps",
@@ -14258,19 +14258,19 @@ var CEREBRO_KB=[
     tronco:"tecnica", rama:"estiramiento-parciales-rango",
     claves:["parciales en estiramiento","rango completo","rom completo","entrenar estirado","media repeticion","estiramiento hipertrofia","reps parciales","trabajar en estirado","rango completo o parcial","estirar entre series sirve","parciales"],
     r:"Entrenar con buen ROM y carga en posición ESTIRADA ayuda a la hipertrofia. Las parciales en estiramiento son una alternativa VÁLIDA (≈ igual que el rango completo), no mágicamente superiores, y la evidencia directa fuerte está en codo (bíceps/tríceps). No son \"trampa\": la ventaja del rango completo es pequeña. Ojo con no confundir esto con estiramientos pasivos, que no hacen crecer. (— Tema 13/8, Wolf 2025)",
-    chips:["¿rango completo o parcial?","¿estirar entre series sirve?","¿cómo elijo ejercicio?"]
+    chips:["¿cuántas repeticiones hago?","¿hay que estirar antes o después de entrenar?","¿cómo elijo ejercicio?"]
   },
   {
     tronco:"entreno", rama:"vuelta-tras-paron-muscle-memory",
     claves:["volver al gym","vuelta tras paron","recuperar musculo perdido","muscle memory","memoria muscular","retomar el gym","vuelvo despues de meses","empezar despues de parar","cuanto peso empiezo","cuanto tardo en recuperar","vuelvo de un paron"],
     r:"Buena noticia: recuperas el músculo perdido ~2x más rápido por la memoria muscular (lo de 1-2 meses vuelve en 4-8 semanas). El riesgo NO es no ganar, es LESIONARte, porque el tendón readapta más lento que el músculo. Protocolo: arranca al ~50-70% de tu carga previa, RIR alto (3-4), la mitad de volumen y sube ≤10%/semana. Sin deload (vienes descansado). (— Tema 4, Rahmati 2022)",
-    chips:["¿cuánto peso empiezo?","¿cuánto tardo en recuperar?","¿necesito deload?"]
+    chips:["¿cómo progreso?","¿cuándo veo resultados?","¿necesito deload?"]
   },
   {
     tronco:"grasa", rama:"aceites-de-semilla",
     claves:["aceites de semilla","aceite de girasol","omega 6","aceite vegetal","seed oils","aceite de semillas malo","aceite de girasol malo","que aceite uso para cocinar","omega 3","omega-3","que grasas elijo"],
     r:"El alarmismo de que los aceites de semilla son \"el mayor error nutricional\" NO está respaldado por evidencia humana directa: los mecanismos (oxidación del omega-6) son plausibles pero no probados a dosis dietéticas normales. Consejo práctico: para cocinar a fuego vivo, mejor oliva o aguacate; y en vez de demonizar el omega-6, AÑADE omega-3 (pescado graso, lino, chía). (— Tema 30, @santirpardo honesto)",
-    chips:["¿qué aceite uso para cocinar?","¿cuánta grasa al día?","¿omega-3?"]
+    chips:["¿recalentar el aceite es malo?","¿cuánta grasa al día?","¿cómo equilibro los omegas?"]
   },
 
   {
@@ -14295,13 +14295,13 @@ var CEREBRO_KB=[
     tronco:"mujer", rama:"periodizar-ciclo-menstrual",
     claves:["hay que entrenar segun el ciclo menstrual","periodizar el entreno por fases del ciclo","en que fase del ciclo se rinde mas","entreno mas fuerte en fase folicular","la regla afecta al rendimiento en el gym","debo bajar cargas cuando tengo la regla","sirve el ciclo para planificar el entrenamiento","fase del ciclo y fuerza en mujeres","cambiar el entreno cada fase del mes","menstruacion y rendimiento deportivo"],
     r:"La idea de programar el entreno por fases del ciclo suena bien pero la evidencia es floja: al juntar los estudios, la fase del ciclo mueve el rendimiento de forma \"trivial\" (efecto -0,06; lo mayor, folicular temprana vs tardía, -0,14; ambos prácticamente cero) y con calidad de evidencia baja. Traducción accionable: no bajes cargas ni cambies el plan \"porque toca fase X\". Entrena por progresión normal y usa el ciclo solo como diario personal: si a TI un día concreto del mes se te desploma la fuerza o el ánimo, ajusta ESE día, no el calendario entero por regla general. La recomendación de los propios autores es enfoque individualizado, no una guía universal por fases. (— McNulty 2020 / Sports Medicine)",
-    chips:["¿En la regla rindo peor de verdad o es sensación?","¿Qué es el RED-S y cómo sé si estoy en déficit energético?","¿Puede una mujer ganar músculo y perder grasa a la vez?"]
+    chips:["¿Reglas muy abundantes me dejan sin fuerzas?","¿Qué es el RED-S y cómo sé si estoy en déficit energético?","¿Puede una mujer ganar músculo y perder grasa a la vez?"]
   },
   {
     tronco:"estres", rama:"sueno-cortisol-composicion",
     claves:["el estres me hace perder musculo","el cortisol engorda o me quita gains","dormir poco pierdo musculo en dieta","como afecta el estres a la recuperacion en el gym","suplementos anti cortisol funcionan","estres alto y ganancias en el gimnasio","dormir mal y composicion corporal","bajar cortisol para perder grasa"],
     r:"El cortisol no es tu enemigo: sube de forma normal cuando entrenas y eso está bien, hasta es parte de la adaptación. El problema es tenerlo crónicamente alto por dormir poco y estrés vital sostenido, porque ahí cambia QUÉ pierdes. En un ensayo cruzado de 14 días con la misma dieta, dormir 5,5h en vez de 8,5h no hizo perder más peso total, pero el grupo que dormía poco perdió el doble de músculo (2,4 kg vs 1,5 kg) y casi nada de grasa (0,6 kg vs 1,4 kg): en déficit y durmiendo mal, sacrificas músculo en lugar de grasa. Lo accionable no es comprar potingues anti-cortisol (es humo): duerme 7-9h como prioridad número uno, camina para descargar estrés, y baja volumen o intensidad las semanas de mucha presión vital. (— Nedeltcheva 2010 / Ann Intern Med, ensayo cruzado n=10)",
-    chips:["¿Cuántas horas de sueño necesito para no perder músculo en definición?","¿Sirve la ashwagandha o la fosfatidilserina para bajar el cortisol?","¿Cómo recorto el volumen en una semana de mucho estrés?"]
+    chips:["¿Cuántas horas de sueño necesito para no perder músculo en definición?","¿Sirve la ashwagandha para el gym?","¿Cómo recorto el volumen en una semana de mucho estrés?"]
   },
   {
     tronco:"sueno", rama:"cafeina-corte-horas-antes",
@@ -14314,19 +14314,19 @@ var CEREBRO_KB=[
     tronco:"comidas", rama:"desayuno-y-ayuno-no-son-magia-adelgazante",
     claves:["importa desayunar para adelgazar","saltarse el desayuno engorda","el desayuno es la comida mas importante","ayuno intermitente adelgaza mas","ayuno intermitente vs dieta normal","16 8 para perder peso","desayunar o no desayunar para bajar de peso","timing de las comidas y grasa","ventana de comida adelgaza"],
     r:"A igualdad de calorías y proteína al final del día, la hora a la que comes casi no mueve la aguja. Dos mitos que conviene desmontar: 1) \"El desayuno es la comida más importante y ayuda a adelgazar.\" Falso como regla general. Cuando se juntan los ensayos controlados, quien desayunaba pesó de media 0,44 kg MÁS, no menos, y encima ingería unas 260 kcal/día más que quien se lo saltaba. Es decir: añadir desayuno \"porque sí\" tiende a sumar calorías al día, no a restarlas. Desayunar no está prohibido; simplemente no es una palanca mágica para perder grasa. 2) \"El ayuno intermitente (comer solo en una ventana, tipo 16/8) adelgaza más.\" No por sí mismo. En el ensayo TREAT, comer solo de 12:00 a 20:00 durante 12 semanas dio una pérdida (−0,94 kg) que NO fue distinta de comer repartido en el día (−0,68 kg); la diferencia entre grupos fue trivial y no significativa. Lo que funciona del ayuno no es \"activar el metabolismo\": es que cerrar la ventana te hace comer menos veces y, sin querer, menos calorías. Si el déficit no aparece, la báscula no se mueve. Regla para el motor: el reloj no adelgaza; el déficit sí. Elige la distribución de comidas que te haga más fácil sostener tus calorías y tu proteína —desayunar o no, ventana estrecha o ancha— porque ahí la ciencia te da libertad. Matices honestos: son estudios cortos (semanas) y con bastante variabilidad, así que sirven para tumbar la magia, no para prometer que \"da exactamente igual\" en todos los casos ni a largo plazo (— Sievert et al., BMJ 2019; y Lowe et al., JAMA Internal Medicine 2020)",
-    chips:["¿Y si me da hambre por la mañana?","Enséñame a montar mi déficit","¿El ayuno tiene otras ventajas aparte del peso?"]
+    chips:["¿Cómo no pasar hambre?","Enséñame a montar mi déficit","¿El ayuno tiene otras ventajas aparte del peso?"]
   },
   {
     tronco:"sueno", rama:"jet-lag-melatonina-viaje-al-este",
     claves:["jet lag deportista que hacer","melatonina para jet lag dosis","viaje al este me deja hecho polvo","cuanta melatonina tomar avion","jet lag volando al este vs oeste","cuando tomar melatonina jet lag","competir despues de vuelo largo desfase horario","melatonina hora correcta manana empeora"],
     r:"Regla para el jet lag de un deportista: la dirección manda. Volar al ESTE (p. ej. Madrid→Japón) machaca más que al oeste, porque tu reloj interno tiene que adelantarse, y eso cuesta más. La palanca con más evidencia cuando cruzas 5 husos o más es la melatonina, y aquí está el detalle que casi nadie respeta: no es un somnífero que te tomas \"cuando toque\", es una señal horaria. Tómala a la hora de acostarte YA en la hora del destino (0,5 a 5 mg; con 5 mg te duermes algo antes, pero 0,5 mg funciona casi igual, así que no hace falta pasarse). Y el aviso serio: si te la tomas a destiempo, por la mañana, te da sueño y RETRASA la adaptación, o sea, te la juegas en contra. Combínala con luz de mañana en el destino (sal a la calle) para empujar el reloj en la misma dirección. Traducido a competición: no llegues la víspera y esperes rendir; cuenta ~1 día de ajuste por huso cruzado y usa melatonina + luz desde el primer día para acortarlo. Honestamente, no es magia: reduce el desfase, no lo borra (— Cochrane 2002, revisión de Herxheimer y Petrie sobre melatonina para el jet lag; PMID 11279722, DOI 10.1002/14651858.CD001520)",
-    chips:["Regla para el jet lag al OESTE (más fácil)","Siestas: 20-30 min sin quedar grogui","Cuándo sospechar apnea del sueño"]
+    chips:["¿A qué hora tomar la melatonina?","¿Cuánto dura la siesta ideal?","Cuándo sospechar apnea del sueño"]
   },
   {
     tronco:"suplementacion", rama:"colageno-vitamina-c-tejido-conectivo-no-musculo",
     claves:["sirve el colageno para los musculos","colageno con vitamina c para tendones","cuando tomar colageno antes o despues de entrenar","el colageno crea musculo o no","glutamina sirve para hipertrofia","necesito multivitaminico si como variado","colageno para articulaciones piel y tendon","gelatina antes de entrenar para el tendon"],
     r:"Vamos en cristiano, porque aquí se mezclan tres cosas y solo una tiene algo de chicha. El colágeno NO te hace músculo: para músculo mandan la proteína total del día y la leucina, no el colágeno (es una proteína de baja calidad, le falta triptófano). Donde sí hay una señal —y subrayo emergente: estudios pequeños, a corto plazo, sobre marcadores en sangre, no sobre \"tendones más fuertes\" medidos a años— es en tejido conectivo: tendón, ligamento, articulación y piel. El protocolo con más respaldo mecanicista es 15 g de gelatina o péptidos de colágeno junto con vitamina C tomados alrededor de 1 hora ANTES de entrenar, no después ni a cualquier hora, porque la carga del ejercicio es la que arrastra esos aminoácidos al tendón. Es barato y sin riesgo, así que como apuesta para cuidar tendón o articulación tiene sentido; pero trátalo como \"puede ayudar al conectivo\", nunca como constructor de músculo. La glutamina para hipertrofia en persona sana es tirar el dinero, y el multivitamínico es un seguro de vida por si comes mal, no un potenciador. (— Shaw et al., 2017, American Journal of Clinical Nutrition, PMID 27852613: 15 g de gelatina enriquecida con vitamina C tomados una hora antes de ejercicio intermitente duplicaron en sangre el propeptido PINP, marcador de sintesis de colageno, en un ensayo cruzado doble ciego con 8 sujetos)",
-    chips:["¿Y la creatina, esa sí que va para el músculo?","¿Cuánta proteína al día necesito de verdad?","¿Multivitamínico sí o no en mi caso?"]
+    chips:["¿Y la creatina, esa sí que va para el músculo?","¿Cuánta proteína al día necesito de verdad?","¿Qué suplementos sí valen?"]
   },
 
   // ─────────────── TRONCO: SUPLEMENTACIÓN — GLUTAMINA ───────────────
@@ -14342,7 +14342,7 @@ var CEREBRO_KB=[
     tronco:"vegetariano", rama:"ganar-musculo-sin-carne",
     claves:["vegetariano","vegano","sin carne","dieta vegetal","plant based","plantbased","basada en plantas","proteina vegetal","proteina sin carne","gano musculo sin carne","puedo ganar musculo vegano","puedo ganar musculo vegetariano","musculo siendo vegano","b12","vitamina b12","hierro vegano","hierro vegetal","omega 3 vegano","omega-3 vegano","suplementos vegano","creatina vegano","como llego a la proteina sin carne"],
     r:"Se gana igual de músculo con dieta vegana que omnívora SIEMPRE que iguales la proteína (~1,6-2,0 g/kg): en un estudio en directo, veganos y omnívoros entrenados progresaron lo mismo. Las claves son cinco: (1) proteína algo más alta y VARIADA (legumbre+cereal, soja/tofu/tempeh, seitán), porque la proteína vegetal tiene menos leucina; (2) B12 SIEMPRE suplementada — no hay fuente vegetal fiable; (3) el hierro vegetal se absorbe peor: acompáñalo de vitamina C y vigílalo sobre todo si menstrúas; (4) omega-3 de aceite de ALGAS (EPA/DHA directos; la conversión desde lino/nueces es pobre); (5) creatina: los vegetarianos parten con menos reserva y RESPONDEN MÁS, casi obligada. (— Hevia-Larraín 2021 / Burke 2003 creatina en vegetarianos / consenso B12)",
-    chips:["¿cuánta proteína vegana?","¿qué suplementos como vegano?","¿la creatina es vegana?","¿de dónde saco el omega-3?"]
+    chips:["¿cuánta proteína vegana?","¿vale la pena suplementos?","¿cuánta creatina al día?","¿de dónde saco el omega-3?"]
   },
 
   // ─────────────── TRONCO: EXPECTATIVAS / LÓGICA TEMPORAL (spec 2 · 2026-07-09) ───────────────
@@ -14386,14 +14386,14 @@ var CEREBRO_KB=[
     tronco:"expectativas", rama:"newbie-gains-se-frenan",
     claves:["por que ya no crezco como al principio","ganancias de principiante","por que ya no gano tan rapido","por que crezco mas lento ahora","se acaban las ganancias faciles","por que ya no progreso como antes","por que crezco menos que al principio","por que iba mas rapido al principio"],
     r:"No es que lo estés haciendo peor: las \"ganancias de principiante\" son reales y se AGOTAN. El primer año un hombre puede ganar ~8-12 kg de músculo; el segundo baja a la mitad y el tercero a un cuarto (modelo de Lyle McDonald). Cuanto más cerca de tu techo genético, más lento va y más fino hay que hilar (técnica, volumen, constancia de años). Que vaya lento no es fracaso, es la física del asunto: a partir de aquí se construye con paciencia, no con prisas ni con otro suplemento. (— Lyle McDonald, modelo de ganancia muscular por año de entrenamiento)",
-    chips:["¿cuánto músculo gano al mes?","¿cuándo veré resultados?","¿toca cambiar algo del entreno?"]
+    chips:["¿cuánto músculo gano al mes?","¿cuándo veré resultados?","¿revisar mi entreno?"]
   },
 
   {
     tronco:"estimulo", rama:"sudor-esfuerzo-grasa",
     claves:["sudor","sudar","sudar mas","sudo mucho","sudar quema grasa","si sudo adelgazo","sudar mas es mejor","cuanto mas sudo","el sudor cuenta","entrenar con plastico","sauna para adelgazar","chubasquero para sudar","si no sudo no sirve","sudar significa buen entreno"],
     r:"Sudar NO mide el esfuerzo ni quema grasa: es tu sistema de refrigeracion, no un marcador de entreno. El sudor regula la temperatura, y el peso que pierdes al sudar es AGUA que vuelve en cuanto bebes, no grasa. De hecho, la gente mas en forma suda antes y mas (mejor termorregulacion), no por quemar mas. Entrenar con plastico o sauna solo te deshidrata. Lo que hace crecer y define es la tension mecanica + el balance calorico, no cuanto sudas. (— Refuerzo tanda-10, @elgomasss / termorregulacion no es oxidacion de grasa)",
-    chips:["¿entonces que hace crecer?","¿las agujetas cuentan?","¿el pump indica algo?","¿como pierdo grasa de verdad?"]
+    chips:["¿entonces que hace crecer?","¿las agujetas cuentan?","¿el pump indica algo?","¿cuánto déficit para perder grasa?"]
   },
 
   // ─────────────── LOTE /ajedrez 2026-07-14 · fichas 100-131 (mina del master file, verificación adversarial por ficha) ───────────────
@@ -14407,31 +14407,31 @@ var CEREBRO_KB=[
     tronco:"alimentacion", rama:"ganar-musculo-sin-grasa",
     claves:["puedo ganar musculo sin grasa","se puede ganar musculo sin engordar","ganar musculo sin ganar grasa","musculo limpio sin grasa","ganar solo musculo","como gano musculo sin engordar","musculo sin nada de grasa","ganar musculo sin coste de grasa","el 5 por ciento de superavit","es verdad lo del 5 por ciento","cuanta grasa gano en volumen","gano grasa haciendo volumen"],
     r:"Malas noticias para el marketing: NO existe ganar músculo sin ganar NADA de grasa. Siempre hay un coste de grasa; el único ensayo que compara superávit pequeño (5%) contra grande (15%) vio que ambos grupos ganaron CASI la misma grasa. Lo que sí controlas es minimizarla: superávit pequeño (~200-400 kcal/día o subir 0,25-0,5% del peso/semana). Más comida no da más músculo, solo más grasa. Y ese \"5% mágico\" no tiene respaldo: la ciencia habla de kcal absolutas, no de porcentajes redondos. (— Tema 1, Helms/Roberts 2023 / Slater 2019)",
-    chips:["¿cuánto superávit para minimizar grasa?","¿cuánto peso gano por semana?","¿bulk limpio o sucio?","¿luego tengo que definir?"]
+    chips:["¿cuánto superávit para minimizar grasa?","¿cuánto peso gano por semana?","¿bulk limpio o sucio?","¿cuándo empiezo a definir?"]
   },
   {
     tronco:"entreno", rama:"entrenar-distinto-para-definir",
     claves:["entreno distinto para definir","cambio la rutina para marcar","hay que entrenar diferente en definicion","se entrena igual para ganar musculo y perder grasa","mas reps para definir","entreno para marcar","misma rutina en definicion","tengo que cambiar el entreno en cut","bajo el peso para definir","como entreno en definicion","el entreno cambia en el cut","que rutina para marcar"],
     r:"No: para definir NO cambias de rutina. El entreno es fundamentalmente el mismo que para ganar músculo (mismo motor: sobrecarga progresiva y cerca del fallo); lo que marca la diferencia es la DIETA, no pasarte a \"muchas reps con poco peso\". En definición se MANTIENE la intensidad (los kilos). El único ajuste, y solo si ya eres avanzado y estás magro, es recortar el volumen un 20-30% y meter deloads más a menudo, porque el objetivo pasa de crecer a MANTENER lo que tienes. (— Tema 3, Murphy & Koehler 2022 / Helms 2014)",
-    chips:["¿entonces qué cambio para definir?","¿bajo el volumen en el cut?","¿mantengo los mismos kilos?","¿cuántas series en definición?"]
+    chips:["¿cómo reparto en definición?","¿bajo el volumen en el cut?","¿cuánto entreno para mantener músculo?","¿cuántas series en definición?"]
   },
   {
     tronco:"adherencia", rama:"mejor-plan-el-que-cumples",
     claves:["cual es la mejor rutina","cual es la mejor dieta","cual es el mejor plan","tengo que hacer lo optimo","el plan perfecto","la rutina optima","que rutina es mejor","me aburre mi rutina","no soy constante","como ser constante","lo optimo o lo que disfruto","el mejor entrenamiento cual es","que dieta es la mejor"],
     r:"La mejor rutina o dieta no es la \"óptima\" del paper: es la que de verdad SOSTIENES. La adherencia multiplica la ciencia. Si el plan teóricamente perfecto (full-body días alternos, volumen al máximo) te aburre y lo abandonas, rinde MENOS que un plan algo menos óptimo que disfrutas y mantienes. Dos reglas: máximo volumen RECUPERABLE (no el máximo a secas) y elegir lo que te motive, dentro de la ciencia. Hasta Jeff Nippard bajó su volumen y entrenó mejor por disfrutarlo (el \"focus effect\"). (— Tesis del proyecto pto. 10 / Jeff Nippard, T25)",
-    chips:["¿qué es volumen recuperable?","¿cómo elijo una rutina que mantenga?","¿lo óptimo importa algo entonces?","¿cómo gano constancia?"]
+    chips:["¿qué es volumen recuperable?","¿cuántas veces por semana?","¿qué es lo básico del músculo?","¿cómo creo el hábito?"]
   },
   {
     tronco:"alimentacion", rama:"diet-break-descanso-dieta",
     claves:["diet break","descanso de la dieta","parar la dieta unas semanas","comer en mantenimiento un tiempo","descanso metabolico","subir a mantenimiento en definicion","pausa en el deficit","cuando hago un diet break","cada cuanto un diet break","cuanto dura un diet break","me viene bien parar la dieta","descansar de la dieta unos dias"],
     r:"Un diet break es parar el déficit y comer en mantenimiento 1-2 semanas cada 6-8, no rendirte. Su valor principal es psicológico y de adherencia: descansas la cabeza y vuelves con más constancia, que es lo que gana la carrera. En gente ya delgada NO te 'repara el metabolismo' (apenas recupera ~50 kcal de TMB), pero sí mejora la adherencia. Regla práctica: ante un estancamiento, antes de recortar más calorías, sube actividad o mete un diet break. (— Tema 6, Byrne 2018 MATADOR / Tema 4)",
-    chips:["¿Cuánto dura un diet break?","¿Cada cuánto lo hago?","¿Es lo mismo que un deload?","¿Y si estoy estancado?"]
+    chips:["¿Qué es la adaptación metabólica?","¿Cada cuánto me peso?","¿Es lo mismo que un deload?","¿Y si estoy estancado?"]
   },
   {
     tronco:"alimentacion", rama:"lean-bulk-hasta-cuando-cortar",
     claves:["hasta cuando hago volumen","hasta que porcentaje de grasa subo","cuando corto el volumen","cuando dejo de hacer volumen","cuando paso a definicion","hasta que grasa hago bulk","cuando termino el bulk","lean bulk hasta cuando","que grasa maxima en volumen","cuando empiezo a definir","cuanto tiempo hago volumen"],
     r:"En un lean bulk subes solo +5-10% de calorías y creces poco a poco; el corte llega cuando alcanzas ~15-20% de grasa corporal. Más allá solo acumulas grasa que luego toca perder. Si eres principiante, returner o vienes con grasa alta, puedes hacer recomposición (ganar músculo y perder grasa a la vez) sin fase de volumen marcada. La regla: no persigas el número de la báscula, sube poco y limpio, y corta cuando te tapes demasiado. (— Tema 4, Murphy & Koehler 2022 / Bagheri 2023)",
-    chips:["¿Qué es recomposición?","¿Cuánto peso subo a la semana?","¿Cuánto superávit necesito?","¿Cómo sé mi % de grasa?"]
+    chips:["¿Qué es recomposición?","¿Cuánto peso subo a la semana?","¿Cuánto superávit necesito?","¿Cuánta grasa para ver el six pack?"]
   },
   {
     tronco:"carbohidratos", rama:"carbos-vs-grasa-al-pasarse",
@@ -14455,7 +14455,7 @@ var CEREBRO_KB=[
     tronco:"entreno", rama:"apuntar-registrar-entrenos",
     claves:["hay que apuntar los entrenos","tengo que registrar mis entrenos","llevo un registro de gym","apuntar los pesos que hago","anotar las series y reps","diario de entrenamiento","hace falta apuntar todo","mido el progreso por sensacion","llevar un cuaderno del gym","registrar peso reps rir","app para apuntar los entrenos","sin apuntar no se si mejoro"],
     r:"Sí, apunta tus entrenos: el progreso se mide con DATOS (peso × reps × RIR), no por sensación. Sin registro no sabes si de verdad progresas, y la sobrecarga progresiva es el motor del músculo. Regla práctica: anota cada ejercicio y autorregula — si progresas, mantén o suma una serie; si te estancas con buena recuperación, baja una serie en ESE ejercicio. Una libreta o una nota en el móvil bastan. (— Tema 19, Plotkin 2022 / Helms 2016)",
-    chips:["¿Qué es el RIR?","¿Cuándo subo una serie?","¿Cómo autorregulo el volumen?","¿Vale una app o libreta?"]
+    chips:["¿Qué es el RIR?","¿Cuándo subo peso?","¿Cómo autorregulo el volumen?","¿Revisar mi entreno?"]
   },
   {
     tronco:"fatiga", rama:"lactato-acido-lactico",
@@ -14485,31 +14485,31 @@ var CEREBRO_KB=[
     tronco:"entreno", rama:"cambiar-ejercicios-confundir-musculo",
     claves:["confundir el musculo","muscle confusion","hay que variar para crecer","tengo que cambiar de rutina","cada cuanto cambio de rutina","cambiar de ejercicios para crecer","siempre los mismos ejercicios","me aburro de la rutina","hay que variar los ejercicios","sorprender al musculo","cambiar rutina cada semana","cuanto tiempo con la misma rutina","variar el entreno","cada cuanto cambio de ejercicios"],
     r:"El 'hay que variar para confundir al músculo' es un mito. El músculo no se confunde: crece por sobrecarga progresiva, o sea por hacer MÁS (peso, reps o mejor técnica) en los MISMOS ejercicios. Quédate más de 3 meses con tus ejercicios y registra cada sesión. Si te estancas, revisa antes volumen, RIR, orden y descanso; cambia solo tras unas 3 sesiones sin progreso, y por un ejercicio equivalente. Variar por aburrimiento borra tu progresión. (— Tema 4, Refuerzos tanda-6 @izansimon)",
-    chips:["¿Qué es la sobrecarga progresiva?","¿Cómo sé si estoy progresando?","¿Cada cuánto subo el peso?","¿Y si me aburro de la rutina?"]
+    chips:["¿Qué es la sobrecarga progresiva?","¿Hay que apuntar los entrenos?","¿Cada cuánto subo el peso?","¿Me aburro entrenando?"]
   },
   {
     tronco:"mujer", rama:"amenorrea-perdi-regla-red-s",
     claves:["se me fue la regla","perdi la regla haciendo dieta","amenorrea","no me viene la regla","se me corto la regla en definicion","llevo meses sin regla","la dieta me quito la regla","dejar de menstruar por dieta","red-s","red s","disponibilidad energetica baja","perdi el periodo por dieta","sin regla haciendo deficit","adelgazar me corto la regla"],
     r:"Si se te ha ido la regla haciendo dieta, es una BANDERA ROJA, no un premio por «estar seca». El límite real del déficit no es la grasa, es la energía disponible (EA): las kcal que comes menos las que gastas entrenando, por kg de masa magra. Por debajo de ~30 kcal/kg se dispara la RED-S y se corta la pulsatilidad hormonal, y con ella la regla y el hueso. Lo ideal es ≥45. Solución: sube calorías o recorta el ejercicio, no aprietes más el cinturón. (— Tema 35, Female Athlete Triad Consensus 2025 / Loucks & Thuma 2003)",
-    chips:["¿qué es la disponibilidad energética?","¿cuánto debo subir las calorías?","¿me pasa por entrenar mucho?","¿la regla vuelve sola?"]
+    chips:["¿cuánto déficit es demasiado?","¿cuánto debo subir las calorías?","¿me pasa por entrenar mucho?","¿la regla afecta al rendimiento en el gym?"]
   },
   {
     tronco:"calorias", rama:"deficit-maximo-suelo-energia",
     claves:["cuanto deficit es demasiado","hasta cuanto puedo bajar calorias","es malo comer muy poco","que pasa si como muy poco","cuanto es lo minimo que puedo comer","deficit demasiado agresivo","bajar demasiado las calorias","cuanto puedo recortar sin pasarme","el deficit maximo","hasta donde bajo calorias","dieta muy agresiva es mala","comer muy poco es peligroso"],
     r:"Sí hay un suelo para el déficit, y no lo marca la grasa sino la energía disponible (EA): las calorías que comes menos las que quemas entrenando, divididas entre tu masa magra. No dejes que baje de ~30 kcal/kg al día (lo ideal es ≥45). Por debajo aparecen problemas hormonales, menstruales y óseos. No es una pared exacta sino un gradiente: cada punto que subes de EA baja el riesgo. Traducción: recorta moderado, nada de dietas de hambre. (— Tema 35, Female Athlete Triad Consensus 2025 / Lieberman 2018)",
-    chips:["¿cuál es mi déficit ideal?","¿cómo calculo mi masa magra?","¿cuánto puedo perder a la semana?","¿esto también aplica a hombres?"]
+    chips:["¿cuál es mi déficit ideal?","¿cómo calculo mi gasto?","¿cómo me peso bien?","¿me he roto el metabolismo?"]
   },
   {
     tronco:"tecnica", rama:"respiracion-valsalva-como-respirar",
     claves:["como respirar levantando peso","como respirar en sentadilla","aguantar la respiracion levantando","respirar en el press","valsalva","maniobra de valsalva","hay que aguantar la respiracion","suelto el aire al subir o al bajar","como respiro en peso muerto","respiracion al levantar","expulsar el aire levantando","respirar entrenando fuerza"],
     r:"Para levantar pesado: coge aire y aprieta el abdomen ANTES de la repetición, aguanta el aire en la parte más dura (la subida) y no lo sueltes a mitad de rep. Eso estabiliza el tronco (maniobra de Valsalva). ⚠️ Aviso importante: si tienes hipertensión o problemas de corazón o de ojos, minimiza el aguante prolongado de aire, porque dispara la presión hasta 320/250 mmHg. (— Refuerzos jul-2026, Hackett & Chow 2013 / MacDougall 1985)",
-    chips:["¿y en series ligeras?","¿qué es la maniobra de Valsalva?","¿me mareo levantando, es esto?","¿uso cinturón también?"]
+    chips:["¿y en series ligeras?","¿qué tempo uso?","¿el core previene lesiones?"]
   },
   {
     tronco:"alimentacion", rama:"superavit-es-anabolico",
     claves:["el superavit es anabolico","comer mas es anabolico","comer de mas construye musculo","el superavit sube la sintesis de proteinas","comer mas sube la sintesis","la insulina construye musculo","el pico de insulina ayuda a ganar musculo","las hormonas del superavit ayudan","comer carbos con proteina para la insulina","por que ayuda el superavit","el superavit potencia la sintesis","comer mas activa las hormonas anabolicas"],
     r:"El superávit ayuda a ganar músculo por una sola razón: te da energía y materia prima. NO porque \"suba la síntesis de proteínas\" (eso no pasa; lo que sí ocurre es que el déficit la BAJA un 16-30%), ni porque \"mejore las hormonas\": la insulina es permisiva y anticatabólica, no anabólica, y las hormonas sistémicas no son el motor del crecimiento. El motor es la tensión mecánica local del entreno. Así que no comas de más creyendo que el \"pico de insulina\" o las hormonas construyen músculo: solo sumarás grasa. (— Tema 1, Abdulla 2016 / Morton-Roberts 2024)",
-    chips:["¿entonces por qué funciona el superávit?","¿cuánto superávit hago?","¿qué construye el músculo de verdad?","¿la insulina no ayuda nada?"]
+    chips:["¿entonces por qué funciona el superávit?","¿cuánto superávit hago?","¿qué construye el músculo de verdad?","¿los carbos son anabólicos?"]
   },
   {
     tronco:"volumen", rama:"fibras-tipo-volumen",
@@ -14521,31 +14521,31 @@ var CEREBRO_KB=[
     tronco:"volumen", rama:"mrv-maximo-volumen-recuperable",
     claves:["mrv","maximo volumen recuperable","tengo que entrenar al mrv","mav","maximum recoverable volume","entrenar al maximo volumen","llegar a mi mrv","cuanto es mi mrv","mev mav mrv","volumen maximo recuperable","debo llegar al mrv"],
     r:"No, no tienes que entrenar a tu 'máximo volumen recuperable' (MRV). El MRV es una heurística de coaching, no una constante validada, y entrenar pegado a él de forma sostenida acumula fatiga y no es óptimo: confundes el techo con la diana. La diana es el MAV, unas 10-20 series efectivas por músculo y semana. Más volumen da más músculo pero con retornos decrecientes, y pasado el tope útil (~20 series por sesión) es volumen basura. Apunta a la zona óptima, no al límite. (— Tema 8, RP/Israetel / Tema 4, Baz-Valle 2022)",
-    chips:["¿Cuál es mi MAV?","¿Qué es volumen basura?","¿Cuántas series por músculo?","¿Cómo sé si me paso de volumen?"]
+    chips:["¿Qué es MEV, MAV y MRV?","¿Qué es volumen basura?","¿Cuántas series por músculo?","¿Cómo sé si me paso de volumen?"]
   },
   {
     tronco:"calorias", rama:"metabolismo-roto-adaptacion-dieta",
     claves:["me he roto el metabolismo","metabolismo dañado","dañe el metabolismo de tanta dieta","tengo el metabolismo destrozado","metabolismo estropeado por dietas","adaptacion metabolica","hice muchas dietas y ya no bajo","el cuerpo se acostumbro a la dieta","metabolismo arruinado","llevo años a dieta y no bajo"],
     r:"Tu metabolismo no está 'roto'. Lo que sí existe es la adaptación metabólica: en déficit tu gasto cae un 5-8% por debajo de lo predicho (hasta 7-13% en vida libre), en buena parte porque sin darte cuenta te mueves menos (baja el NEAT, y eso son cientos de kcal/día). Pero eso ralentiza la pérdida, no la detiene: no hay interruptor que apague la quema de grasa. Y casi todos infravaloramos lo que comemos. No está estropeado: tu déficit real se ha encogido, revisa números y actividad. (— Tema 6, Fothergill 2016 / Levine 1999)",
-    chips:["¿Qué es la adaptación metabólica?","¿Cómo salgo del estancamiento?","¿Sirve un diet break?","¿Estoy comiendo más de lo que creo?"]
+    chips:["¿Cómo salgo del estancamiento?","¿Sirve un diet break?","¿Revisar mi comida?"]
   },
   {
     tronco:"creatina", rama:"no-respondedor",
     claves:["no noto la creatina","la creatina no me hace nada","la creatina no me hace efecto","la creatina no me funciona","soy no respondedor de creatina","por que no me funciona la creatina","llevo tiempo con creatina y nada","como carne y no noto la creatina","no noto nada con la creatina","cuanto tarda en notarse la creatina"],
     r:"Si no notas la creatina, lo más normal es que ya partas \"lleno\": quien come bastante carne y pescado tiene los depósitos casi saturados y le queda poco margen para notar. Los que comen poca carne (vegetarianos) parten de menos y suelen notar MÁS. Además el efecto es sutil: algo más de fuerza y reps, no un subidón. Asegúrate de tomar la dosis a diario y con constancia varias semanas; el beneficio se acumula al saturar el músculo, no en un día. (— Tema 10, Antonio 2021 / Kreider 2017)",
-    chips:["¿cuánta creatina según mi peso?","¿hace falta fase de carga?","¿como poca carne, noto más?","¿cuándo la tomo?"]
+    chips:["¿cuánta creatina según mi peso?","¿hace falta fase de carga?","¿gano músculo sin carne?","¿cuándo la tomo?"]
   },
   {
     tronco:"creatina", rama:"mujeres",
     claves:["creatina mujeres","creatina para mujeres","creatina si soy mujer","creatina para chicas","la creatina es solo para hombres","la creatina masculiniza","la creatina me pone masculina","puedo tomar creatina siendo mujer","la creatina es cosa de hombres","creatina engorda a las mujeres"],
     r:"La creatina es igual de recomendable para mujeres que para hombres y a la misma dosis: ~1 g por cada 10 kg de peso al día, con un suelo eficaz de 3-5 g. NO es \"cosa de hombres\" ni te \"masculiniza\": funciona igual en ambos sexos rellenando los depósitos de energía del músculo. Puede que peses un poco más al empezar, pero es agua dentro del músculo, no grasa. Y los beneficios extra en hueso, embarazo y cognición femeninos existen como evidencia emergente, todavía no como hechos cerrados. (— Tema 10, Antonio 2021 / Kreider 2017)",
-    chips:["¿cuánta creatina para mi peso?","¿la creatina engorda?","¿deja calvo?","¿hace falta cargar?"]
+    chips:["¿cuánta creatina para mi peso?","¿la creatina engorda?","¿la creatina deja calvo?","¿hay que cargar creatina?"]
   },
   {
     tronco:"grasa", rama:"engordar-estrogeno-aromatizacion",
     claves:["engordar baja la testosterona","la grasa corporal baja la testosterona","estar gordo baja la testosterona","la grasa se convierte en estrogenos","aromatizacion","aromatizar la testosterona","el estrogeno me quita musculo","estar gordo me quita musculo","grasa corporal y estrogenos","engordar me baja las hormonas","la barriga baja la testosterona","el exceso de grasa da estrogenos"],
     r:"Medio mito. Con mucha grasa corporal sí parte de la testosterona se convierte en estrógeno (aromatización), eso es real. Pero que 'el estrógeno te quite músculo' es falso e incluso está invertido: el músculo depende de la testosterona, mientras que el estradiol gobierna la grasa y para el músculo es neutro o hasta protector. La pérdida de músculo del que está muy gordo viene de testosterona baja + sedentarismo + resistencia a la insulina, no del estrógeno. No hace falta 'bajar estrógenos'. (— Tema 15, Finkelstein 2013)",
-    chips:["¿la grasa que como baja la testosterona?","¿debo bajar estrógenos?","¿cuánta grasa como?","¿el músculo depende de las hormonas?"]
+    chips:["¿la grasa que como baja la testosterona?","¿cómo hago el déficit para perder grasa?","¿cuánta grasa como?","¿de qué depende que crezca el músculo?"]
   },
   {
     tronco:"fatiga", rama:"fatiga-sistema-nervioso-central",
@@ -14557,13 +14557,13 @@ var CEREBRO_KB=[
     tronco:"estimulo", rama:"tension-mecanica-que-es",
     claves:["que es la tension mecanica","tension mecanica","que estimula el crecimiento","como crece el musculo","por que crece el musculo","mecanismo de la hipertrofia","que provoca la hipertrofia","el musculo crece por tension","tension mecanica hipertrofia","que necesito para que crezca el musculo","que estimulo hace crecer","de que depende que crezca el musculo"],
     r:"Es EL estímulo que hace crecer al músculo: la fuerza que genera al contraerse fuerte contra una resistencia, sobre todo cerca del fallo. Ojo con dos confusiones: no es 'que te estiren' de forma pasiva, ni 'mover lento a propósito'; la lentitud útil aparece sola en las últimas repeticiones difíciles. En la práctica: elige un buen ejercicio por biomecánica, contrae con intención y llévalo cerca del fallo con sobrecarga progresiva. (— Tema 17, Wackerhage 2019 / Goldberg 1975)",
-    chips:["¿el pump hace crecer?","¿tengo que ir lento?","¿reclutar más fibras es crecer más?","¿cuántas series por músculo?"]
+    chips:["¿el pump hace crecer?","¿qué tempo de ejecución?","¿reclutar más fibras es crecer más?","¿cuántas series por músculo?"]
   },
   {
     tronco:"fatiga", rama:"resistencia-a-la-fatiga-se-entrena",
     claves:["puedo aguantar mas reps","como mejoro mi resistencia","me quedo sin fuelle rapido","me canso enseguida en las series","como aguanto mas series","entrenar la resistencia a la fatiga","resistencia muscular","aguantar mas en el gym","como no cansarme tan rapido","mejorar mi aguante","por que me fatigo tan pronto","subir mi resistencia entrenando"],
     r:"Sí: puedes mejorar tu resistencia a la fatiga (aguantar más reps y series) SIN ganar apenas fuerza máxima, porque son adaptaciones parcialmente distintas. Se entrena con más volumen, repeticiones altas cerca del fallo y descansos cortos, que desarrollan capilarización, capacidad de tampón y carnosina. O sea, 'quedarte sin fuelle' se trabaja aparte de la fuerza. Pero no lo confundas con hipertrofia: para músculo manda la tensión mecánica. (— Tema 22, Gandevia 2001 / Allen 2008)",
-    chips:["¿Cómo bajo la fatiga?","¿Descansos cortos o largos?","¿Esto es hipertrofia?"]
+    chips:["¿Cómo bajo la fatiga?","¿Necesito deload?","¿Qué reps para hipertrofia?"]
   },
   {
     tronco:"volumen", rama:"mev-mav-mrv",
@@ -14581,7 +14581,7 @@ var CEREBRO_KB=[
     tronco:"calorias", rama:"reloj-pulsaciones-si-fiables",
     claves:["el reloj mide bien las pulsaciones","el pulsometro del reloj es fiable","me fio del pulsometro del reloj","pulsaciones del reloj","frecuencia cardiaca del reloj","el reloj acierta con el pulso","sirve el reloj para las pulsaciones","garmin pulsaciones fiable","apple watch pulsaciones","para que sirve mi smartwatch en el gym","el reloj mide bien el corazon","el pulso del reloj es correcto"],
     r:"Sí, para pulsaciones tu reloj es de fiar: en fuerza mide la frecuencia cardíaca casi perfecta (r=0,96-0,97 frente a la referencia). Donde falla estrepitosamente es en las CALORÍAS del entreno de fuerza (r=0,10-0,34, prácticamente inútil). Traducción: úsalo para tendencias de pulso, volumen de actividad y progresión; NO para calcular tu déficit o superávit. Para el balance calórico tira de fórmula (Mifflin-St Jeor) más el registro de lo que comes. (— Tema 29, Lee TH 2026, Sensors)",
-    chips:["¿Por qué me miente en calorías?","¿Cómo calculo mi gasto real?","¿Qué reloj falla más?"]
+    chips:["¿Por qué me miente en calorías?","¿Cómo calculo mi gasto real?","¿Cuántos pasos al día?"]
   },
   {
     tronco:"grasa", rama:"aceite-reutilizado-recalentado",
@@ -14727,13 +14727,13 @@ var CEREBRO_KB=[
     tronco:"mitos", rama:"reduccion-localizada-abdominales",
     claves:["hacer abdominales quita la barriga","se puede quemar grasa de una zona entrenandola","la reduccion localizada funciona","abdominales para quitar la panza","pierdo grasa del abdomen si entreno abdomen","ejercicios para quemar grasa localizada","adelgazar una zona concreta entrenandola","quemar grasa justo donde entreno"],
     r:"No, hacer abdominales no quita la barriga: la reducción localizada es un mito. La grasa no se quema en la zona que entrenas; cuando gastas más energía de la que comes, el cuerpo tira de grasa de todo el cuerpo a la vez, y dónde la pierdes primero lo decide sobre todo tu genética, no el ejercicio de esa zona. Los abdominales fortalecen el músculo de debajo, pero la capa de grasa que lo tapa solo baja con déficit calórico sostenido y adherencia. (— Vispute et al. 2011)",
-    chips:["Entonces, ¿cómo pierdo la grasa de la barriga?","¿Sirve de algo hacer abdominales?","¿Por qué se me acumula la grasa justo en el abdomen?"]
+    chips:["¿Qué porcentaje de grasa para ver abdominales?","¿Sirve de algo hacer abdominales?","¿Por qué se me acumula la grasa justo en el abdomen?"]
   },
   {
     tronco:"mitos", rama:"sudar-no-mide-grasa-quemada",
     claves:["sudar mas quema mas grasa","si sudo mucho adelgazo mas","sudar es quemar grasa","cuanto mas sudo mas calorias quemo","entrenar con plastico para sudar mas","faja de sudoracion para quemar grasa","el sudor mide la grasa que pierdo","sudar mucho en el gym significa mas grasa"],
     r:"No. El sudor es el aire acondicionado del cuerpo: sirve para bajar la temperatura, no para medir la grasa que quemas. Lo que pierdes sudando es agua, y ese peso vuelve en cuanto bebes. Cuánto sudas depende del calor, la humedad, tu hidratación y tu genética, no de cuánta grasa estés gastando; la grasa se pierde con un déficit calórico sostenido, no con lo empapada que acaba la camiseta ni con fajas o plásticos. (— consenso fisiología del ejercicio)",
-    chips:["¿Entonces las fajas y trajes de sudoración no sirven para adelgazar?","¿Qué determina de verdad la grasa que quemo en una sesión?","¿qué hago para mejorar?"]
+    chips:["¿Las fajas de sudoración funcionan?","¿Cuántas calorías quemo?","¿qué hago para mejorar?"]
   },
   {
     tronco:"entreno", rama:"angulo-press-inclinado-pecho-superior",
@@ -14799,7 +14799,7 @@ var CEREBRO_KB=[
     tronco:"mitos", rama:"entrenar-resfriado-gripe-regla-del-cuello",
     claves:["se puede entrenar resfriado","entrenar con gripe es malo","puedo ir al gym constipado","la regla del cuello para entrenar enfermo","hacer pesas con mocos","entrenar con fiebre","sudar la gripe en el gym","entrenar con dolor de garganta","moqueo y entrenamiento"],
     r:"Sí, con matices, y sirve la \"regla del cuello\": si los síntomas están de cuello para arriba (mocos, congestión, estornudos, dolor de garganta leve) normalmente puedes entrenar suave a moderado, bajando intensidad y volumen. De cuello para abajo (fiebre, dolores musculares, tos con pecho, vómitos o cansancio extremo) toca descansar, porque entrenar con fiebre estresa el corazón y \"sudar la gripe\" es un mito: no acorta la infección, solo retrasa tu recuperación. No hay magia; manda escucharte y volver progresivamente. (— consenso ACSM / medicina deportiva, regla del cuello)",
-    chips:["¿Y si tengo solo un poco de fiebre, entreno o no?","¿Cuántos días espero para volver al gym tras una gripe?","¿qué hago para mejorar?"]
+    chips:["¿Y si no puedo ir al gym?","¿Cuántos días espero para volver al gym tras una gripe?","¿qué hago para mejorar?"]
   },
   {
     tronco:"mitos", rama:"alcohol-musculo-definicion",
@@ -14811,13 +14811,13 @@ var CEREBRO_KB=[
     tronco:"mitos", rama:"comer-de-noche-engorda",
     claves:["comer de noche engorda","cenar tarde engorda mas","es malo comer tarde por la noche","engorda comer antes de dormir","picar de noche engorda","cenar tarde sube de peso","la cena tardia engorda mas","comer de madrugada engorda"],
     r:"No, la hora no engorda por sí sola: lo que decide tu peso es el balance de calorías a lo largo de la semana, no el reloj. Lo que sí pasa es que de noche solemos picar más y peor (menos saciedad, más antojos), así que la cena tardía puede colar calorías extra sin que te des cuenta. Si tu total diario cuadra, cenar tarde no te hace ganar grasa; mandan la adherencia y las calorías, no el horario. (— consenso nutricional)",
-    chips:["¿A qué hora conviene cenar si entreno de noche?","¿Comer carbohidratos por la noche engorda?","¿Cuántas comidas al día son mejores para adelgazar?"]
+    chips:["¿Importa la hora a la que entreno?","¿Comer carbohidratos por la noche engorda?","¿Cuántas comidas al día son mejores para adelgazar?"]
   },
   {
     tronco:"mitos", rama:"azucar-no-es-veneno-eliminar-del-todo",
     claves:["el azucar es veneno","tengo que quitar el azucar del todo","hay que eliminar el azucar para adelgazar","el azucar es toxico o puedo comerlo","cuanta azucar puedo tomar al dia","el azucar de la fruta tambien es malo","dejar el azucar por completo","el azucar hace daño de verdad"],
     r:"Mito. El azúcar no es un \"veneno\": tu cuerpo y sobre todo tu cerebro funcionan con glucosa, y el azúcar que viene en la fruta o la leche llega con fibra y nutrientes, sin problema. Lo que conviene limitar es el azúcar AÑADIDO (refrescos, bollería), no porque sea tóxico, sino porque suma calorías vacías y hace fácil pasarte; la referencia habitual es mantenerlo por debajo del 10% de tus calorías. No hace falta eliminarlo al 100%: manda el total de tu dieta y la adherencia, y prohibírtelo todo suele salir peor que moderarlo. (— OMS 2015)",
-    chips:["¿Los edulcorantes son una alternativa mejor?","¿qué hago para mejorar?","¿cuál es la mejor rutina?"]
+    chips:["¿Qué alimentos sacian más?","¿qué hago para mejorar?","¿cuál es la mejor rutina?"]
   },
   {
     tronco:"mitos", rama:"gluten-sin-celiaquia",
@@ -14829,19 +14829,19 @@ var CEREBRO_KB=[
     tronco:"mitos", rama:"detox-dietas-depurativas-limpiar-cuerpo",
     claves:["sirven los detox para limpiar el cuerpo","las dietas depurativas eliminan toxinas","funcionan los batidos y zumos detox","necesito un detox despues de navidad","los zumos verdes desintoxican","hay que limpiar el higado con dietas depurativas","tes detox para adelgazar sirven","detox de fin de semana funciona"],
     r:"No, es un mito de marketing: ningun estudio serio demuestra que zumos, tes o dietas \"detox\" eliminen \"toxinas\" ni limpien nada. De eso ya se encargan tu higado y tus riñones las 24 horas, y funcionan mejor con comida real, agua, sueño y sin exceso de alcohol que con un batido caro. Lo que pierdes esos primeros dias es agua y algo de musculo por comer casi nada, no \"porqueria\" acumulada; en cuanto vuelves a comer normal, vuelve. La salud manda por adherencia a largo plazo, no por limpiezas rapidas (— Klein & Kiat 2015). (— consenso ciencia del ejercicio)",
-    chips:["¿Los zumos verdes o batidos detox tienen algún beneficio real?","¿Por qué pierdo peso los primeros días de un detox si no sirve?","¿qué hago para mejorar?"]
+    chips:["¿Cuánta fibra al día?","¿Por qué subo de un día para otro?","¿qué hago para mejorar?"]
   },
   {
     tronco:"mitos", rama:"sauna-plastico-sudar-no-quema-grasa",
     claves:["la sauna quema grasa","sudar adelgaza o quema grasa","ropa de plastico para sudar sirve","traje o faja de sauna para bajar barriga","perder peso sudando en la sauna","ponerse plastico en la barriga para quemar grasa","las fajas de sudoracion funcionan"],
     r:"No, sudar no quema grasa: lo que baja en la bascula tras la sauna o con ropa de plastico es agua, y vuelve en cuanto bebes y comes. La grasa solo se pierde con un deficit calorico sostenido, no por sudar mas. Forzar la sudoracion con plasticos o fajas ademas te deshidrata y puede ser peligroso, sin darte ningun beneficio real de perdida de grasa. (— consenso ACSM / fisiologia del ejercicio)",
-    chips:["Como se pierde grasa de verdad?","Es peligroso entrenar con ropa de plastico?","¿qué hago para mejorar?"]
+    chips:["¿Cuánto déficit hago?","Es peligroso entrenar con ropa de plastico?","¿qué hago para mejorar?"]
   },
   {
     tronco:"mitos", rama:"picante-agua-fria-acelera-metabolismo",
     claves:["el picante acelera el metabolismo","comer picante adelgaza","agua fria quema calorias","beber agua helada para adelgazar","la capsaicina quema grasa","comida picante para perder peso","el chile ayuda a bajar de peso","agua fria acelera el metabolismo"],
     r:"Tienen un efecto real pero minúsculo: la capsaicina del picante sube un poco el gasto de energía y quita algo de hambre, y enfriar el agua obliga al cuerpo a templarla, pero hablamos de unas pocas decenas de calorías al día como mucho (un vaso de agua helada gasta apenas unas 8 kcal). Eso no mueve la aguja de la báscula ni compensa lo que comes. Adelgazar sigue dependiendo del déficit calórico sostenido y de la adherencia, no de trucos que «aceleran el metabolismo». (— consenso en nutrición y termogénesis inducida por la dieta)",
-    chips:["¿el té verde o la cafeína sí aceleran el metabolismo?","¿qué alimentos queman grasa de verdad?","¿qué hago para mejorar?"]
+    chips:["¿el té verde o la cafeína sí aceleran el metabolismo?","¿el músculo quema grasa?","¿qué hago para mejorar?"]
   },
   {
     tronco:"mitos", rama:"estirar-previene-lesiones-y-agujetas",
@@ -14867,19 +14867,19 @@ var CEREBRO_KB=[
     tronco:"mujer", rama:"regla-abundante-hierro",
     claves:["reglas muy abundantes","sangrado abundante cansancio","regla abundante hierro","mucha regla me deja sin fuerzas","perdida de hierro por la regla","anemia por la menstruacion","menorragia","reglas fuertes hierro","estoy anemica por la regla","hierro y menstruacion abundante","me baja mucho la regla y estoy cansada","reglas abundantes anemia"],
     r:"Si tu regla es abundante (menorragia), pierdes 5-6 veces más hierro por ciclo que con un sangrado normal, y eso la convierte en la causa más común de déficit de hierro y anemia ferropénica en mujeres en edad fértil (afecta a 1 de cada 4). Si marcas \"menstruación abundante\" en la app, te subimos la necesidad de hierro y te destacamos alimentos ricos en él. (— Tema 38, Munro et al. 2023)",
-    chips:["¿por qué me afecta más a mí el hierro?","¿qué alimentos con hierro?","¿es por la dieta o por la regla?"]
+    chips:["¿la regla afecta al rendimiento en el gym?","¿de dónde saco el hierro vegetal?","¿la dieta me quitó la regla?"]
   },
   {
     tronco:"volumen", rama:"volumen-de-mantenimiento",
     claves:["volumen de mantenimiento","cuanto entreno para mantener musculo","mantener musculo con poco entreno","si entreno menos pierdo musculo","cuanto para no perder musculo","mantener gains en vacaciones","entrenar poco mantiene musculo","cuanto para no perder gains","cuantas series para mantener","pierdo musculo si entreno menos","mantengo con menos series","cuanto para conservar el musculo","pierdo musculo en vacaciones","cuanto aguanta la fuerza"],
     r:"Buena noticia: mantener músculo cuesta MUCHO menos que construirlo. Según Bickel 2011, se conserva la hipertrofia entrenando con solo 1/3 a 1/9 del volumen con el que la ganaste (y la fuerza aguanta aún más, incluso sin entrenar). O sea, en una semana liada o de vacaciones te sobra con mucho menos volumen del habitual para no perder gains. Ojo por perfil: los mayores de 60 necesitan MÁS volumen de mantenimiento que los jóvenes (en el estudio la dosis mínima no les bastó). No entres en pánico por entrenar poco unos días. (— Tema 25, Bickel 2011)",
-    chips:["¿Cuántas series para crecer?","¿Pierdo músculo en vacaciones?","¿Y si soy mayor de 60?","¿Cuánto aguanta la fuerza?"]
+    chips:["¿Cuántas series para crecer?","¿Cuánto aguanta el músculo sin entrenar?","¿Y si soy mayor de 60?","¿Músculo o fuerza?"]
   },
   {
     tronco:"fibra", rama:"demasiada-fibra",
     claves:["demasiada fibra","me paso de fibra","cuanta fibra es demasiada","limite de fibra","exceso de fibra","comer mucha fibra","fibra de mas","75 gramos de fibra","pasarse con la fibra","tope de fibra","fibra alta en definicion","mucha fibra es mala"],
     r:"No hay un tope 'tóxico', pero pasada la diana (25-35 g/día) la fibra extra sobre todo te da gases e hinchazón sin premio de salud claro. Excepción: en una definición agresiva, comer MUCHA fibra (incluso unos 75 g) puede ser una jugada deliberada, porque llena mucho con pocas calorías y ayuda a aguantar el déficit. El precio son molestias digestivas: si la subes, aléjala del entreno. 'Pasarse' no siempre es error, depende de tu tolerancia. (— Tema 33, Quagliani 2017 / @leoonpham)",
-    chips:["¿Cuánta fibra al día?","¿La fibra me hincha en el gym?","¿Cómo no paso hambre en definición?","¿Fibra soluble o insoluble?"]
+    chips:["¿Cuánta fibra al día?","¿La fibra me hincha en el gym?","¿Cómo no pasar hambre en definición?","¿Fibra soluble o insoluble?"]
   },
   {
     tronco:"fibra", rama:"fibra-soluble",
@@ -14891,31 +14891,31 @@ var CEREBRO_KB=[
     tronco:"estetica", rama:"verse-mas-grande",
     claves:["verse mas grande","como verme mas mazado","parecer mas grande","verme mas ancho","hombros mas anchos","verse mazado","como verme mas grande sin esteroides","que musculos me hacen ver grande","verme mas grande de lo que soy","parecer mas musculoso","ilusion de tamaño","verme mas fuerte sin serlo"],
     r:"Verse 'grande' es en buena parte una ilusión de proporciones, no solo de kilos de músculo. Las tres palancas: 1) estar SECO (un % graso bajo marca todo); 2) priorizar deltoides laterales, que dan anchura de hombros (entrénalos 2-5 veces/semana); 3) sumar pecho superior, bíceps y trapecios. Luego, luz y poses hacen el resto. Con eso te ves 'mazado' sin necesidad de química. (— Tema 15, @jeffnippardfitness)",
-    chips:["¿Cómo entreno los deltoides laterales?","¿Qué % de grasa para verme marcado?","¿Cuántas veces por semana el hombro?","¿Definir baja la testosterona?"]
+    chips:["¿Cómo hago crecer un músculo rezagado?","¿Cuándo se ven los abdominales?","¿Cuántas veces por semana el hombro?","¿Definir baja la testosterona?"]
   },
   {
     tronco:"sueno", rama:"la-siesta-ayuda",
     claves:["la siesta ayuda","dormir siesta recupera","siesta despues de entrenar","echarme una siesta","la siesta recupera fuerza","siesta antes de entrenar","cuanto dura la siesta ideal","siesta para el gym","power nap","dormir de dia recupera","a que hora la siesta","siesta si dormi mal"],
     r:"La siesta ayuda si dormiste mal, pero con reglas: 20-90 minutos, mejor entre la 1 y las 4 de la tarde, y deja unos 30 minutos antes de entrenar (nunca justo antes). Recupera potencia, energía y ánimo, pero NO devuelve la fuerza máxima perdida por una mala noche. Es un apoyo puntual: la base sigue siendo dormir bien de noche. (— Tema 27, refuerzos ciencia 2026-07-05)",
-    chips:["¿la siesta quita el sueño de noche?","¿cuánto debo dormir de noche?","¿café o siesta si dormí mal?","¿entreno igual tras mala noche?"]
+    chips:["¿la siesta quita el sueño de noche?","¿cuánto debo dormir de noche?","¿cuánta cafeína?","¿entreno igual si dormí mal?"]
   },
   {
     tronco:"tecnica", rama:"sirve-entrenar-en-bosu",
     claves:["sirve entrenar en bosu","bosu para el core","ejercicios de equilibrio sirven","entrenar en superficie inestable","bosu hipertrofia","fitball para entrenar fuerza","plataforma inestable gym","balance board","entrenar sobre pelota","inestabilidad para el core","sentadillas en bosu","ejercicios funcionales de equilibrio"],
     r:"Entrenar sobre superficies inestables (bosu, plataformas, pelota) baja la producción de fuerza casi un 60%, así que es MALA herramienta para ganar músculo o fuerza: no puedes cargar suficiente. Otra cosa es el peso libre, que ya te obliga a estabilizar de forma útil. Para hipertrofia y fuerza, pisa suelo firme y carga; deja los trucos de equilibrio para otra cosa. (— Refuerzos jul-2026, Anderson & Behm 2004)",
-    chips:["¿y el peso libre no es inestable?","¿cómo entreno bien el core?","¿los funcionales sirven de algo?","¿mejor máquina o peso libre?"]
+    chips:["¿y el peso libre no es inestable?","¿cómo entreno bien el core?","¿qué ejercicio elijo?","¿mejor máquina o peso libre?"]
   },
   {
     tronco:"mitos", rama:"self-talk-imagineria-rendimiento-gym",
     claves:["hablarme a mi mismo en el gym","self talk","sirve hablarme a mi mismo entrenando","motivarme hablando para la serie","decirme frases para aguantar","visualizar el ejercicio","visualizar el levantamiento","imaginar el ejercicio antes","visualizacion mejora la fuerza","imagineria motora","trucos mentales para rendir mas"],
     r:"Hablarte a ti mismo (self-talk) y visualizar el levantamiento (imaginería motora) tienen estudios reales detrás, pero no prueban lo que se vende para el gimnasio. El de self-talk es de ciclismo de resistencia: bajó el esfuerzo percibido y alargó el tiempo hasta el agotamiento, pero no midió reps, fuerza ni hipertrofia. El de imaginería metió 6 semanas de visualización dentro de un programa de entrenamiento real y solo hubo una ganancia pequeña en fuerza de pierna (nula en press banca); tampoco midió activación muscular. Son técnicas plausibles para aguantar una serie dura, pero no un truco mágico agudo para levantar más ahora mismo. (— Tema 12, Blanchfield 2014 / Lebon 2010)",
-    chips:["¿hablarme a mí mismo mejora mis levantamientos?","¿visualizar el ejercicio aumenta la fuerza?","¿sirve para hipertrofia?"]
+    chips:["¿sirve sentir el músculo?","¿qué estimula el crecimiento?","¿qué hace crecer de verdad?"]
   },
   {
     tronco:"carbohidratos", rama:"enjuague-bucal-de-carbos",
     claves:["enjuague bucal de carbos","enjuagarme la boca con carbos","carb mouth rinse","escupir la bebida de carbos","enjuague de carbohidratos","buchear carbos sin tragar","mojarme la boca con azucar para rendir","enjuagar la boca mejora el gym","enjuague bucal rendimiento"],
     r:"Enjuagarte la boca con bebida de carbos y escupir tiene un mecanismo real (receptores en la boca mandan señal de recompensa al cerebro y bajan el esfuerzo percibido), pero el efecto es pequeño y propio del ejercicio AERÓBICO, no del gimnasio: en fuerza/anaeróbico es prácticamente cero y no sube nada tu fuerza máxima. Rinde algo más en ayunas y en sesiones largas. Para tu sesión de pesas normal, ni te molestes: no 'desbloquea' rendimiento. (— Tema 5, Brietzke 2025 / Sieljacks 2022)",
-    chips:["¿y las chuches intra-entreno sirven?","¿carbos antes de entrenar?","¿sirve para cardio?","¿sube la fuerza máxima?"]
+    chips:["¿carbos intra entreno?","¿carbos antes de entrenar?","¿sirve para cardio?","¿músculo o fuerza?"]
   },
   {
     tronco:"tecnica", rama:"saltar-da-musculo",
@@ -14927,7 +14927,7 @@ var CEREBRO_KB=[
     tronco:"tecnica", rama:"la-activacion-muscular",
     claves:["la activacion muscular","emg","electromiografia","mas activacion mas musculo","que ejercicio activa mas el musculo","activacion muscular e hipertrofia","el emg dice que crece","mirar la activacion muscular","que ejercicio recluta mas","el que mas activa es el mejor","sirve la activacion muscular"],
     r:"No. La activación muscular medida con EMG NO predice cuánto crece un músculo: un ejercicio puede 'activar más' en el EMG agudo y no dar más hipertrofia. El crecimiento de verdad se mide con ecografía o resonancia, no con el EMG ni con 'lo que sientes'. Por eso elige el ejercicio por biomecánica (qué rango trabaja, dónde carga el músculo), no por cuál 'se activa o se siente más'. (— Tema 18, Vigotsky 2022)",
-    chips:["¿cómo elijo el ejercicio?","¿sirve sentir el músculo?","¿puedo aislar una zona?","¿qué hace crecer de verdad?"]
+    chips:["¿cómo elijo el ejercicio?","¿sirve sentir el músculo?","¿se puede aislar el bíceps?","¿qué hace crecer de verdad?"]
   },
   {
     tronco:"estimulo", rama:"me-salen-fibras-nuevas",
@@ -14939,7 +14939,7 @@ var CEREBRO_KB=[
     tronco:"fibras", rama:"las-fibras-rapidas-crecen-mas",
     claves:["las fibras rapidas crecen mas","fibras tipo 1 y tipo 2","fibras rapidas y lentas","entrenar explosivo para fibras rapidas","que fibras crecen mas","tipo de fibra muscular","fibras rapidas hipertrofia","tengo mas fibras rapidas o lentas","como entreno las fibras rapidas","fibras tipo ii","fibras blancas y rojas","las fibras lentas crecen"],
     r:"Las fibras rápidas (tipo II) parecen tener más señalización anabólica y tenderían a crecer algo más, pero ojo: la evidencia fuerte es en animales y en señalización aguda, no en humanos entrenando. En la práctica NO cambies tu entreno por esto: no necesitas 'entrenar explosivo para fibras rápidas'. Acercándote al fallo ya reclutas todas las fibras. Céntrate en tensión, técnica y progresión. (— Tema 20, Roberts 2020)",
-    chips:["¿Hay que entrenar al fallo?","¿Qué hace crecer de verdad?","¿El entreno explosivo sirve?"]
+    chips:["¿Hay que entrenar al fallo?","¿Qué hace crecer de verdad?","¿Los saltos dan músculo?"]
   },
   {
     tronco:"suplementacion", rama:"el-bicarbonato-de-sodio-sirve",
