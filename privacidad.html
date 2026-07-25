@@ -62,8 +62,9 @@ th{color:var(--mute);font-family:var(--mono);font-weight:500;font-size:.72rem;te
   <p>Esta web tiene dos partes con huellas técnicas diferentes, y conviene no confundirlas:</p>
   <ul>
     <li><b>La página de presentación</b> (<code>showcase.html</code>, la que enlaza aquí abajo): no
-    carga ningún recurso de terceros — tipografías autoalojadas, sin llamadas de red propias
-    (<code>connect-src 'self'</code> en su política de seguridad). No necesita banner de cookies
+    carga ningún recurso de terceros — tipografías autoalojadas, sin llamadas de red a terceros
+    (<code>connect-src 'self'</code> en su política de seguridad: solo consulta ficheros de este
+    mismo sitio, p. ej. para pintar la versión en vivo). No necesita banner de cookies
     porque no hay nada que consentir.</li>
     <li><b>La app</b> (<code>index.html</code>, detrás de una contraseña compartida — no es una
     cuenta de usuario, es solo para mantener fuera a curiosos): sí hace las llamadas de red que
