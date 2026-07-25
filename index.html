@@ -589,6 +589,51 @@
   .expniv-chip{display:inline-block;background:var(--ink-3);border:1px solid var(--line-soft);color:var(--soft);border-radius:999px;padding:3px 10px;font-size:.78rem;margin:2px 6px 2px 0}
   .expniv-sub{color:var(--mute);font-size:.85rem;margin:2px 0 10px}
   .expniv-porque{color:var(--mute);font-size:.85rem;margin:6px 0 8px}
+
+  /* =================== 🎬 v0.52.0 · CAPA DE ANIMACIONES NATIVAS v1 ===================
+     Reglas de la casa (no negociables): SOLO transform y opacity — nunca width/height/top/
+     left/margin (provocan relayout y jank en móvil) — con UNA excepción declarada: los anillos
+     y la línea de peso animan stroke-dashoffset (atributo SVG sin equivalente por transform;
+     coste medido bajo: 3 anillos de 74 px, 600 ms). Cero librerías. El motor JS vive en el
+     bloque [ANIM-PURE] de abajo. APAGADO GLOBAL: la clase .anim-off en <html> (la pone el
+     arranque cuando el sistema pide menos movimiento o cuando el interruptor de Ajustes está
+     en off) deja TODO visible YA, sin transiciones — cero animación, no «animación rápida». */
+  .anim{opacity:0;transform:translateY(12px);transition:opacity .38s ease-out,transform .38s cubic-bezier(.2,.8,.3,1)}
+  .anim.anim-in{opacity:1;transform:none}
+  /* listas escalonadas: --i lo pone el render, CAPADO a los 8 primeros (el resto entra CON el 8º) */
+  @keyframes animli{to{opacity:1;transform:none}}
+  .anim-li{opacity:0;transform:translateY(12px);animation:animli .38s cubic-bezier(.2,.8,.3,1) forwards;animation-delay:calc(var(--i,0) * 60ms)}
+  /* barras: el relleno viaja por transform (scaleX), JAMÁS por width */
+  .pbar>i.anim-bar{width:100%;transform-origin:left;transform:scaleX(var(--f,0));
+    transition:transform .6s cubic-bezier(.2,.8,.3,1);transition-delay:calc(var(--i,0) * 60ms)}
+  /* ⚠️ DESVIACIÓN DECLARADA: la regla de v0.33.6 «#com_tot .pbar>i{transition-duration:1.8s}» (barras
+     del diario más lentas, petición de Pablo 17-07) ganaba por especificidad de id y dejaría el relleno
+     en 1,8 s. El pliego de animaciones fija 200-600 ms, así que las barras nuevas se reancla a 600 ms.
+     La regla vieja sigue intacta para cualquier .pbar>i que NO sea .anim-bar. */
+  #com_tot .pbar>i.anim-bar{transition-duration:.6s;transition-timing-function:cubic-bezier(.2,.8,.3,1)}
+  /* anillos de progreso de los indicadores diarios (kcal · proteína · agua) */
+  .drings{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin:2px 0 10px}
+  .dring{position:relative;width:74px;height:74px}
+  .dring svg{width:74px;height:74px;transform:rotate(-90deg)}
+  .dring .dbg{fill:none;stroke:var(--ink-3);stroke-width:7}
+  .dring .dfg{fill:none;stroke-width:7;stroke-linecap:round;transition:stroke-dashoffset .6s cubic-bezier(.2,.8,.3,1)}
+  .dring .dctr{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+  .dring .dctr b{font-family:var(--display);font-size:.82rem;line-height:1}
+  .dring .dctr small{font-family:var(--mono);font-size:.52rem;letter-spacing:.08em;color:var(--mute);text-transform:uppercase;margin-top:3px}   /* v0.52.0 · .46rem = 7,4 px ilegible → el cuerpo de los anillos viejos */
+  /* pop de confirmación (serie / RIR): micro-rebote, ~250 ms */
+  @keyframes animpop{0%{transform:scale(1)}45%{transform:scale(1.16)}100%{transform:scale(1)}}
+  .anim-pop{animation:animpop .25s cubic-bezier(.34,1.56,.64,1)}
+  /* trazado progresivo de la línea de peso (pathLength=1 → dasharray en unidades normalizadas) */
+  .anim-path{stroke-dasharray:1;stroke-dashoffset:1;transition:stroke-dashoffset .6s ease-out}
+  .anim-path.anim-in{stroke-dashoffset:0}
+  /* lienzo del confeti de meta: se crea y se AUTODESTRUYE (máx 2 s), nunca deja bucle vivo */
+  #anim-conf{position:fixed;left:0;top:0;width:100%;height:100%;z-index:130;pointer-events:none}
+  /* APAGADO GLOBAL — todo aparece ya puesto, sin una sola transición */
+  html.anim-off .anim,html.anim-off .anim-li{opacity:1!important;transform:none!important;animation:none!important;transition:none!important}
+  html.anim-off .pbar>i.anim-bar{transition:none!important;transition-delay:0s!important}
+  html.anim-off .dring .dfg{transition:none!important}
+  html.anim-off .anim-path{stroke-dasharray:none!important;stroke-dashoffset:0!important;transition:none!important}
+  html.anim-off .anim-pop{animation:none!important}
 </style>
 </head>
 <body>
@@ -621,12 +666,22 @@
     if(unlocked){ abrir(); }
   });
 })();
+/* 🎬 v0.52.0 · ARRANQUE de la capa de animaciones. Va aquí, en la <head>, para que el apagado se
+   aplique ANTES del primer pintado (si no, se vería un parpadeo: elementos ocultos que aparecen).
+   Dos motivos de apagado, los dos mandan: la preferencia del sistema («menos movimiento») y el
+   interruptor de Ajustes (localStorage jvf_anim === "off"). El resto del motor vive abajo. */
+(function(){
+  var off=false;
+  try{ off = !!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches); }catch(e){}
+  try{ if(!off && localStorage.getItem("jvf_anim")==="off") off=true; }catch(e){}
+  if(off) document.documentElement.className += " anim-off";
+})();
 </script>
 
 <header class="brandbar">
   <div class="logo"><span class="dot"></span>JV <b>Fitness</b></div>
   <div style="display:flex;align-items:center">
-    <span class="tag">MVP v0.51.0 · motor v0.7</span>
+    <span class="tag">MVP v0.52.0 · motor v0.7</span>
     <!-- ⚙️ tanda #22 · hub de AJUSTES (no es pestaña): modal a pantalla completa -->
     <button class="gearbtn" id="btn_hub" type="button" title="Ajustes" aria-label="Abrir ajustes" onclick="hubAbrir()">⚙️</button>
   </div>
@@ -904,6 +959,13 @@
   <label style="margin-top:10px">🏷️ ¿Cómo quieres que te llame Jarvis?</label>
   <input id="aj_apodo" maxlength="24" placeholder="tu nombre o apodo (ej. Pablito)" onchange="apodoSet(this.value)">
   <p class="hint" style="margin-top:4px">Se usa en los avisos («¡Pablito! Bebe agua…»). Vacío = el nombre de tu perfil.</p>
+  <!-- 🎬 v0.52.0 · interruptor de ANIMACIONES. Capa de PRESENTACIÓN: no toca ni un número del
+       cálculo, ni el diario, ni tus datos. Apagado = la capa de animaciones (anillos, barras,
+       contador, listas, rebotes, confeti y las dopaminas previas vía _reducedMotion) aparece al
+       instante. Honesto: .tabin, los toasts y los anillos viejos .ring conservan su transición. -->
+  <div class="eyebrow-lbl" style="margin-top:14px">🎬 Animaciones</div>
+  <p class="hint" style="margin-top:0">Los anillos que se llenan, las barras de macros, el contador de calorías que rueda y los pequeños rebotes de confirmación. Si prefieres la app quieta, apágalas: todo eso aparece al instante. Si tu móvil ya pide «menos movimiento», se respeta siempre (mande este interruptor lo que mande).</p>
+  <label style="display:flex;align-items:center;gap:8px;cursor:pointer;margin-top:6px"><input type="checkbox" id="aj_anim" checked onchange="animSetActiva(this.checked)" style="width:auto;margin:0"> Animaciones activadas</label>
   <!-- ⚙️ tanda #22 · lo que antes vivía aquí (recordatorios, base España, pasos automáticos) se MUDÓ
        al hub de AJUSTES (engranaje arriba): esta pestaña queda para ajustar EL PLAN a tu gusto. -->
   <p class="hint" style="margin-top:14px">🔔 Recordatorios, 🔌 conectores, 🗄️ bases de alimentos y 📦 copias de seguridad viven ahora en <b style="color:var(--soft)">⚙️ Ajustes</b> (el engranaje de arriba).</p>
@@ -1009,7 +1071,7 @@
        Panel estilo agua (total + barra + aviso EFSA). Lo pinta renderCafe(); la lógica es [CAFE-PURE].
        💧☕ Vive en la pestaña Agua desde v0.44.0 (orden de Pablo 19-07: Comida despejada). Ids INTACTOS
        (cafe_panel / cafe_resumen / cafe_suelta_mg): solo se mudó el DOM, cero cambios de lógica. -->
-  <div id="cafe_panel" class="card" style="margin-top:8px;padding:12px 14px">
+  <div id="cafe_panel" class="card anim" style="margin-top:8px;padding:12px 14px"><!-- 🎬 v0.52.0 · entra al hacer scroll (con failsafe) -->
     <div class="eyebrow-lbl" style="margin-top:0">☕ Cafeína de hoy</div>
     <div id="cafe_resumen" style="margin-top:6px"></div>
     <div class="row" style="gap:6px;margin-top:8px;align-items:flex-end">
@@ -1125,7 +1187,9 @@
   <p class="hint">Base de alimentos curada (valores por 100 g). El botón <b style="color:var(--soft)">📷 Foto (beta)</b> te da un rango honesto de calorías con 4 preguntas; el motor de visión real llegará después. Suma tus comidas y compáralas con tu objetivo del Plan.<br>Datos de platos españoles: <a href="https://www.bedca.net" target="_blank" rel="noopener" style="color:var(--jade)">BEDCA/AESAN</a> (base oficial española).</p>
 
 
-  <div class="card" style="margin-top:10px;padding:12px" id="suples_card">
+  <!-- 🎬 v0.52.0 · .anim = esta tarjeta entra al llegar a ella al hacer scroll (IntersectionObserver).
+       Si el observer no existiera, o el bot no hiciera scroll, el failsafe de 4 s la enseña igual. -->
+  <div class="card anim" style="margin-top:10px;padding:12px" id="suples_card">
     <div class="eyebrow-lbl">💊 Suplementos · seguimiento diario</div>
     <div id="suples_list"></div>
     <details style="margin-top:10px"><summary style="cursor:pointer;color:var(--jade);font-weight:600">¿Cuál merece la pena? · guía honesta para empezar</summary>
@@ -7214,16 +7278,31 @@ function aguaNfcCheck(){
     try{ history.replaceState(null,"",location.pathname); }catch(e){}
   }catch(e){}
 }
+// 🎬 v0.52.0 · lo que pintó el render anterior del agua — el gate de animación del vaso (FIX
+// adversarial: renderAgua() corre en cada +ml, −ml, deshacer, al abrir la pestaña y desde comInit();
+// vaciarse a cero y rellenarse en TODOS era bloqueante). Solo se anima cuando el TOTAL cambia, y
+// desde el valor anterior, no desde cero.
+var _aguaPrevMl=null, _aguaPrevDia=null;
 function renderAgua(){
   var el=$("agua_resumen"); if(!el) return;
   var dia=aguaDiaKey();   // 🌙 día efectivo: hoy, o ayer si trasnochas y así lo elegiste
   var hoy=get(LS_AGUA,{})[dia]||0, info=aguaObjetivoInfo(), obj=info.total;
   var pct=Math.round(Math.min(1, obj>0?hoy/obj:1)*100), falta=Math.max(0,obj-hoy);
   var comp="base "+info.base+" ml"+info.ajustes.map(function(a){ return " · "+a.emoji+" "+a.label+" +"+a.ml; }).join("");
+  // 🎬 v0.52.0 · M2/M9 · el vaso de agua: anillo del día + barra que se llena POR TRANSFORM (scaleX).
+  // Nada de animar height ni width — el relleno viaja en --f. GATE: solo anima si el total CAMBIÓ
+  // en el mismo día efectivo (y la pestaña está visible); anillo y barra nacen en el valor ANTERIOR
+  // y animArrancar les pone el nuevo en el frame siguiente. Repintado sin cambio = todo quieto.
+  var _fa=animFrac(hoy,obj);
+  var _aAnimar=(_aguaPrevDia===dia) && (_aguaPrevMl!==hoy) && !_reducedMotion() && !(typeof document!=="undefined"&&document.hidden);
+  var _fa0=_aAnimar?animFrac(_aguaPrevMl,obj):_fa;
   el.innerHTML=nightBadgeHTML()   // 🌙 aviso "contando para HOY/AYER · cambiar" solo de madrugada tras elegir
+    +"<div class='drings'>"+animRingHTML(_fa,'#74c7ff',pct+"%","agua de hoy",(_aAnimar?_fa0:null))+"</div>"
     +"<div class='kv'><span>"+hoy+" / "+obj+" ml</span><span>"+(falta>0?("te quedan "+falta+" ml"):"✓ objetivo cumplido")+"</span></div>"
-    +"<div class='pbar'><i style='width:"+pct+"%;background:#74c7ff'></i></div>"
+    +"<div class='pbar'><i class='anim-bar' data-f='"+_fa.toFixed(4)+"' style='--f:"+(_aAnimar?_fa0.toFixed(4):_fa.toFixed(4))+";background:#74c7ff'></i></div>"
     +"<div class='hint' style='margin-top:6px'>🎯 Objetivo (estimación): "+comp+"</div>";
+  _aguaPrevMl=hoy; _aguaPrevDia=dia;
+  try{ if(_aAnimar) animArrancar(el); }catch(e){}
   // 💧 v0.19-UI · línea compacta (presentación del MISMO dato; formato es-ES con puntos de miles)
   var mini=$("agua_mini_txt");
   if(mini) mini.textContent="💧 "+hoy.toLocaleString("es-ES")+" / "+obj.toLocaleString("es-ES")+" ml"+(falta>0?"":" ✓");
@@ -8760,6 +8839,7 @@ var SODIO_ALARMA_MG=2300;
 // día y el total ha SUBIDO (= acabas de añadir algo). En cualquier otro caso se pinta el valor final
 // directo, sin animar.
 var _comPrevKcal=0, _comPrevFecha=null;
+var _comPrevP=0;   // 🎬 v0.52.0 · proteína del render anterior — la celebración de meta necesita saber si se CRUZA el objetivo ahora
 // [COM-MIC-TOT] 💊 v0.26 · suma del día de vitaminas/minerales registrados en mic{} (⚡ Micros sueltos).
 // Autocontenido: solo lo llama el enganche de renderComida. Honesto: sin registros → devuelve "" (no
 // pinta nada); solo suma valores numéricos >0. Mismas etiquetas que la ficha (qaMicLbl).
@@ -8795,11 +8875,14 @@ function renderComida(){
   // barras re-flashearían desde 0 solo por entrar en la pestaña. Con esta puerta, la dopamina se
   // dispara cuando toca y el resto de renders pintan el valor final directo, quietos.
   var _animar = (_comPrevFecha===fecha) && (Math.round(tot.kcal) > Math.round(_comPrevKcal)) && !_reducedMotion();
-  // La barra nace en 0 y su ancho real se pone en el siguiente frame: así se dispara la transición
-  // `width .9s` que .pbar>i YA tenía (línea ~390) y que nunca se veía, porque innerHTML creaba el
-  // elemento ya nacido con el ancho final (sin cambio → sin animación). El destino viaja en data-w.
-  function bar(v,o,col){ if(!(o>0)) return ""; var over=v>o*1.05, pct=Math.round(Math.min(1,v/o)*100);
-    return "<div class='pbar'><i data-w='"+pct+"' style='width:"+(_animar?"0":pct+"%")+";background:"+(over?'#f4c04e':col)+"'></i></div>"; }
+  // 🎬 v0.52.0 · M4 · la barra nace VACÍA y su relleno real se pone en el siguiente frame: así se ve
+  // subir. Lo que se anima ahora es `transform: scaleX()` con transform-origin:left — NUNCA `width`
+  // (animar width fuerza relayout en cada frame = jank en móvil). El destino viaja en data-f y el
+  // orden de la barra en --i, que escalona la entrada (capado a las 8 primeras).
+  // con la pestaña oculta la barra nace ya llena: si naciera vacía se quedaría a cero (el reloj de
+  // animación está parado) enseñando un dato falso hasta que el usuario vuelva.
+  var _barI=0, _barLlena=(!_animar || (typeof document!=="undefined" && document.hidden));
+  function bar(v,o,col){ if(!(o>0)) return ""; return animBarHTML(v,o,col,_barI++, _barLlena); }
   // 🏀 v0.33.6 · el presupuesto del día se calcula ANTES de pintar la línea de Calorías (petición
   // de Pablo: «que el resumen ponga en GRANDE el total, en amarillo, y tanto más por el deporte»).
   // Con deporte registrado, el techo de la línea y de la barra es el PRESUPUESTO (objetivo + extra),
@@ -8811,7 +8894,31 @@ function renderComida(){
   var _conDep=!!(_pre && _pre.extra>0);
   var h="<div class='card' style='margin:0 0 8px;padding:12px'><div class='eyebrow-lbl'>Resumen del día · "+esc(fecha)+"</div>";
   if(obj){
-    h+="<div class='kv'><span>Calorías</span><span><b id='com_tot_kcal'>"+Math.round(_animar?_comPrevKcal:tot.kcal)+"</b> / "
+    // 🎬 v0.52.0 · M2 · ANILLOS de los indicadores diarios (kcal · proteína · agua). Presentación
+    // PURA: los porcentajes salen de los MISMOS totales y objetivos que ya se pintaban debajo; aquí
+    // no se calcula nada nuevo. El agua solo aparece si el día del diario es el día que cuenta el
+    // contador de agua (si estás repasando el martes pasado, no tiene sentido enseñar el agua de hoy).
+    // FIX adversarial ×2: (1) los anillos pasan por el MISMO gate _animar que las barras — en un
+    // repintado normal nacen YA en su valor (vaciarse a cero en 19 llamantes era bloqueante); al
+    // añadir comida avanzan DESDE el valor del render anterior (_comPrevKcal/_comPrevP), no desde 0.
+    // (2) kcal PASADA de objetivo (umbral 1.05, el de la barra) → ámbar + porcentaje REAL («188%»):
+    // el anillo lleno con «100%» verde daba señal de logro justo cuando el coach avisa de exceso.
+    try{
+      var _kObj=(_conDep?_pre.total:obj.cal);
+      var _fk=animFrac(tot.kcal,_kObj), _fp=animFrac(tot.p,obj.prot);
+      var _kOver=(_kObj>0 && tot.kcal>_kObj*1.05);
+      var _kPct=_kOver ? Math.round(tot.kcal/_kObj*100) : Math.round(_fk*100);
+      var _dK=_barLlena?null:animFrac(_comPrevKcal,_kObj), _dP=_barLlena?null:animFrac(_comPrevP,obj.prot);
+      var _rings=animRingHTML(_fk,(_kOver?'#f4c04e':(_conDep?'#f4c04e':'var(--ember)')),_kPct+"%","kcal",_dK)
+               + animRingHTML(_fp,'var(--jade)',Math.round(_fp*100)+"%","proteína",_dP);
+      var _aDia=(typeof aguaDiaKey==="function")?aguaDiaKey():hoyLocal();
+      if(fecha===_aDia && typeof aguaObjetivo==="function"){
+        var _aObj=aguaObjetivo(), _aMl=get(LS_AGUA,{})[_aDia]||0;
+        if(_aObj>0){ var _fa=animFrac(_aMl,_aObj); _rings+=animRingHTML(_fa,'#74c7ff',Math.round(_fa*100)+"%","agua"); }
+      }
+      h+="<div class='drings'>"+_rings+"</div>";
+    }catch(e){}
+    h+="<div class='kv'><span>Calorías</span><span><b id='com_tot_kcal'>"+animMiles(Math.round(_animar?_comPrevKcal:tot.kcal))+"</b> / "
       +(_conDep
         ? "<b style='color:#f4c04e;font-size:1.25em;text-shadow:0 0 10px rgba(244,192,78,.45)'>"+_pre.total.toLocaleString('es-ES')+"</b> kcal</span></div>"
           +"<div class='hint' style='text-align:right;margin-top:-2px;color:#f4c04e'>🏀 +"+_pre.extra.toLocaleString('es-ES')+" por el deporte de "+(fecha===hoyLocal()?"hoy":"ese día")+"</div>"
@@ -8868,29 +8975,47 @@ function renderComida(){
   // diario: si algo fallara, el try deja los números finales ya pintados por el innerHTML de arriba.
   try{
     if(_animar){
-      // las barras nacieron en 0 → en el SIGUIENTE frame se les pone su ancho real y la transición
-      // `width .9s` de .pbar>i (que ya estaba) por fin se ve: las barritas suben solas.
-      requestAnimationFrame(function(){
-        var _is=$("com_tot").querySelectorAll(".pbar>i[data-w]");
-        for(var i=0;i<_is.length;i++) _is[i].style.width=_is[i].getAttribute("data-w")+"%";
-      });
-      countUp($("com_tot_kcal"), Math.round(tot.kcal), "", 1400);   // cuenta desde el total anterior, DESPACIO (se ve subir)
+      // 🎬 v0.52.0 · M2 · FIX adversarial: los anillos SOLO se animan con el gate _animar (igual que
+      // las barras). Nacieron en el valor del render ANTERIOR → el frame siguiente les pone el nuevo
+      // y la transición recorre el tramo. En repintados normales ya nacieron llenos: no hay arranque.
+      animArrancar($("com_tot"), "anillos");
+      // M4 · las barras nacieron vacías → en el SIGUIENTE frame se les pone su relleno real y la
+      // transición de `transform` las sube solas, escalonadas por --i.
+      animArrancar($("com_tot"), "barras");
+      // M3 · ODÓMETRO: el total rueda desde el anterior hasta el nuevo (rAF + easeOutCubic, 600 ms)
+      // con separador de miles determinista. Si llega otro valor a media cuenta, countUp cancela el
+      // rAF anterior: sin carreras ni bucles huérfanos.
+      countUp($("com_tot_kcal"), Math.round(tot.kcal), "", 600, true);
       var _c=$("com_tot").querySelector(".card");             // y el resumen da un pulso corto
       if(_c){ _c.classList.remove("combump"); void _c.offsetWidth; _c.classList.add("combump"); }
     }
+    // (si no toca animar, las barras ya nacieron llenas desde el propio innerHTML: ni transición
+    //  ni parpadeo — es un repintado normal, exactamente como antes de esta capa)
+    // 🎉 M5 · CELEBRACIÓN DE META. Se dispara SOLO al CRUZAR el objetivo de proteína hoy (antes por
+    // debajo, ahora igual o por encima), nunca al repasar días pasados, y con guarda anti-repetición:
+    // una vez por día y por meta (localStorage jvf_anim_meta). Respeta el apagado global.
+    if(obj && obj.prot>0 && fecha===hoyLocal() && _comPrevFecha===fecha
+       && _comPrevP < obj.prot && tot.p >= obj.prot){
+      if(animCelebrarMeta("prot", fecha)) toast("🎯 ¡Objetivo de proteína del día! 🎉");
+    }
   }catch(e){}
   // SIEMPRE (anime o no): recordar qué se pintó, para decidir el próximo render.
-  _comPrevKcal=Math.round(tot.kcal); _comPrevFecha=fecha;
+  _comPrevKcal=Math.round(tot.kcal); _comPrevP=tot.p; _comPrevFecha=fecha;
   try{ renderHistorial(); }catch(e){}   // 🕑 historial + buscador (deriva del diario; abarca todos los días)
   if(!arr.length){ $("com_list").innerHTML="<div class='empty'><div class='ico'>🍽️</div><div class='et'>Sin comidas este día</div><div class='es'>Busca un alimento y los gramos para empezar.</div></div>"; try{ renderMeals(); }catch(e){} return; }
-  $("com_list").innerHTML="<div class='eyebrow-lbl'>Lo que llevas</div>"+arr.map(function(x){
+  // 🎬 v0.52.0 · M7 · las entradas del diario entran escalonadas (opacity + translateY 12px→0)
+  // SOLO cuando toca dopamina (_animar = acabas de añadir algo). renderComida() se llama desde 17
+  // sitios (visibilitychange incluido): animar en todos era el bloqueante adversarial — volver a la
+  // app apagaba el diario entero y borrar/editar re-animaba la lista completa. El retardo va en --i
+  // y SOLO para las 8 primeras (animDelayIdx); del 9º en adelante entran con el 8º.
+  $("com_list").innerHTML="<div class='eyebrow-lbl'>Lo que llevas</div>"+arr.map(function(x,_li){
     var idx=full.indexOf(x);
     // v0.10 · los items sin gramos (📷 foto, ⚡ rápido) no enseñan "· 0 g"
     // Fix ml · comUnidad(x): los escaneados en ml enseñan "ml"; los antiguos sin u siguen en "g"
     // A2 · MISMO ojito 👁️ que el buscador (fichaOjoDiario) junto a ✏️/✕, sin interferir con ellos. El
     // span de valor pasa a display:flex para que el ojito (.ficha-ojo es display:flex) alinee inline en
     // vez de saltar de línea. Se muestra en las filas con id y gramos (mismo gate que ✏️).
-    return "<div class='kv'><span>"+esc(x.n)+(x.g>0?" · "+x.g+" "+comUnidad(x):"")+"</span><span style='display:flex;align-items:center;font-variant-numeric:tabular-nums'>"+x.kcal+" kcal · P"+Math.round(x.p)+" C"+Math.round(x.c)+" G"+Math.round(x.gr)+" "+((x.id&&x.g>0)?fichaOjoDiario(x.id):"")+((x.id&&x.g>0)?"<button class='sec' type='button' style='width:auto;margin:0 0 0 6px;padding:4px 9px' title='Editar gramos' onclick='comEditar("+JSON.stringify(x.id)+")'>✏️</button>":"")+"<button class='sec' type='button' style='width:auto;margin:0 0 0 6px;padding:4px 9px' onclick='comDel("+(x.id?JSON.stringify(x.id):idx)+")'>✕</button></span></div>";
+    return "<div class='kv"+(_animar?" anim-li":"")+"' style='"+(_animar?animLiStyle(_li):"")+"'><span>"+esc(x.n)+(x.g>0?" · "+x.g+" "+comUnidad(x):"")+"</span><span style='display:flex;align-items:center;font-variant-numeric:tabular-nums'>"+x.kcal+" kcal · P"+Math.round(x.p)+" C"+Math.round(x.c)+" G"+Math.round(x.gr)+" "+((x.id&&x.g>0)?fichaOjoDiario(x.id):"")+((x.id&&x.g>0)?"<button class='sec' type='button' style='width:auto;margin:0 0 0 6px;padding:4px 9px' title='Editar gramos' onclick='comEditar("+JSON.stringify(x.id)+")'>✏️</button>":"")+"<button class='sec' type='button' style='width:auto;margin:0 0 0 6px;padding:4px 9px' onclick='comDel("+(x.id?JSON.stringify(x.id):idx)+")'>✕</button></span></div>";
   }).join("");
   try{ renderMeals(); }catch(e){}   // F4 · el botón "guardar día" y "Mis comidas" dependen del día mostrado
 }
@@ -12808,6 +12933,10 @@ function aplicarTab(){
   // D9 · transición suave de entrada de la card activa
   var card=$(_tab);
   if(card){ card.classList.remove("tabin"); void card.offsetWidth; card.classList.add("tabin"); }
+  // 🎬 v0.52.0 · GANCHO DE PESTAÑAS. Las pestañas se ocultan con display:none y el
+  // IntersectionObserver no dispara sobre contenido oculto: al mostrar una, re-disparamos SUS
+  // animaciones (observar lo que aún no entró + arrancar anillos y barras). Presentación pura.
+  try{ animTab(_tab); }catch(e){}
 }
 // ⏱️🎬 v0.19-UI · toasts (audios Pablo 10-07: «no me da tiempo a leerlos» + «más animados»):
 // duración DINÁMICA = base 2,5 s + 60 ms por carácter, tope 9 s. La animación (slide-up + fade con
@@ -12971,7 +13100,11 @@ function pesoSpark(ws){
   var xy=pts.map(function(x,i){ var px=pad+i*(W-2*pad)/(pts.length-1); var py=H-pad-((+x.w-wmin)/(wmax-wmin))*(H-2*pad); return px.toFixed(1)+","+py.toFixed(1); });
   var m7=mediaSemana(ws,0);
   return "<div style='margin:0 0 8px'><div class='kv'><span>Tendencia (últimos "+pts.length+" pesajes)</span><span><b style='color:var(--jade);font-size:1.05rem'>"+(m7!=null?m7.toFixed(1)+" kg":"—")+"</b> <span class='hint' style='display:inline'>media 7d</span></span></div>"
-    +"<svg viewBox='0 0 "+W+" "+H+"' style='width:100%;height:60px'><polyline fill='none' stroke='var(--jade)' stroke-width='2' opacity='.9' points='"+xy.join(" ")+"'/></svg></div>";
+    // 🎬 v0.52.0 · M6 · TRAZADO PROGRESIVO de la línea. Truco pathLength='1': el navegador normaliza
+    // la longitud del trazo a 1, así que stroke-dasharray:1 + stroke-dashoffset 1→0 (en el CSS de
+    // .anim-path) dibuja la línea de izquierda a derecha SIN tener que medir el path a mano. La clase
+    // .anim-in se la pone el observer la primera vez que la gráfica entra en pantalla.
+    +"<svg viewBox='0 0 "+W+" "+H+"' style='width:100%;height:60px'><polyline class='anim-path' pathLength='1' fill='none' stroke='var(--jade)' stroke-width='2' opacity='.9' points='"+xy.join(" ")+"'/></svg></div>";
 }
 function pesoStep(d){
   var el=$("r_peso"); if(!el) return; var ws=get(LS_W,[]);
@@ -13019,7 +13152,7 @@ function resetTodo(){ if(!confirm("⚠️ Esto borra TODO: perfil, pesos, entren
 // Reemplazo total con confirmación. Reusa get/set, hoyLocal, toast, validar, render. NO toca motor ni gate.
 function exportarJSON(){ try{ set("jvf_last_export",hoyLocal()); }catch(e){}
   try{
-    var data={ app:"jvf", schema:1, app_version:"0.51.0", exportadoEl:new Date().toISOString(),
+    var data={ app:"jvf", schema:1, app_version:"0.52.0", exportadoEl:new Date().toISOString(),
       perfil:get(LS_P,null), pesos:get(LS_W,[]), entrenos:get(LS_E,[]), notas_ej:get("jvf_notas_ej",{}), comida:get("jvf_comida",[]), agua:get("jvf_agua",{}), suples_cfg:get("jvf_suples_cfg",null), suples_log:get("jvf_suples_log",{}),
       rutinas:get("jvf_rutinas",[]), meals:get("jvf_meals",[]), ent_start:get("jvf_ent_start",null),   // v0.10 · backup completo
       alimentos_propios:get("jvf_alimentos_propios",[]), barcode_cache:get("jvf_barcode_cache",{}),   // I5/I6 · también viajan en el backup
@@ -16230,24 +16363,60 @@ function flexInitUI(){ try{ flexRefrescar(); flexSyncAjustes(); flexPesoChipsRen
 
 // Count-up: anima el número de un elemento de su valor previo hasta target (solo si cambia).
 // Respeta reduced-motion (pone el valor final directo). suffix opcional (ej. "g", " kcal").
-function _reducedMotion(){ try{ return window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches; }catch(e){ return false; } }
-function countUp(el, target, suffix, durMs){
+// 🎬 v0.52.0 · un solo interruptor manda sobre TODO el movimiento de la app. Antes esto solo miraba
+// la preferencia del sistema; ahora delega en animActiva(), que suma la preferencia del sistema Y el
+// interruptor «Animaciones» de Ajustes. Así, apagarlo deja quietas también las capas de dopamina que
+// ya existían (agua, resumen del diario, contadores, alternado de fotos), no solo las nuevas.
+function _reducedMotion(){ return !animActiva(); }
+// 🎬 v0.52.0 · ODÓMETRO. Sigue siendo el mismo countUp de siempre (rAF + easeOutCubic, 600 ms por
+// defecto) con tres refuerzos:
+//   · `miles` (opt-in) formatea con animMiles — separador DETERMINISTA por regex. toLocaleString NO
+//     se usa: en algunos runtimes headless el ICU viene recortado y el separador sale mal o falta.
+//   · CANCELA el rAF anterior de ESE elemento si llega un valor nuevo a mitad de cuenta: sin carreras
+//     (dos bucles peleándose por el mismo texto) y sin fugas (bucles huérfanos vivos).
+//   · el valor de partida se guarda en memoria, no se re-parsea del texto (que ya puede llevar puntos).
+var _cuEstado=(typeof WeakMap!=="undefined") ? new WeakMap() : null;
+function countUp(el, target, suffix, durMs, miles){
   if(!el) return; suffix=suffix||"";
   target=+target; if(isNaN(target)) return;
-  var prev=parseFloat((el.textContent||"").replace(/[^\d.-]/g,""));
-  if(isNaN(prev)) prev=0;
-  if(prev===target || _reducedMotion()){ el.textContent=Math.round(target)+suffix; return; }
+  function pinta(v){ v=Math.round(v); el.textContent=(miles?animMiles(v):String(v))+suffix; }
+  var st=_cuEstado?_cuEstado.get(el):null;
+  if(st && st.raf){ try{ cancelAnimationFrame(st.raf); }catch(e){} st.raf=0; }
+  var prev;
+  if(st && typeof st.val==="number"){ prev=st.val; }
+  else {
+    var txt=String(el.textContent||"");
+    prev=parseFloat(txt.replace(/[^\d]/g,""));            // los puntos de miles NO son decimales
+    if(isNaN(prev)) prev=0;
+    if(/^\s*[-−]/.test(txt)) prev=-prev;
+  }
+  function guarda(o){ if(_cuEstado) _cuEstado.set(el,o); return o; }
+  if(prev===target || _reducedMotion()){ pinta(target); guarda({raf:0,val:target}); return; }
   // durMs opcional (v0.33.6): el diario cuenta más DESPACIO a petición de Pablo («que se vea cómo
   // sube»); los contadores de entreno/plan siguen a 600 ms (su ritmo de siempre) al no pasarlo.
-  var ini=prev, dur=(+durMs>0?+durMs:600), t0=null;
+  var ini=prev, dur=(+durMs>0?+durMs:600), t0=null, estado=guarda({raf:0,val:prev});
   function step(ts){
     if(t0==null) t0=ts;
     var k=Math.min(1,(ts-t0)/dur);
     var e=1-Math.pow(1-k,3);                 // easeOutCubic
-    el.textContent=Math.round(ini+(target-ini)*e)+suffix;
-    if(k<1) requestAnimationFrame(step); else el.textContent=Math.round(target)+suffix;
+    var v=ini+(target-ini)*e;
+    estado.val=v; pinta(v);
+    if(k<1){ estado.raf=requestAnimationFrame(step); }
+    else { estado.raf=0; estado.val=target; pinta(target); }
   }
-  requestAnimationFrame(step);
+  estado.raf=requestAnimationFrame(step);
+  // FAILSAFE del odómetro (bug real cazado en la verificación en vivo del 24-07): con la pestaña del
+  // navegador en segundo plano, requestAnimationFrame NO se dispara nunca y el número se quedaba
+  // CONGELADO en el total anterior — enseñando un dato falso. Este timeout aterriza el valor final
+  // pase lo que pase. Solo actúa si esta cuenta sigue siendo la vigente (si llegó otra, manda la nueva).
+  try{
+    setTimeout(function(){
+      if(_cuEstado && _cuEstado.get(el)!==estado) return;
+      if(!estado.raf && estado.val===target) return;
+      if(estado.raf){ try{ cancelAnimationFrame(estado.raf); }catch(e){} estado.raf=0; }
+      estado.val=target; pinta(target);
+    }, dur+250);
+  }catch(e){}
 }
 // SVG de "tick" trazado para el resumen.
 function tickSVG(){
@@ -16929,8 +17098,21 @@ var _rirTarget=null;
 function rirSheetAbrir(btn){ _rirTarget=(btn && btn.closest)?btn.closest('.ent-serie'):null; show('rirSheet', true); }
 function rirSheetCerrar(){ show('rirSheet', false); }
 function rirSheetElegir(v){
+  // 🎬 v0.52.0 · M8 · POP DE CONFIRMACIÓN. En esta app no hay casilla «serie hecha»: fijar el RIR ES
+  // el gesto que cierra la serie, así que el micro-rebote va en su chip. renderEntForm() rehace toda
+  // la lista, de modo que se apunta la POSICIÓN de la fila antes y se localiza el chip nuevo después.
+  var _pos=-1;
+  try{
+    if(_rirTarget){ var _fs=document.querySelectorAll('#ent_form .ent-serie'); _pos=[].indexOf.call(_fs,_rirTarget); }
+  }catch(e){}
   if(_rirTarget){ var inp=_rirTarget.querySelector('.ent-rir'); if(inp){ inp.value=v; } }
   rirSheetCerrar(); entSync(); renderEntForm();
+  try{
+    if(_pos>=0){
+      var _f2=document.querySelectorAll('#ent_form .ent-serie')[_pos];
+      if(_f2) animPop(_f2.querySelector('.ent-rir-chip'));
+    }
+  }catch(e){}
 }
 function rirSheetBorrar(){
   if(_rirTarget){ var inp=_rirTarget.querySelector('.ent-rir'); if(inp){ inp.value=''; } }
@@ -20134,6 +20316,7 @@ function entVerFicha(nombre){
   _bibTarget=null;
   $("bib_buscar").value=""; $("bib_eq").value=""; $("bib_mus").value="";
   show("bibModal", true);
+  _bibAnimarLista=true;   // 🎬 v0.52.0 · solo el pintado de APERTURA entra escalonado
   bibRender();
   bibVer(nombre);
 }
@@ -20145,6 +20328,7 @@ function abrirBiblio(btn){
   try{ var _mat=((get(LS_P,{})||{}).coach||{}).material||""; var _sel=$("bib_eq");
     if(_sel&&!_sel.value){ if(/solo peso/i.test(_mat)) _sel.value="Peso corporal"; else if(/casa/i.test(_mat)) _sel.value="Mancuerna"; }
   }catch(e){}
+  _bibAnimarLista=true;   // 🎬 v0.52.0 · solo el pintado de APERTURA entra escalonado
   bibRender();
   setTimeout(function(){ try{ $("bib_buscar").focus(); }catch(e){} }, 60);
 }
@@ -20311,12 +20495,18 @@ function bibRender(){
     return true;
   });
   var r=bibFiltra(raw, base), CAP=80;
-  function itemHTML(e){
+  // 🎬 v0.52.0 · M7 · las tarjetas del catálogo entran escalonadas (opacity + translateY 12px→0)
+  // SOLO en el pintado de APERTURA (_bibAnimarLista, la pone quien abre el modal y se consume aquí).
+  // Los repintados de teclear/filtrar salen quietos: re-animar 80 tarjetas por tecla era el
+  // bloqueante nº1 de la verificación adversarial (la lista parpadeaba sin asentarse jamás).
+  // El retardo (--i) solo lo llevan las 8 primeras (con 80, escalonarlas todas tardaría ~5 s).
+  var _liAnim=_bibAnimarLista; _bibAnimarLista=false;
+  function itemHTML(e, _li){
     var arg=JSON.stringify(e.n).replace(/"/g,"&quot;");
     // Sin foto (los del dataset MIT no traen GIF) -> emoji del músculo en la MISMA caja (idea #24).
     var thumb=e.img?'<img class="bib-thumb" loading="lazy" src="'+IMG_EJ+escAttr(e.img)+'" alt="" onerror="this.style.display=\'none\'">':'<span class="bib-thumb" style="display:inline-flex;align-items:center;justify-content:center;font-size:20px">'+iconoDe(e.m)+'</span>';
     var ver='<button class="sec bib-ver" type="button" onclick="event.stopPropagation();bibVer('+arg+')">👁</button>';
-    return '<div class="bib-item" onclick="bibElegir('+arg+')">'+thumb+'<span style="flex:1">'+esc(e.n)+'<span class="mus" style="display:block">'+esc(e.m)+" · "+esc(e.eq)+"</span></span>"+ver+"</div>";
+    return '<div class="bib-item'+(_liAnim?' anim-li':'')+'" style="'+(_liAnim?animLiStyle(_li):'')+'" onclick="bibElegir('+arg+')">'+thumb+'<span style="flex:1">'+esc(e.n)+'<span class="mus" style="display:block">'+esc(e.m)+" · "+esc(e.eq)+"</span></span>"+ver+"</div>";
   }
   var sinRes="<p class='hint'>Sin resultados. Escríbelo a mano en el ejercicio.</p>";
   // «¿Querías decir…?» (Build D): ante «Sin resultados», si la q parece un músculo con una errata,
@@ -20369,6 +20559,13 @@ function ejInstrCarga(cb){
 // de esas apps). Con prefers-reduced-motion NO hay bucle: el toque vuelve al alternado clásico.
 var _fichaAnimT=null;            // interval del pseudo-vídeo (null = parado / no hay bucle)
 var _fichaAnimSoportado=false;   // ¿la ficha abierta soporta bucle? (foto + 2º fotograma cargado + sin reduced-motion)
+// 🎬 v0.52.0 · FIX adversarial: la entrada escalonada del catálogo SOLO en el primer pintado tras
+// abrir la biblioteca. El buscador lleva oninput="bibRender()" y reconstruye la lista entera por
+// innerHTML: si cada tarjeta naciera con .anim-li, CADA TECLA re-dispararía 80 animaciones de
+// opacity/transform (medido en vivo 24-07: la lista parpadea sin asentarse mientras escribes y los
+// 8 primeros resultados son los ÚLTIMOS en hacerse legibles). El que ABRE el modal pone esta
+// bandera; bibRender la consume y la apaga — teclear/filtrar repinta al instante, como siempre.
+var _bibAnimarLista=false;
 var FICHA_ANIM_MS=900;           // ms por fotograma (≈900, ritmo de las apps de referencia)
 // Pinta el pequeño indicador ⏸/▶ de estado en la esquina de la foto (opacidad suave).
 function _fichaAnimEstado(corriendo){
@@ -20767,6 +20964,303 @@ function expNivRender(){
 }
 function expNivBtnSync(){ try{ var b=$("expniv_btn"); if(b) b.textContent="🗂️ Ver todas las rutinas por nivel ("+Object.keys(RUTINAS).length+")"; }catch(e){} }
 expNivBtnSync();
+
+/* ============================================================================
+   🎬 CAPA DE ANIMACIONES NATIVAS v1 (v0.52.0) — MOTOR
+   ============================================================================
+   Qué es: presentación pura. NO toca el motor de cálculo, ni el Cerebro, ni los
+   datos, ni el service worker. Si este bloque entero fallara, la app seguiría
+   enseñando exactamente los mismos números (todo va dentro de try/catch y las
+   clases CSS degradan a «visible»).
+
+   Cuatro piezas:
+   1) OBSERVER — IntersectionObserver que pone .anim-in al entrar en pantalla.
+   2) FAILSAFE — a los 4 s, y ante beforeprint, se fuerza .anim-in en TODO. Los
+      bots/crawlers ejecutan JS pero no hacen scroll: sin esto verían la página
+      en blanco. Lección aprendida, no es opcional.
+   3) GANCHO DE PESTAÑAS — la app muestra/oculta pestañas con display:none y el
+      observer NO dispara sobre contenido oculto: aplicarTab() nos avisa y
+      re-disparamos las animaciones de la pestaña que se muestra.
+   4) APAGADO GLOBAL — «menos movimiento» del sistema O jvf_anim==="off" en
+      Ajustes ⇒ todo aparece YA, sin transiciones (cero animación, no rápida).
+   ============================================================================ */
+
+// [ANIM-PURE-INICIO] — funciones PURAS (sin DOM, sin storage). _tests/test-anim.node.js las evalúa.
+var ANIM_LS="jvf_anim";          // interruptor de Ajustes ("off" apaga)
+var ANIM_LS_META="jvf_anim_meta";// guarda anti-repetición de la celebración {meta:"YYYY-MM-DD"}
+var ANIM_STAGGER_CAP=8;          // solo los 8 primeros de una lista llevan retardo
+
+// Separador de miles DETERMINISTA. toLocaleString NO se usa a propósito: en algunos runtimes
+// headless el ICU viene recortado y devuelve "1234" o separa con coma. Esto siempre da "1.234".
+function animMiles(n){ return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, "."); }
+
+// Fracción 0..1 de un valor contra su objetivo (clampada; objetivo <=0 o dato raro → 0).
+function animFrac(v, obj){
+  v=+v; obj=+obj;
+  if(!isFinite(v) || !isFinite(obj) || !(obj>0) || !(v>0)) return 0;
+  return Math.min(1, v/obj);
+}
+
+// stroke-dashoffset de un anillo SVG a partir de la fracción (0..1) y su circunferencia.
+// frac 0 → offset = circunferencia (anillo vacío) · frac 1 → 0 (anillo completo).
+function animDashoffset(frac, circ){
+  circ=+circ;
+  if(!isFinite(circ) || !(circ>0)) return 0;
+  frac=+frac; if(!isFinite(frac)) frac=0;
+  frac=Math.max(0, Math.min(1, frac));
+  return Math.round(circ*(1-frac)*100)/100;
+}
+
+// Retardo escalonado: índice para var(--i), CAPADO. Del 9º en adelante, el MISMO retardo que el 8º
+// (cap−1): entran a la vez que el último escalonado. 🎬 v0.52.0 · FIX adversarial: devolver 0 hacía
+// que la fila 9+ apareciera A LA VEZ que la 1ª y ANTES que las filas 2-8 que tiene encima — la
+// cascada se leía como un bug (lista con agujeros que se rellenan), no como pulido.
+function animDelayIdx(i, cap){
+  cap=(cap==null?ANIM_STAGGER_CAP:+cap); i=+i;
+  if(!isFinite(i) || i<0 || !isFinite(cap) || cap<1) return 0;
+  return (i<cap) ? Math.floor(i) : Math.floor(cap)-1;
+}
+
+// GUARDA anti-repetición de la celebración: ¿toca celebrar `meta` en `fecha`?
+// estado = {meta:"YYYY-MM-DD"} ya celebrado. Solo 1 vez por día y por meta.
+function animCelebrarYa(estado, fecha, meta){
+  if(!fecha || !meta) return false;
+  estado = estado || {};
+  return estado[meta] !== fecha;
+}
+// Devuelve el estado marcado (no muta el original: el llamante persiste lo devuelto).
+function animMarcarMeta(estado, fecha, meta){
+  var out={}, k;
+  estado = estado || {};
+  for(k in estado){ if(Object.prototype.hasOwnProperty.call(estado,k)) out[k]=estado[k]; }
+  if(fecha && meta) out[meta]=fecha;
+  return out;
+}
+// [ANIM-PURE-FIN]
+
+// ----- estado / preferencias (impuro: matchMedia + localStorage) -----
+function animPrefSistema(){ try{ return !!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches); }catch(e){ return false; } }
+function animActiva(){
+  if(animPrefSistema()) return false;                                  // el sistema manda siempre
+  try{ return localStorage.getItem(ANIM_LS)!=="off"; }catch(e){ return true; }
+}
+// Interruptor de Ajustes. Efecto INMEDIATO: no hace falta recargar.
+function animSetActiva(on){
+  try{ localStorage.setItem(ANIM_LS, on?"on":"off"); }catch(e){}
+  animAplicarModo();
+  try{ toast(animActiva() ? "🎬 Animaciones activadas" : "⏸️ Animaciones apagadas"); }catch(e){}
+}
+function animSyncUI(){ try{ var c=$("aj_anim"); if(c){ c.checked=animActiva(); c.disabled=animPrefSistema(); } }catch(e){} }
+function animAplicarModo(){
+  var off=!animActiva();
+  try{
+    var cl=document.documentElement.classList;
+    if(off) cl.add("anim-off"); else cl.remove("anim-off");
+  }catch(e){}
+  if(off) animForzarTodo(); else animEscanear();
+  animSyncUI();
+}
+
+// ----- FAILSAFE: todo visible, pase lo que pase -----
+function animForzarTodo(){
+  try{
+    var n=document.querySelectorAll(".anim:not(.anim-in),.anim-path:not(.anim-in)");
+    for(var i=0;i<n.length;i++) n[i].classList.add("anim-in");
+    // Poner la clase NO basta: cambiar la opacidad dispara una transición, y una transición con el
+    // reloj parado (pestaña en segundo plano) se queda congelada en su valor INICIAL — es decir,
+    // invisible. Verificado en vivo el 24-07 con .bib-item, que lleva `transition:.12s` heredada.
+    // Un failsafe que no garantiza el resultado no es un failsafe: aquí se fija el estado final a
+    // pelo, matando transición y animación. Como estas listas se repintan enteras en cada render,
+    // el estilo en línea desaparece solo en el siguiente pintado (las futuras siguen animándose).
+    var forz=document.querySelectorAll(".anim,.anim-li,.anim-path");
+    for(var k=0;k<forz.length;k++){
+      var el=forz[k];
+      el.style.transition="none"; el.style.animation="none";
+      if(el.classList.contains("anim-path")){ el.style.strokeDasharray="none"; el.style.strokeDashoffset="0"; }
+      else { el.style.opacity="1"; el.style.transform="none"; }
+    }
+    // barras y anillos: mismo razonamiento — se les quita la transición para que el valor final sea
+    // el que se ve YA, sin depender de que el reloj de animación corra.
+    var bs=document.querySelectorAll(".pbar>i.anim-bar,.dring .dfg");
+    for(var j=0;j<bs.length;j++) bs[j].style.transition="none";
+    animArrancarValores(document);
+  }catch(e){}
+}
+// Pone a las barras y anillos ya pintados su valor final (los dos nacen «vacíos» para que la
+// transición se vea; si nadie los arranca se quedarían a cero, y eso sí sería un bug visual).
+// `que` acota: "barras" | "anillos" | nada = ambos.
+function animArrancarValores(raiz, que){
+  try{
+    raiz=raiz||document;
+    if(que!=="anillos"){
+      var b=raiz.querySelectorAll(".pbar>i.anim-bar[data-f]");
+      for(var i=0;i<b.length;i++) b[i].style.setProperty("--f", b[i].getAttribute("data-f"));
+    }
+    if(que!=="barras"){
+      var r=raiz.querySelectorAll(".dring .dfg[data-off]");
+      for(var j=0;j<r.length;j++) r[j].setAttribute("stroke-dashoffset", r[j].getAttribute("data-off"));
+    }
+  }catch(e){}
+}
+// Arranque en el SIGUIENTE frame (para que el navegador vea el cambio y anime). Sin animaciones,
+// se pone directo y punto.
+// FAILSAFE (verificado en vivo 24-07): con la pestaña del navegador en segundo plano,
+// requestAnimationFrame NO se dispara NUNCA → anillos y barras se quedarían vacíos enseñando un
+// dato falso. Por eso va también un setTimeout corto de red: en pestaña visible el rAF llega antes
+// y el timeout re-aplica el MISMO valor (no hace nada); en pestaña oculta salva el dato.
+function animArrancar(raiz, que){
+  // Con la pestaña oculta NO se difiere nada: se pinta el valor final en el acto (mismo tick que el
+  // innerHTML que acaba de crearlo → ni transición ni parpadeo). Animar lo que nadie está mirando
+  // solo sirve para dejarlo congelado a medias.
+  if(!animActiva() || (typeof document!=="undefined" && document.hidden)){ animArrancarValores(raiz, que); return; }
+  try{ requestAnimationFrame(function(){ animArrancarValores(raiz, que); }); }
+  catch(e){ animArrancarValores(raiz, que); }
+  try{ setTimeout(function(){ animArrancarValores(raiz, que); }, 80); }catch(e){}
+}
+
+// ----- OBSERVER -----
+var _animIO=null;
+function animObserver(){
+  if(_animIO) return _animIO;
+  try{
+    if(!("IntersectionObserver" in window)) return null;
+    _animIO=new IntersectionObserver(function(ents){
+      for(var i=0;i<ents.length;i++){
+        if(ents[i].isIntersecting){ ents[i].target.classList.add("anim-in"); _animIO.unobserve(ents[i].target); }
+      }
+    }, { rootMargin:"0px 0px -6% 0px", threshold:0.04 });
+  }catch(e){ _animIO=null; }
+  return _animIO;
+}
+function animEscanear(raiz){
+  if(!animActiva()){ animForzarTodo(); return; }
+  try{
+    var io=animObserver();
+    var n=(raiz||document).querySelectorAll(".anim:not(.anim-in),.anim-path:not(.anim-in)");
+    for(var i=0;i<n.length;i++){ if(io) io.observe(n[i]); else n[i].classList.add("anim-in"); }
+  }catch(e){}
+}
+
+// ----- GANCHO DE PESTAÑAS (lo llama aplicarTab) -----
+function animTab(tab){
+  try{
+    var card=$(tab);
+    animEscanear(card||document);
+    animArrancar(card||document);
+  }catch(e){}
+}
+
+// ----- HELPERS de pintado que usan los módulos -----
+// Anillo de progreso diario. 🎬 v0.52.0 · FIX adversarial: por defecto nace YA EN SU VALOR (un
+// repintado normal no tiene nada que animar — vaciarse a cero y rellenarse en cada render era
+// bloqueante, y encima enseñaba un % falso durante ~600 ms). Solo si llega `desde` (fracción de
+// PARTIDA: el valor del render anterior, o 0 para llenarse entero) nace ahí y animArrancar() aplica
+// data-off en el frame siguiente — la transición CSS recorre el tramo desde→frac.
+function animRingHTML(frac, color, valor, etiqueta, desde){
+  var R=30, CIRC=Math.round(2*Math.PI*R*100)/100, off=animDashoffset(frac, CIRC);
+  var off0=(desde==null)?off:animDashoffset(desde, CIRC);
+  return "<div class='dring'><svg viewBox='0 0 74 74' aria-hidden='true'>"
+    +"<circle class='dbg' cx='37' cy='37' r='"+R+"'></circle>"
+    +"<circle class='dfg' cx='37' cy='37' r='"+R+"' stroke='"+color+"' stroke-dasharray='"+CIRC+"' stroke-dashoffset='"+off0+"' data-off='"+off+"'></circle>"
+    +"</svg><div class='dctr'><b>"+esc(valor)+"</b><small>"+esc(etiqueta)+"</small></div></div>";
+}
+// Barra de macro por transform (scaleX). `i` = posición en la lista → retardo escalonado.
+// `yaLlena` = nace con su relleno puesto (no hay nada que animar: repintado normal, sin jank).
+// Si no, nace VACÍA (--f:0) y su valor real (data-f) lo aplica animArrancar en el frame siguiente.
+function animBarHTML(v, o, col, i, yaLlena){
+  if(!(o>0)) return "";
+  var over=(v>o*1.05), f=animFrac(v,o).toFixed(4);
+  return "<div class='pbar'><i class='anim-bar' data-f='"+f+"' style='--i:"+animDelayIdx(i)+";--f:"+(yaLlena?f:"0")+";background:"+(over?'#f4c04e':col)+"'></i></div>";
+}
+// Estilo de una fila de lista escalonada: el índice para var(--i) y, si la pestaña está OCULTA, el
+// estado final a pelo — con el reloj de animación parado la @keyframes no corre y la fila se
+// quedaría invisible enseñando una lista vacía. Nada puede quedar oculto por culpa de la animación.
+function animLiStyle(i){
+  var s="--i:"+animDelayIdx(i);
+  if(typeof document!=="undefined" && document.hidden) s+=";opacity:1;transform:none;animation:none";
+  return s;
+}
+// Micro-rebote de confirmación (~250 ms). Se limpia solo: no deja clases ni will-change colgando.
+function animPop(el){
+  if(!el || !animActiva()) return;
+  try{
+    el.classList.remove("anim-pop"); void el.offsetWidth;
+    el.style.willChange="transform"; el.classList.add("anim-pop");
+    setTimeout(function(){ try{ el.classList.remove("anim-pop"); el.style.willChange=""; }catch(e){} }, 320);
+  }catch(e){}
+}
+
+// ----- CELEBRACIÓN DE META (confeti en canvas) -----
+// Presupuesto duro: 80 partículas, 2 s, y se AUTODESTRUYE (cancela el rAF y retira el canvas).
+// Doble red: el propio bucle termina a los 2 s y un setTimeout lo mata aunque el rAF se congele
+// (pasa al mandar la app a segundo plano). Nunca queda un bucle perpetuo.
+function animConfeti(){
+  if(!animActiva()) return;
+  try{
+    if(document.getElementById("anim-conf")) return;              // una celebración cada vez
+    var c=document.createElement("canvas"); c.id="anim-conf";
+    var w=c.width=Math.max(1, window.innerWidth||360), h=c.height=Math.max(1, window.innerHeight||640);
+    document.body.appendChild(c);
+    var ctx=c.getContext && c.getContext("2d");
+    if(!ctx){ if(c.parentNode) c.parentNode.removeChild(c); return; }
+    var COLS=["#3ddc97","#ff6a3d","#74c7ff","#f4c04e"], P=[], N=80, i;
+    for(i=0;i<N;i++) P.push({ x:Math.random()*w, y:-20-Math.random()*h*0.35,
+      vx:(Math.random()-0.5)*70, vy:130+Math.random()*190, r:Math.random()*6.28,
+      vr:(Math.random()-0.5)*9, s:4+Math.random()*5, c:COLS[i%COLS.length] });
+    var DUR=2000, t0=null, raf=0, muerto=false, guard=0;
+    function fin(){
+      if(muerto) return; muerto=true;
+      if(raf){ try{ cancelAnimationFrame(raf); }catch(e){} raf=0; }
+      if(guard){ clearTimeout(guard); guard=0; }
+      if(c.parentNode) c.parentNode.removeChild(c);
+    }
+    function paso(ts){
+      if(muerto) return;
+      if(t0==null) t0=ts;
+      var el=ts-t0;
+      if(el>=DUR){ fin(); return; }
+      ctx.clearRect(0,0,w,h);
+      ctx.globalAlpha=Math.max(0, 1-(el/DUR));
+      for(var k=0;k<P.length;k++){
+        var p=P[k];
+        p.x+=p.vx/60; p.y+=p.vy/60; p.vy+=190/60; p.r+=p.vr/60;
+        ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.r); ctx.fillStyle=p.c;
+        ctx.fillRect(-p.s/2, -p.s*0.7, p.s, p.s*1.4); ctx.restore();
+      }
+      raf=requestAnimationFrame(paso);
+    }
+    guard=setTimeout(fin, DUR+400);
+    raf=requestAnimationFrame(paso);
+  }catch(e){}
+}
+// ¿Toca celebrar? Lee la guarda de localStorage, pregunta a la función PURA y, si toca, la marca.
+function animCelebrarMeta(meta, fecha){
+  try{
+    if(!animActiva()) return false;
+    var est=get(ANIM_LS_META,{})||{};
+    if(!animCelebrarYa(est, fecha, meta)) return false;
+    set(ANIM_LS_META, animMarcarMeta(est, fecha, meta));
+    animConfeti();
+    return true;
+  }catch(e){ return false; }
+}
+
+// ----- ARRANQUE -----
+(function animInit(){
+  try{
+    animAplicarModo();
+    // FAILSAFE 1 · a los 4 s todo visible sí o sí (crawlers/bots ejecutan JS pero no hacen scroll)
+    setTimeout(animForzarTodo, 4000);
+    // FAILSAFE 2 · al imprimir / generar PDF, nada puede quedarse invisible
+    try{ window.addEventListener("beforeprint", animForzarTodo); }catch(e){}
+    // el sistema puede cambiar de opinión en caliente (ajuste de accesibilidad del móvil)
+    try{
+      var mq=window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)");
+      if(mq && mq.addEventListener) mq.addEventListener("change", animAplicarModo);
+      else if(mq && mq.addListener) mq.addListener(animAplicarModo);
+    }catch(e){}
+  }catch(e){}
+})();
 
 render();
 </script>
