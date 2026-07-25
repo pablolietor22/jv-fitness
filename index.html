@@ -7,11 +7,14 @@
      cabeceras no llegan en vivo). Notas: 'unsafe-inline' es obligado (handlers onclick/onchange + estilos
      inline por todo el HTML de un solo archivo); 'wasm-unsafe-eval' lo piden los DOS WASM: el lector de
      códigos ZXing y el OCR de etiquetas Tesseract.js; data:/blob: los pide la foto de comida; worker-src
-     blob:/jsdelivr lo pide el worker de Tesseract.js. jsdelivr = DOS dependencias CDN, ambas lazy y
+     blob:/jsdelivr lo pide el worker de Tesseract.js. ⚠️ fastly.jsdelivr.net en connect-src es OBLIGADO:
+     zxing-wasm (el motor del polyfill de códigos) trae HARDCODEADO ese host para bajar su .wasm — sin él,
+     TODOS los iPhone se quedan sin escáner EN SILENCIO (causa raíz cazada 25-07, roto desde la CSP del 12-07).
+     jsdelivr = DOS dependencias CDN, ambas lazy y
      documentadas: (1) polyfill ZXing del escáner de códigos y (2) Tesseract.js del lector de etiquetas
      por foto (v0.34.1). NO se lista allorigins porque se retiró (OFF sirve Access-Control-Allow-Origin:*
      → fetch directo, sin proxy ajeno). -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; form-action 'self'; img-src 'self' data: blob: https://world.openfoodfacts.org https://images.openfoodfacts.org https://static.openfoodfacts.org https://raw.githubusercontent.com; font-src 'self' https://fonts.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' https://cdn.jsdelivr.net; connect-src 'self' https://world.openfoodfacts.org https://api.open-meteo.com https://raw.githubusercontent.com https://cdn.jsdelivr.net; worker-src 'self' blob: https://cdn.jsdelivr.net; manifest-src 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; form-action 'self'; img-src 'self' data: blob: https://world.openfoodfacts.org https://images.openfoodfacts.org https://static.openfoodfacts.org https://raw.githubusercontent.com; font-src 'self' https://fonts.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' https://cdn.jsdelivr.net; connect-src 'self' https://world.openfoodfacts.org https://api.open-meteo.com https://raw.githubusercontent.com https://cdn.jsdelivr.net https://fastly.jsdelivr.net; worker-src 'self' blob: https://cdn.jsdelivr.net; manifest-src 'self'">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -681,7 +684,7 @@
 <header class="brandbar">
   <div class="logo"><span class="dot"></span>JV <b>Fitness</b></div>
   <div style="display:flex;align-items:center">
-    <span class="tag">MVP v0.52.0 · motor v0.7</span>
+    <span class="tag">MVP v0.52.1 · motor v0.7</span>
     <!-- ⚙️ tanda #22 · hub de AJUSTES (no es pestaña): modal a pantalla completa -->
     <button class="gearbtn" id="btn_hub" type="button" title="Ajustes" aria-label="Abrir ajustes" onclick="hubAbrir()">⚙️</button>
   </div>
@@ -10467,14 +10470,24 @@ function bcPrepararDetector(){
 function bcLoop(){
   if(_bcTimer) clearInterval(_bcTimer);
   var ocupado=false;   // no lanzar un detect() nuevo si el anterior no terminó (el WASM puede tardar)
+  var fallos=0;        // v0.52.1 · detect() que revienta SIEMPRE (p.ej. su WASM no pudo bajar) ya no muere en silencio
   _bcTimer=setInterval(function(){
     var v=$("bc_video");
     if(ocupado || !_bcDetector || !_bcStream || !v || v.readyState<2) return;
     ocupado=true;
     _bcDetector.detect(v).then(function(codes){
-      ocupado=false;
+      ocupado=false; fallos=0;
       if(codes && codes.length && codes[0].rawValue) bcDetectado(String(codes[0].rawValue));
-    }).catch(function(){ ocupado=false; });
+    }).catch(function(e){
+      ocupado=false; fallos++;
+      // 10 fallos seguidos (~3 s) = el motor no funciona en este navegador; avisar y parar en vez de
+      // fingir que se busca (caso real 25-07: iPhone con el .wasm bloqueado — "Apunta al código…" eterno)
+      if(fallos===10){
+        if(_bcTimer) clearInterval(_bcTimer);
+        try{ console.warn("[BC] detect() falla en bucle:", e); }catch(_){}
+        bcEstado("El lector no arranca en este navegador (su motor no se pudo cargar) — escribe el código a mano.");
+      }
+    });
   }, 300);
 }
 function bcDetectado(raw){
@@ -13152,7 +13165,7 @@ function resetTodo(){ if(!confirm("⚠️ Esto borra TODO: perfil, pesos, entren
 // Reemplazo total con confirmación. Reusa get/set, hoyLocal, toast, validar, render. NO toca motor ni gate.
 function exportarJSON(){ try{ set("jvf_last_export",hoyLocal()); }catch(e){}
   try{
-    var data={ app:"jvf", schema:1, app_version:"0.52.0", exportadoEl:new Date().toISOString(),
+    var data={ app:"jvf", schema:1, app_version:"0.52.1", exportadoEl:new Date().toISOString(),
       perfil:get(LS_P,null), pesos:get(LS_W,[]), entrenos:get(LS_E,[]), notas_ej:get("jvf_notas_ej",{}), comida:get("jvf_comida",[]), agua:get("jvf_agua",{}), suples_cfg:get("jvf_suples_cfg",null), suples_log:get("jvf_suples_log",{}),
       rutinas:get("jvf_rutinas",[]), meals:get("jvf_meals",[]), ent_start:get("jvf_ent_start",null),   // v0.10 · backup completo
       alimentos_propios:get("jvf_alimentos_propios",[]), barcode_cache:get("jvf_barcode_cache",{}),   // I5/I6 · también viajan en el backup
