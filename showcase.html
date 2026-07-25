@@ -276,11 +276,16 @@ html.js .reveal.d2{transition-delay:.16s}
    → cero salto de maqueta mientras el efecto corre. */
 .fx-host{position:relative}
 .fx-real{color:transparent}
-.fx-ghost{position:absolute;left:0;top:0;width:100%;color:var(--bone);pointer-events:none}
+/* height:100% + overflow:hidden: el ruido usa mayúsculas (más anchas que el texto
+   real) y puede envolver a una línea más; recortado a la caja del anfitrión no
+   puede pisar jamás el párrafo de debajo. */
+.fx-ghost{position:absolute;left:0;top:0;width:100%;height:100%;overflow:hidden;
+  color:var(--bone);pointer-events:none}
 .fx-cur{display:inline-block;width:.46em;height:.8em;background:var(--jade);
   vertical-align:-.02em;margin-left:.05em}
 @media (prefers-reduced-motion: no-preference){
-  .fx-cur{animation:fxpar 1.05s steps(1) infinite}
+  /* repeticiones FINITAS: aunque el cierre fallara, el parpadeo muere solo */
+  .fx-cur{animation:fxpar 1.05s steps(1) 8}
 }
 @keyframes fxpar{0%,49%{opacity:1}50%,100%{opacity:0}}
 
@@ -295,11 +300,15 @@ html.js .fx-mark{
 html.js .reveal.in .fx-mark{background-size:100% 60%}
 
 /* N5 · revelado por recorte de las capturas: la pantalla del móvil se rellena
-   de abajo arriba, como cuando carga de verdad. Sin observador nuevo: cuelga
-   del .reveal.in existente (y por tanto también del failsafe). */
-html.js .reveal .shot{clip-path:inset(100% 0 0 0);
+   de abajo arriba, como cuando carga de verdad. Cuelga de .shot--vis, que pone
+   un observador PROPIO (umbral .35, sin rootMargin): el del revelado se adelanta
+   un 18% bajo el pliegue a propósito y dispararía el recorte sin nadie mirando.
+   OJO: el recorte va en el IMG y el observador vigila la FIGURE — Chrome aplica
+   el clip-path del propio elemento al calcular su intersección, y un elemento
+   recortado al 100% tiene área 0: observarlo a él sería un cerrojo sin llave. */
+html.js .shot img{clip-path:inset(100% 0 0 0);
   transition:clip-path .82s cubic-bezier(.22,.75,.2,1) .1s}
-html.js .reveal.in .shot{clip-path:inset(0 0 0 0)}
+html.js .shot.shot--vis img{clip-path:inset(0 0 0 0)}
 
 /* N6 · interferencia SOLO en «Lo que aún no está»: lo que todavía no existe se
    ve mal. Las capas duplicadas son <span aria-hidden> reales que crea y destruye
@@ -322,11 +331,6 @@ html.js .reveal.in .shot{clip-path:inset(0 0 0 0)}
   100%{clip-path:inset(0 0 100% 0);transform:none}
 }
 
-/* N7 · letras magnéticas del titular (solo ratón). El troceado en letras lo
-   hace el JS al entrar el puntero y lo DESHACE al asentarse: en reposo el
-   marcado es exactamente el original. */
-.fx-l{display:inline-block}
-
 /* N8 · foco jade siguiendo al cursor sobre la rejilla blueprint del hero.
    Lo crea el JS solo si hay ratón fino: en móvil no existe ni en el DOM. */
 .hero__halo{position:absolute;left:0;top:0;width:560px;height:560px;
@@ -348,11 +352,10 @@ html.js .reveal.in .shot{clip-path:inset(0 0 0 0)}
   html.js .sec-head .ul path{stroke-dashoffset:0 !important;transition:none !important}
   *{animation:none !important}
   /* ni recorte, ni halo, ni capas fantasma: todo en su estado final y legible */
-  html.js .reveal .shot{clip-path:none !important;transform:none !important;transition:none !important}
+  html.js .shot,html.js .shot img{clip-path:none !important;transform:none !important;transition:none !important}
   html.js .fx-mark{background-size:100% 60% !important;transition:none !important}
   .hero__halo,.fx-ghost,.fx-gl__l{display:none !important}
   .fx-real{color:inherit !important}
-  .fx-l{transform:none !important}
 }
 
 /* impresión: mismo criterio que el failsafe — todo compuesto, quieto y sin capas.
@@ -360,13 +363,21 @@ html.js .reveal.in .shot{clip-path:inset(0 0 0 0)}
    una transición nueva y el papel sale con la página a medio revelar. */
 @media print{
   html.js .reveal{opacity:1 !important;transform:none !important;transition:none !important}
-  html.js .reveal .shot{clip-path:none !important;transform:none !important;transition:none !important}
+  html.js .shot,html.js .shot img{clip-path:none !important;transform:none !important;transition:none !important}
   html.js .sec-head .ul path{stroke-dashoffset:0 !important;transition:none !important}
   html.js .fx-mark{background-size:100% 60% !important;transition:none !important}
   .hero__halo,.fx-ghost,.fx-gl__l{display:none !important}
   .fx-real{color:inherit !important}
-  .fx-l{transform:none !important}
 }
+
+/* Failsafe ESTÁTICO: cuando salta (nadie ha interactuado en 6 s → bot de vista
+   previa o prerender), todo pasa a su estado FINAL al instante, sin animar nada
+   a ciegas — mismo criterio que @media print. */
+html.fx-fin .reveal{opacity:1 !important;transform:none !important;transition:none !important}
+html.fx-fin .shot,html.fx-fin .shot img{clip-path:none !important;transform:none !important;transition:none !important}
+html.fx-fin .sec-head .ul path{stroke-dashoffset:0 !important;transition:none !important}
+html.fx-fin .fx-mark{background-size:100% 60% !important;transition:none !important}
+html.fx-fin .stage__node{opacity:1 !important;transform:none !important;transition:none !important}
 
 /* ============ RESPONSIVE ============ */
 @media (min-width:560px) and (max-width:759px){
@@ -768,7 +779,9 @@ html.js .reveal.in .shot{clip-path:inset(0 0 0 0)}
   var RUIDO = 'ABCDEFGHIJKLMNÑOPQRSTUVWXYZ0123456789/#%·';
   function descifrar(host){
     var f = fantasma(host), n = f.t.length, ini = -1, ult = -1;
-    var PASO = 40, ASENT = 260, TOTAL = n*PASO + ASENT, ruido = new Array(n);
+    /* PASO 12 + ASENT 120 → ~470 ms para un titular de 29 letras: el gesto se ve,
+       pero el lector nunca espera >0,5 s para poder leer la línea. */
+    var PASO = 12, ASENT = 120, TOTAL = n*PASO + ASENT, ruido = new Array(n);
     function sortear(){
       for(var i=0;i<n;i++) ruido[i] = RUIDO.charAt(Math.floor(Math.random()*RUIDO.length));
     }
@@ -833,73 +846,9 @@ html.js .reveal.in .shot{clip-path:inset(0 0 0 0)}
     finales.push(fin);
   }
 
-  /* N7 · LETRAS MAGNÉTICAS del titular del hero (solo ratón). Se trocea en
-     letras al entrar el puntero y se RESTITUYE el marcado original al
-     asentarse: en reposo el DOM es idéntico al que sirve el servidor. */
-  function magnetico(host){
-    if(!host) return;
-    var orig = host.innerHTML, letras = null, pos = null;
-    var cx, cy, vx, vy, px = 0, py = 0, dentro = false;
-    var R = 150, F = 11;
-    function trocea(){
-      var nodos = [];
-      (function rec(el){
-        for(var c = el.firstChild; c; c = c.nextSibling){
-          if(c.nodeType === 3) nodos.push(c); else if(c.nodeType === 1) rec(c);
-        }
-      })(host);
-      letras = [];
-      nodos.forEach(function(tn){
-        var frag = document.createDocumentFragment(), s = tn.nodeValue;
-        for(var i=0;i<s.length;i++){
-          var sp = document.createElement('span');
-          sp.className = 'fx-l'; sp.style.willChange = 'transform';
-          sp.textContent = s.charAt(i);
-          frag.appendChild(sp); letras.push(sp);
-        }
-        tn.parentNode.replaceChild(frag, tn);
-      });
-      var n = letras.length;
-      cx = new Float32Array(n); cy = new Float32Array(n);
-      vx = new Float32Array(n); vy = new Float32Array(n);
-      var r = host.getBoundingClientRect();
-      pos = letras.map(function(l){
-        var b = l.getBoundingClientRect();
-        return { x: b.left - r.left + b.width/2, y: b.top - r.top + b.height/2 };
-      });
-    }
-    function sitio(e){
-      var r = host.getBoundingClientRect();
-      px = e.clientX - r.left; py = e.clientY - r.top;
-    }
-    host.addEventListener('pointerenter', function(e){
-      if(e.pointerType !== 'mouse') return;
-      if(!letras) trocea();
-      dentro = true; sitio(e); despierta();
-    });
-    host.addEventListener('pointermove', function(e){ if(dentro){ sitio(e); despierta(); } });
-    host.addEventListener('pointerleave', function(){ dentro = false; despierta(); });
-    bucles.push(function(){
-      if(!letras) return true;
-      var quieto = true;
-      for(var i=0;i<letras.length;i++){
-        var tx = 0, ty = 0;
-        if(dentro){
-          var dx = px - pos[i].x, dy = py - pos[i].y;
-          var d = Math.sqrt(dx*dx + dy*dy) || .001;
-          if(d < R){ var k = 1 - d/R; tx = dx/d*k*F; ty = dy/d*k*F*.8; }
-        }
-        /* muelle: velocidad + amortiguación → vuelven rebotando, no de golpe */
-        vx[i] = (vx[i] + (tx - cx[i])*.2)*.76; cx[i] += vx[i];
-        vy[i] = (vy[i] + (ty - cy[i])*.2)*.76; cy[i] += vy[i];
-        if(Math.abs(cx[i]) > .05 || Math.abs(cy[i]) > .05 ||
-           Math.abs(vx[i]) > .05 || Math.abs(vy[i]) > .05) quieto = false;
-        letras[i].style.transform = 'translate3d(' + cx[i].toFixed(2) + 'px,' + cy[i].toFixed(2) + 'px,0)';
-      }
-      if(quieto && !dentro){ host.innerHTML = orig; letras = null; return true; }
-      return false;
-    });
-  }
+  /* (N7 letras magnéticas y N9 inclinación 3D: RETIRADOS en la pasada de
+     arreglos — apilaban un segundo efecto de cursor sobre elementos que ya
+     llevaban el suyo, y no contaban nada del producto.) */
 
   /* N8 · FOCO JADE sobre la rejilla blueprint del hero: el plano reacciona al
      cursor. Va por debajo del texto (z-index 0 frente al 1 de .hero__inner). */
@@ -934,38 +883,15 @@ html.js .reveal.in .shot{clip-path:inset(0 0 0 0)}
     });
   }
 
-  /* N9 · INCLINACIÓN de la captura del móvil siguiendo al cursor (máx. 6°,
-     vuelta con muelle). Aquí sí pega: es estética de producto digital. */
-  function inclina(el){
-    var rx = 0, ry = 0, dx = 0, dy = 0, dentro = false;
-    function sitio(e){
-      var r = el.getBoundingClientRect();
-      dx = (e.clientX - r.left)/(r.width || 1)*2 - 1;
-      dy = (e.clientY - r.top)/(r.height || 1)*2 - 1;
-    }
-    el.addEventListener('pointerenter', function(e){
-      if(e.pointerType !== 'mouse') return;
-      dentro = true; el.style.willChange = 'transform'; sitio(e); despierta();
-    });
-    el.addEventListener('pointermove', function(e){ if(dentro){ sitio(e); despierta(); } });
-    el.addEventListener('pointerleave', function(){ dentro = false; despierta(); });
-    bucles.push(function(){
-      var tx = dentro ? -dy*6 : 0, ty = dentro ? dx*6 : 0;
-      rx += (tx - rx)*.13; ry += (ty - ry)*.13;
-      if(!dentro && Math.abs(rx) < .02 && Math.abs(ry) < .02){
-        el.style.transform = ''; el.style.willChange = 'auto'; return true;
-      }
-      el.style.transform = 'perspective(900px) rotateX(' + rx.toFixed(2) + 'deg) rotateY(' + ry.toFixed(2) + 'deg)';
-      return false;
-    });
-  }
-
   /* N10 · OLA en el enlace del pie: gesto de despedida, una sola pasada.
-     Se trocea al entrar el puntero y se restituye al acabar la animación. */
+     Se trocea al entrar el puntero y se restituye al acabar la animación.
+     SOLO ratón: filtra pointerType (en táctil, un scroll que arranca sobre el
+     enlace dispararía un pointerenter con el dedo). */
   function ola(el){
     if(!el) return;
     var orig = el.innerHTML, activo = false;
-    el.addEventListener('pointerenter', function(){
+    el.addEventListener('pointerenter', function(e){
+      if(e.pointerType !== 'mouse') return;
       if(activo) return; activo = true;
       var s = el.textContent, frag = document.createDocumentFragment(), n = 0, ultima = null;
       for(var i=0;i<s.length;i++){
@@ -989,11 +915,9 @@ html.js .reveal.in .shot{clip-path:inset(0 0 0 0)}
   }
 
   if(fino){
-    magnetico(document.querySelector('h1.title .brand'));
     foco();
-    document.querySelectorAll('.shot').forEach(inclina);
+    ola(document.querySelector('.foot__try'));
   }
-  if(!reduce) ola(document.querySelector('.foot__try'));
 
   /* ---------- Reveal + disparo de contadores ---------- */
   var reveals = Array.prototype.slice.call(document.querySelectorAll('.reveal'));
@@ -1009,20 +933,35 @@ html.js .reveal.in .shot{clip-path:inset(0 0 0 0)}
   if(reduce || !('IntersectionObserver' in window)){
     reveals.forEach(function(el){ el.classList.add('in'); });
     stages.forEach(function(el){ el.classList.add('in'); });
+    document.querySelectorAll('.shot').forEach(function(el){ el.classList.add('shot--vis'); });
     document.querySelectorAll('.num[data-count]').forEach(runCounter);
   } else {
+    /* Revelado (fundido de opacidad): puede adelantarse un 18% bajo el pliegue
+       — un fundido que llega hecho no pierde nada. Solo eso: los contadores y
+       los recortes NO cuelgan de aquí (animarían sin ser vistos). */
     var io = new IntersectionObserver(function(entries){
       entries.forEach(function(e){
         if(!e.isIntersecting) return;
         e.target.classList.add('in');
-        var c = e.target.querySelector ? e.target.querySelector('.num[data-count]') : null;
-        if(e.target.classList.contains('num') && e.target.hasAttribute('data-count')) runCounter(e.target);
-        else if(c) runCounter(c);
         io.unobserve(e.target);
       });
     }, { threshold:0, rootMargin:'0px 0px 18% 0px' });
     reveals.forEach(function(el){ io.observe(el); });
     stages.forEach(function(el){ io.observe(el); });
+
+    /* N3 (odómetro) + N5 (recorte): observador PROPIO, umbral .35 y SIN
+       rootMargin — estos dos narran, y solo arrancan con el elemento DE VERDAD
+       dentro de la pantalla, nunca por delante del lector. */
+    var vis = new IntersectionObserver(function(entries){
+      entries.forEach(function(e){
+        if(!e.isIntersecting) return;
+        vis.unobserve(e.target);
+        if(e.target.classList.contains('shot')) e.target.classList.add('shot--vis');
+        else runCounter(e.target);
+      });
+    }, { threshold:.35 });
+    document.querySelectorAll('.shot').forEach(function(el){ vis.observe(el); });
+    document.querySelectorAll('.num[data-count]').forEach(function(el){ vis.observe(el); });
 
     /* Efectos narrativos de una sola vez (N1 descifrado, N2 escritura, N6 glitch).
        Observador propio con umbral .5 porque el del revelado se adelanta 18% por
@@ -1040,20 +979,34 @@ html.js .reveal.in .shot{clip-path:inset(0 0 0 0)}
     }, { threshold:.5 });
     document.querySelectorAll('[data-fx]').forEach(function(el){ fxio.observe(el); });
 
-    /* Failsafe de revelado: los bots de vista previa (Google, LinkedIn) y el prerender ejecutan JS
-       pero NO scrollean → sin esto capturarían la página en negro. A los 6 s (o al imprimir) todo
-       queda visible; para un humano es inapreciable (lo de bajo el pliegue ya estará revelado al llegar).
-       Cierra también lo narrativo: textos compuestos, sin capas y sin nada en marcha. */
-    function revealAll(){
+    /* Failsafe de revelado, SOLO para quien no interactúa (bots de vista previa
+       — Google, LinkedIn — y prerender: ejecutan JS pero no scrollean ni tocan
+       nada → sin esto capturarían la página en negro). A los 6 s todo queda
+       visible EN SU ESTADO FINAL y quieto (html.fx-fin anula las transiciones:
+       nada se anima a ciegas). El primer gesto humano (rueda, tecla, toque,
+       ratón, scroll) CANCELA el temporizador: para una persona, lo que aparece
+       lo decide su scroll, nunca un reloj.
+       OJO: NO llama a fxCerrar — fxio sigue vivo, así que si un humano llega
+       tarde, N1/N2/N6 aún cuentan su historia al entrar en pantalla. */
+    function revealAllEstatico(){
+      root.classList.add('fx-fin');
+      congelarContadores();
       reveals.forEach(function(el){ el.classList.add('in'); });
       stages.forEach(function(el){ el.classList.add('in'); });
-      document.querySelectorAll('.num[data-count]').forEach(runCounter);
-      fxCerrar();
+      document.querySelectorAll('.shot').forEach(function(el){ el.classList.add('shot--vis'); });
     }
+    var failsafe = setTimeout(revealAllEstatico, 6000);
+    var gestos = ['wheel','touchstart','keydown','pointerdown','mousemove','scroll'];
+    function humano(){
+      clearTimeout(failsafe);
+      gestos.forEach(function(g){ window.removeEventListener(g, humano); });
+    }
+    gestos.forEach(function(g){ window.addEventListener(g, humano, { passive:true }); });
+
     /* Imprimir es el caso más exigente: hay que dejarlo todo en su sitio YA,
-       sin esperar a ninguna transición ni a ningún contador a medio rodar. */
-    window.addEventListener('beforeprint', function(){ congelarContadores(); revealAll(); });
-    setTimeout(revealAll, 6000);
+       sin transiciones, sin contadores a medio rodar y SIN capas fantasma
+       (aquí sí se cierra lo narrativo del todo). */
+    window.addEventListener('beforeprint', function(){ revealAllEstatico(); fxCerrar(); });
   }
 })();
 </script>
