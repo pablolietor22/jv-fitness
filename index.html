@@ -684,7 +684,7 @@
 <header class="brandbar">
   <div class="logo"><span class="dot"></span>JV <b>Fitness</b></div>
   <div style="display:flex;align-items:center">
-    <span class="tag">MVP v0.55.0 · motor v0.7</span>
+    <span class="tag">MVP v0.56.0 · motor v0.7</span>
     <!-- ⚙️ tanda #22 · hub de AJUSTES (no es pestaña): modal a pantalla completa -->
     <button class="gearbtn" id="btn_hub" type="button" title="Ajustes" aria-label="Abrir ajustes" onclick="hubAbrir()">⚙️</button>
   </div>
@@ -1370,6 +1370,15 @@ Tus datos se guardan solo en este dispositivo.</p>
     <button class="modal-x" type="button" title="Cerrar" aria-label="Cerrar" onclick="hubCerrar()">✕</button>
     <h2>⚙️ Ajustes</h2>
 
+    <!-- [HUB-INDICE-INICIO] — ÍNDICE del hub. hubSecciones() era un inventario SIN ningún consumidor
+         en la app (solo lo leían los tests): registrar una sección la documentaba, no la hacía
+         navegable. El panel del M4 arranca a ~2.658 px de scroll en un móvil de 375 px — 3,3
+         pantallas, la ÚLTIMA sección antes de «Cerrar» —, así que el flywheel dependía de que Pablo
+         se acordase de que está enterrado ahí abajo. Ahora el inventario SE PINTA y lleva a cada
+         sección de un toque. Solo mueve scroll: no navega, no toca el hash, no pide nada a la red. -->
+    <div class="cb-chips" id="hub_indice" style="margin-top:2px;margin-bottom:2px"></div>
+    <!-- [HUB-INDICE-FIN] -->
+
     <!-- 👤 QUIÉN ERES (editar memoria) — filas con el valor actual + ✏️ que salta DIRECTO a ese paso
          del wizard en modo edición (editarPerfil + wizShow(n)): editas UNA respuesta, guardas y
          Jarvis recalcula el plan con las funciones de siempre. Las pinta hubQuienRender(). -->
@@ -1507,6 +1516,21 @@ Tus datos se guardan solo en este dispositivo.</p>
       <input type="file" id="impFile" accept="application/json,.json" hidden onchange="procesarImport(this.files[0]); this.value='';">
       <p class="hint" style="margin-top:10px"><a href="#" onclick="resetTodo();return false;" style="color:var(--mute-2);text-decoration:underline">🗑️ Empezar de cero</a> — borra TODO (pide confirmación).</p>
     </div>
+
+    <!-- [NOREC-PANEL-HTML-INICIO] — 🧠 M4 flywheel · «Preguntas sin responder» (v0.56.0).
+         CERO RED a propósito: en este bloque no hay ni una petición. Lo único que sale del móvil
+         es lo que TÚ copies o compartas a mano. Lo hace cumplir _tests/test-norec.node.js, que
+         escanea ESTE bloque y su gemelo de JS [NOREC-PANEL-*] en busca de cualquier token capaz
+         de sacar datos fuera. -->
+    <div class="eyebrow-lbl" style="margin-top:16px">🧠 Preguntas sin responder (<span id="hub_norec_n">0</span>)</div>
+    <div id="hub_norec">
+      <div id="hub_norec_lista"></div>
+      <div class="row hidden" id="hub_norec_btns" style="margin-top:8px">
+        <button class="sec" style="flex:1" type="button" onclick="cbNorecCopiar()">📋 Copiar</button>
+        <button class="sec" style="flex:1" type="button" onclick="cbNorecCompartir()">📤 Compartir</button>
+      </div>
+    </div>
+    <!-- [NOREC-PANEL-HTML-FIN] -->
 
     <button class="sec" type="button" style="margin-top:14px" onclick="hubCerrar()">Cerrar</button>
   </div>
@@ -13253,7 +13277,7 @@ function resetTodo(){ if(!confirm("⚠️ Esto borra TODO: perfil, pesos, entren
 // Reemplazo total con confirmación. Reusa get/set, hoyLocal, toast, validar, render. NO toca motor ni gate.
 function exportarJSON(){ try{ set("jvf_last_export",hoyLocal()); }catch(e){}
   try{
-    var data={ app:"jvf", schema:1, app_version:"0.55.0", exportadoEl:new Date().toISOString(),
+    var data={ app:"jvf", schema:1, app_version:"0.56.0", exportadoEl:new Date().toISOString(),
       perfil:get(LS_P,null), pesos:get(LS_W,[]), entrenos:get(LS_E,[]), notas_ej:get("jvf_notas_ej",{}), comida:get("jvf_comida",[]), agua:get("jvf_agua",{}), suples_cfg:get("jvf_suples_cfg",null), suples_log:get("jvf_suples_log",{}),
       rutinas:get("jvf_rutinas",[]), meals:get("jvf_meals",[]), ent_start:get("jvf_ent_start",null),   // v0.10 · backup completo
       alimentos_propios:get("jvf_alimentos_propios",[]), barcode_cache:get("jvf_barcode_cache",{}),   // I5/I6 · también viajan en el backup
@@ -13323,7 +13347,7 @@ function procesarImport(file){
     if(data.rest_seg!=null) set("jvf_rest_seg",+data.rest_seg||120);
     // 🧠 v0.13-B · diario del Cerebro + cola de preguntas sin patrón (los backups antiguos no los traen: se dejan como están)
     if(Array.isArray(data.cerebro_diario)) set("jvf_cerebro_diario", data.cerebro_diario.filter(function(x){ return x && x.f; }));
-    if(Array.isArray(data.cerebro_norec)) set("jvf_cerebro_norec", data.cerebro_norec.filter(function(x){ return x && x.q; }));
+    if(Array.isArray(data.cerebro_norec)) set("jvf_cerebro_norec", norecLista(data.cerebro_norec));   // 🧠 M4 · saneo + cap 200 al restaurar (un backup anterior al cap puede traer miles)
     if(data.cerebro_stats && typeof data.cerebro_stats==="object" && !Array.isArray(data.cerebro_stats)) set("jvf_cerebro_stats", data.cerebro_stats);   // 🧠 v0.39.0 · métrica (objeto; guarda de tipo)
     // M · capa FLEX (los backups antiguos no la traen: se deja como está)
     if(data.flex_cfg && typeof data.flex_cfg==="object") set("jvf_flex_cfg", data.flex_cfg);
@@ -16769,7 +16793,7 @@ function cbResponder(txt){
   // ≥2 troncos pero sin combo definido → desambiguar (no adivinar) y alimentar el flywheel (combo-hueco).
   var des=cerebroDesambiguacion(txt);
   if(des){
-    var arrH=get(LS_CEREBRO_NOREC,[]); arrH.push({f:hoyLocal(), q:txt, tipo:"combo-hueco", troncos:des.troncos}); set(LS_CEREBRO_NOREC,arrH);
+    cbNorecGuardar({f:hoyLocal(), q:txt, tipo:"combo-hueco", troncos:des.troncos});   // 🧠 M4 · embudo ÚNICO de escritura (dedupe + cap FIFO)
     cbMsg("j", esc(t("cb_desambigua")));
     cbChips(des.chips||[]);
     return;
@@ -16780,7 +16804,7 @@ function cbResponder(txt){
     var e=m.entrada;
     if(_cal.aviso){                           // calificador NO cubierto → aviso honesto + flywheel (jamás ignorar el «sin»)
       cbStat("calificadores");
-      var _arrC=get(LS_CEREBRO_NOREC,[]); _arrC.push({f:hoyLocal(), q:txt, tipo:"calificador", frase:_cal.aviso.frase}); set(LS_CEREBRO_NOREC,_arrC);
+      cbNorecGuardar({f:hoyLocal(), q:txt, tipo:"calificador", frase:_cal.aviso.frase});   // 🧠 M4 · embudo ÚNICO de escritura
       cbMsg("j", "<p><em>"+esc("Ojo: preguntas por «"+_cal.aviso.frase+"» — esta es la respuesta general del tema; ese matiz concreto aún no lo tengo afinado.")+"</em></p>"+cbHtmlRespuesta(e.r));
       cbChips(e.chips||[]);
       return;
@@ -16802,7 +16826,7 @@ function cbResponder(txt){
   }
   // Fallback honesto (doctrina): lo digo y guardo la pregunta — cola de ampliación del flywheel.
   cbStat("nulls");                            // F-M1 · métrica: pregunta sin patrón (el número a bajar)
-  var arr=get(LS_CEREBRO_NOREC,[]); arr.push({f:hoyLocal(), q:txt}); set(LS_CEREBRO_NOREC,arr);
+  cbNorecGuardar({f:hoyLocal(), q:txt});   // 🧠 M4 · embudo ÚNICO de escritura
   cbMsg("j", esc(t("cb_fallback")));
   cbChips(["¿Cuánta proteína al día?","¿Cuántos carbos?","¿Cuánto hay que dormir?"]);
 }
@@ -16896,7 +16920,7 @@ function cbAccion(acc){
   }
   if(acc==="guardar_pregunta"){
     if(_cbUltimaQ){
-      var arr=get(LS_CEREBRO_NOREC,[]); arr.push({f:hoyLocal(), q:_cbUltimaQ, via:"chip"}); set(LS_CEREBRO_NOREC,arr);
+      cbNorecGuardar({f:hoyLocal(), q:_cbUltimaQ, via:"chip"});   // 🧠 M4 · embudo ÚNICO de escritura
       cbMsg("j", esc("Guardada ✓ — tu pregunta entra en la cola para ampliar mi base con ciencia real del master. Viaja también en tu copia de seguridad (Exportar)."));
     } else {
       cbMsg("j", esc("No tengo una pregunta previa que guardar — escríbela y te digo si la reconozco."));
@@ -16971,6 +16995,184 @@ function cbDiarioRender(){
     }).join("")+"</details>";
 }
 function cbDiarioDel(i){ var d=get(LS_CEREBRO_DIARIO,[]); d.splice(i,1); set(LS_CEREBRO_DIARIO,d); _cbCap=null; cbDiarioRender(); }
+
+// ══════ 🧠 M4 · FLYWHEEL: PANEL «PREGUNTAS SIN RESPONDER» (v0.56.0) ══════
+// [NOREC-PANEL-INICIO] — TODO el código del panel vive entre estos centinelas.
+// _tests/test-norec.node.js exige que aquí dentro no aparezca NI UN token capaz de sacar datos
+// del móvil. La comprobación se acota a este bloque (y a su gemelo [NOREC-PANEL-HTML-*]) a
+// propósito: el fichero entero SÍ tiene llamadas de red legitímas y antiguas — bases de datos
+// de alimentos, clima, escaner —, así que un escaneo global daría rojo siempre y no probaría nada.
+// Lo único que sale de aquí es lo que el usuario copie o comparta A MANO. La promesa impresa a
+// pocas líneas de distancia («todo se queda solo en tu dispositivo») sigue siendo literal.
+
+// [NOREC-PURE-INICIO] — puro: sin DOM, sin storage. El test lo extrae y lo evalúa tal cual.
+var NOREC_CAP=200;        // techo DURO de la cola (FIFO: entra la nueva, cae la más vieja)
+var NOREC_VISIBLES=50;    // cuántas pinta el panel (el móvil no dibuja 200 filas)
+var NOREC_Q_MAX=300;      // techo DURO del TEXTO de cada pregunta — el cap 200 era de CANTIDAD, no de TAMAÑO
+
+// Sanea UNA entrada. Las CUATRO formas que el Cerebro escribe hoy de verdad:
+//   {f,q}                                    · fallback honesto (no reconoció el patrón)
+//   {f,q,tipo:"combo-hueco",troncos:[...]}    · ≥2 troncos sin combo definido
+//   {f,q,tipo:"calificador",frase:"..."}      · respondió el tema pero se saltó el «sin/solo/en casa»
+//   {f,q,via:"chip"}                          · el usuario pulsó «guardar mi pregunta»
+// Ninguna se aplana: el `tipo` es justo lo que le dice a la mina que la app MISMA declaró la
+// respuesta incompleta. Sin él, esas preguntas contarían como «ya curadas» y la cobertura mentiría.
+function norecSanea(x){
+  if(!x || typeof x!=="object" || Array.isArray(x)) return null;
+  // El texto se APLANA a UNA línea y se acota a NOREC_Q_MAX. Las dos cosas son contrato con F2:
+  //  · «una pregunta por línea» — un `q` con un salto de línea dentro rompía el texto de «Copiar» en
+  //    varias líneas, y una de ellas podía FALSIFICAR una entrada con su marca «[calificador]» que
+  //    la mina se tragaría como pregunta real (medido: 1 entrada → 4 líneas). No se alcanza desde la
+  //    app — el <input> del Cerebro es de una línea —, sí importando un backup editado a mano.
+  //  · el cap 200 era de CANTIDAD, no de TAMAÑO: `n` y `troncos` estaban acotados y `q` no, así que
+  //    200 preguntas de ~10 KB dejaban 1,91 MB en localStorage y un payload de Compartir de ~1,9 MB
+  //    (la hoja del sistema de Android se atraganta). 300 caracteres sobran para una pregunta y
+  //    mantienen el texto usable para la mina.
+  var q=(typeof x.q==="string")?x.q.replace(/\s+/g," ").trim().slice(0,NOREC_Q_MAX).trim():"";
+  if(!q) return null;
+  var o={f:(typeof x.f==="string")?x.f:"", q:q};
+  var n=+x.n; if(n>1) o.n=Math.min(Math.round(n), 9999);
+  if(typeof x.tipo==="string" && x.tipo) o.tipo=x.tipo;
+  if(Array.isArray(x.troncos) && x.troncos.length) o.troncos=x.troncos.slice(0,6).map(String);
+  if(typeof x.frase==="string" && x.frase) o.frase=x.frase;
+  if(typeof x.via==="string" && x.via) o.via=x.via;
+  return o;
+}
+// Lista saneada CON el cap ya aplicado — también para lo que llegue de un backup anterior al cap.
+function norecLista(arr){
+  if(!Array.isArray(arr)) return [];
+  var l=[]; arr.forEach(function(x){ var s=norecSanea(x); if(s) l.push(s); });
+  return l.length>NOREC_CAP ? l.slice(l.length-NOREC_CAP) : l;
+}
+// Clave de dedupe: el normalizador REAL del Cerebro si está; minúsculas si no (el test lo inyecta).
+function norecClave(q, norm){
+  var k=""; try{ if(typeof norm==="function") k=norm(q)||""; }catch(e){ k=""; }
+  return k || String(q).toLowerCase().replace(/\s+/g," ").trim();
+}
+// EMBUDO ÚNICO de escritura de la cola. Dedupe por pregunta normalizada — conservando la
+// FRECUENCIA en `n`, que es lo que ordena la cantera por valor — y cap FIFO. Que el embudo sea
+// uno solo ES el arreglo: con el cap repartido por los cuatro sitios de escritura bastaría
+// olvidarse de UNO para que el techo fuese decorativo y la cola creciera sin fin.
+function norecAnadir(arr, rec, norm){
+  var lista=norecLista(arr), nuevo=norecSanea(rec);
+  if(!nuevo) return lista;
+  var k=norecClave(nuevo.q, norm), fuera=[];
+  for(var i=0;i<lista.length;i++){
+    var v=lista[i];
+    if(norecClave(v.q, norm)===k){
+      nuevo.n=(v.n||1)+(nuevo.n||1);              // la repetición no se tira: se cuenta
+      if(!nuevo.tipo && v.tipo) nuevo.tipo=v.tipo;  // el tipo declarado por la app sobrevive
+      if(!nuevo.troncos && v.troncos) nuevo.troncos=v.troncos;
+      if(!nuevo.frase && v.frase) nuevo.frase=v.frase;
+      if(!nuevo.via && v.via) nuevo.via=v.via;
+      if(!nuevo.f && v.f) nuevo.f=v.f;
+      continue;
+    }
+    fuera.push(v);
+  }
+  fuera.push(nuevo);
+  return fuera.length>NOREC_CAP ? fuera.slice(fuera.length-NOREC_CAP) : fuera;
+}
+// Las N más recientes, la última arriba (lo que se pinta).
+function norecRecientes(arr, n){
+  var l=norecLista(arr).slice().reverse();
+  return l.slice(0, (n>0)?n:NOREC_VISIBLES);
+}
+// Por qué se guardó, en cristiano — lo que la app MISMA declaró al guardarla.
+function norecMotivo(e){
+  if(!e) return "";
+  if(e.tipo==="calificador") return "te contesté el tema, pero me salté «"+(e.frase||"ese matiz")+"»";
+  if(e.tipo==="combo-hueco") return "mezclabas "+((e.troncos||[]).join(" + ")||"varios temas");
+  if(e.via==="chip") return "me pediste guardarla";
+  return "no reconocí el patrón";
+}
+// TEXTO PLANO de «Copiar»/«Compartir». FORMATO PACTADO con la mina (jarvis-tools\\cerebro-bots\\
+// mina-norec.js): «FECHA · pregunta ×N [tipo]», una por línea. El tipo y el ×N viajan A PROPÓSITO:
+// sin tipo, la mina daría por curadas las que la app declaró incompletas (calificador/combo-hueco)
+// y el «se curaron solas X%» mentiría hacia arriba; sin ×N se perdería la frecuencia.
+function norecTexto(arr){
+  var l=norecLista(arr);
+  var out=["🧠 Preguntas sin responder ("+l.length+") · JV Fitness"];
+  l.forEach(function(e){
+    var mar=e.tipo?e.tipo:((e.via==="chip")?"chip":"");
+    out.push((e.f?(e.f+" · "):"")+e.q+((e.n>1)?(" ×"+e.n):"")+(mar?(" ["+mar+"]"):""));
+  });
+  return out.join("\n");
+}
+// Qué hacer al pulsar «Compartir», decidido SIN tocar el DOM (por eso se puede probar en node).
+// Compartir es la hoja del sistema, con gesto explícito del usuario — no una petición de red.
+function norecPlanCompartir(nav, arr){
+  var l=norecLista(arr);
+  if(!l.length) return {accion:"nada", texto:"", aviso:"No hay preguntas pendientes que compartir"};
+  var puede=false;
+  try{ puede=!!(nav && typeof nav.share==="function"); }catch(e){ puede=false; }
+  return puede ? {accion:"share",  texto:norecTexto(l), aviso:""}
+               : {accion:"copiar", texto:norecTexto(l), aviso:"Tu navegador no tiene «compartir»: te lo he copiado"};
+}
+// [NOREC-PURE-FIN]
+
+// ——— envoltura DOM/almacenamiento (fuera del bloque puro) ———
+// ÚNICO sitio de toda la app que escribe la cola. Los cuatro puntos del Cerebro llaman aquí.
+function cbNorecGuardar(rec){
+  try{ set(LS_CEREBRO_NOREC, norecAnadir(get(LS_CEREBRO_NOREC,[]), rec, (typeof cerebroNormQ==="function")?cerebroNormQ:null)); }catch(e){}
+  try{ cbNorecRender(); }catch(e){}
+}
+function cbNorecRender(){
+  var caja=$("hub_norec_lista"), rot=$("hub_norec_n"), btns=$("hub_norec_btns");
+  if(!caja) return;
+  var l=norecLista(get(LS_CEREBRO_NOREC,[]));
+  if(rot) rot.textContent=String(l.length);
+  if(btns) btns.classList[l.length?"remove":"add"]("hidden");
+  if(!l.length){
+    caja.innerHTML="<p class='hint' style='margin-top:0'>Ninguna pendiente — el Cerebro va respondiendo. Cuando le preguntes algo que aún no sepa, aparecerá aquí.</p>";
+    return;
+  }
+  var vis=norecRecientes(l, NOREC_VISIBLES);
+  var h="<p class='hint' style='margin-top:0'>Lo que Jarvis todavía no supo contestar. 🔒 Se queda <b style='color:var(--soft)'>solo en tu dispositivo</b>: solo sale de aquí si TÚ pulsas copiar o compartir."
+    +((l.length>vis.length)?(" Te enseño las <b style='color:var(--soft)'>"+vis.length+"</b> más recientes de "+l.length+"; se copian y comparten <b style='color:var(--soft)'>todas</b>."):"")+"</p>";
+  h+=vis.map(function(e){
+    return "<div class='kv'><span style='min-width:0'>"+esc(e.q)+((e.n>1)?(" <b style='color:var(--mute)'>×"+e.n+"</b>"):"")
+      +"<br><span class='hint' style='display:inline'>"+esc((e.f||"sin fecha")+" · "+norecMotivo(e))+"</span></span></div>";
+  }).join("");
+  caja.innerHTML=h;
+}
+// Copiar: el portapapeles es del sistema operativo, no sale nada del dispositivo.
+function cbNorecCopiar(){
+  var l=norecLista(get(LS_CEREBRO_NOREC,[]));
+  if(!l.length){ toast("No hay preguntas pendientes que copiar"); return; }
+  norecAlPortapapeles(norecTexto(l), function(ok){ toast(ok?("✓ Copiadas "+l.length+" preguntas — pégalas donde quieras"):"No he podido copiar (el navegador no me deja)"); });
+}
+function norecAlPortapapeles(txt, cb){
+  try{
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(txt).then(function(){ cb(true); }, function(){ cb(norecCopiaLegado(txt)); });
+      return;
+    }
+  }catch(e){}
+  cb(norecCopiaLegado(txt));
+}
+// Plan B para navegadores viejos (y para http sin contexto seguro): textarea + execCommand.
+function norecCopiaLegado(txt){
+  try{
+    var ta=document.createElement("textarea");
+    ta.value=txt; ta.setAttribute("readonly",""); ta.style.position="fixed"; ta.style.top="-1000px"; ta.style.opacity="0";
+    document.body.appendChild(ta); ta.select(); try{ ta.setSelectionRange(0, String(txt).length); }catch(e2){}
+    var ok=document.execCommand("copy");
+    document.body.removeChild(ta);
+    return !!ok;
+  }catch(e){ return false; }
+}
+// Compartir por la hoja del sistema si el navegador la tiene; si no, copia y lo DICE (no miente).
+function cbNorecCompartir(){
+  var plan=norecPlanCompartir((typeof navigator!=="undefined")?navigator:null, get(LS_CEREBRO_NOREC,[]));
+  if(plan.accion==="nada"){ toast(plan.aviso); return; }
+  if(plan.accion==="copiar"){ norecAlPortapapeles(plan.texto, function(ok){ toast(ok?plan.aviso:"Tu navegador no tiene «compartir» y tampoco he podido copiar"); }); return; }
+  try{
+    var p=navigator.share({title:"Preguntas sin responder · JV Fitness", text:plan.texto});
+    if(p && p["catch"]) p["catch"](function(){});
+  }catch(e){ norecAlPortapapeles(plan.texto, function(){}); }
+}
+// [NOREC-PANEL-FIN]
 
 // ======= CAPA DOPAMINA (feedback visual; NO toca datos ni cálculo) =======
 // Animación "pop" puntual en un elemento (botón al pulsar, número que cambia).
@@ -17875,7 +18077,8 @@ function hubSecciones(){
     {id:"hub_conectores", emoji:"🔌", titulo:"Conectores"},
     {id:"hub_notifs",     emoji:"🔔", titulo:"Notificaciones"},
     {id:"hub_alimentos",  emoji:"🗄️", titulo:"Alimentos"},
-    {id:"hub_datos",      emoji:"📦", titulo:"Datos"}
+    {id:"hub_datos",      emoji:"📦", titulo:"Datos"},
+    {id:"hub_norec",      emoji:"🧠", titulo:"Preguntas sin responder"}   // 🧠 M4 · flywheel
   ];
 }
 // hubQuienFilas(p): perfil (objeto LS_P o null) → filas {paso, titulo, resumen} para «editar memoria».
@@ -17899,8 +18102,24 @@ function hubQuienFilas(p){
 // [AJUSTES-PURE-FIN]
 // Apertura/render del hub (impuro: DOM). Los paneles movidos (notifs, base España, pasos, datos) ya
 // viven en el HTML del modal con sus ids de SIEMPRE — aquí solo se pinta la sección «Quién eres».
-function hubAbrir(){ hubQuienRender(); show("hubModal", true); try{ dbwUIPreparar(); }catch(e){} }   // 🌍 el panel de la base mundial pide su índice (~2 KB) SOLO aquí: enseñar el peso real antes de que el usuario decida
+function hubAbrir(){ hubQuienRender(); try{ hubIndiceRender(); }catch(e){}   /* índice navegable del hub */ try{ cbNorecRender(); }catch(e){}   /* 🧠 M4 · preguntas sin responder */ show("hubModal", true); try{ dbwUIPreparar(); }catch(e){} }   // 🌍 el panel de la base mundial pide su índice (~2 KB) SOLO aquí: enseñar el peso real antes de que el usuario decida
 function hubCerrar(){ show("hubModal", false); }
+// Índice del hub: pinta hubSecciones() como chips que llevan a cada sección. Hasta el M4 ese
+// inventario no tenía NI UN consumidor en la app — lo evaluaban los tests y nadie más —, así que
+// dar de alta una sección no la hacía alcanzable. Si añades una sección a hubSecciones(), aparece
+// aquí sola: ese es el punto.
+function hubIndiceRender(){
+  var el=$("hub_indice"); if(!el) return;
+  el.innerHTML=hubSecciones().map(function(s){
+    return "<button type='button' class='cb-chip' data-ir=\""+esc(s.id)+"\" onclick='hubIr(this)'>"+esc(s.emoji)+" "+esc(s.titulo)+"</button>";
+  }).join("");
+}
+// Salto a una sección. Mueve el scroll DENTRO del modal y nada más: ni navega, ni cambia el hash,
+// ni pide nada a la red (la promesa impresa sigue siendo literal para los datos).
+function hubIr(btn){
+  var el=$(btn && btn.getAttribute ? btn.getAttribute("data-ir") : String(btn)); if(!el) return;
+  try{ el.scrollIntoView({behavior:"smooth", block:"start"}); }catch(e){ try{ el.scrollIntoView(); }catch(e2){} }
+}
 function hubQuienRender(){
   var el=$("hub_quien"); if(!el) return;
   var filas=hubQuienFilas(get(LS_P));
