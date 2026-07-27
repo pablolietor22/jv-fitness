@@ -684,7 +684,7 @@
 <header class="brandbar">
   <div class="logo"><span class="dot"></span>JV <b>Fitness</b></div>
   <div style="display:flex;align-items:center">
-    <span class="tag">MVP v0.54.0 · motor v0.7</span>
+    <span class="tag">MVP v0.55.0 · motor v0.7</span>
     <!-- ⚙️ tanda #22 · hub de AJUSTES (no es pestaña): modal a pantalla completa -->
     <button class="gearbtn" id="btn_hub" type="button" title="Ajustes" aria-label="Abrir ajustes" onclick="hubAbrir()">⚙️</button>
   </div>
@@ -5924,6 +5924,16 @@ function cafeSuenoAviso(horaUltimaDosis, horaDormir, vidaMediaH){
 // CONSERVADORA y solo bebidas de consumo DIRECTO. Excluye A PROPÓSITO café/coffee genérico (100 g de café
 // molido = cientos de mg que NO se beben; los cafés-taza ya están curados) y chocolate/cacao. «Descafeinado»
 // o «sin cafeína» en el nombre → 0 (gana a la familia), nunca la estimación de la familia.
+// v0.55.0 · dos listas negras MEDIDAS sobre las bases reales desplegadas (España 234.976 +
+// mundial 245.681): sin ellas, cablear la inferencia al embudo metía cafeína FALSA en 598 fichas
+// (barritas «energéticas», Monster Munch de patatas fritas, chuches de cola, 7up/Fanta/Aquarius,
+// zumos y aguas embotelladas por Coca-Cola, «cola de caballo»...). Espejo de SIN_CAFEINA/NO_BEBIDA
+// de _ingest/sanea_base_es.py, con UNA diferencia declarada: el té RTD (nestea/iced tea) NO entra
+// en la lista negra porque SÍ lleva cafeína (ahí el pipeline se equivoca). NO añaden ninguna cifra
+// mg/100 nueva: solo QUITAN falsos positivos, que es la dirección conservadora (mejor un hueco
+// vacío que un dato inventado).
+var CAF_NO_BEBIDA=/barrit|\bbarra\b|\bbarras\b|\bbar\b|\bbars\b|\bbarre|riegel|\bcake\b|cookie|galleta|bizcocho|magdalena|bolleria|croissant|\btarta\b|pastel|helado|caramel|gominola|gomit|gummy|jelly|haribo|\bcandy\b|chuche|gelatin|chicle|piruleta|chupa ?chups|sucette|golosin|\bsnack|\bmunch\b|popcorn|palomit|salsa|\bpan\b|cereal|\bcopos\b|\bavena\b|granola|muesli|\bpolvo\b|powder|\bgel\b|\bgels\b|hidrogel|hydrogel|\bball\b|\bballs\b|amilopectina|maltodextrina|aminoacid|aminopower|creatin|\bwhey\b|proteinas?\b|protein\b|\bcrema\b|yogur|\bchips\b|\bpatatas\b|\bsemillas\b|\bnueces\b|frutos secos|cola de |cola caballo|sirop|syrup|sirup|jarabe/;
+var CAF_SIN_CAFEINA=/\b7 ?up\b|seven ?up|\bfanta\b|\bsprite\b|aquarius|minute ?maid|powerade|isotonic|\btrina\b|\bkas\b|\bbitter\b|tonica|schweppes|cacaolat|\bzumo\b|\bjugo\b|\bjuice\b|\bagua\b|\bwater\b/;
 function cafInferir(nombre, categorias){
   var _n=(typeof otroNorm==="function")?otroNorm(nombre):String(nombre==null?"":nombre).toLowerCase();
   var _c=Array.isArray(categorias)?categorias.join(" "):String(categorias==null?"":categorias);
@@ -5936,6 +5946,14 @@ function cafInferir(nombre, categorias){
   // 2) exclusiones a propósito → null (dato ausente honesto, no una estimación falsa):
   if(/\bcafe\b|\bcoffee\b|molid|en grano|\bcapsul|nespresso|dolce gusto/.test(t)) return null;         // café genérico
   if(/chocolate|\bcacao\b|\bcocoa\b|colacao|cola ?cao/.test(t)) return null;                            // chocolate/cacao (incl. Cola Cao)
+  // 2b) NO ES BEBIDA -> null: «barrita energética», «energy balls», Monster Munch (patatas fritas),
+  //     chuches de cola, gelatinas, jarabes, polvos de gym... Se COMEN, no se beben: 32 mg/100 g
+  //     ahí sería un invento. 598 casos medidos en las bases reales (295 España + 303 mundial).
+  if(CAF_NO_BEBIDA.test(t)) return null;
+  // 2c) BEBIDA de una familia SIN cafeína -> null aunque la MARCA sea Coca-Cola/Pepsi: 7up, Fanta,
+  //     Sprite, Aquarius, tónica, zumos y aguas embotelladas por Coca-Cola. null (y no 0) = «no lo
+  //     sé», el mismo criterio que «Agua mineral -> null» de siempre y que caf_de() del pipeline.
+  if(CAF_SIN_CAFEINA.test(t)) return null;
   // 3) familias de bebida de consumo directo (mg/100 ml, conservador) — primer match gana:
   if(/red ?bull|\bmonster\b|\bburn\b|rockstar|\breign\b|prime energy|energetic[oa]|energy drink|\benergy\b/.test(t)) return 32;   // energéticas
   if(/coca ?cola|\bpepsi\b|\bcola\b|rc cola/.test(t)) return 10;   // colas
@@ -6279,6 +6297,11 @@ function ovrAplicarAScanner(prod, patch){
   if(patch.c!=null) prod.c100=patch.c;         if(patch.f!=null) prod.g100=patch.f;
   if(patch.fib!=null) prod.fib100=patch.fib;   if(patch.az!=null) prod.az100=patch.az;
   if(patch.sat!=null) prod.sat100=patch.sat;   if(patch.na!=null) prod.na100=patch.na;
+  // v0.55.0 · la cafeína que corregiste en la ficha (el lápiz, cor_caf, que YA viaja dentro del
+  // parche) manda también en el escáner. Sin esta línea la inferencia del embudo rellenaría el
+  // hueco con una estimación CONTRADICIENDO tu dato guardado; cafEst=false porque una corrección
+  // tuya no es una estimación y no debe salir en ámbar.
+  if(patch.caf!=null){ prod.caf100=patch.caf; prod.cafEst=false; }
   prod._edit=true;
   return prod;
 }
@@ -10559,7 +10582,7 @@ function bcBuscar(ean){
       dens:(cp.dens && cp.dens.d>0)?cp.dens:bcDensidad(cp.nombre,null), servingAviso:null,
       fib100:(cp.fib100!=null?+cp.fib100:null), az100:(cp.az100!=null?+cp.az100:null),
       sat100:(cp.sat100!=null?+cp.sat100:null), na100:(cp.na100!=null?+cp.na100:null),
-      caf100:(cp.caf100!=null?+cp.caf100:null),   // ☕ cafeína cacheada de un escaneo anterior
+      caf100:(cp.caf100!=null?+cp.caf100:null), cafEst:(cp.cafEst?true:undefined),   // ☕ cafeína cacheada de un escaneo anterior (con su marca de ESTIMADA, v0.55.0-fix)
       serving:cp.serving||null, porcion:null});
     return;
   }
@@ -10628,9 +10651,19 @@ function bcBuscarRedOFF(ean){
     var marca=p.brands?String(p.brands).split(",")[0].trim():"";
     var nombre=((p.product_name||"").trim()+(marca?" ("+marca+")":"")).trim()||("Producto "+ean);
     bcConfirmar({ean:ean, fuente:"off", nombre:nombre, esAgua:esAgua({nombre:nombre, cats:p.categories_tags||[]}),
+      // ☕ v0.55.0-fix · las categorías VIAJAN al confirmador. El embudo llamaba a cafInferir con
+      // prod.cats||[] y ninguna rama ponía `cats`: el segundo argumento era código INERTE y la
+      // inferencia iba siempre por NOMBRE. Aquí sí existen (la rama OFF ya las montaba para esAgua),
+      // así que una energética con nombre pobre pero categoría de OFF correcta ya puntúa.
+      cats:(Array.isArray(p.categories_tags)?p.categories_tags:[]),
       kcal100:norm.kcal100, p100:norm.p100, c100:norm.c100, g100:norm.g100,
       u:norm.u, uMotivo:norm.uMotivo, dens:norm.dens, servingAviso:norm.servingAviso,
       fib100:norm.fib100, az100:norm.az100, sat100:norm.sat100, na100:norm.na100, avisoCordura:norm.avisoCordura,
+      caf100:norm.caf100, cafEst:norm.cafEst,   // v0.55.0 BUG: esta rama enumera los campos UNO A
+      // UNO y se dejaba la cafeína fuera -> bcNormalizarOFF la calculaba (real o estimada) y
+      // bcConfirmar no la veía nunca. Con el embudo de arriba la ESTIMADA se recuperaría sola, pero
+      // la VERIFICADA (caffeine_100g de OFF: un café RTD con 45 mg reales) se habría perdido y
+      // sustituido por una estimación de familia. Hace falta ADEMÁS del embudo, no en su lugar.
       img:(typeof p.image_front_url==="string" && p.image_front_url.indexOf("https://")===0)?p.image_front_url:null,
       nutriscore:(typeof p.nutriscore_grade==="string" && /^[a-e]$/i.test(p.nutriscore_grade))?p.nutriscore_grade.toUpperCase():null,
       serving:(typeof p.serving_size==="string" && p.serving_size)?p.serving_size:null, porcion:null});
@@ -11094,6 +11127,45 @@ function bcConfirmar(prod){
     var _ov=ovrPorClave(prod.ean, prod.nombre);
     if(_ov) ovrAplicarAScanner(prod, _ov);
   }catch(e){}
+  // [CAFE-EMBUDO-INICIO] v0.55.0 · INFERENCIA DE CAFEÍNA EN EL EMBUDO ÚNICO (bug real de Pablo,
+  // 25-07: escaneó una energética ESPAÑOLA por su EAN y el panel EFSA siguió marcando 0 mg). Las 6
+  // ramas de bcBuscar (propio, caché, base curada, base España, base mundial y etiqueta por foto)
+  // desembocan TODAS aquí, así que este es el ÚNICO punto donde la estimación alcanza a todos los
+  // caminos: antes solo vivía dentro de bcNormalizarOFF y los caminos LOCALES jamás la ejecutaban
+  // (medido sobre las bases desplegadas: la de España trae `caf` en 295 de 234.976 registros y la
+  // mundial no tiene ni el campo). Va DESPUÉS del override a propósito: dato real > TU corrección
+  // > estimación. La guarda ==null es la que garantiza que NUNCA pisa una cafeína de verdad, y
+  // además lo hace idempotente (bcUnidadBase y bcCorregirEtiqueta re-llaman a bcConfirmar con el
+  // mismo prod). cafEst=true -> el confirmador la pinta REVISABLE (borde ámbar + hint honesto),
+  // nunca como dato verificado.
+  // ⚠ ORDEN REAL, corregido el 27-07 (el comentario anterior decía «dato real > TU corrección >
+  // estimación» y era FALSO): ovrAplicarAScanner corre ANTES y pisa INCONDICIONALMENTE (línea del
+  // if(patch.caf!=null)), así que el orden efectivo es TU CORRECCIÓN > dato real > estimación.
+  // Verificado: producto de OFF con caffeine_100g real de 45 mg + corrección tuya de 80 → sale 80.
+  // Es lo CORRECTO para una capa de override (tu etiqueta manda sobre la base), pero se documenta
+  // bien para que un mantenimiento futuro no «arregle» el orden y lo rompa.
+  // GUARDA DE PLAUSIBILIDAD DE BEBIDA (arreglador 27-07, bloqueante de la ronda adversarial). Las dos
+  // listas negras de cafInferir solo tapan los nombres que ENUMERAN, y el embudo aplicaba la inferencia
+  // a las 6 ramas locales sin comprobar que el producto fuese una BEBIDA. Medido con la cafInferir REAL
+  // sobre las bases desplegadas (España 234.976 + mundial 245.681): de los 3.112 productos que pasaban a
+  // tener cafeína > 0, 336 tenían un perfil IMPOSIBLE en una bebida — 174 de 803 solo en la base España,
+  // la que Pablo tiene por defecto. Casos reales: «Chiquilín Energy» (galletas infantiles, 494 kcal,
+  // 22 g de grasa) → 32 mg/100 g en 5 EAN distintos; «Corny Energy con Guaraná» (barrita) → 32;
+  // «Nutritional Yeast (Energy Feelings)» (51 g de proteína) → 32; «Cola langostino rebozada» y «Cola
+  // blanca de atún rojo» → 10; «Muesly energy» (389 kcal) → 32. Y eso llegaba PRE-RELLENADO al panel de
+  // confirmación, lo escalaba bcAddDiario al diario, lo sumaba el panel EFSA y disparaba el aviso de
+  // «cafeína tarde». Regla con datos que YA están aquí: una bebida de consumo directo no pasa de ~120
+  // kcal/100, ni lleva ≥2 g de grasa, ni ≥3 g de proteína. Medido: elimina 334 de los 336 y NO tira
+  // ninguna bebida legítima del control (Red Bull 46 kcal, Monster 47, Pepsi 41, colas 0-42, Nestea
+  // 19-29 siguen pasando). Lo que sí pierde son ~6 bebidas con el dato de origen PODRIDO (una Coca-Cola
+  // con 3 g de grasa, un Monster Ultra con 4,4): ahí el hueco honesto es mejor que el número inventado.
+  // Campo ausente (null) → no bloquea: la guarda solo actúa con un dato que CONTRADICE que sea bebible.
+  var _cafBebible=!((prod.kcal100!=null && prod.kcal100>120) || (prod.g100!=null && prod.g100>=2) || (prod.p100!=null && prod.p100>=3));
+  if(prod.caf100==null && !prod._cafTocada && _cafBebible && typeof cafInferir==="function"){
+    var _cafE=cafInferir(prod.nombre, prod.cats||[]);
+    if(_cafE!=null){ prod.caf100=_cafE; prod.cafEst=true; }
+  }
+  // [CAFE-EMBUDO-FIN]
   _bcUnidadIn=prod.u;                              // la cantidad se pregunta en LA UNIDAD del producto
   var res=$("bc_res"); if(!res) return;
   var falta=(prod.kcal100==null || prod.p100==null);
@@ -11223,6 +11295,11 @@ function bcUnidadBase(){
   // v0.17.2 · conservar también la tabla completa al re-renderizar (cambio de unidad base)
   prod.fib100=leer("bc_fib"); prod.az100=leer("bc_az"); prod.sat100=leer("bc_sat");
   var _sal=leer("bc_sal"); prod.na100=(_sal!=null)?Math.round(_sal*400):null;
+  // ☕ v0.55.0-fix · la cafeína también viaja al re-render. Sin esto, si borrabas un 32 estimado falso
+  // y cambiabas g↔ml, prod.caf100 seguía valiendo 32 y el ámbar reaparecía: tu borrado se revertía en
+  // silencio. _cafTocada marca que el campo YA ha pasado por tus manos → el embudo no vuelve a inferir
+  // (si no, un borrado a null se rellenaría otra vez con la estimación, que es el mismo bug por detrás).
+  prod.caf100=leer("bc_caf"); prod.cafEst=false; prod._cafTocada=1;
   var cant=leer("bc_gramos"); if(cant>0) prod._cant=cant;
   prod.u=(prod.u==="ml")?"g":"ml";
   prod.uMotivo="corregida a mano por ti (la ficha de OFF decía lo contrario)";
@@ -11239,7 +11316,11 @@ function bcCorregirEtiqueta(){
   var prod=_bcProducto; if(!prod){ toast("Escanea o busca un código primero"); return; }
   function rd(id){ var el=$(id); if(!el) return null; var s=(el.value==null?"":String(el.value)).trim(); if(s==="") return null; var n=+s.replace(",","."); return (isFinite(n)&&n>=0)?n:null; }
   var _sal=rd("bc_sal");   // la tabla pide SAL en g (como el envase) → el parche guarda sodio en mg (sal g × 400)
-  var campos={kcal:rd("bc_kcal"), p:rd("bc_p"), c:rd("bc_c"), f:rd("bc_g"), fib:rd("bc_fib"), az:rd("bc_az"), sat:rd("bc_sat"), na:(_sal!=null?Math.round(_sal*400):null)};
+  // ☕ v0.55.0-fix · `caf` ENTRA en el parche. Sin él pasaban dos cosas a la vez: (1) la cafeína que
+  // acababas de cotejar con la lata no se guardaba, y (2) como all[key]=patch REEMPLAZA el override
+  // entero, este botón DESTRUÍA una corrección de cafeína guardada antes con el ✏️ de la ficha
+  // (cor_caf) — justo la que el cambio de ovrAplicarAScanner acaba de hacer efectiva.
+  var campos={kcal:rd("bc_kcal"), p:rd("bc_p"), c:rd("bc_c"), f:rd("bc_g"), fib:rd("bc_fib"), az:rd("bc_az"), sat:rd("bc_sat"), na:(_sal!=null?Math.round(_sal*400):null), caf:rd("bc_caf")};
   var patch={}, algo=false, kk;
   for(kk in campos){ if(campos[kk]!=null){ patch[kk]=campos[kk]; algo=true; } }
   if(!algo){ toast("Copia al menos un valor de la etiqueta (kcal, proteína…)"); return; }
@@ -11248,6 +11329,7 @@ function bcCorregirEtiqueta(){
   var all=ovrAll(); all[key]=patch; set(LS_OVR, all);
   var _nom=((($("bc_nombre")||{}).value)||"").trim(); if(_nom) prod.nombre=_nom;              // conserva el nombre tecleado al re-pintar
   var _cant=parseFloat((($("bc_gramos")||{}).value)); if(_cant>0) prod._cant=_cant;           // y la cantidad (patrón bcUnidadBase)
+  prod.caf100=campos.caf; prod.cafEst=false; prod._cafTocada=1;   // ☕ lo que hay en pantalla manda, incluido el hueco vacío
   bcConfirmar(prod);
   toast("📋 Guardado — tu etiqueta manda ya en escáner, buscador, ficha y totales");
 }
@@ -11295,7 +11377,13 @@ function bcAddDiario(){
   if(prod.ean && prod.fuente!=="propio"){
     var cache=get(LS_BC_CACHE,{});
     cache[prod.ean]={producto:{nombre:nombre, kcal100:kcal, p100:p, c100:c, g100:gr, u:uProd, dens:prod.dens||null, img:prod.img||null, nutriscore:prod.nutriscore||null, serving:prod.serving||null,
-      fib100:(fib!=null?fib:null), az100:(az!=null?az:null), sat100:(sat!=null?sat:null), na100:(sal!=null?Math.round(sal*400):null), caf100:(caf!=null?caf:null)}, ts:Date.now()};
+      fib100:(fib!=null?fib:null), az100:(az!=null?az:null), sat100:(sat!=null?sat:null), na100:(sal!=null?Math.round(sal*400):null), caf100:(caf!=null?caf:null),
+      // ☕ v0.55.0-fix (arreglador 27-07) · la caché guardaba caf100 pero NO cafEst: al re-escanear el
+      // mismo EAN, la estimación volvía por la rama caché SIN borde ámbar y sin el aviso «estimada por
+      // el tipo de bebida» — o sea, presentada como dato VERIFICADO. Es la vía por la que un falso
+      // positivo se fosiliza sin señal de revisión. Solo se marca estimada si el número guardado es
+      // EXACTAMENTE el que puso el embudo: si lo has corregido a mano en el panel, es dato TUYO.
+      cafEst:(prod.cafEst===true && caf!=null && caf===prod.caf100)?1:0}, ts:Date.now()};
     set(LS_BC_CACHE,cache);
   }
   bcCerrar(); renderComida();
@@ -13165,7 +13253,7 @@ function resetTodo(){ if(!confirm("⚠️ Esto borra TODO: perfil, pesos, entren
 // Reemplazo total con confirmación. Reusa get/set, hoyLocal, toast, validar, render. NO toca motor ni gate.
 function exportarJSON(){ try{ set("jvf_last_export",hoyLocal()); }catch(e){}
   try{
-    var data={ app:"jvf", schema:1, app_version:"0.54.0", exportadoEl:new Date().toISOString(),
+    var data={ app:"jvf", schema:1, app_version:"0.55.0", exportadoEl:new Date().toISOString(),
       perfil:get(LS_P,null), pesos:get(LS_W,[]), entrenos:get(LS_E,[]), notas_ej:get("jvf_notas_ej",{}), comida:get("jvf_comida",[]), agua:get("jvf_agua",{}), suples_cfg:get("jvf_suples_cfg",null), suples_log:get("jvf_suples_log",{}),
       rutinas:get("jvf_rutinas",[]), meals:get("jvf_meals",[]), ent_start:get("jvf_ent_start",null),   // v0.10 · backup completo
       alimentos_propios:get("jvf_alimentos_propios",[]), barcode_cache:get("jvf_barcode_cache",{}),   // I5/I6 · también viajan en el backup
@@ -13746,7 +13834,7 @@ var CEREBRO_KB=[
   },
   {
     tronco:"alimentacion", rama:"deficit-perder-grasa-reparto",
-    claves:["definicion","deficit","perder grasa","adelgazar","secar","cut","estoy en cut","como reparto en definicion","dieta para marcar","bajar de peso","bajar peso","perder peso","cuanto deficit","dieta de definicion","quiero definir","tengo que hacer dieta","he cogido tripa desde que fui padre"],
+    claves:["definicion","deficit","perder grasa","adelgazar","tengo hipertension y quiero adelgazar","soy hipertenso y quiero adelgazar","tengo la tension alta y quiero adelgazar","secar","cut","estoy en cut","como reparto en definicion","dieta para marcar","bajar de peso","bajar peso","perder peso","cuanto deficit","dieta de definicion","quiero definir","tengo que hacer dieta","he cogido tripa desde que fui padre"],
     r:"En definición: déficit moderado (15-25%), proteína ~1,5-2,0 g/kg, carbos ALTOS para rendir en el gym y la grasa en su suelo (~0,5-0,8 g/kg). Lo que protege el músculo es entrenar duro (tensión + sobrecarga progresiva), y para eso necesitas los carbos; se recorta GRASA, no carbos. Cuanto más magro estés, más suave el déficit. (— Tema 3, Helms 2014 / cierre proteína 2026)",
     chips:["¿cuántos carbos en cut?","¿bajo la proteína?","¿cuánto déficit es demasiado?","¿puedo ganar músculo a la vez?"]
   },
@@ -13805,7 +13893,7 @@ var CEREBRO_KB=[
   {
     tronco:"carbohidratos", rama:"suelo-minimo-tiroides",
     claves:["minimo de carbos","suelo de carbos","carbos muy bajos","keto para musculo","cetogenica","bajar mucho los carbos","cuanto es lo minimo de carbos","keto","dieta keto","la keto pierde musculo","hay un minimo"],
-    r:"Para fuerza e hipertrofia NO hay un suelo de carbos (incluso keto mantiene el 1RM). El único matiz es en DÉFICIT: no bajar de ~50 g/día protege la tiroides (la T3 cae con déficit sin carbos). Pero esos datos vienen de dietas muy bajas de los años 70-80, así que es un suelo blando, marcado para revisar. (— Tema 34, Spaulding 1976 / MDPI Nutrients 2024)",
+    r:"Para fuerza e hipertrofia NO hay un suelo de carbos (incluso keto mantiene el 1RM). El único matiz es en DÉFICIT: no bajar de ~50 g/día protege la tiroides (la T3 cae con déficit sin carbos). Pero esos datos vienen de dietas muy bajas de los años 70-80, así que es un suelo blando, marcado para revisar. (— Tema 34, Spaulding 1976 / Mathieson 1986)",
     chips:["¿los carbos son anabólicos?","¿carbos altos en cut?","¿por qué se pierde masa muscular?"]
   },
 
@@ -14106,7 +14194,7 @@ var CEREBRO_KB=[
   // ─────────────── TRONCO: AGUA / SAL / SODIO ───────────────
   {
     tronco:"sodio", rama:"miedo-a-la-sal",
-    claves:["sal","sodio","le tengo miedo a la sal","cuanta sal","la sal es mala","sal para el pump","necesito sal","echar sal","sodio en el gym","y el sodio","mejora el pump"],
+    claves:["sal","sodio","le tengo miedo a la sal","cuanta sal","tengo hipertension cuanta sal puedo tomar","soy hipertenso cuanta sal puedo tomar","cuanta sal puedo tomar con hipertension","tengo la tension alta cuanta sal puedo tomar","la sal es mala","sal para el pump","necesito sal","echar sal","sodio en el gym","y el sodio","mejora el pump"],
     r:"Si estás sano, activo y sudas, no le tengas miedo a la sal: repones el sodio que pierdes y restringirlo en exceso no tiene sentido. PERO esto NO aplica a hipertensos, sal-sensibles, enfermedad renal/cardíaca o mayores → ahí toca moderar. Y lo del \"pump\" con sal en pesas no está demostrado (es marketing); el sodio importa sobre todo en resistencia/calor. (— Tema 32, JAMA 2023)",
     chips:["¿la sal marina es mejor?","¿cuánta agua bebo?","¿el pump significa crecimiento?"]
   },
@@ -14324,7 +14412,7 @@ var CEREBRO_KB=[
   },
   {
     tronco:"suplementacion", rama:"colageno-vitamina-c-tejido-conectivo-no-musculo",
-    claves:["sirve el colageno para los musculos","colageno con vitamina c para tendones","cuando tomar colageno antes o despues de entrenar","el colageno crea musculo o no","glutamina sirve para hipertrofia","necesito multivitaminico si como variado","colageno para articulaciones piel y tendon","gelatina antes de entrenar para el tendon"],
+    claves:["sirve el colageno para los musculos","colageno con vitamina c para tendones","que suplemento tomo para la artrosis","tengo artrosis me pongo colageno","el colageno sirve para la artrosis","colageno para la artrosis","que tomo para la artrosis","cuando tomar colageno antes o despues de entrenar","el colageno crea musculo o no","glutamina sirve para hipertrofia","necesito multivitaminico si como variado","colageno para articulaciones piel y tendon","gelatina antes de entrenar para el tendon"],
     r:"Vamos en cristiano, porque aquí se mezclan tres cosas y solo una tiene algo de chicha. El colágeno NO te hace músculo: para músculo mandan la proteína total del día y la leucina, no el colágeno (es una proteína de baja calidad, le falta triptófano). Donde sí hay una señal —y subrayo emergente: estudios pequeños, a corto plazo, sobre marcadores en sangre, no sobre \"tendones más fuertes\" medidos a años— es en tejido conectivo: tendón, ligamento, articulación y piel. El protocolo con más respaldo mecanicista es 15 g de gelatina o péptidos de colágeno junto con vitamina C tomados alrededor de 1 hora ANTES de entrenar, no después ni a cualquier hora, porque la carga del ejercicio es la que arrastra esos aminoácidos al tendón. Es barato y sin riesgo, así que como apuesta para cuidar tendón o articulación tiene sentido; pero trátalo como \"puede ayudar al conectivo\", nunca como constructor de músculo. La glutamina para hipertrofia en persona sana es tirar el dinero, y el multivitamínico es un seguro de vida por si comes mal, no un potenciador. (— Shaw et al., 2017, American Journal of Clinical Nutrition, PMID 27852613: 15 g de gelatina enriquecida con vitamina C tomados una hora antes de ejercicio intermitente duplicaron en sangre el propeptido PINP, marcador de sintesis de colageno, en un ensayo cruzado doble ciego con 8 sujetos)",
     chips:["¿Y la creatina, esa sí que va para el músculo?","¿Cuánta proteína al día necesito de verdad?","¿Qué suplementos sí valen?"]
   },
@@ -15046,7 +15134,7 @@ var CEREBRO_KB=[
   },
   {
     tronco:"creatina", rama:"es-segura-no-es-droga",
-    claves:["la creatina es una droga","la creatina es un esteroide","la creatina engancha","la creatina la puedo tomar con 14 años","creatina siendo menor de edad","creatina para menores","la creatina es mala para los jovenes","es droga la creatina","la creatina es como una droga","la creatina es un anabolico","puedo tomar creatina siendo menor","la creatina crea adiccion","no soy deportista puedo tomar creatina","creatina sin ser deportista","la creatina hace daño","me hace daño la creatina","la creatina es mala"],
+    claves:["la creatina es una droga","la creatina es un esteroide","tengo hipertension puedo tomar creatina","soy hipertenso puedo tomar creatina","creatina con la tension alta","la creatina engancha","la creatina la puedo tomar con 14 años","creatina siendo menor de edad","creatina para menores","la creatina es mala para los jovenes","es droga la creatina","la creatina es como una droga","la creatina es un anabolico","puedo tomar creatina siendo menor","la creatina crea adiccion","no soy deportista puedo tomar creatina","creatina sin ser deportista","la creatina hace daño","me hace daño la creatina","la creatina es mala"],
     r:"La creatina no es una droga ni un esteroide — y para un ADULTO sano, sí: se puede tomar sin ser deportista ni competir. Es una sustancia que tu propio cuerpo fabrica y que ya comes en la carne y el pescado; el suplemento solo llena algo más el depósito. No es una hormona, no te cambia las hormonas y, esto sí está medido, no deja calvo. Lo que hace de verdad es ayudarte a rendir un poco más y a tener algo más de fuerza, además de meter algo de agua dentro del músculo: el músculo extra directo es pequeño, así que tampoco es magia. Dos excepciones en las que ese «sí» NO vale y hay que preguntar antes: embarazo o lactancia, y enfermedad renal previa — ahí la regla es consultarlo con tu médico. Y si eres menor de edad, aquí no te voy a dar un adelante alegre: a tu edad lo que de verdad te cambia el resultado es la técnica, comer bien y dormir, y cualquier suplemento tiene que pasar por tus padres y por tu médico, que es quien puede valorarlo en tu caso concreto. (— Tema 10, reglas de creatina · en menores, decisión de familia y médico, no de esta app)",
     chips:["¿la creatina deja calvo?","¿cuánta creatina al día?","¿qué suplementos sí valen?"]
   },
@@ -15254,10 +15342,30 @@ var CEREBRO_KB=[
     chips:["tengo 14 años, ¿puedo?","¿cuánta proteína tengo que comer?","¿por dónde empiezo del todo?"]
   },
   {
-    tronco:"empezar", rama:"banderas-rojas-parar-y-consultar",
-    claves:["me duele el pecho","dolor en el pecho","me duele el pecho al entrenar","me duele el pecho cuando entreno","me duele el pecho haciendo ejercicio","dolor en el pecho al esforzarme","dolor en el pecho al hacer ejercicio","me duele el pecho cuando subo escaleras","me duele el pecho al esforzarme","me duele el pecho y el brazo","me mareo cuando entreno","me mareo al entrenar","mareos al esforzarme","me mareo haciendo pesas","me falta el aire al subir escaleras","me he desmayado entrenando","tomo pastillas para la tension puedo hacer pesas","tengo la tension alta puedo hacer pesas","hipertension y pesas","tomo medicacion para el corazon puedo entrenar","tengo el corazon mal puedo entrenar"],
-    r:"Para y que te lo mire un médico antes de seguir entrenando. Dolor u opresión en el pecho, mareo, desmayo o una falta de aire desproporcionada CUANDO TE ESFUERZAS no son «entreno flojo» ni mala técnica: son señales que hay que descartar con un profesional, más aún si aparecen con el esfuerzo y se pasan al parar. No es alarmismo, es lo barato: una consulta. Y si ya tienes la tensión alta o medicación del corazón, díselo y pide el visto bueno antes de empezar; cuando vuelvas, evita aguantar la respiración forzando en las series pesadas — la maniobra de Valsalva dispara la tensión (se han medido picos de 320/250 mmHg), así que respira y trabaja con cargas que te dejen hacerlo. Esto es orientación general, no un diagnóstico: aquí no se decide nada de tu salud. (— caveat obligatorio de Valsalva en hipertensos y patología cardiovascular u ocular, MacDougall 1985 · el resto, guía general y derivación)",
+    tronco:"empezar", rama:"banderas-rojas-parar-y-consultar", urg:1,
+    claves:["me duele el pecho","dolor en el pecho","opresion en el pecho","tengo opresion en el pecho","me aprieta el pecho","presion en el pecho","me falta el aire","me falta el aire al esforzarme","me falta mucho el aire","me duele el pecho al entrenar","me duele el pecho cuando entreno","me duele el pecho haciendo ejercicio","dolor en el pecho al esforzarme","dolor en el pecho al hacer ejercicio","me duele el pecho cuando subo escaleras","me duele el pecho al esforzarme","me duele el pecho y el brazo","me mareo cuando entreno","me mareo al entrenar","mareos al esforzarme","me mareo haciendo pesas","me falta el aire al subir escaleras","me he desmayado entrenando","tomo pastillas para la tension puedo hacer pesas","tengo la tension alta puedo hacer pesas","hipertension y pesas","tomo medicacion para el corazon puedo entrenar","tengo el corazon mal puedo entrenar","tengo marcapasos","tengo marcapasos puedo entrenar","tengo un marcapasos puedo hacer pesas","puedo entrenar con marcapasos","marcapasos y gimnasio","soy hipertenso","soy hipertensa","soy hipertenso puedo entrenar","soy hipertensa puedo hacer pesas","tengo hipertension puedo entrenar","tengo hipertension","puedo dejar las pastillas de la tension si hago pesas","puedo dejar la medicacion de la tension si hago ejercicio","si hago deporte puedo dejar las pastillas de la tension"],
+    r:"Para y que te lo mire un médico antes de seguir entrenando. Dolor u opresión en el pecho, mareo, desmayo o una falta de aire desproporcionada CUANDO TE ESFUERZAS no son «entreno flojo» ni mala técnica: son señales que hay que descartar con un profesional, más aún si aparecen con el esfuerzo y se pasan al parar. No es alarmismo, es lo barato: una consulta. Y si ya tienes la tensión alta o medicación del corazón, díselo y pide el visto bueno antes de empezar; cuando vuelvas, evita aguantar la respiración forzando en las series pesadas — la maniobra de Valsalva dispara la tensión (se han medido picos de 320/250 mmHg), así que respira y trabaja con cargas que te dejen hacerlo. Y una cosa que NO se decide aquí ni por tu cuenta: la medicación de la tensión o del corazón no se deja ni se ajusta porque hayas empezado a entrenar o hayas adelgazado — eso lo cambia quien te la puso, con una analítica delante. Esto es orientación general, no un diagnóstico: aquí no se decide nada de tu salud. (— caveat obligatorio de Valsalva en hipertensos y patología cardiovascular u ocular, MacDougall 1985 · el resto, guía general y derivación)",
     chips:["¿tengo que ir al médico antes de empezar?","tengo 60 años, ¿puedo?","mi médico me dijo que camine"]
+  },
+  // ═══ M-6b · BANDERAS ROJAS NO CARDÍACAS (arreglador 27-07, bloqueantes 2 y 3 de la ronda adversarial) ═══
+  // Antes de este arreglo, «tengo hernia discal y no controlo el pipi» recibía «la espalda no es de cristal,
+  // la mayoría acaba entrenando fuerza con normalidad» y «tengo varices y se me ha hinchado una pierna de
+  // golpe y esta caliente» recibía «camina a diario · entrena la pierna con normalidad» (medido con el
+  // runner v4). Son cola de caballo y trombosis: las dos tienen ventana de horas y las dos empeoran con
+  // justo lo que la app aconsejaba. Estas dos fichas existen para que la URGENCIA tenga dónde aterrizar —
+  // la prelación de cerebroUrgencia() las trae aquí antes de que ninguna ficha de tema pueda ganarles.
+  // urg:1 = ficha de urgencia: el guardián M-2b NUNCA la anula (era el bloqueante 1).
+  {
+    tronco:"empezar", rama:"banderas-rojas-espalda-urgente", urg:1,
+    claves:["no controlo el pipi","no controlo la orina","no controlo los esfinteres","se me escapa el pipi","se me escapa la orina","no controlo las heces","no aguanto el pipi","tengo incontinencia","se me duerme la entrepierna","se me duerme la zona de la entrepierna","no siento la entrepierna","se me duerme la ingle","se me cae el pie","tengo hernia discal y no controlo el pipi","tengo una hernia y se me cae el pie"],
+    r:"🚨 Esto no es del gimnasio: que te vean HOY, en urgencias. Perder el control del pipí o de las heces, notar dormida o insensible la zona de la entrepierna (la que apoyas en la silla de montar), que se te caiga el pie al andar o perder fuerza de verdad en una pierna son las señales que obligan a mirar la espalda YA — ahí la ventana es de horas, y esperar a mañana es lo que deja secuelas permanentes. No te lo digo para asustarte: te lo digo porque estas señales concretas son la EXCEPCIÓN a todo lo demás que esta app te pueda contar sobre entrenar. Ve a urgencias o llama al 112 y dilo con estas palabras: «he perdido el control de esfínteres» o «tengo dormida la zona de la silla de montar». Lo de entrenar lo hablamos DESPUÉS de que te valoren — y la buena noticia es que con una hernia, una vez descartado esto, casi todo el mundo acaba entrenando fuerza con normalidad. Aquí no se diagnostica nada: precisamente por eso se te manda a que te MIREN — a urgencias o a tu médico, hoy, y el gimnasio después. (— derivación urgente, guía general: el master file no cubre patología · sin cifras ni plazos porque no los hay que dar)",
+    chips:["¿tengo que ir al médico antes de empezar?","tengo una hernia discal, ¿puedo hacer pesas?","cuando duele, ¿hay que seguir o parar?"]
+  },
+  {
+    tronco:"empezar", rama:"banderas-rojas-pierna-hinchada", urg:1,
+    claves:["una pierna hinchada caliente y roja","tengo una pierna hinchada y caliente","se me ha hinchado una pierna de golpe","se me ha hinchado una pierna y esta caliente","tengo una pierna hinchada de golpe","tengo la pantorrilla hinchada y caliente","tengo un gemelo hinchado y caliente","tengo una ulcera en el tobillo","ulcera en el tobillo que no cierra","tengo una llaga en la pierna que no cierra"],
+    r:"🚨 Eso se mira HOY, y no en el gimnasio. UNA sola pierna que se hincha de golpe y está caliente, roja o dura — más aún después de un viaje largo, una operación, una escayola o unos días de reposo — obliga a descartar una trombosis; y hasta que te vean NO conviene ni andar mucho con ella, ni masajearla, ni entrenarla. Lo mismo con una herida o una úlcera en el tobillo o en la pierna que no acaba de cerrar: eso lo valora un profesional y no se tapa con ejercicio. Ve a tu médico o a urgencias y cuéntalo tal cual: «se me ha hinchado una pierna de golpe, está caliente y roja». Cuando te hayan visto y te den el visto bueno, moverse suele estar del lado de la solución en los problemas de circulación — pero ese ORDEN importa, y por eso te lo digo primero. Aquí orientamos sobre moverte: no diagnosticamos ni te decimos lo que tienes — quien tiene que verte esa pierna hoy es tu médico o urgencias. (— derivación urgente, guía general: el master file no cubre patología venosa · sin cifras)",
+    chips:["¿tengo que ir al médico antes de empezar?","tengo varices, ¿puedo hacer ejercicio?","mi médico me dijo que camine"]
   },
   {
     tronco:"empezar", rama:"medico-antes-de-empezar",
@@ -15273,8 +15381,8 @@ var CEREBRO_KB=[
   },
   {
     tronco:"entreno", rama:"osteoporosis-y-ejercicio",
-    claves:["osteoporosis","tengo osteoporosis","tengo osteoporosis que ejercicio","ejercicio para los huesos","osteoporosis y pesas"],
-    r:"Con osteoporosis el ejercicio no es solo posible: es parte del tratamiento, porque el hueso se refuerza cuando se le CARGA — y eso es justo lo que hace el entrenamiento de fuerza. Lo que mejor combina: fuerza progresiva, algo de impacto suave (andar rápido, escaleras) y trabajo de equilibrio para prevenir caídas. Caminar solo, con ser estupendo, se queda corto para el hueso. Eso sí: con un diagnóstico hecho, las cargas concretas y qué evitar (por ejemplo flexiones bruscas de columna con peso) se pautan con tu médico o un profesional del ejercicio — esto es orientación, no receta. (— la fuerza protege hueso y autonomía en mayores, doctrina del motor · pauta clínica concreta: guía general y derivación)",
+    claves:["osteoporosis","tengo osteoporosis","tengo osteoporosis que ejercicio","ejercicio para los huesos","osteoporosis y pesas","osteopenia","tengo osteopenia","tengo osteopenia que ejercicio","osteopenia y pesas","tengo los huesos debiles"],
+    r:"Si te han diagnosticado osteoporosis (u osteopenia), el ejercicio no es solo posible: es parte del tratamiento, porque el hueso se refuerza cuando se le CARGA — y eso es justo lo que hace el entrenamiento de fuerza. Lo que mejor combina: fuerza progresiva, algo de impacto suave (andar rápido, escaleras) y trabajo de equilibrio para prevenir caídas. Caminar solo, con ser estupendo, se queda corto para el hueso. Eso sí: con un diagnóstico hecho, las cargas concretas y qué evitar (por ejemplo flexiones bruscas de columna con peso) se pautan con tu médico o un profesional del ejercicio — esto es orientación, no receta. (— la fuerza protege hueso y autonomía en mayores, doctrina del motor · pauta clínica concreta: guía general y derivación)",
     chips:["tengo 60 años, ¿puedo?","mi médico me dijo que camine","¿necesito entrenador?"]
   },
   {
@@ -15330,6 +15438,59 @@ var CEREBRO_KB=[
     claves:["entrenar sin molestar a los vecinos","sin molestar a los vecinos","entrenar sin hacer ruido","ejercicio sin ruido en un piso"],
     r:"Se puede entrenar fuerte en un tercero sin que el de abajo se entere: elige ejercicios SIN impacto — sentadillas, zancadas, flexiones, remo con mochila, puente de glúteo, isométricos — con las bajadas controladas (controlar la bajada es técnica y te hace la serie más difícil sin peso, pero NO da más estímulo: C111/C112), sobre una esterilla o alfombra, y fuera saltos: burpees y comba son lo único que retumba. A igual esfuerzo cerca del fallo, al músculo le da igual que no haya salto. Franja de horario razonable y a entrenar. (— Tema 17, la tensión no exige impacto · selección sin salto, guía general)",
     chips:["¿versiones fáciles de los ejercicios?","¿se puede ganar músculo en casa sin máquinas?","¿cómo progreso?"]
+  },
+  // ═══════════ M6 · PATOLOGÍA DECLARADA — «¿puedo entrenar teniendo X?» (PLIEGO_CEREBRO_2.0 · v0.55.0) ═══════════
+  // Orden de Pablo (25-07): «deberías poder preguntar cosas de la lesión al cerebro». Un «no sé» ante una
+  // patología declarada es un FRACASO del Cerebro, no prudencia: empuja al usuario a Google. Estas 7 fichas
+  // cierran las 7 filas que el runner v4 medía en NULL sobre las 362 del banco naive (artrosis ×2, hernia
+  // discal, varices, colesterol, tobillos/circulación, prótesis de rodilla).
+  // DOCTRINA ORIENTAR-SIN-DIAGNOSTICAR (línea dura): ninguna ficha dice qué tienes, ninguna prescribe
+  // tratamiento, dosis ni ejercicio terapéutico, y ninguna promete curación. Cada una lleva (a) el patrón
+  // general honesto, (b) qué hacer MIENTRAS, (c) BANDERAS ROJAS concretas y (d) derivación como CIERRE.
+  // Lo que el master no respalda va marcado «guía general» y SIN cifras (regla del pliego M6).
+  // Simuladas contra el motor REAL antes de aplicarse: 7 ganadas / 0 perdidas / 0 cambios de destino en
+  // las 362, chips sin callejones ni auto-bucles, y banderas-rojas + embarazo/creatina intactas.
+  {
+    tronco:"entreno", rama:"entrenar-con-enfermedad",
+    claves:["puedo entrenar teniendo una enfermedad","puedo entrenar si tengo una enfermedad","tengo una enfermedad puedo entrenar","tengo una enfermedad puedo hacer ejercicio","tengo una enfermedad cronica puedo entrenar","tengo una enfermedad cronica puedo hacer ejercicio","se puede entrenar con una enfermedad","puedo hacer pesas teniendo una enfermedad","tengo problemas de salud puedo entrenar","tengo una patologia puedo entrenar","puedo entrenar con mi enfermedad","que ejercicio puedo hacer con una enfermedad","el ejercicio es bueno para una enfermedad","tengo una enfermedad me conviene entrenar"],
+    r:"⚠️ Lo primero, porque no admite espera: si aparece dolor u opresión en el pecho, mareo o desmayo al esforzarte, falta de aire desproporcionada, pérdida de fuerza real, hormigueo o adormecimiento, o un dolor que va a más semana tras semana → para y que te lo miren, eso no se arregla entrenando mejor. Dicho lo importante, respuesta corta y honesta: tener una enfermedad crónica casi nunca significa «no puedes entrenar» — significa que la PAUTA concreta la pone tu médico o tu fisio, no una app. El patrón general es que moverse suele formar parte del tratamiento y no lo contrario, y que para casi todo el mundo el riesgo mayor está en quedarse quieto. Lo que puedes hacer MIENTRAS llega esa consulta: empezar suave y progresar despacio (arrancar poco a poco es en sí la mayor medida de seguridad), quedarte en el rango de movimiento que no te duele, no estrenar cargas máximas ni ejercicios nuevos el mismo día, y respirar en vez de aguantar el aire forzando. Y llévate las preguntas hechas a la consulta: ¿puedo entrenar fuerza?, ¿hay algún movimiento que en MI caso deba evitar?, ¿mi medicación cambia algo (tensión, azúcar, mareos)? Y el cierre de siempre: la pauta concreta la pone tu médico o tu fisio, no una app — aquí orientamos, no te vamos a decir qué tienes ni a ponerte un tratamiento. (— guía general prudente + derivación · el criterio de «consultar antes según el perfil» sigue la ficha del chequeo médico; sin cifras porque el master no cubre patología)",
+    chips:["¿tengo que ir al médico antes de empezar?","cuando duele, ¿hay que seguir o parar?","me duele el pecho al entrenar"]
+  },
+  {
+    tronco:"entreno", rama:"artrosis-y-artritis",
+    claves:["artrosis","tengo artrosis","tengo artrosis puedo hacer algo","tengo artrosis puedo entrenar","tengo artrosis puedo hacer ejercicio","tengo artrosis puedo hacer pesas","tengo artrosis en las rodillas","tengo artrosis en las rodillas puedo hacer sentadillas","puedo hacer sentadillas con artrosis","tengo artrosis en las dos rodillas","artrosis y pesas","artrosis de rodilla","artrosis en la cadera","el ejercicio es malo para la artrosis","me voy a cargar las rodillas con artrosis","artritis","tengo artritis","tengo artritis puedo entrenar","tengo artritis puedo hacer pesas","artritis y ejercicio","tengo artrosis en las manos"],
+    r:"⚠️ Antes de nada, lo que hay que enseñarle a un profesional ANTES de seguir entrenando: que la articulación se bloquee o falle, que se hinche de forma marcada o esté caliente y roja, que te duela por la noche sin que cambie al moverte de postura, que pierdas fuerza de golpe, o que haya fiebre. Con eso descartado, seguimos. Y lo segundo, sin diagnosticarte nada: artrosis y artritis no son lo mismo (una va de desgaste del cartílago, la otra de inflamación) y cuál tienes tú lo dice tu informe, no esta app. Dicho eso, el patrón general es tranquilizador: el ejercicio de fuerza suele estar INDICADO, no prohibido. La articulación no se «gasta» por usarla con una carga que toleras — lo que la protege es la musculatura de alrededor, que le quita trabajo — y la gente que mantiene fuerza suele moverse mejor y con menos molestia. Lo que puedes hacer mientras te lo pautan: trabaja en el rango que NO te duele (si la sentadilla profunda molesta, acorta el recorrido o usa una silla o un cajón, en vez de dejar de entrenar la pierna entera), empieza con poco peso y sube despacio, y guíate por la regla de las 24 h: una molestia leve durante el ejercicio que vuelve a su sitio al día siguiente y no crece semana a semana es aceptable; si crece, has ido demasiado rápido. Y el cierre: qué ejercicios y cuánta carga en tu caso concreto lo decide tu médico o tu fisio; aquí no se diagnostica ni se promete que se cure. (— guía general prudente + derivación: el master file NO cubre artrosis ni artritis, así que esta ficha va SIN cifras · la regla de las 24 h y el trabajo por rango sin dolor siguen la doctrina de carga del apartado de molestias)",
+    chips:["tengo 60 años, ¿puedo?","cuando duele, ¿hay que seguir o parar?","mi médico me dijo que camine"]
+  },
+  {
+    tronco:"entreno", rama:"hernia-discal",
+    claves:["tengo una hernia discal","tengo una hernia discal puedo hacer pesas","tengo una hernia discal puedo entrenar","tengo hernia discal","puedo hacer pesas con hernia discal","puedo entrenar con una hernia discal","hernia discal y pesas","hernia discal y gimnasio","tengo una hernia en la espalda","tengo una hernia lumbar","puedo hacer sentadillas con hernia discal","puedo hacer peso muerto con hernia discal","me han visto una hernia en la resonancia","tengo una protrusion discal","la hernia discal se cura entrenando","hernia discal","tengo hernias discales","tengo dos hernias discales","tengo hernias en la espalda"],
+    r:"🚨 Esto va primero y sin negociar: si pierdes el control del pipí o de las heces, o notas dormida la zona de la entrepierna, eso es URGENCIAS HOY — no el gimnasio, y no mañana. Y si tienes dolor que baja por la pierna, hormigueo o adormecimiento, pérdida de fuerza (el pie se te cae, la pierna falla) o dolor nocturno que no cambia con la postura, que te lo valoren ANTES de cargar. Con eso dicho, vamos con lo demás: una hernia que sale en una resonancia no siempre es la que explica tu dolor — se ven hernias en gente que no tiene ninguna molestia —, y eso quién lo valora es el profesional que te lleva, no esta app. Lo segundo, para quitarte el miedo de encima: la espalda no es de cristal. La mayoría de la gente con una hernia acaba entrenando fuerza con normalidad, empezando por cargas bajas y evitando de momento el gesto exacto que le dispara el síntoma; el reposo largo, en cambio, suele dejarte más débil y más sensible. Lo que puedes hacer mientras: aprende la bisagra de cadera sin peso o con un palo, elige las variantes que toleres (empuje, tirón y pierna tienen versiones para todos los gustos) y sube la carga por semanas, no por días. Y un apunte honesto de nuestro material: el «core de acero» ayuda en el dolor lumbar, pero NO es superior al ejercicio general a medio-largo plazo, así que no hace falta que te obsesiones con las planchas: entrena completo. La pauta concreta te la da tu médico o tu fisio. (— C25 del master, el core ayuda en dolor lumbar pero no supera al ejercicio general, evidencia mixta · el resto, guía general prudente + derivación: el master no cubre la hernia discal, así que aquí no hay cifras)",
+    chips:["¿el core evita lesiones?","cuando duele, ¿hay que seguir o parar?","¿tengo que ir al médico antes de empezar?"]
+  },
+  {
+    tronco:"entreno", rama:"colesterol-y-ejercicio",
+    claves:["tengo el colesterol alto","tengo el colesterol alto el ejercicio me lo baja","puedo dejar las pastillas del colesterol si hago ejercicio","puedo dejar la estatina si entreno","puedo dejar la medicacion del colesterol si hago deporte","si hago ejercicio puedo dejar las pastillas del colesterol","tengo el colesterol alto puedo entrenar","el ejercicio baja el colesterol","el ejercicio me baja el colesterol","el deporte baja el colesterol","como bajo el colesterol","que hago para bajar el colesterol","bajar el colesterol con ejercicio","colesterol alto y pesas","puedo entrenar con el colesterol alto","me ha salido el colesterol alto en la analitica","tengo el colesterol alto que ejercicio hago","tengo los trigliceridos altos","tengo colesterol","tengo colesterol puedo entrenar","tengo colesterol puedo hacer pesas"],
+    r:"⚠️ Un aviso que va de verdad por delante de todo: si además notas dolor u opresión en el pecho o te falta el aire al esforzarte, eso NO es «el colesterol» — es motivo de consulta ya, hoy, antes de seguir leyendo sobre fibra. Dicho eso: moverse ayuda, y te voy a decir exactamente en qué se apoya cada cosa para que no te vendan humo. Lo que SÍ está respaldado en nuestro material: la FIBRA baja el colesterol LDL (el psyllium tiene ensayo propio) y comer más fibra se asocia a un 15-30% menos de mortalidad total y cardiovascular, con el máximo beneficio en torno a los 25-29 g al día; y ganar músculo mejora los marcadores metabólicos (más masa muscular se asocia a menos grasa, mejor glucosa en ayunas y mejor HbA1c). Lo que va como guía general y no como promesa: que el ejercicio POR SÍ SOLO te baje el LDL es más modesto de lo que se anuncia — donde más se suele notar es en los triglicéridos y en el conjunto (peso, grasa, tensión, forma física). Así que el plan sensato es el aburrido: fuerza 2-3 días por semana + pasos a diario (el grueso del beneficio ya está en torno a los 7.000) + subir la fibra + perder algo de grasa si sobra. Y lo que aquí NO se toca: tus cifras objetivo, tu analítica y si te corresponde o no medicación los decide tu médico — ni te sugiero dejarla ni ajustarla. (— C117, fibra: Reynolds 2019 Lancet, 15-30% menos mortalidad y máximo a 25-29 g/día, y psyllium sobre LDL, PMID 30239559 · C100, Havers 2025, más masa muscular ↔ mejor glucosa y HbA1c · ~7.000 pasos, Ding 2025 Lancet PH · el efecto del ejercicio sobre el colesterol en sí: guía general, el master no lo cubre)",
+    chips:["¿cuánta fibra tengo que comer?","¿cuántos pasos al día?","me duele el pecho al entrenar"]
+  },
+  {
+    tronco:"entreno", rama:"varices-y-circulacion",
+    claves:["tengo varices puedo hacer ejercicio","tengo varices","tengo varices en las piernas","puedo hacer sentadillas con varices","puedo entrenar con varices","varices y pesas","las varices me impiden entrenar","tengo mala circulacion","tengo mala circulacion en las piernas","tengo mala circulacion puedo hacer ejercicio","se me hinchan los tobillos","se me hinchan los tobillos puedo hacer ejercicio","se me hinchan las piernas","el ejercicio es bueno para la circulacion","tengo las piernas hinchadas"],
+    r:"🚨 Primero lo que NO es del gimnasio: UNA sola pierna que se hincha de golpe y está caliente, roja y dolorida — sobre todo tras un viaje largo, una operación o días de reposo — es motivo de ir al médico HOY, porque hay que descartar una trombosis, y hasta que te vean no conviene ni caminarla ni entrenarla. También: una herida o úlcera en el tobillo que no cierra, o dolor en la pierna al caminar que te obliga a pararte y se calma al parar. Descartado eso, la buena noticia: con varices o piernas que se hinchan, moverse suele estar del lado de la solución. Caminar mejora la circulación y la función del endotelio (eso está respaldado en nuestro material), y al andar los gemelos hacen de bomba que ayuda a la sangre a volver hacia arriba — justo lo contrario de estar horas de pie parado o sentado sin moverte. Lo que puedes hacer mientras: camina a diario, corta los ratos largos de pie quieto o sentado levantándote a moverte, sube las piernas un rato al final del día, y en el gimnasio entrena la pierna con normalidad pero RESPIRANDO — no aguantes el aire forzando en las series pesadas, que esa maniobra dispara la presión (ese caveat está medido en tensión alta y patología cardiovascular; aquí lo traigo como prudencia, no como dato de varices). Si usas medias de compresión o te han dicho algo concreto sobre qué evitar, eso manda sobre lo que diga una app. El cierre de siempre: si las varices te dan síntomas, quien decide el tratamiento es tu médico; aquí orientamos sobre moverte, no diagnosticamos. (— C29 del master, caminar mejora circulación y función endotelial, RESPALDADO · caveat de la maniobra de Valsalva, MacDougall 1985, escrito para hipertensos y patología cardiovascular · la bomba muscular del gemelo y las banderas rojas venosas: guía general prudente, el master no cubre varices)",
+    chips:["¿cuántos pasos al día?","mi médico me dijo que camine","cuando duele, ¿hay que seguir o parar?"]
+  },
+  {
+    tronco:"entreno", rama:"protesis-y-operaciones",
+    claves:["me operaron de la rodilla puedo entrenar","me operaron de la rodilla puedo hacer de todo","me operaron puedo volver al gimnasio","me operaron de la cadera puedo entrenar","me operaron del hombro puedo entrenar","tengo una protesis de rodilla","tengo una protesis de rodilla puedo entrenar","tengo una protesis de cadera","puedo hacer pesas con una protesis","puedo hacer sentadillas con una protesis de rodilla","me pusieron una protesis puedo entrenar","protesis","cuando puedo volver a entrenar despues de una operacion","puedo entrenar despues de una operacion","me operaron del ligamento cruzado","ya puedo hacer de todo despues de la operacion"],
+    r:"⚠️ Lo primero: si tienes un dolor nuevo que no se parece al de la recuperación, hinchazón o calor en la zona operada, fiebre, o la articulación se te bloquea o te falla y te vas al suelo, eso se consulta ANTES de seguir entrenando. Y con eso descartado, aquí manda quien te operó y tu fisio: son los únicos que saben cómo quedó la cosa por dentro y en qué punto estás. Dicho eso, el patrón general es bueno: si te dieron el alta y ha pasado tiempo, normalmente SÍ se puede entrenar fuerza — y además conviene, porque tras una operación el lado operado casi siempre se queda más débil que el otro y esa diferencia solo se cierra entrenándola. Ojo a una distinción que cambia toda la respuesta: no es lo mismo «me operaron hace años y hago vida normal» que «me operaron hace un mes»; si todavía estás en rehabilitación, la pauta es de tu fisio y punto, no de una app. Lo que puedes hacer si ya estás de alta: empieza por debajo de lo que crees que aguantas, trabaja las DOS piernas o los dos brazos (no solo el bueno), quédate en el rango que no duele y progresa por semanas, no por días. Nada de volver de golpe a los pesos de antes de la operación. Y lo de siempre: qué está permitido en TU prótesis o en TU reparación te lo dice tu equipo; aquí orientamos sobre cómo volver a la carga, no sustituimos a tu rehabilitación. (— guía general prudente + derivación: el master file no cubre cirugía ni prótesis, así que esta ficha va SIN plazos ni cifras · el principio de progresar la carga poco a poco y trabajar el lado sano sigue la doctrina de carga del apartado de molestias)",
+    chips:["cuando duele, ¿hay que seguir o parar?","tengo 60 años, ¿puedo?","¿tengo que ir al médico antes de empezar?"]
+  },
+  {
+    tronco:"entreno", rama:"tiroides-y-entrenar",
+    claves:["tengo hipotiroidismo","tengo hipotiroidismo puedo entrenar","puedo dejar la levotiroxina si entreno","puedo dejar la pastilla de la tiroides si hago ejercicio","si adelgazo puedo dejar la levotiroxina","puedo entrenar con hipotiroidismo","hipotiroidismo y pesas","que ejercicio hago si tengo hipotiroidismo","tengo problemas de tiroides puedo entrenar","tengo la tiroides mal","tengo hipertiroidismo","tomo levotiroxina puedo entrenar","tengo tiroides puedo hacer pesas","tengo problemas de tiroides","la tiroides me impide adelgazar","hipotiroidismo","tengo tiroides","tengo tiroides puedo entrenar","tengo problemas de tiroides puedo hacer pesas"],
+    r:"⚠️ Primero lo urgente: si aparecen palpitaciones, temblor, pérdida de peso sin explicarlo o un cansancio extremo, eso se consulta sin esperar — no es cuestión de entrenar más ni de comer menos. Dicho eso: con la tiroides diagnosticada y en tratamiento, entrenar es normal y recomendable: no existe un «entrenamiento para la tiroides» distinto del de cualquier otra persona — fuerza 2-3 días, progresar despacio y dormir bien te sirve igual que a todo el mundo. Un matiz que sí está en nuestro material y te viene bien saber: si estás en DÉFICIT para perder grasa, no hundas los carbohidratos hasta el suelo; mantener unos ~50 g al día protege la T3, aunque hay que decir que ese dato viene de dietas muy bajas de los años 70-80 y lo tenemos marcado como suelo BLANDO, no como una ley. Otra: el yodo de la sal yodada cubre lo normal, y suplementarse yodo por libre teniendo un problema de tiroides es de las cosas que conviene preguntar antes, no hacer por tu cuenta. Y lo importante: si notas un cansancio desproporcionado, que no rindes, que se te cae el pelo o que el peso no se mueve haciéndolo todo bien, eso NO se arregla entrenando más ni comiendo menos — se mira con una analítica y con tu médico, que es quien ajusta la dosis. Aquí no se ajusta ningún tratamiento ni se recomienda ningún bote «para la tiroides». (— Tema 34 del master, suelo blando de ~50 g de carbos en déficit por la T3, Spaulding 1976 / Mathieson 1986 · Tema 32, sal yodada y yodo · el resto, guía general prudente + derivación: el master no cubre la patología tiroidea)",
+    chips:["¿cuánto es lo mínimo de carbos?","¿tengo que ir al médico antes de empezar?","¿cuántos pasos al día?"]
   }
 ];
 
@@ -15759,11 +15920,88 @@ function cerebroClavesCubrenDiag(claves, diags){
     for(var j=0;j<w.length;j++){ if(diags.indexOf(cerebroFold(w[j]))>=0) return true; } }
   return false;
 }
+// ─────────────── M-6b · URGENCIA CLÍNICA: el síntoma de EMERGENCIA manda sobre el TEMA ───────────────
+// (arreglador 27-07 · bloqueantes 1-4 de la ronda adversarial del M-6: los cuatro son LA MISMA avería)
+// Quien nombraba su patología Y ADEMÁS un síntoma de urgencia recibía la ficha TRANQUILIZADORA del tema —
+// o silencio. Medido con el runner v4 sobre este mismo HTML, ANTES del arreglo:
+//   · «tengo hernia discal y no controlo el pipi»  → entreno/hernia-discal («la espalda no es de cristal»)
+//   · «tengo varices y se me ha hinchado una pierna de golpe y esta caliente» → entreno/varices («camina a diario»)
+//   · «tengo colesterol alto y opresion en el pecho» → entreno/colesterol (fibra y psyllium)
+//   · 45 de 57 sondas «tengo <patología> y <bandera roja>» → NULL (el guardián M-2b tiraba a la basura
+//     una bandera roja que YA había ganado el score, porque sus claves no nombraban la patología)
+// Eso es cola de caballo, trombosis y angina contestadas con divulgación. Ninguna admite «primero lo
+// tranquilizador»: en las tres, el consejo de entrenar es justo lo que hace daño.
+// REGLA: si el texto trae un marcador de EMERGENCIA manda la ficha de urgencia — ANTES del score, de los
+// hubs, del combo, de la desambiguación y de M-2b. NO es un empujón de puntuación (frágil: la siguiente
+// ficha larga vuelve a ganarle); es una PRELACIÓN. Cada patrón exige la COMBINACIÓN completa de palabras,
+// jamás una suelta: «se me hinchan los tobillos» NO dispara (es el caso benigno, que sigue yendo a
+// varices) y «una pierna hinchada de golpe y caliente» SÍ. Se compara sobre la huella de dictado
+// (cerebroFold, ambos lados) para que «inchada», «pexo» o «barices» entren igual.
+var CEREBRO_URG=(function(){
+  var tabla=[
+    // 🫀 dolor/opresión torácica → la ficha cardíaca que YA existía
+    { rama:"banderas-rojas-parar-y-consultar", grupos:[
+      ["pecho","pechos","torax","esternon"],
+      ["duele","duelen","dolor","dolores","doler","dolia","opresion","oprime","aprieta","apretado","presion"] ] },
+    // 🫀 mareo CON el esfuerzo (el mareo a secas no basta: puede ser mil cosas y no es urgencia)
+    { rama:"banderas-rojas-parar-y-consultar", grupos:[
+      ["mareo","mareos","mareado","mareada","mareaba","mareos"],
+      ["entreno","entrenar","entrenando","entrenamiento","esfuerzo","esfuerzos","esforzarme","esforzar","ejercicio","ejercicios","pesas","gimnasio","gym","correr","corriendo","escaleras","sentadillas","series"] ] },
+    // 🫀 desmayo: bandera roja sin necesitar contexto
+    { rama:"banderas-rojas-parar-y-consultar", grupos:[
+      ["desmayo","desmaye","desmayado","desmayada","desmayarme","desvanezco","desvaneci","sincope"] ] },
+    // 🫀 falta de aire (el descriptor clínico; «me ahogo corriendo» NO entra a propósito: eso es forma física)
+    { rama:"banderas-rojas-parar-y-consultar", grupos:[
+      ["aire"], ["falta","faltaba","faltan","falto"] ] },
+    // 🚨 cola de caballo: pérdida de esfínteres
+    { rama:"banderas-rojas-espalda-urgente", grupos:[
+      ["pipi","pis","orina","orinar","mear","esfinter","esfinteres","heces","caca","deposiciones","vejiga","incontinencia","incontinente"],
+      ["controlo","control","controlar","controlaba","aguanto","aguantar","escapa","escapan","escapo","retengo","retener","incontinencia","incontinente"] ] },
+    // 🚨 cola de caballo: anestesia en silla de montar
+    { rama:"banderas-rojas-espalda-urgente", grupos:[
+      ["entrepierna","ingle","genitales","perineo","escroto","vulva"],
+      ["duerme","dormida","dormido","adormecida","adormecido","adormecimiento","hormigueo","hormiguea","insensible","anestesiada","siento","noto"] ] },
+    // 🚨 pie caído (déficit motor de libro; «pierdo fuerza en las piernas» NO entra: en el gimnasio se dice
+    //    a diario sin ser una urgencia — esa la cubre el bloque de banderas rojas de la ficha de hernia)
+    { rama:"banderas-rojas-espalda-urgente", grupos:[
+      ["pie"], ["cae","caido","caida"] ] },
+    // 🚨 sospecha de trombosis: UNA pierna hinchada + caliente/roja/dura (los tres grupos, o no dispara)
+    { rama:"banderas-rojas-pierna-hinchada", grupos:[
+      ["pierna","piernas","gemelo","gemelos","pantorrilla","muslo","tobillo","tobillos"],
+      ["hinchada","hinchado","hinchados","hinchadas","hincha","hinchan","hinchazon","inflamada","inflamado","inflamados"],
+      ["caliente","calor","roja","rojo","rojas","rojos","enrojecida","morada","amoratada","dura"] ] },
+    // 🚨 úlcera venosa: no se tapa con ejercicio
+    { rama:"banderas-rojas-pierna-hinchada", grupos:[
+      ["ulcera","ulceras","llaga","llagas"],
+      ["tobillo","tobillos","pierna","piernas","pie","pies","gemelo"] ] }
+  ];
+  tabla.forEach(function(e){ e.grupos=e.grupos.map(function(g){ var o={}; g.forEach(function(w){ o[cerebroFold(w)]=1; }); return o; }); });
+  return tabla;
+})();
+// cerebroUrgencia: tokens (ya normalizados) → rama de urgencia o null. PURA y determinista.
+function cerebroUrgencia(toks){
+  var toksF=toks.map(cerebroFold), i, j, k, ok;
+  for(i=0;i<CEREBRO_URG.length;i++){
+    var g=CEREBRO_URG[i].grupos; ok=true;
+    for(j=0;j<g.length && ok;j++){
+      var hay=false;
+      for(k=0;k<toksF.length;k++){ if(g[j][toksF[k]]===1){ hay=true; break; } }
+      if(!hay) ok=false;
+    }
+    if(ok) return CEREBRO_URG[i].rama;
+  }
+  return null;
+}
+function cerebroUrgenciaTexto(texto){ var t=cerebroNormQ(texto); return t?cerebroUrgencia(t.split(" ")):null; }
+function cerebroFichaPorRama(kb, rama){ for(var i=0;i<kb.length;i++){ if(kb[i].rama===rama) return kb[i]; } return null; }
 // Motor de intención: texto libre → {entrada, score} o null (fallback honesto; JAMÁS inventa).
 function cerebroMatch(texto, kb){
   kb=kb||CEREBRO_KB;
   var t=cerebroNormQ(texto); if(!t) return null;
   var toks=t.split(" ");
+  // M-6b · PRELACIÓN DE URGENCIA: antes del score, de los hubs y de M-2b. Score 99 = «esto no compite».
+  var _urg=cerebroUrgencia(toks);
+  if(_urg){ var _fu=cerebroFichaPorRama(kb, _urg); if(_fu) return { entrada:_fu, score:99, urgente:true }; }
   var best=null, bestScore=0, i;
   for(i=0;i<kb.length;i++){
     if(kb[i].rama==="hub") continue;                 // los hubs no compiten en el score normal (F-M1.2)
@@ -15773,7 +16011,11 @@ function cerebroMatch(texto, kb){
   var m=(best && bestScore>=CEREBRO_UMBRAL) ? {entrada:best, score:bestScore} : null;
   var h=cerebroHub(t, toks, m, kb);                  // F-M1.2: hub de tema si es corta/genérica sin exacta
   var res=h ? {entrada:h, score:(m?m.score:CEREBRO_UMBRAL), hub:true} : m;
-  if(res){ var dg=cerebroDiagEnTexto(toks); if(dg.length && !cerebroClavesCubrenDiag(res.entrada.claves, dg)) return null; }   // M-2b
+  // M-2b · con una EXCEPCIÓN (arreglador 27-07, bloqueante 1): las fichas de URGENCIA (urg:1) jamás se
+  // anulan. «Soy diabético y me mareo cuando entreno» hacía ganar a banderas-rojas con 18,23 y esta línea
+  // lo tiraba porque sus claves no dicen «diabetico» — 45 de 57 sondas acababan en silencio. Un mareo en
+  // un diabético entrenando es una hipoglucemia hasta que se demuestre lo contrario: callarse no es prudencia.
+  if(res && !res.entrada.urg){ var dg=cerebroDiagEnTexto(toks); if(dg.length && !cerebroClavesCubrenDiag(res.entrada.claves, dg)) return null; }   // M-2b
   return res;
 }
 // ─────────────── F-M1.4 · CALIFICADORES v1 (arregla CR5, versión mínima honesta) ───────────────
@@ -15807,6 +16049,7 @@ function cerebroCalificadores(texto){
 // en casa» que la ficha ganadora NO cubre → cbResponder antepone el matiz honesto y lo empuja al flywheel.
 function cerebroMatchCalif(texto){
   var full=cerebroMatch(texto);
+  if(full && full.urgente) return { match:full, aviso:null };   // M-6b: una urgencia no se re-enruta por un «sin/solo/en casa»
   var califs=cerebroCalificadores(texto);
   if(!califs.length) return { match:full, aviso:null };
   if(full && !full.hub){                               // ¿la clave ganadora (no-hub) CUBRE el calificador?
@@ -15886,6 +16129,7 @@ function cerebroCubreTodo(clave, texto){
   return wq.every(function(w){ return wc.some(function(x){ return cerebroTokEq(w,x); }); });
 }
 function cerebroComboMatch(texto, kb, combos){
+  if(cerebroUrgenciaTexto(texto)) return null;   // M-6b: a una urgencia no se le sirve la dosis genérica de un combo
   combos=combos||CEREBRO_COMBOS;
   var det=cerebroTroncosDetectados(texto, kb);
   if(det.length<2) return null;
@@ -15923,6 +16167,7 @@ var CEREBRO_DESAMB_MARGEN=4;   // GUARDA 0: 4 puntos = una palabra-contenido ent
 // la del otro (p.ej. «proteina en definicion» ⊃ «definicion»), el 2º es un MODIFICADOR que cerebroMatch
 // ya resuelve en una rama específica (carbos-en-cut, proteina-en-cut…) → se deja pasar, NO se desambigua.
 function cerebroDesambiguacion(texto, kb, combos){
+  if(cerebroUrgenciaTexto(texto)) return null;   // M-6b: a una urgencia NO se le pregunta «¿cuál miramos primero?»
   if(cerebroComboMatch(texto, kb, combos)) return null;   // hay combo → no se desambigua
   var det=cerebroTroncosDetectados(texto, kb);
   if(det.length<2) return null;                            // 0-1 tronco → flujo simple intacto
