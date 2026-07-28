@@ -1,0 +1,33 @@
+# AGENTE 01 del ecosistema · VIGÍA DEL DESPLIEGUE
+#
+# Corre en los servidores de GitHub, NO en el PC de Pablo: funciona con el
+# ordenador apagado. Coste: 0 € (Actions es gratis e ilimitado en repos públicos).
+#
+# Si algo va mal, el job sale rojo y GitHub manda un email él solo.
+# No necesita ningún token, ninguna clave y ningún permiso de escritura.
+name: Vigía del despliegue
+
+on:
+  schedule:
+    # 07:15 UTC = 09:15 en España (verano) / 08:15 (invierno).
+    # Pensado para que el veredicto ya esté esperando cuando Pablo enciende el PC.
+    # Nota honesta: el cron de GitHub es "best effort" y puede retrasarse en horas punta.
+    - cron: "15 7 * * *"
+  workflow_dispatch: # botón para lanzarlo a mano desde la pestaña Actions
+
+permissions:
+  contents: read # solo lectura: este agente no puede escribir en el repo ni por error
+
+jobs:
+  vigilar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4 # para comparar la versión del repo con la que sirve la web
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Comprobar el despliegue
+        run: node .github/scripts/vigia-despliegue.mjs
