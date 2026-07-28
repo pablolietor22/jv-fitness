@@ -684,7 +684,7 @@
 <header class="brandbar">
   <div class="logo"><span class="dot"></span>JV <b>Fitness</b></div>
   <div style="display:flex;align-items:center">
-    <span class="tag">MVP v0.57.0 · motor v0.7</span>
+    <span class="tag">MVP v0.58.0 · motor v0.7</span>
     <!-- ⚙️ tanda #22 · hub de AJUSTES (no es pestaña): modal a pantalla completa -->
     <button class="gearbtn" id="btn_hub" type="button" title="Ajustes" aria-label="Abrir ajustes" onclick="hubAbrir()">⚙️</button>
   </div>
@@ -2306,6 +2306,9 @@ function plan(p){
     lesionAvisoBulk: !!(p.lesionActiva && p.objetivo==="ganar_musculo")};
 }
 // [MOTOR-CORE-FIN]
+// [CALIB-PURE-INICIO] — 🎯 Capa 2 · calibración por peso REAL (el «TDEE REAL» del panel). PURA (sin DOM,
+// sin storage, sin red): _tests/test-calibracion.node.js extrae este bloque y lo evalúa tal cual, después
+// de [MOTOR-CORE] (de ahí saca R.kcal_por_kg y R.calib). Los centinelas NO cambian ni una línea de lógica.
 function calibrar(calComidas,pAntes,pDespues,dias,obj){
   if(!(dias>=1)||!(pAntes>0)) return null;
   const d=pDespues-pAntes;
@@ -2320,6 +2323,171 @@ function calibrar(calComidas,pAntes,pDespues,dias,obj){
   }
   return {tdeeReal, ritmo, dec};
 }
+
+// ══════════ 🛟 BANDA DE SEGURIDAD DEL LAZO DE CALIBRACIÓN (arreglo BUG A/B/C · 28-07-2026) ══════════
+// Constantes con `var` A PROPÓSITO: el test evalúa cada bloque centinela por separado con eval directo,
+// y `const`/`let` NO escapan de un eval — [APLICADEC] necesita ver estas constantes.
+var CALIB_PASO_MAX    = 300;    // kcal · ajuste máximo POR PULSACIÓN (el clamp ±300 que ya existía)
+var CALIB_ZONA_MUERTA = 25;     // kcal · zona muerta del lazo: por debajo de esto NO se ofrece botón
+var CALIB_OFF_MAX     = 1000;   // kcal · tope DURO del ajuste acumulado (espejo de PLANI_DEFICIT_MAX)
+var CALIB_EA_MIN      = 30;     // kcal/kg de masa magra · suelo RED-S (master-file.md · Tema 35 · C123)
+var CALIB_N_MIN       = 3;      // pesajes mínimos DENTRO de cada ventana de 7 días para tocar el plan
+
+// SUELO de kcal del objetivo calibrado. Dos criterios; manda el MÁS ALTO de los dos:
+//  (1) El metabolismo basal que calcula la propia app (Mifflin-St Jeor / Katch-McArdle). Comer por
+//      debajo del basal no es "un déficit más agresivo": es una dieta muy baja en calorías (VLCD),
+//      territorio de supervisión médica. Se puede calcular para el 100 % de los perfiles.
+//  (2) RED-S / disponibilidad energética — criterio ESCRITO de la casa, master-file.md Tema 35, C123 🟢
+//      RESPALDADO (Female Athlete Triad Consensus 2025, DOI 10.1007/s40279-025-02333-z; Loucks & Thuma
+//      2003, PMID 12519869). EA = (kcal ingeridas − kcal del ejercicio) / kg de masa magra; por debajo
+//      de 30 kcal/kg MM = baja disponibilidad clínica (LEA/RED-S). ⚠️ HONESTIDAD: la app no sabe separar
+//      las kcal del ejercicio del gasto total, así que aplica el criterio SOLO sobre la ingesta
+//      (ingesta ≥ 30 × masa magra). Es una lectura CONSERVADORA A LA BAJA del criterio real —el de
+//      verdad sumaría encima las kcal del ejercicio—, o sea un suelo que nunca aprieta de más. Y solo
+//      se puede calcular si el perfil trae % de grasa; sin ese dato NO se inventa una masa magra, se
+//      cae al basal (que suele quedar POR DEBAJO de la línea de los 30 kcal/kg MM: menos protector,
+//      pero medido y no fabricado).
+// El suelo JAMÁS sube por encima de lo que el propio plan recomienda (rec.cal): la calibración solo
+// puede impedir que el lazo cave más hondo, nunca reescribir el plan que el usuario configuró.
+function calibSuelo(rec, p){
+  if(!rec || !isFinite(+rec.cal)) return 0;
+  var suelo = isFinite(+rec.bmr) ? +rec.bmr : 0;
+  var gp = (p && p.grasa_pct!=null) ? +p.grasa_pct : null;
+  if(gp!=null && isFinite(gp) && gp>0 && gp<100 && +p.peso_kg>0){
+    suelo = Math.max(suelo, CALIB_EA_MIN * (+p.peso_kg*(1-gp/100)));
+  }
+  return Math.round(Math.min(suelo, +rec.cal));
+}
+// TECHO: la calibración personal puede CORREGIR la fórmula, no sustituirla. Mifflin-St Jeor yerra ~±10 %
+// en la mayoría de la gente y ~±20-25 % en los peores casos: ±1000 kcal/día es 3-4 veces ese error. Un
+// ajuste mayor significa que están mal los DATOS (comida mal apuntada, báscula rota), no la fórmula.
+function calibTecho(rec){ return Math.round((isFinite(+rec.cal)?+rec.cal:0) + CALIB_OFF_MAX); }
+function calibBanda(rec, p){ return { suelo: calibSuelo(rec,p), techo: calibTecho(rec) }; }
+// Recorta un offset acumulado a la banda admisible y al tope duro ±CALIB_OFF_MAX. Sin plan válido,
+// solo queda el tope duro (fail-safe: mejor un tope tonto que ninguno).
+function calibClampOff(off, rec, p){
+  off = +off; if(!isFinite(off)) off = 0;
+  if(!rec || !isFinite(+rec.cal)) return Math.round(Math.max(-CALIB_OFF_MAX, Math.min(CALIB_OFF_MAX, off)));
+  var b = calibBanda(rec, p), base = +rec.cal;
+  var lo = Math.max(b.suelo - base, -CALIB_OFF_MAX), hi = Math.min(b.techo - base, CALIB_OFF_MAX);
+  if(lo > hi) lo = hi;
+  return Math.round(Math.max(lo, Math.min(hi, off)));
+}
+// 🎯 BUG A · el OBJETIVO que piden los datos. Se re-aplica el MISMO % de déficit/superávit que decidió
+// plan(), pero sobre el TDEE MEDIDO en vez de sobre el de la fórmula del día 1. El ratio rec.cal/rec.tdee
+// se lee del propio plan: así hereda gratis TODO lo que plan() haya hecho (tope por lesión, suelo del
+// BMR con lesión…) sin duplicar una sola regla del motor y sin que el motor tenga que leer p.ov.
+function calibObjetivo(c, rec){
+  if(!c || !rec || !(+rec.tdee > 0) || !isFinite(+c.tdeeReal) || !isFinite(+rec.cal)) return null;
+  return Math.round((+c.tdeeReal) * ((+rec.cal) / (+rec.tdee)));
+}
+// 🧮 CUÁNTAS kcal ofrece el botón. `calActual` = el objetivo que el usuario tiene HOY (rec.cal + offset
+// ya aplicado): medir contra ÉL —y no contra la fórmula del día 1— es lo que cierra el lazo (BUG A).
+// `nVent` = el MENOR número de pesajes que sostiene una de las dos medias de 7 días (BUG C).
+function calibDeltaKcal(c, rec, calActual, p, nVent){
+  if(!c || !rec) return 0;
+  calActual = +calActual; if(!isFinite(calActual)) return 0;
+  if(nVent!=null && nVent < CALIB_N_MIN) return 0;            // BUG C · sin resolución, el lazo NO actúa
+  var deseado;
+  if(/BAJAR/.test(c.dec))       deseado = calActual - 175;
+  else if(/SUBIR/.test(c.dec))  deseado = calActual + 175;
+  else { deseado = calibObjetivo(c, rec); if(deseado==null) return 0; }
+  var delta = Math.round(deseado - calActual);
+  var b = calibBanda(rec, p);                                 // BUG B · suelo y techo, siempre
+  delta = Math.max(b.suelo - calActual, Math.min(b.techo - calActual, delta));
+  delta = Math.max(-CALIB_PASO_MAX, Math.min(CALIB_PASO_MAX, delta));
+  if(Math.abs(delta) <= CALIB_ZONA_MUERTA) delta = 0;         // BUG A · zona muerta: el lazo se apaga
+  return Math.round(delta);
+}
+// 🛟 EL SUELO, TAMBIÉN AL LEER (28-07-2026). calibClampOff() se aplicaba en las tres puertas de
+// ESCRITURA (botón, aplicarDecision, aplicarAjustes) y en NINGUNA de LECTURA: render() rehacía la
+// aritmética por su cuenta (`cal=rec.cal+(ov.cal_off||0)`), así que un perfil que YA viniera fuera de
+// banda se pintaba tal cual — y ese número no se queda en la tarjeta: alimenta window._obj, o sea el
+// generador de menús, el reparto del objetivo en 4 comidas y los topes de azúcar y grasa saturada.
+// TRES VÍAS REALES DE ENTRADA, ninguna hipotética:
+//   1 · la versión DESPLEGADA acumula cal_off SIN clamp y con el lazo divergente; esos perfiles ya
+//       están guardados en el móvil del usuario (medido en el pliego: −1163) y al abrir la versión
+//       nueva NO se saneaban solos: se pintaban. Medido aquí: cal_off −1400 ⇒ 843 kcal y 0 g de
+//       carbohidratos en pantalla; −5000 ⇒ −2757 kcal, fibra −39 g y tope de azúcar −69 g.
+//   2 · un backup importado: validar() no mira p.ov ni cal_off, así que pasaba el filtro literal.
+//   3 · el offset que SOBREVIVE a un cambio de perfil se recortó contra el rec.cal VIEJO y queda por
+//       debajo del suelo NUEVO (volumen→definición: 1392 kcal con suelo 1920, medido, y sin un solo
+//       aviso: el único que existe salta con restoKcal<0 y ahí restoKcal es +376).
+// Esta función es la ÚNICA puerta de LECTURA del objetivo del día. Por eso devuelve el bloque de
+// macros ENTERO y no solo `cal`: si una rama del render calculase el número por su cuenta, no habría
+// suelo en esa rama — que es exactamente lo que pasaba.
+//
+// ⚠️ LA RAMA DE MACROS FIJADOS (`ov.carb_gkg!=null`) ERA LA CUARTA PUERTA, y no tuvo suelo NUNCA, ni
+// antes ni después del arreglo B: ahí cal = P·4+G·9+C·4, cal_off ni se lee y calibClampOff no pinta
+// nada. Medido: P0,1/G0,1/C0,1 g/kg ⇒ 136 kcal/día; el caso realista «low carb» (P1,6/G0,7/C0,1, o
+// sea proteína y grasa las que recomienda la propia app) ⇒ 1048 kcal servidas como «tu plan». Aquí el
+// suelo sube los CARBOHIDRATOS hasta la línea, no la proteína ni la grasa: esas dos tienen suelo
+// fisiológico propio y bajarlas no arregla nada; subir carbohidratos es lo reversible y lo que menos
+// toca la intención del usuario. Se devuelve `recorte` para que el render lo DIGA en pantalla: un
+// ajuste silencioso sería otra mentira. Y la puerta de ESCRITURA (aplicarAjustes) no recorta, RECHAZA
+// con el número que falta — con tres campos libres no hay un único recorte correcto, y reescribirle
+// la proteína a quien ha elegido «low carb» sería decidir por él.
+//
+// EL TECHO NO SE APLICA EN LA RAMA DE MACROS, y es a propósito: el techo (rec.cal + CALIB_OFF_MAX)
+// existe para que la CALIBRACIÓN no reescriba la fórmula del motor, no para limitar lo que un adulto
+// decide comer cuando teclea sus macros a mano. Lo que la casa no tolera servir es un objetivo
+// inviable POR ABAJO — eso sí se corta en las dos ramas.
+function calibPlanDia(p, rec){
+  if(!p || !rec || !rec.m) return null;
+  var ov = p.ov || {};
+  var pgkg = ov.prot_gkg!=null ? ov.prot_gkg : rec.m.pgkg;
+  var ggkg = ov.grasa_gkg!=null ? ov.grasa_gkg : rec.m.ggkg;
+  var prot = Math.round(pgkg*p.peso_kg), gr = Math.round(ggkg*p.peso_kg);
+  var suelo = calibSuelo(rec, p);
+  var cal, carb, restoKcal, recorte = null, off = 0, pedido = 0;
+  if(ov.carb_gkg!=null){                 // fijas los carbos -> calorías = suma de macros
+    carb = Math.round(ov.carb_gkg*p.peso_kg);
+    cal = prot*4+gr*9+carb*4; restoKcal = 0;
+    if(cal < suelo){                     // 4ª puerta: el suelo sube los CARBOHIDRATOS hasta la línea
+      pedido = cal;
+      carb = Math.max(0, Math.ceil((suelo-prot*4-gr*9)/4));
+      cal = prot*4+gr*9+carb*4;
+      recorte = "macros";
+    }
+  } else {                               // si no, los carbos son el resto
+    pedido = ov.cal_off||0;
+    off = calibClampOff(pedido, rec, p);
+    if(off !== pedido) recorte = "off";
+    cal = rec.cal+off;
+    restoKcal = cal-prot*4-gr*9;
+    carb = Math.max(0,Math.round(restoKcal/4));
+  }
+  return { cal:cal, prot:prot, gr:gr, carb:carb, restoKcal:restoKcal, pgkg:pgkg, ggkg:ggkg,
+           off:off, suelo:suelo, recorte:recorte, pedido:pedido };
+}
+// ⏳ EL LAZO SE ALIMENTABA DE SÍ MISMO (28-07-2026). Sin diario de comida —el estado POR DEFECTO,
+// porque mediaKcalDiario() exige ≥7 días completos de ≥800 kcal—, las kcal de ENTRADA de la medición
+// son EL PROPIO OBJETIVO DE HOY (`const calSrc=real?real.kcal:cal`). El arreglo del BUG A cerró el
+// lazo por el lado del DELTA (medir contra el objetivo de hoy) y dejó abierto el de la ENTRADA: al
+// pulsar el botón, la app daba por hecho RETROACTIVAMENTE que durante las últimas 2-4 semanas se
+// comió el objetivo NUEVO. Como tdeeReal = calSrc − Δpeso·7700/W, cada pulsación movía el «TDEE REAL
+// medido» exactamente lo mismo que el objetivo, y nada impedía pulsar dos veces seguidas (grep de
+// cooldown/ultimaCalib/lastCalib/calib_ts sobre los 2 MB del fichero: cero coincidencias).
+// MEDIDO antes del arreglo (gasto real 2.800, báscula perfecta, usuario obediente, sin diario):
+//   2.100 → 2.381 → 2.619 → 2.822 → 2.994 → 3.100 y ahí se clava, contra el TECHO.
+// O sea un plan de PERDER GRASA comiendo 300 kcal POR ENCIMA de su mantenimiento real, con el panel
+// diciendo «MANTENER (ritmo correcto)» todo el trayecto y afirmando «tus datos dicen 3.694» — un
+// número que había fabricado la propia app. El suelo protegía la dirección peligrosa; el techo no
+// protegía la otra. Y el contrato «un plan de perder grasa nunca acaba por encima de su mantenimiento
+// real» estaba en verde solo porque el banco de pruebas pulsa UNA vez por serie nueva de 21 días.
+// LA RAÍZ, en una frase: suponer «comiste tu objetivo» solo vale si ese objetivo estuvo vigente
+// DURANTE TODA la ventana que se compara. Se exige exactamente eso y nada más. Con diario NO se
+// espera: ahí calSrc son kcal MEDIDAS, no fabricadas, y el lazo se apaga solo en una pulsación
+// (delta=0 por la zona muerta), como demuestra el barrido de cadencia.
+function calibEspera(hoyISO, ultimaISO, W){
+  W = +W; if(!ultimaISO || !(W>0)) return 0;
+  var h = Date.parse(hoyISO+"T12:00:00"), u = Date.parse(ultimaISO+"T12:00:00");
+  if(isNaN(h) || isNaN(u)) return 0;                 // fecha ilegible: no bloquear (fail-open honesto)
+  var pasados = Math.floor((h-u)/864e5);
+  if(pasados < 0) pasados = 0;                       // sello en el futuro (reloj movido) ⇒ espera entera
+  return Math.max(0, Math.round(W)-pasados);
+}
+// [CALIB-PURE-FIN]
 // [NIVEL-PURE-INICIO] — 🎚️ adaptabilidad por nivel (SPEC 3). Función PURA (sin DOM ni storage):
 // _tests/test-nivel.node.js extrae este bloque tal cual y lo evalúa. Decide CUÁNTO TEXTO se enseña,
 // jamás toca un número del motor. Perfiles viejos (sin p.nivel) → "novato" (se explica todo).
@@ -13217,20 +13385,26 @@ function toastCard(ico, titulo, cuerpo, opts){
   toastPush({ tipo:"card", ico:ico, titulo:titulo, cuerpo:cuerpo,
     prio:(opts.prio||2), clave:(opts.clave!=null?opts.clave:String(titulo||"")), grupo:opts.grupo });
 }
+// [PESOSPARK-PURE-INICIO] — 📈 sparkline de la tendencia de peso (devuelve HTML como TEXTO, no toca el
+// DOM). PURA y determinista: _tests/test-calibracion.node.js la extrae junto a [MEDIASEM-PURE], de la que
+// depende. 🐛 BUG C arreglado: la etiqueta dice el n REAL de pesajes que hay detrás de la media, en vez
+// del «media 7d» fijo que sonaba a semana entera aunque promediara un único dato.
 function pesoSpark(ws){
   var pts=ws.slice(-30); if(pts.length<3) return "";
   var wmin=Math.min.apply(null,pts.map(function(x){return +x.w;})), wmax=Math.max.apply(null,pts.map(function(x){return +x.w;}));
   if(wmax-wmin<0.5){ wmin-=0.5; wmax+=0.5; }
   var W=300,H=60,pad=4;
   var xy=pts.map(function(x,i){ var px=pad+i*(W-2*pad)/(pts.length-1); var py=H-pad-((+x.w-wmin)/(wmax-wmin))*(H-2*pad); return px.toFixed(1)+","+py.toFixed(1); });
-  var m7=mediaSemana(ws,0);
-  return "<div style='margin:0 0 8px'><div class='kv'><span>Tendencia (últimos "+pts.length+" pesajes)</span><span><b style='color:var(--jade);font-size:1.05rem'>"+(m7!=null?m7.toFixed(1)+" kg":"—")+"</b> <span class='hint' style='display:inline'>media 7d</span></span></div>"
+  var m7=mediaSemana(ws,0), n7=pesajesEnVentana(ws,0);
+  var lbl7 = (m7!=null && n7>0) ? ("media de "+n7+" pesaje"+(n7===1?"":"s")+" en 7 días") : "sin datos de esta semana";
+  return "<div style='margin:0 0 8px'><div class='kv'><span>Tendencia (últimos "+pts.length+" pesajes)</span><span><b style='color:var(--jade);font-size:1.05rem'>"+(m7!=null?m7.toFixed(1)+" kg":"—")+"</b> <span class='hint' style='display:inline'>"+lbl7+"</span></span></div>"
     // 🎬 v0.52.0 · M6 · TRAZADO PROGRESIVO de la línea. Truco pathLength='1': el navegador normaliza
     // la longitud del trazo a 1, así que stroke-dasharray:1 + stroke-dashoffset 1→0 (en el CSS de
     // .anim-path) dibuja la línea de izquierda a derecha SIN tener que medir el path a mano. La clase
     // .anim-in se la pone el observer la primera vez que la gráfica entra en pantalla.
     +"<svg viewBox='0 0 "+W+" "+H+"' style='width:100%;height:60px'><polyline class='anim-path' pathLength='1' fill='none' stroke='var(--jade)' stroke-width='2' opacity='.9' points='"+xy.join(" ")+"'/></svg></div>";
 }
+// [PESOSPARK-PURE-FIN]
 function pesoStep(d){
   var el=$("r_peso"); if(!el) return; var ws=get(LS_W,[]);
   var base=+String(el.value).replace(",",".")>0?+String(el.value).replace(",","."):(ws.length?+ws[ws.length-1].w:70);
@@ -13277,7 +13451,7 @@ function resetTodo(){ if(!confirm("⚠️ Esto borra TODO: perfil, pesos, entren
 // Reemplazo total con confirmación. Reusa get/set, hoyLocal, toast, validar, render. NO toca motor ni gate.
 function exportarJSON(){ try{ set("jvf_last_export",hoyLocal()); }catch(e){}
   try{
-    var data={ app:"jvf", schema:1, app_version:"0.57.0", exportadoEl:new Date().toISOString(),
+    var data={ app:"jvf", schema:1, app_version:"0.58.0", exportadoEl:new Date().toISOString(),
       perfil:get(LS_P,null), pesos:get(LS_W,[]), entrenos:get(LS_E,[]), notas_ej:get("jvf_notas_ej",{}), comida:get("jvf_comida",[]), agua:get("jvf_agua",{}), suples_cfg:get("jvf_suples_cfg",null), suples_log:get("jvf_suples_log",{}),
       rutinas:get("jvf_rutinas",[]), meals:get("jvf_meals",[]), ent_start:get("jvf_ent_start",null),   // v0.10 · backup completo
       alimentos_propios:get("jvf_alimentos_propios",[]), barcode_cache:get("jvf_barcode_cache",{}),   // I5/I6 · también viajan en el backup
@@ -13338,6 +13512,11 @@ function procesarImport(file){
     var bcCache=(data.barcode_cache && typeof data.barcode_cache==="object" && !Array.isArray(data.barcode_cache))?data.barcode_cache:{};
     // F-FOTO-2 · ajustes aprendidos del motor de foto (reemplazo total, como el resto)
     var fotoAj=(data.foto_ajustes && typeof data.foto_ajustes==="object" && !Array.isArray(data.foto_ajustes))?data.foto_ajustes:{};
+    // 🛟 TERCERA VÍA DE ENTRADA del cal_off envenenado: validar() no mira p.ov ni cal_off (comprobado
+    // por regex sobre la función), así que un backup con cal_off −3500 pasaba el filtro y se guardaba
+    // literal. Se recorta contra el plan del propio perfil importado ANTES de guardarlo. El render
+    // tiene su puerta (calibPlanDia); esto sanea el DATO para que lo guardado y lo servido coincidan.
+    try{ if(data.perfil && data.perfil.ov && data.perfil.ov.carb_gkg==null) data.perfil.ov.cal_off=calibClampOff(data.perfil.ov.cal_off||0, plan(data.perfil), data.perfil); }catch(e){}
     set(LS_P,data.perfil); set(LS_W,pesos); set(LS_E,entrenos); set("jvf_notas_ej",notas); set("jvf_comida",comida); if(data.agua) set("jvf_agua",data.agua); if(data.suples_cfg) set("jvf_suples_cfg",data.suples_cfg); if(data.suples_log) set("jvf_suples_log",data.suples_log);
     set("jvf_rutinas",rutinas); set("jvf_meals",meals); if(data.ent_start) set("jvf_ent_start",data.ent_start);
     set("jvf_alimentos_propios",alimsProp); set("jvf_barcode_cache",bcCache); set("jvf_foto_ajustes",fotoAj);
@@ -17979,6 +18158,7 @@ function guardarPerfil(){ _wizEdit=false;
     }
   };
   if(prev && prev.ov) p.ov=prev.ov;
+  if(prev && prev.calib_f) p.calib_f=prev.calib_f;   // ⏳ el sello de la última calibración sobrevive a editar el perfil (si no, editar sería el atajo para saltarse la espera)
   // fix 12-07 (bug de Pablo): si cambia el OBJETIVO pero sobrevive un ajuste con carbos fijados,
   // las kcal mostradas NO se moverán (rama "suma de macros") — avisar en vez de callar.
   var _avisaOvObj = !!(prev && prev.ov && prev.ov.carb_gkg!=null && prev.objetivo!==p.objetivo);
@@ -17989,6 +18169,28 @@ function guardarPerfil(){ _wizEdit=false;
     const ok=confirm("⚠️ AVISO\n\nEsta app usa fórmulas de adulto (Mifflin-St Jeor). Entre los 14 y los 17 años conviene EVITAR los déficits calóricos: estás en pleno desarrollo físico y cognitivo, y restringir calorías puede perjudicarlo.\n\nSolo se plantea en casos de sobrepeso severo — y ahí es mejor consultar con un profesional (médico o nutricionista).\n\n¿Aun así quieres continuar?");
     if(!ok) return;
   }
+  // [OVREPESA-INICIO] — 🛟 EL OFFSET NO VIAJA GRATIS A UN PLAN NUEVO. `p.ov=prev.ov` arrastra el ajuste
+  // tal cual, pero ese ajuste se recortó contra el rec.cal VIEJO: al bajar el plan, el MISMO offset se
+  // hunde por debajo del suelo NUEVO. Es el ciclo canónico de gimnasio, sin consola ni importar nada:
+  // volumen (rec 3680) con −1000 de ajuste legal ⇒ 2680 kcal, todo en banda ✓; se pasa a definición
+  // (rec 2392) y la pantalla enseñaba 1392 kcal con suelo 1920 —528 por debajo— y NINGÚN aviso (el
+  // único que hay salta con restoKcal<0, y ahí restoKcal es +376). Igual de cotidianos: dejar de
+  // entrenar (713 bajo), actualizar el peso tras adelgazar (120 bajo), apuntarse por fin el % de grasa
+  // (255 bajo). Barrido de 3.840 combinaciones: peor caso 382 kcal en pantalla, brecha de 1.000.
+  // Y el agravante: es la propia banda la que AUTORIZA el offset grande con rec.cal alto — el arreglo
+  // B fabricaba la munición y el arrastre la disparaba.
+  // El render tiene su puerta (calibPlanDia), pero dejar GUARDADO un número que la app no aplica es
+  // otra mentira: aquí se sanea el DATO, contra el plan que el usuario acaba de configurar, y se dice.
+  if(p.ov && p.ov.carb_gkg==null && (p.ov.cal_off||0)!==0){
+    var _lesOv=false; try{ _lesOv=lesionesGet().length>0; }catch(e){}
+    var _recNuevo=plan(_lesOv?Object.assign({},p,{lesionActiva:true}):p);
+    var _offViejo=p.ov.cal_off||0, _offNuevo=calibClampOff(_offViejo,_recNuevo,p);
+    if(_offNuevo!==_offViejo){
+      p.ov.cal_off=_offNuevo;
+      toastCard("🛟","Tu ajuste no cabía en el plan nuevo","Traías "+(_offViejo>0?"+":"")+_offViejo+" kcal de ajuste, calculado sobre tu plan anterior. Con el de ahora dejaría el objetivo por debajo de tu suelo de seguridad ("+calibSuelo(_recNuevo,p)+" kcal/día), así que lo dejo en "+(_offNuevo>0?"+":"")+_offNuevo+".");
+    }
+  }
+  // [OVREPESA-FIN]
   show("f_err",false); set(LS_P,p); _tab="plan"; render(); window.scrollTo(0,0);
   if(_avisaOvObj) toastCard("🔒","Objetivo cambiado, kcal fijas","Tus carbohidratos fijados mantienen las calorías — el objetivo nuevo no las mueve. Libéralos en Ajustar → «Volver a lo recomendado».");
 }
@@ -18051,6 +18253,45 @@ function aplicarAjustes(){
   const ov=ovDepura(
     {prot:$("aj_prot").value, grasa:$("aj_grasa").value, carb:$("aj_carb").value, off:$("aj_cal").value},
     {pgkg:rec.m.pgkg, ggkg:rec.m.ggkg, carb_gkg:carbRec});
+  // [AJUSTECLAMP-INICIO] — 🛟 el ±kcal de esta pantalla es un campo LIBRE: escribir −5000 a mano se
+  // saltaba el suelo que sí aplica el botón de calibración. Misma banda, mismo sitio: calibClampOff.
+  // ovDepura NO se toca (es pura y está congelada por _tests/test-ovdepura.node.js); se recorta DESPUÉS
+  // y se recalcula `vacio`, para que un ajuste que el suelo anula caiga limpio en «sin cambios».
+  var _offPedido=ov.cal_off;
+  ov.cal_off=calibClampOff(ov.cal_off, rec, p);
+  ov.vacio = ov.prot_gkg==null && ov.grasa_gkg==null && ov.carb_gkg==null && ov.cal_off===0;
+  if(ov.cal_off!==_offPedido) toast("🛟 Tope de seguridad: dejo el ±kcal en "+(ov.cal_off>0?"+":"")+ov.cal_off+" (no bajo de "+calibSuelo(rec,p)+" kcal/día)");
+  // [AJUSTECLAMP-FIN]
+  // [AJUSTEMACROS-INICIO] — 🛟 LA CUARTA PUERTA. El ±kcal de arriba ya estaba blindado, pero los TRES
+  // campos que hay justo encima en este mismo formulario (aj_prot / aj_grasa / aj_carb, `type=number
+  // step=0.1` y sin atributo `min`) producen el objetivo por OTRA vía: en cuanto ov.carb_gkg!=null el
+  // render toma la rama `cal = P·4+G·9+C·4`, donde cal_off ni se lee y calibClampOff no pinta nada.
+  // Medido antes de esto: P0,1/G0,1/C0,1 ⇒ 136 kcal/día aceptadas como «tu plan»; el caso realista
+  // «low carb» (P1,6/G0,7/C0,1, proteína y grasa las que recomienda la propia app) ⇒ 1048 kcal, sin
+  // ningún aviso —el de restoKcal<0 no salta porque en esa rama restoKcal se fuerza a 0— y con el
+  // panel de calibración convertido en placebo: calcula sobre rec.cal+cal_off (2243), no sobre lo que
+  // el usuario come (1048), así que ofrece recortes que no mueven la pantalla.
+  // AQUÍ NO SE RECORTA EN SILENCIO, SE RECHAZA: con tres campos libres no hay un único recorte
+  // correcto (¿subo carbohidratos y le rompo el «low carb», o proteína, o grasa?), y elegir por él
+  // sería peor que decírselo. Se le da el número que sale, el suelo, y el mínimo de carbohidratos que
+  // llega — y decide él. La rama de LECTURA (calibPlanDia) sí recorta, porque allí el perfil ya está
+  // guardado y la alternativa es servir 1048 kcal.
+  if(!ov.vacio && ov.carb_gkg!=null){
+    var _pgk=ov.prot_gkg!=null?ov.prot_gkg:rec.m.pgkg, _ggk=ov.grasa_gkg!=null?ov.grasa_gkg:rec.m.ggkg;
+    var _pG=Math.round(_pgk*p.peso_kg), _gG=Math.round(_ggk*p.peso_kg);
+    var _calM=_pG*4+_gG*9+Math.round(ov.carb_gkg*p.peso_kg)*4, _sueloM=calibSuelo(rec,p);
+    if(_calM<_sueloM){
+      var _carbMin=Math.ceil(Math.max(0,(_sueloM-_pG*4-_gG*9))/4/p.peso_kg*10)/10;
+      toastCard("🛟","Esos macros no llegan a tu suelo","Dan "+_calM+" kcal/día y tu suelo de seguridad son "+_sueloM+" ("+(p.grasa_pct!=null?"tu metabolismo basal y tu disponibilidad energética":"tu metabolismo basal")+"). No te lo aplico. Sube los carbohidratos a "+_carbMin+" g/kg o más —o sube proteína y grasa— y vuelve a darle.");
+      return;
+    }
+  }
+  // [AJUSTEMACROS-FIN]
+  // ⏳ si este ajuste MUEVE el offset, el objetivo de hoy deja de ser el que estuvo vigente durante la
+  // ventana que compara el panel: se sella la fecha para que el lazo no se mida sobre sí mismo
+  // (ver calibEspera en [CALIB-PURE]). El ±kcal a mano es la misma puerta que el botón, por otra vía.
+  var _offAntes=(p.ov&&p.ov.cal_off)||0, _offNuevo=ov.vacio?0:(ov.cal_off||0);
+  if(_offNuevo!==_offAntes){ try{ p.calib_f=hoyLocal(); }catch(e){} }
   if(ov.vacio){ delete p.ov; set(LS_P,p); _tab="plan"; render(); toast("✓ Sin cambios respecto a lo recomendado"); return; }
   delete ov.vacio; p.ov=ov;
   set(LS_P,p); _tab="plan"; render();
@@ -18058,13 +18299,38 @@ function aplicarAjustes(){
 }
 function resetAjustes(){ const p=get(LS_P); if(!p) return; delete p.ov; set(LS_P,p); _tab="plan"; render(); toast("↩ Vuelto a lo recomendado"); }
 // #5 · aplicar la decisión de la Capa 2 al plan con un toque (ajusta el offset de kcal del motor).
+// [APLICADEC-INICIO] — IMPURA (get/set del perfil + render + toast): _tests/test-calibracion.node.js la
+// extrae y la evalúa con mocks, como se hace en [LAPIZ-PESO]. 🐛 BUG B arreglado: cal_off se sigue
+// ACUMULANDO (que es lo correcto ahora que el delta es RELATIVO al objetivo de hoy), pero el resultado
+// pasa SIEMPRE por calibClampOff() → banda [suelo de seguridad, techo] y tope duro ±CALIB_OFF_MAX. El
+// toast dice la verdad: informa del ajuste REALMENTE aplicado, no del pedido, y avisa cuando el tope
+// ha mordido.
+// ⚑ CORREGIDO 28-07-2026 · aquí ponía que «el suelo es el ÚLTIMO cortafuegos: aunque alguien llame a
+// esta función con un delta absurdo (consola, perfil importado, bug futuro), el perfil no puede quedar
+// en calorías inviables». ERA FALSO tal y como estaba escrito, y conviene que se note: lo que esta
+// función garantiza es que ELLA no deja el perfil así — el perfil sí podía estarlo (versión desplegada,
+// backup, cambio de objetivo) y la app lo servía, porque el suelo actuaba al ESCRIBIR y nunca al LEER.
+// El último cortafuegos de verdad es calibPlanDia() ([CALIB-PURE]), la única puerta de LECTURA.
 function aplicarDecision(delta){
   const p=get(LS_P); if(!p) return;
+  var _lesion=false; try{ _lesion=lesionesGet().length>0; }catch(e){}
+  const rec=plan(_lesion?Object.assign({},p,{lesionActiva:true}):p);
   const ov=p.ov||{prot_gkg:null,grasa_gkg:null,carb_gkg:null,cal_off:0};
-  ov.cal_off=(ov.cal_off||0)+(+delta||0);
-  p.ov=ov; set(LS_P,p); _tab="plan"; render();
-  toast("✓ Plan ajustado "+(delta>0?"+":"")+delta+" kcal");
+  const antes=ov.cal_off||0, pedido=(+delta||0);
+  ov.cal_off=calibClampOff(antes+pedido, rec, p);
+  const real=ov.cal_off-antes;
+  p.ov=ov;
+  // ⏳ SELLO DE LA CALIBRACIÓN. Sin diario, el panel supone «comiste tu objetivo» — y eso solo vale si
+  // el objetivo estuvo vigente TODA la ventana. Al mover el objetivo se apunta el día; calibEspera()
+  // impide que el lazo se vuelva a medir sobre su propia salida hasta que la ventana sea posterior.
+  // Solo si el ajuste ha movido algo de verdad (si el suelo se lo comió entero, no ha pasado nada).
+  if(real!==0){ try{ p.calib_f=hoyLocal(); }catch(e){} }
+  set(LS_P,p); _tab="plan"; render();
+  toast(real===pedido
+    ? "✓ Plan ajustado "+(real>0?"+":"")+real+" kcal"
+    : "✓ Plan ajustado "+(real>0?"+":"")+real+" kcal · tope de seguridad: no bajo de "+calibSuelo(rec,p)+" kcal/día");
 }
+// [APLICADEC-FIN]
 
 // ══════════ ⚙️ HUB DE AJUSTES (tanda #22 · v0.21) ══════════
 // [AJUSTES-PURE-INICIO] — lógica pura del hub (sin DOM, sin storage; _tests/test-ajustes.node.js la extrae y evalúa)
@@ -18179,14 +18445,110 @@ function borrarPeso(f){
   $("r_borrar").style.display="none"; toast("Pesaje eliminado"); render();
 }
 // [LAPIZ-PESO-FIN]
+// [MEDIASEM-PURE-INICIO] — ⚖️ media de la VENTANA de 7 días que termina `offsetDias` atrás. PURA (sin DOM
+// ni storage): _tests/test-calibracion.node.js la extrae y evalúa. mediaSemana() sigue devolviendo un
+// NÚMERO (contrato intacto: quien solo quiere el kg no cambia); el `n` —cuántos pesajes REALES la
+// sostienen— lo da su hermana pesajesEnVentana(). 🐛 BUG C: una "media de 7 días" con 1 solo pesaje
+// detrás no es una media, es un dato suelto, y el panel tiene que poder decirlo antes de tocar el plan.
+// 🐛 BUG D (28-07-2026) · LA VENTANA DE 7 DÍAS SE QUEDABA EN 6 CON EL CAMBIO DE HORA. La aritmética
+// anterior mezclaba dos husos: `new Date("2026-04-01")` es MEDIANOCHE UTC, y `setDate(getDate()-n)`
+// resta días en hora LOCAL conservando la hora del reloj. Al cruzar el cambio de horario de verano
+// ese punto se desplaza una hora y el pesaje del extremo se cae fuera del `>=`. Medido con ESTA MISMA
+// función y pesaje diario: en Europe/Madrid, **34 días de 2026** la «media de 7 días» sale de 6
+// pesajes (del 30-mar al 18-abr y del 26-oct al 8-nov); en UTC, 0 de 365. Dos consecuencias: la media
+// queda sesgada media jornada de tendencia y —peor— el `n` que ahora gobierna el botón puede caer de
+// 3 a 2 y apagarlo sin motivo. Se arregla anclando las fechas al MEDIODÍA local y contando DÍAS
+// ENTEROS: ±1 hora alrededor de las 12:00 no cambia nunca de día. Es el mismo idioma que ya usa el
+// resto de la app (`Date.parse(f+'T12:00:00')`: mediaKcalDiario, la guardia de datos rancios…).
+// La clave del arreglo es NO MEZCLAR HUSOS: si todas las fechas se convierten con el MISMO criterio,
+// las diferencias entre ellas son múltiplos exactos de un día y el horario de verano deja de existir
+// para esta cuenta. `Date.parse("2026-04-01")` (forma solo-fecha) es medianoche UTC por norma del
+// lenguaje (ES2015 §20.4.3.2); si algún motor viejo la interpretase como local, seguirían siendo TODAS
+// locales y la única discrepancia posible sería la hora del cambio de horario — de ahí la holgura de
+// ±12 h de los límites, que absorbe esa hora y sigue sin poder alcanzar el día de al lado (dista 24 h).
+// Fecha corrupta → NaN → ninguna comparación se cumple → ese pesaje no entra en ninguna ventana.
+function _diaTs(f){ return Date.parse(f); }
+function _ventana7(ws,offsetDias){
+  if(!ws || !ws.length) return null;
+  // Los dos límites se calculan UNA vez, fuera del bucle: dentro del filter solo queda un parse y dos
+  // comparaciones. Con 2 años de histórico y 3 ventanas que mirar, hacerlo dentro costaba 19 ms por
+  // repintado (medido) — más que el presupuesto entero de un fotograma a 60 fps.
+  var ref=_diaTs(ws[ws.length-1].f);
+  var hi=ref-offsetDias*864e5+432e5, lo=ref-(offsetDias+6)*864e5-432e5;
+  return ws.filter(function(x){ var t=_diaTs(x.f); return t>=lo && t<=hi; });
+}
+// 📐 SIGUE SIENDO LA MEDIA ARITMÉTICA, Y ESO ESTÁ MEDIDO (mejora 4 · 28-07-2026). Se propuso cambiarla
+// por la MEDIANA «por robustez ante un pesaje disparatado». Se midió antes de tocarla, con estas mismas
+// funciones y comparación pareada (misma serie para los tres estimadores, N=8.000, pesaje diario):
+//   error del «TDEE REAL»           media    mediana    media recortada
+//   sin retenciones (caso normal)    77       92 ✗          80
+//   retención 1,5 kg cada 20 días   110      114 ✗         107
+//   retención 1,5 kg cada 10 días   133      136 ✗         130
+//   retención 1,5 kg cada 5 días    168      178 ✗         170
+// La mediana PIERDE en todas, incluidas aquellas para las que se pedía. El motivo es aritmética, no
+// opinión: con ruido normal la mediana de 7 datos tiembla un 21 % más que la media (σ 0,228 frente a
+// 0,188 con σ=0,5 por pesaje), y una retención real de agua/glucógeno no es UN día atípico —sube y
+// baja en tres— así que contamina 3 de los 7 días de la ventana, justo el punto de ruptura de la
+// mediana. Barrido adversarial buscándole su mejor caso: la mediana solo gana con atípicos de ≥2,5 kg
+// en un día suelto, que no son un día de pizza sino una báscula rota o un pesaje con ropa — y eso se
+// arregla saneando el dato, no cambiando de estimador. La media recortada empata y no compensa la
+// complejidad. Si alguien vuelve a proponer la mediana: aquí están los números.
 function mediaSemana(ws,offsetDias){
-  if(!ws.length) return null;
-  const fin=new Date(ws[ws.length-1].f); fin.setDate(fin.getDate()-offsetDias);
-  const ini=new Date(fin); ini.setDate(ini.getDate()-6);
-  const sel=ws.filter(x=>{const d=new Date(x.f); return d>=ini&&d<=fin;});
-  if(!sel.length) return null;
+  const sel=_ventana7(ws,offsetDias);
+  if(!sel || !sel.length) return null;
   return sel.reduce((s,x)=>s+x.w,0)/sel.length;
 }
+function pesajesEnVentana(ws,offsetDias){
+  const sel=_ventana7(ws,offsetDias);
+  return sel?sel.length:0;
+}
+// ══════════ 📐 LA ESCALERA DE VENTANA (mejora 1 · 28-07-2026) ══════════
+// El panel compara «la media de esta semana» con «la media de hace X». Ese X eran 14 días FIJOS.
+// Medido con Monte Carlo sobre estas mismas funciones (N=4.000 series, semilla fija, pesaje diario,
+// σ 0,5 kg/día, perfil de 80 kg perdiendo grasa, 120 días de historial):
+//   ventana    meseta REAL detectada    falsa alarma a −0,25 %/sem    error típico del «TDEE REAL»
+//     14 d             71,8 %                    18,5 %                        ±148 kcal
+//     21 d             80,5 %                     8,5 %                        ± 98 kcal
+//     28 d             86,0 %                     4,2 %                        ± 78 kcal
+// 28 gana en los DOS ejes a la vez —no es un compromiso, es mejor a secas— porque el error del
+// «TDEE REAL» es el error de peso multiplicado por 7700/días: doblar la ventana lo parte por la mitad.
+// Pero 28 días FIJOS tienen un precio, también medido: el panel no existiría hasta el día 28 (hoy
+// existe el 14) y detectar una meseta NUEVA pasa de 12 a 23 días de mediana.
+// Por eso la ventana no es un número fijo sino una ESCALERA: se usa la MÁS LARGA que los datos
+// sostengan. Así el usuario nuevo no pierde ni un día de panel y, en cuanto tiene historial, se le
+// mide con la ventana buena. La regla, en dos pasadas:
+//   1.ª  la ventana más larga cuya media de atrás se apoye en ≥ nMin pesajes  → se puede ACTUAR
+//   2.ª  si ninguna llega, la más larga que al menos EXISTA                   → se puede INFORMAR
+// La 2.ª pasada es deliberada: el panel sigue enseñando el HECHO aunque no pueda tocar el plan.
+// Efecto colateral medido y bienvenido: con cadencias que no son múltiplo de la ventana (pesarse cada
+// 3 días), una ventana FIJA metía 2 o 3 pesajes en la de atrás según la alineación del calendario, y
+// el botón aparecía y desaparecía sin que el usuario cambiara nada. La escalera elige la ventana que
+// SÍ tiene los 3 y ese vaivén se acaba.
+var CALIB_VENTANAS=[28,21,14];   // días entre las dos medias, de más fiable a menos
+function calibVentana(ws,nMin){
+  nMin=(+nMin>0)?+nMin:3;
+  var mejor=null;
+  for(var i=0;i<CALIB_VENTANAS.length;i++){
+    var W=CALIB_VENTANAS[i], m2=mediaSemana(ws,W), n2=pesajesEnVentana(ws,W);
+    if(m2==null) continue;
+    if(mejor==null) mejor={W:W,m2:m2,n2:n2};                     // la más larga que EXISTE
+    if(n2>=nMin){ mejor={W:W,m2:m2,n2:n2}; break; }              // la más larga BIEN sostenida
+  }
+  if(mejor==null) return null;
+  var m0=mediaSemana(ws,0); if(m0==null) return null;
+  var n0=pesajesEnVentana(ws,0);
+  return {W:mejor.W, m0:m0, m2:mejor.m2, n0:n0, n2:mejor.n2, nMin:Math.min(n0,mejor.n2)};
+}
+// «28» → «4 semanas». Para el texto del panel: nadie cuenta en días de dos cifras.
+function calibVentanaTxt(W){ var s=Math.round((+W||0)/7); return s===1?"1 semana":(s+" semanas"); }
+// Números como se escriben en España: coma decimal y signo menos DE VERDAD (−, U+2212), que es el que
+// ya usaba el texto del rango sano. El panel mezclaba «−0,1 a −1,0 %/sem» con «-0.18 %/sem» dos líneas
+// más arriba, en la misma tarjeta. Sin dato → «sin dato», nunca un guion mudo ni un NaN en pantalla.
+function calibNum(x,dec){
+  var n=+x; if(!isFinite(n)) return "sin dato";
+  return n.toLocaleString("es-ES",{minimumFractionDigits:dec,maximumFractionDigits:dec}).replace(/^-/,"−");
+}
+// [MEDIASEM-PURE-FIN]
 
 // ======= ENTRENOS (Fase 3.3 — logging estilo Hevy) =======
 let _ent={ejercicios:[]};
@@ -18914,6 +19276,254 @@ function estancamiento(ejercicio, historial, grupos){
   return NO;
 }
 // [ESTANCA-PURE-FIN]
+
+// [LINEABASE-PURE-INICIO] — 📏 LÍNEA BASE PERSONAL (señal vs ruido). PURO (sin DOM, sin storage, sin red,
+// sin reloj interno ni azar): _tests/test-linea-base.node.js extrae este bloque y lo evalúa TAL CUAL. Todo
+// instante de tiempo entra por parámetro, nunca se lee el reloj → el módulo es determinista y testeable.
+// Origen: minado de OpenStrap/analytics · baseline.dart (licencia MIT), leído literalmente.
+//
+// QUÉ RESUELVE, en cristiano: hoy la app compara contra valores ABSOLUTOS o contra nada. Este módulo
+// compara cada medida contra el HISTORIAL DEL PROPIO USUARIO. El peso corporal oscila 1-2 kg al día solo
+// por agua: sin línea base personal, el Cerebro suelta el clásico «has ganado grasa» que es MENTIRA.
+// Sirve para cualquier serie que la app ya registra: peso, tonelaje, RIR medio, adherencia, pasos…
+//
+// 🔴 REGLA DE ORO heredada del original: si no se puede justificar la afirmación, el motor SE CALLA.
+// Sin dispersión conocida NUNCA se afirma un cambio. No se inventa un suelo mágico para poder hablar.
+// Y su corolario, que es lo que hace que la regla no sea un eslogan: TAMPOCO se afirma un cambio cuando la
+// dispersión se conoce MAL. Estimarla con 3-6 datos es conocerla mal, y las dos correcciones que lo tratan
+// (el b_n de _lbFactorMuestraPequena y el cuantil t de mdc) están explicadas al detalle en cada función.
+
+// ¿es un número de verdad? (mismo criterio que Number.isFinite: un "80" de texto NO cuenta como dato)
+function _lbFinito(v){ return typeof v === "number" && isFinite(v); }
+
+// mediana(xs) — mediana clásica. Ignora lo que no sea número finito. null si no queda nada usable.
+// Se usa mediana y no media a propósito: un día de retención de líquidos no debe arrastrar el centro.
+function mediana(xs){
+  if(!Array.isArray(xs)) return null;
+  var v = [];
+  for(var i=0;i<xs.length;i++){ if(_lbFinito(xs[i])) v.push(xs[i]); }
+  if(!v.length) return null;
+  v.sort(function(a,b){ return a-b; });
+  var m = v.length >> 1;
+  return (v.length % 2) ? v[m] : (v[m-1] + v[m]) / 2;
+}
+
+// mad(xs) — desviación absoluta MEDIANA, escalada a sigma: mediana(|x - mediana(xs)|) * 1.4826.
+// ⚠️ LA CONSTANTE: 1.4826 corresponde a la desviación absoluta MEDIANA. Existe otra, 1.253, que es para
+// la desviación absoluta MEDIA (otro estadístico distinto, el que usa ewma_baselines.dart del original).
+// NO se mezclan. Aquí el estadístico es la MEDIANA, luego la constante es 1.4826.
+// Devuelve 0 en una serie constante (y eso NO revienta nada aguas abajo: lo capturan mdc/veredictoCambio).
+var LB_MAD_A_SIGMA = 1.4826;
+function mad(xs){
+  var c = mediana(xs);
+  if(c == null) return null;
+  var d = [];
+  for(var i=0;i<xs.length;i++){ if(_lbFinito(xs[i])) d.push(Math.abs(xs[i] - c)); }
+  var md = mediana(d);
+  return (md == null) ? null : md * LB_MAD_A_SIGMA;
+}
+
+// _lbFactorMuestraPequena(n) — ⚠️ EL 1.4826 DE ARRIBA ES ASINTÓTICO: solo estima bien sigma con MUCHOS
+// datos. Con pocos se queda CORTO, y quedarse corto en la escala es el peor error posible aquí, porque
+// todos los umbrales son proporcionales a ella: una escala pequeña convierte ruido en «has ganado grasa».
+// Medido con ruido puro N(0,1): E[1.4826·MAD] vale 0,6715·sigma con n=3 (¡-33%!), 0,8225 con n=5,
+// 0,9121 con n=10, 0,9870 con n=60. Se corrige con los factores b_n de Croux & Rousseeuw (1992);
+// verificados uno a uno contra esa simulación (400.000 muestras) con menos del 0,9% de discrepancia.
+// Para n ≥ 10 la forma cerrada n/(n−0,8) reproduce lo medido con menos del 0,3% de error.
+var LB_BN_TABLA = { 2:1.196, 3:1.495, 4:1.363, 5:1.206, 6:1.200, 7:1.140, 8:1.129, 9:1.107 };
+function _lbFactorMuestraPequena(n){
+  if(!_lbFinito(n) || n < 2) return 1;
+  return LB_BN_TABLA[n] || (n / (n - 0.8));
+}
+
+// lineaBaseRobusta(ventana, opciones) → { centro, escala, n, suficiente }
+// centro = mediana · escala = MAD escalada Y CORREGIDA por tamaño de muestra · n = valores válidos reales
+// OJO a la diferencia de responsabilidades: mad() es el ESTADÍSTICO puro (1.4826 clavado, comparable con
+// cualquier manual); escala es la mejor ESTIMACIÓN de la sigma de ESTA persona, y para eso hace falta el
+// b_n — que solo se puede aplicar aquí, que es donde se sabe n. Por eso escala ≠ mad(ventana) con n bajo.
+// suficiente = puerta de cobertura. Por defecto 7 (una semana de datos), NO 3: con 3 pesajes la escala se
+// estima tan mal que el módulo se queda casi ciego (le harían falta ~18 sigmas para hablar). Sube a 7 por
+// UTILIDAD, no por honestidad: la honestidad la garantiza el cuantil t de mdc() sea cual sea la puerta.
+var LB_MIN_VALIDOS = 7;
+function lineaBaseRobusta(ventana, opciones){
+  var o = (opciones && typeof opciones === "object") ? opciones : {};
+  var minValidos = _lbFinito(o.minValidos) ? o.minValidos : LB_MIN_VALIDOS;
+  var xs = [];
+  if(Array.isArray(ventana)){ for(var i=0;i<ventana.length;i++){ if(_lbFinito(ventana[i])) xs.push(ventana[i]); } }
+  if(!xs.length) return { centro:null, escala:null, n:0, suficiente:false };
+  var m = mad(xs);
+  return { centro: mediana(xs), escala: (m == null ? null : m * _lbFactorMuestraPequena(xs.length)),
+           n: xs.length, suficiente: xs.length >= minValidos };
+}
+
+// zModificado(x, base) — a cuántas "sigmas robustas" está x de SU PROPIO centro. null si no hay con qué
+// medir (sin centro, sin escala, o escala 0: serie constante o cuantizada → dividir sería inventarse un z).
+function zModificado(x, base){
+  if(!base || !_lbFinito(x)) return null;
+  if(!_lbFinito(base.centro) || !_lbFinito(base.escala) || base.escala <= 0) return null;
+  return (x - base.centro) / base.escala;
+}
+
+// esAtipico(x, base) — criterio de Iglewicz-Hoaglin: |z modificado| > 3.5 (citado por Leys 2013).
+// Si el z no se puede calcular → false: no se acusa a un dato de raro sin datos para sostenerlo.
+var LB_UMBRAL_ATIPICO = 3.5;
+function esAtipico(x, base){
+  var z = zModificado(x, base);
+  return (z == null) ? false : Math.abs(z) > LB_UMBRAL_ATIPICO;
+}
+
+// swc(sdEntreSujetos, k) — Smallest Worthwhile Change (Hopkins 2000) = k × desviación típica ENTRE
+// SUJETOS (k = 0,2 por defecto). 🔴 EL "ENTRE SUJETOS" NO ES UN ADORNO, ES LA DEFINICIÓN: mide qué
+// diferencia importa comparando a esta persona con la POBLACIÓN, y por eso necesita una dispersión de
+// población, un dato EXTERNO que esta ventana no contiene.
+// EL FALLO QUE ESTO ARREGLA: antes se multiplicaba 0,2 × base.escala, que es la dispersión INTRA-persona
+// del día a día. Como escala ya estima sigma, exigir |delta| > 0,2 × sigma es exigir |z| > 0,2, y para una
+// normal P(|Z| > 0,2) = 84,15%. Medido: saltaba a true el 84-91% de los días de ruido PURO, y como el MDC
+// siempre es mayor, esDetectable implicaba mereceLaPena el 100% de las veces (4.000/4.000): no informaba
+// de nada, solo autorizaba la brasa que el módulo existe para callar.
+// Sin ese dato de población → null, y quien llame NO podrá afirmar que el cambio merece la pena. Es la
+// misma regla de oro del módulo: sin el ingrediente correcto, se calla. No se sustituye por lo que hay a
+// mano solo para poder responder algo.
+var LB_K_SWC = 0.2;
+function swc(sdEntreSujetos, k){
+  if(!_lbFinito(sdEntreSujetos) || sdEntreSujetos <= 0) return null;
+  var kk = _lbFinito(k) ? k : LB_K_SWC;
+  return kk * sdEntreSujetos;
+}
+
+// _lbT975(nu) — cuantil t de Student al 97,5% (bilateral 95%) con nu grados de libertad. Tabla clásica.
+// Se BAJA al grado tabulado inmediatamente inferior, nunca se interpola hacia arriba: como t decrece al
+// crecer nu, redondear nu hacia abajo da un umbral MÁS exigente. Ante la duda, el módulo se calla.
+var LB_T975 = [[1,12.706],[2,4.303],[3,3.182],[4,2.776],[5,2.571],[6,2.447],[7,2.365],[8,2.306],[9,2.262],
+               [10,2.228],[11,2.201],[12,2.179],[13,2.160],[14,2.145],[15,2.131],[16,2.120],[17,2.110],
+               [18,2.101],[19,2.093],[20,2.086],[22,2.074],[24,2.064],[26,2.056],[28,2.048],[30,2.042],
+               [40,2.021],[50,2.009],[60,2.000],[120,1.980]];
+function _lbT975(nu){
+  var t = LB_T975[0][1];
+  if(!_lbFinito(nu) || nu < 1) return t;
+  for(var i=0;i<LB_T975.length;i++){ if(LB_T975[i][0] <= nu) t = LB_T975[i][1]; else break; }
+  return t;
+}
+
+// _lbGradosLibertad(n) — grados de libertad EFECTIVOS de una escala estimada con la MAD sobre n datos.
+// La MAD es robusta pero paga por serlo: su eficiencia asintótica frente a la desviación típica en datos
+// normales es 0,368, o sea que "gasta" casi dos tercios de la muestra. De ahí nu ≈ 0,368 × n. Se trunca
+// (nunca se redondea al alza) y nunca baja de 1.
+var LB_ARE_MAD = 0.368;
+function _lbGradosLibertad(n){
+  if(!_lbFinito(n) || n < 2) return 1;
+  return Math.max(1, Math.floor(LB_ARE_MAD * n));
+}
+
+// mdc(base, errorTipico) — Minimal Detectable Change = cuantil × √2 × error típico: el umbral por encima
+// del cual un cambio no se explica solo por el ruido de la propia medición.
+// 🔴 EL ARREGLO IMPORTANTE VIVE AQUÍ. El 1,96 clásico de la fórmula presupone un error típico CONOCIDO
+// (el que sale de un estudio de fiabilidad con muchos sujetos). Meter ahí una MAD estimada con 3-6 datos
+// es hacer pasar por conocida una cifra que es casi una adivinanza, y como el MDC es proporcional a ella,
+// una ventana que por azar salga apretada hunde el umbral y el vaivén normal del agua lo cruza.
+// Medido antes del arreglo, con peso REALMENTE estable y ruido puro: 32,4% de falsos «cambio detectable»
+// con n=3, 11,97% con n=6, y solo al llegar a n=60 caía al 1,2% (su suelo teórico). Ese exceso ERA todo
+// error de muestreo del estimador. Después del arreglo, mismo experimento: 4,1% con n=3, 1,3% con n=6-7,
+// ~1% de n=10 en adelante — controlado en TODA la escala de n.
+// LA REGLA: si el error típico se ESTIMA de la ventana, el cuantil es el de Student con los grados de
+// libertad efectivos de la MAD; si el que llama pasa un error típico MEDIDO de verdad, se usa el 1,96 de
+// siempre, que ahí sí es correcto. Con n grande t → 1,98, así que la fórmula converge a la de toda la
+// vida: el arreglo solo muerde donde la original mentía.
+// Escala desconocida (null o ≤ 0) → null y NUNCA se podrá afirmar un cambio. Sigue sin haber suelo mágico.
+function mdc(base, errorTipico){
+  if(errorTipico != null){
+    if(!_lbFinito(errorTipico) || errorTipico <= 0) return null;
+    return 1.96 * Math.SQRT2 * errorTipico;                       // error típico MEDIDO: no se penaliza
+  }
+  var te = base ? base.escala : null;
+  if(te == null || !_lbFinito(te) || te <= 0) return null;
+  // escala ESTIMADA de la ventana → se paga la incertidumbre de haberla estimado. Sin un n creíble se
+  // aplica la penalización máxima (nu = 1): no saber cuántos datos hay no puede salir barato.
+  return _lbT975(_lbGradosLibertad(base && _lbFinito(base.n) ? base.n : 0)) * Math.SQRT2 * te;
+}
+
+// cambioSuperaMdc(delta, base, errorTipico) — ¿el cambio es DETECTABLE de verdad?
+// Sin MDC computable → false. Callar es la respuesta por defecto ("can't justify a claim => stay silent").
+function cambioSuperaMdc(delta, base, errorTipico){
+  var m = mdc(base, errorTipico);
+  if(m == null || !_lbFinito(delta)) return false;
+  return Math.abs(delta) > m;
+}
+
+// ewmaConHuecos(estadoPrevio, valor, tPrevioMs, tAhoraMs, semividaMs) → { valor, t }
+// Media móvil exponencial consciente del TIEMPO REAL transcurrido, no del número de muestras:
+//   dt = tAhora - tPrevio · lambda = 1 - 2^(-dt/semivida) · lambda = min(lambda, 0.5) ← EL TOPE
+//   nuevo = estadoPrevio + lambda × (valor - estadoPrevio)
+// POR QUÉ EL TOPE (esto es lo valioso): si el usuario deja de pesarse dos semanas, sin tope lambda se
+// acercaría a 1 y el PRIMER peso al volver reescribiría su línea base de golpe. Literal del original:
+// "a long gap should not let one new sample dominate". Con semivida de 7 días, el tope ya actúa a partir
+// de 7 días de hueco: como mucho, la muestra nueva mueve la base hasta la mitad del camino.
+// Casos raros: sin estado previo, el primer valor INICIALIZA (entra tal cual). dt ≤ 0 (no se retrocede en
+// el tiempo) y semivida ≤ 0 (indefinida) → lambda 0: el estado no se mueve ni el reloj va hacia atrás.
+// 🔴 INSTANTES CORRUPTOS (una fecha podrida en el histórico acaba dando un getTime() → NaN, y eso pasa
+// con datos reales). REGLA INVARIANTE: esta función NUNCA devuelve un `t` que no sea número finito o null.
+// Antes sí lo hacía y era letal: la rama de inicialización no miraba tAhoraMs, así que un instante malo en
+// la PRIMERA muestra se guardaba en el estado; a partir de ahí la guarda de instantes devolvía ese mismo t
+// podrido una y otra vez y la media móvil se quedaba CONGELADA PARA SIEMPRE, aunque todas las fechas
+// siguientes fuesen perfectas — devolviendo un número con pinta de válido pero fosilizado en la primera
+// medición. El delator de que era un descuido: un instante malo A MITAD de la serie sí se recuperaba.
+// Cómo se arregla de raíz: un valor válido con instante ilegible no se tira (el peso es bueno, lo que está
+// roto es su fecha) pero tampoco contamina el reloj — se guarda con t null. Y si el estado tiene valor
+// pero no tiene reloj, la siguiente muestra con instante válido RE-ANCLA el reloj sin mover el valor
+// (dt es desconocido, luego lambda = 0): el estado no miente y la serie vuelve a andar.
+function ewmaConHuecos(estadoPrevio, valor, tPrevioMs, tAhoraMs, semividaMs){
+  var tP = _lbFinito(tPrevioMs) ? tPrevioMs : null;                    // el reloj podrido nunca se propaga
+  if(!_lbFinito(valor)) return { valor: (estadoPrevio == null ? null : estadoPrevio), t: tP };
+  if(!_lbFinito(estadoPrevio)) return { valor: valor, t: (_lbFinito(tAhoraMs) ? tAhoraMs : null) };
+  if(!_lbFinito(tAhoraMs)) return { valor: estadoPrevio, t: tP };      // sin instante nuevo no se avanza
+  if(tP === null) return { valor: estadoPrevio, t: tAhoraMs };         // re-ancla el reloj, valor intacto
+  var dt = tAhoraMs - tP;
+  if(dt <= 0 || !_lbFinito(semividaMs) || semividaMs <= 0) return { valor: estadoPrevio, t: tP };
+  var lambda = 1 - Math.pow(2, -dt / semividaMs);
+  if(!(lambda > 0)) lambda = 0;
+  lambda = Math.min(lambda, 0.5);                                      // ← el tope del hueco largo
+  return { valor: estadoPrevio + lambda * (valor - estadoPrevio), t: tAhoraMs };
+}
+
+// veredictoCambio(valorHoy, ventana, opciones) → SIEMPRE la misma forma:
+//   { hayVeredicto, direccion, delta, mereceLaPena, esDetectable, base, motivo }
+// Es la función de alto nivel que consumirá el Cerebro. `hayVeredicto:false` + `motivo` LEGIBLE POR MÁQUINA
+// cuando no se puede afirmar nada, para que la interfaz pinte «te faltan 2 pesajes» en vez de un guion mudo.
+//   · "faltan_datos:tengo=H,necesito=N"  → cobertura insuficiente
+//   · "sin_dispersion"                   → escala 0 (serie constante o cuantizada): no hay MDC, se calla
+//   · "valor_invalido"                   → el valor de hoy no es un número
+// opciones = { minValidos:7, k:0.2, errorTipico:null, sdEntreSujetos:null }
+// ⚠️ mereceLaPena es de TRES estados, no un sí/no: true / false cuando se puede juzgar, y **null** cuando
+// no hay con qué (sin sdEntreSujetos no existe el SWC de Hopkins — ver swc()). null es falsy, así que un
+// consumidor que haga `if(v.mereceLaPena)` se calla solo, que es justo lo que debe pasar.
+function veredictoCambio(valorHoy, ventana, opciones){
+  var o = (opciones && typeof opciones === "object") ? opciones : {};
+  var minValidos = _lbFinito(o.minValidos) ? o.minValidos : LB_MIN_VALIDOS;
+  var base = lineaBaseRobusta(ventana, { minValidos: minValidos });
+  // delta y dirección son HECHOS (si hay centro y valor): se informan aunque no haya veredicto — lo que
+  // se calla es el JUICIO (mereceLaPena / esDetectable), que es lo que necesita respaldo estadístico.
+  var delta = (_lbFinito(valorHoy) && _lbFinito(base.centro)) ? (valorHoy - base.centro) : null;
+  var direccion = (delta == null) ? "igual" : (delta > 0 ? "sube" : (delta < 0 ? "baja" : "igual"));
+  function callar(motivo){
+    return { hayVeredicto:false, direccion:direccion, delta:delta, mereceLaPena:false,
+             esDetectable:false, base:base, motivo:motivo };
+  }
+  if(!_lbFinito(valorHoy)) return callar("valor_invalido");
+  if(!base.suficiente)     return callar("faltan_datos:tengo=" + base.n + ",necesito=" + minValidos);
+  if(!_lbFinito(base.escala) || base.escala <= 0) return callar("sin_dispersion");
+  var s = swc(o.sdEntreSujetos, _lbFinito(o.k) ? o.k : LB_K_SWC);
+  return {
+    hayVeredicto: true,
+    direccion: direccion,
+    delta: delta,
+    mereceLaPena: (s == null) ? null : (Math.abs(delta) > s),
+    esDetectable: cambioSuperaMdc(delta, base, (o.errorTipico == null ? null : o.errorTipico)),
+    base: base,
+    motivo: null
+  };
+}
+// [LINEABASE-PURE-FIN]
+
 function detectarRecord(ejsNuevos, arrPrev){
   var maxPeso={}, maxVol={}, maxReps={};
   (arrPrev||[]).forEach(function(w){ (w.ejercicios||[]).forEach(function(ej){
@@ -21793,18 +22403,17 @@ function render(){
   var _hayLesion = lesionesGet().length>0;
   const rec=plan(_hayLesion ? Object.assign({}, p, {lesionActiva:true}) : p);
   const ov=p.ov||{};
-  const pgkg = ov.prot_gkg!=null?ov.prot_gkg:rec.m.pgkg;
-  const ggkg = ov.grasa_gkg!=null?ov.grasa_gkg:rec.m.ggkg;
-  const prot=Math.round(pgkg*p.peso_kg), gr=Math.round(ggkg*p.peso_kg);
-  let cal, carb, restoKcal;
-  if(ov.carb_gkg!=null){                 // fijas los carbos -> calorías = suma de macros
-    carb=Math.round(ov.carb_gkg*p.peso_kg);
-    cal=prot*4+gr*9+carb*4; restoKcal=0;
-  } else {                                // si no, los carbos son el resto
-    cal=rec.cal+(ov.cal_off||0);
-    restoKcal=cal-prot*4-gr*9;
-    carb=Math.max(0,Math.round(restoKcal/4));
-  }
+  // [PLANDIA-INICIO] — 🛟 EL OBJETIVO DEL DÍA SALE DE UN SOLO SITIO. Esta aritmética vivía suelta aquí
+  // (`cal=rec.cal+(ov.cal_off||0)` y la rama de macros fijados) y era la ÚNICA que no pasaba por la
+  // banda de seguridad: el suelo se aplicaba al ESCRIBIR y jamás al LEER, así que un perfil ya
+  // envenenado —versión desplegada, backup importado, cambio de objetivo— se pintaba tal cual y
+  // alimentaba window._obj (menús, reparto en 4 comidas, topes de azúcar y grasa saturada). Ahora la
+  // calcula calibPlanDia() ([CALIB-PURE], pura y testeable sola), que aplica la banda en LAS DOS
+  // RAMAS. Red: _tests/test-suelo-lectura.node.js.
+  const _pd=calibPlanDia(p, rec);
+  const pgkg=_pd.pgkg, ggkg=_pd.ggkg, prot=_pd.prot, gr=_pd.gr;
+  const cal=_pd.cal, carb=_pd.carb, restoKcal=_pd.restoKcal;
+  // [PLANDIA-FIN]
   const fibra=Math.round(R.fibra_g_1000*cal/1000);
   const ajustado = ov.prot_gkg!=null || ov.grasa_gkg!=null || ov.carb_gkg!=null || (ov.cal_off||0)!==0;
   window._obj={cal:cal, prot:prot, grasa:gr, carb:carb, fibra:fibra, azucar:Math.round(cal*0.10/4), sat:Math.round(cal*0.10/9)};   // objetivo del día · azúcar y grasa saturada = límite OMS ≤10% de las kcal
@@ -21837,11 +22446,22 @@ function render(){
     $("o_ovnote").innerHTML += "<div style='margin-top:8px;color:var(--jade);line-height:1.45'>🩹 <b>Plan adaptado por tu lesión.</b> "+_mid
       +"Comer bien no frena por sí solo la pérdida de músculo cuando estás lesionado: solo la atenúa. La palanca de verdad es volver a cargar la zona (moverla, fisio) en cuanto la lesión lo permita. (— Wall 2013; Tipton 2015)</div>";
   }
+  // 🛟 SI EL SUELO HA MORDIDO AL LEER, SE DICE. Un recorte silencioso sería cambiarle el plan a
+  // alguien sin contárselo — exactamente la mentira que este arreglo viene a quitar. Solo puede
+  // saltar con perfiles que YA venían fuera de banda (versión desplegada, backup, cambio de objetivo,
+  // consola): las puertas de escritura de hoy no dejan guardar nada así.
+  if(_pd.recorte==="off"){
+    $("o_ovnote").innerHTML += "<div style='margin-top:6px;color:#f4c04e'>🛟 <b>Tope de seguridad.</b> Tu perfil traía un ajuste de "+(_pd.pedido>0?"+":"")+_pd.pedido+" kcal que dejaba el objetivo por debajo de tu suelo ("+_pd.suelo+" kcal/día). Aplico "+(_pd.off>0?"+":"")+_pd.off+" y te sirvo <b style='color:var(--soft)'>"+cal+" kcal</b>. Puedes cambiarlo en «Ajustar».</div>";
+  } else if(_pd.recorte==="macros"){
+    $("o_ovnote").innerHTML += "<div style='margin-top:6px;color:#f4c04e'>🛟 <b>Tope de seguridad.</b> Tus macros fijados daban "+_pd.pedido+" kcal/día y tu suelo son "+_pd.suelo+" ("+(p.grasa_pct!=null?"tu metabolismo basal y tu disponibilidad energética":"tu metabolismo basal")+"). He subido los <b>carbohidratos</b> a "+(Math.round((carb/p.peso_kg)*10)/10)+" g/kg para llegar al suelo — no te toco proteína ni grasa. Si prefieres subir esas dos y dejar los carbohidratos abajo, hazlo en «Ajustar».</div>";
+  }
   const aviso = restoKcal<0 ? "⚠️ Calorías demasiado bajas para esa proteína+grasa → déficit inviable. Sube calorías o baja proteína/grasa." : null;
   if(aviso){ $("o_aviso").textContent=aviso; show("o_aviso",true);} else show("o_aviso",false);
 
+  // ⚠️ el ±kcal de «Ajustar» enseña el offset EFECTIVO (_pd.off), no el guardado: si el suelo recortó
+  // −5000 a −345, pintar −5000 en el campo sería enseñar un número que la app no está aplicando.
   $("aj_prot").value=pgkg; $("aj_grasa").value=ggkg;
-  $("aj_carb").value=Math.round((carb/p.peso_kg)*10)/10; $("aj_cal").value=ov.cal_off||0;
+  $("aj_carb").value=Math.round((carb/p.peso_kg)*10)/10; $("aj_cal").value=_pd.off;
 
   if($("r_borrar")) $("r_borrar").style.display="none";   // ✏️ v0.27 · repintar la tabla = salir del modo edición (spec 13-07)
   const ws=get(LS_W,[]);
@@ -21852,53 +22472,158 @@ function render(){
     $("r_tabla").innerHTML=h+"</table>";
   } else $("r_tabla").innerHTML="<div class='empty'><div class='ico'>⚖️</div><div class='et'>Empieza tu tendencia</div><div class='es'>Apunta el peso de hoy. En ~2 semanas la app calcula tu gasto REAL.</div></div>";
 
-  const m0=mediaSemana(ws,0), m2=mediaSemana(ws,14);
+  // 📐 mejora 1 · la ventana de comparación ya no son 14 días fijos. calibVentana() ([MEDIASEM-PURE])
+  // elige la MÁS LARGA que los datos sostengan —28 → 21 → 14— y devuelve en un solo objeto las dos
+  // medias, el `n` de cada una y qué ventana ha usado. Sin datos para ninguna, devuelve null y el
+  // panel cae al estado de espera de abajo, que dice QUÉ falta.
+  const _vt=calibVentana(ws, CALIB_N_MIN);
+  const calW=_vt?_vt.W:CALIB_VENTANAS[CALIB_VENTANAS.length-1];
+  const m0=_vt?_vt.m0:null, m2=_vt?_vt.m2:null;
+  const nV0=_vt?_vt.n0:0, nV2=_vt?_vt.n2:0, nVmin=_vt?_vt.nMin:0;
   const hoyC=hoyLocal();
   const pesadoHoy = ws.some(function(x){ return x.f===hoyC; });
   const nudge = (ws.length && !pesadoHoy) ? "<div class='hint' style='color:var(--ember);margin:0 0 8px'>📅 Hoy aún no te has pesado — apúntalo en la pestaña Peso (en ayunas).</div>" : "";
   if(m0!=null && m2!=null){
     // Capa 2 con kcal REALES del diario si hay registro suficiente; si no, el objetivo del plan.
-    const real=mediaKcalDiario(14);
+    // La media de comida se pide sobre LA MISMA ventana que el peso (calW): comparar un cambio de
+    // peso de 28 días contra una media de comida de 14 sería mezclar dos periodos distintos.
+    const real=mediaKcalDiario(calW);
     const calSrc=real?real.kcal:cal;
-    const c=calibrar(calSrc, m2, m0, 14, p.objetivo);
+    const c=calibrar(calSrc, m2, m0, calW, p.objetivo);
     const _ultPeso=Date.parse(ws[ws.length-1].f+'T12:00:00');
     const _stale=!isNaN(_ultPeso) && (Date.parse(hoyC+'T12:00:00')-_ultPeso)/864e5>4;
     if(_stale){
       $("calib_body").innerHTML=nudge+"<p class='hint'>📉 Tus últimos pesos son de hace más de 4 días: la decisión saldría vieja. Pésate unos días seguidos y recalibro con datos frescos.</p>";
     } else if(c){
-      // #5 · traducir la decisión a un ajuste numérico aplicable
-      let delta=0;
-      if(/BAJAR/.test(c.dec)) delta=-175;
-      else if(/SUBIR/.test(c.dec)) delta=175;
-      else delta=Math.max(-300, Math.min(300, Math.round(c.tdeeReal-rec.tdee)));
-      const objTxt=p.objetivo.replace("_"," ");
+      // [CALIBDELTA-INICIO] — 🧮 el fragmento que decide CUÁNTAS kcal ofrece el botón. Toda la aritmética
+      // vive ahora en calibDeltaKcal() ([CALIB-PURE], función PURA y testeable sola); aquí solo se le
+      // pasan los cuatro datos del panel. `cal` es EL OBJETIVO DE HOY (rec.cal + offset ya aplicado):
+      // medir contra él y no contra la fórmula del día 1 es lo que cierra el lazo (🐛 BUG A).
+      // `nVmin` = el peor de los dos recuentos de pesajes (🐛 BUG C). Suelo/techo: 🐛 BUG B.
+      let delta=calibDeltaKcal(c, rec, cal, p, nVmin);
+      // [CALIBDELTA-FIN]
+      // [CALIBESPERA-INICIO] — ⏳ EL LAZO NO SE MIDE SOBRE SÍ MISMO. Sin diario, `calSrc` es EL PROPIO
+      // OBJETIVO de hoy: suponer «comiste esto» solo es cierto si el objetivo llevaba vigente TODA la
+      // ventana. Pulsando seguido, cada ajuste movía el «TDEE REAL medido» lo mismo que el objetivo y
+      // el plan trepaba hasta el techo — medido: perder grasa acababa 300 kcal POR ENCIMA de su
+      // mantenimiento. Con diario NO se espera: ahí las kcal están MEDIDAS. Ver calibEspera().
+      const _espera = real ? 0 : calibEspera(hoyC, p.calib_f, calW);
+      if(_espera>0) delta=0;
+      // [CALIBESPERA-FIN]
+      // [CALIBFIJOS-INICIO] — 🔒 CON LOS CARBOS FIJADOS, EL BOTÓN ERA UN PLACEBO. En esa rama el
+      // objetivo del día es la suma de los macros y `cal_off` NI SE LEE — pero aplicarDecision seguía
+      // escribiéndolo. Medido: 10 pulsaciones dejaban la pantalla clavada en 1048 kcal mientras cal_off
+      // se acumulaba hasta +1000. Dos daños: el usuario cree que está ajustando su plan y no mueve
+      // nada, y ese ajuste invisible le saltaría de golpe el día que libere los carbohidratos. El panel
+      // sigue INFORMANDO (el ritmo y el TDEE real son ciertos y útiles); lo que desaparece es el botón
+      // que dice tocar algo que no toca.
+      const _fijos = ov.carb_gkg!=null;
+      if(_fijos) delta=0;
+      // [CALIBFIJOS-FIN]
+      // 🐛 antes: `p.objetivo.replace("_"," ")`. Con un perfil sin objetivo (importado a mano, migración
+      // vieja) eso es `undefined.replace` → TypeError → render() muere ENTERO y la app se queda en
+      // blanco, no solo el panel. Y de paso «ganar musculo» salía sin tilde en pantalla.
+      const objTxt = p.objetivo==="perder_grasa" ? "perder grasa"
+                   : p.objetivo==="ganar_musculo" ? "ganar músculo"
+                   : p.objetivo==="recomp" ? "recomposición"
+                   : (String(p.objetivo==null?"":p.objetivo).replace("_"," ") || "tu objetivo");
       const rango = p.objetivo==="perder_grasa" ? "−0,1 a −1,0 %/sem" : p.objetivo==="ganar_musculo" ? "+0,1 a +0,5 %/sem" : "estable, ~−0,25 %/sem";
+      const _suelo=calibSuelo(rec,p);
+      const _pocos = nVmin<CALIB_N_MIN;                       // no hay resolución para juzgar
+      const _enSuelo = !_pocos && cal<=_suelo+CALIB_ZONA_MUERTA;
+      const _objCal = calibObjetivo(c, rec);
+      const _plu = (nV2===1&&nV0===1) ? "" : "s";
+      const _vtTxt = calibVentanaTxt(calW);
+      // 🍽️ EL DENOMINADOR DEL DIARIO (28-07-2026). `real.ndias` se pintaba como «9 días completos»
+      // sin decir DE CUÁNTOS. Con la ventana de 14 días fijos ese 9 se leía solo (9 de 14); desde que
+      // la escalera puede comparar 28, el mismo 9 puede ser 9 de 28 —la mitad de cobertura y el mismo
+      // texto—. Es el BUG C otra vez (una media sin su n), ahora sobre la comida, y aquí pesa igual:
+      // el error del diario entra 1:1 en el TDEE REAL, porque tdeeReal = calComidas − Δpeso·7700/días.
+      // ⚠️ SE MIDIÓ SI CONVENÍA EXIGIR MÁS DÍAS DE DIARIO Y LA RESPUESTA FUE NO — por eso el mínimo de
+      // mediaKcalDiario() NO se toca. Cuando el diario no llega al mínimo, el panel cae al OBJETIVO
+      // DEL PLAN, o sea da por supuesto que se comió EXACTAMENTE lo planificado: eso yerra ±301 kcal
+      // (N=30.000; exceso de adherencia +150±250 kcal/día), mientras que un diario de 7 días de 28
+      // yerra ±132. El diario flojo solo pierde contra esa suposición si el usuario apunta casi
+      // siempre y solo sus días más flojos (sesgo ≥84 %, el peor caso imaginable). Subir el listón
+      // habría empeorado al usuario típico: lo que faltaba no era una puerta, era el denominador.
+      // [COBDIARIO-INICIO] — _tests/test-calib-diario.node.js extrae estas dos líneas y las evalúa
+      // solas, como se hace con [CALIBDELTA]. Los centinelas no cambian ni una línea de lógica.
+      const _cobPct = real ? Math.round(real.ndias/calW*100) : 0;
+      const _cobAviso = (real && real.ndias*2 < calW)
+        ? ` Ojo: esa media de comida sale del ${_cobPct} % de los días del periodo, así que se apoya mucho en los días que apuntaste.`
+        : "";
+      // [COBDIARIO-FIN]
+      // mejora 2+3 · cuando no se puede tocar el plan, se dice CUÁNTOS pesajes faltan y DÓNDE. Un
+      // «no hay datos suficientes» a secas desespera; «te faltan 2 en la semana de hace un mes» se
+      // entiende y se puede arreglar. Y se dice la verdad incómoda: la ventana de atrás ya está
+      // cerrada, hacia atrás no se rellena — eso solo se arregla de hoy en adelante.
+      const _falta2=Math.max(0, CALIB_N_MIN-nV2), _falta0=Math.max(0, CALIB_N_MIN-nV0);
+      const _queFalta = (_falta2 && _falta0)
+        ? `te falta${_falta2+_falta0===1?"":"n"} <b style="color:var(--soft)">${_falta2}</b> en la semana de atrás y <b style="color:var(--soft)">${_falta0}</b> en ésta`
+        : _falta2
+          ? `te falta${_falta2===1?"":"n"} <b style="color:var(--soft)">${_falta2}</b> en la semana de atrás`
+          : `te falta${_falta0===1?"":"n"} <b style="color:var(--soft)">${_falta0}</b> en la de esta semana`;
+      const _colaFalta = _falta2
+        ? ` La semana de atrás ya está cerrada —hacia atrás no se puede rellenar—, así que esto solo se arregla de hoy en adelante: pésate a diario en ayunas y en cuanto haya ${CALIB_N_MIN} a cada lado te lo propongo yo.`
+        : ` Pésate a diario en ayunas y en cuanto haya ${CALIB_N_MIN} a cada lado te lo propongo yo.`;
+      // mejora 1 · si la escalera no ha llegado a la ventana larga, se dice por qué y qué se gana esperando.
+      const _notaVent = calW<CALIB_VENTANAS[0]
+        ? ` Comparo con hace ${_vtTxt} porque es lo más atrás que llegan tus datos; con más historial usaré ${calibVentanaTxt(CALIB_VENTANAS[0])}, que afina casi el doble.`
+        : "";
+      // El botón NO salta al objetivo de golpe: la rama BAJAR/SUBIR mueve ±175 fijos y el paso máximo
+      // por pulsación son ±300. Si el ajuste que ofrezco no deja el objetivo donde apunta el cálculo,
+      // hay que decirlo: si no, el panel enseña «saldrían a 1652 kcal», el botón dice «−175» y el
+      // usuario lee que la app se contradice. Se dice el paso, adónde le deja y que volveré a mirar.
+      const _pasoTxt = (delta!==0 && _objCal!=null && Math.abs((cal+delta)-_objCal)>CALIB_ZONA_MUERTA)
+        ? ` No te lo cambio de golpe: te propongo ${delta>0?"+":"−"}${Math.abs(delta)} kcal ahora —te deja en ${calibNum(cal+delta,0)}— y vuelvo a mirar con los datos de las próximas semanas.`
+        : "";
       const btn = delta!==0
-        ? `<button class="btn-lg" style="margin-top:10px" onclick="aplicarDecision(${delta})">Aplicar ${delta>0?'+':''}${delta} kcal al plan</button>`
-        : `<p class="hint" style="color:var(--jade)">✓ Vas en rango: no hay que cambiar nada.</p>`;
+        ? `<button class="btn-lg" style="margin-top:10px" onclick="aplicarDecision(${delta})">Aplicar ${delta>0?'+':'−'}${Math.abs(delta)} kcal al plan</button>`
+        : _pocos
+          ? `<p class="hint" style="color:var(--ember)">⚖️ <b style="color:var(--soft)">El número te lo doy; el plan no te lo toco.</b> Esta lectura se apoya en ${nV2} y ${nV0} pesaje${_plu}, y para cambiarte las calorías te pido ${CALIB_N_MIN} en cada una de las dos semanas que comparo: ${_queFalta}. Con menos, una «media de 7 días» es en realidad un dato suelto, y el vaivén normal del día a día (agua, glucógeno, tránsito) pesa más que el cambio real de grasa.${_colaFalta}</p>`
+          : _fijos
+            ? `<p class="hint" style="color:var(--ember)">🔒 <b style="color:var(--soft)">Tienes los carbohidratos fijados, así que aquí no te toco el plan.</b> Con los carbos fijos tus calorías son la suma de tus macros (${calibNum(cal,0)} kcal), y el ajuste de ± kcal <b>no las mueve</b>: si te pusiera un botón, no cambiaría nada de lo que comes. La lectura de arriba sigue siendo buena — úsala tú. Si quieres que vuelva a llevarte yo las calorías, libera los carbohidratos en «Ajustar» → «Volver a lo recomendado».</p>`
+            : _espera>0
+            ? `<p class="hint" style="color:var(--ember)">⏳ <b style="color:var(--soft)">Ya te ajusté el plan el ${p.calib_f}; ahora toca darle datos, no otra vuelta de tuerca.</b> Como todavía no apuntas lo que comes, para medir tu gasto tengo que <b>dar por hecho que comes tu objetivo</b> — y eso solo vale si el objetivo lleva vigente todo el periodo que comparo. Si te reajusto otra vez ahora, me estaría midiendo a mí mismo: el número subiría solo, sin que tu cuerpo haya dicho nada. Te faltan <b style="color:var(--soft)">${_espera}</b> día${_espera===1?"":"s"} de pesajes con este objetivo. Atajo: apunta tus comidas en la pestaña <b style="color:var(--soft)">Comida</b> y dejo de suponer — con diario recalibro sin esperar.</p>`
+            : _enSuelo
+            ? `<p class="hint" style="color:var(--ember)">🛟 Tu objetivo (${calibNum(cal,0)} kcal) ya está en el suelo de seguridad: ${calibNum(_suelo,0)} kcal/día${p.grasa_pct!=null?" (tu metabolismo basal y tu disponibilidad energética)":" (tu metabolismo basal)"}. No recorto más. Por debajo de ahí el problema deja de ser la dieta: suma movimiento (pasos), revisa que la comida esté bien apuntada, o consúltalo con un profesional.</p>`
+            : `<p class="hint" style="color:var(--jade)">✓ Vas en rango: no hay que cambiar nada.</p>`;
       $("calib_body").innerHTML=
         nudge+
-        `<div class="kv"><span>Media hace 2 sem → hoy</span><span>${m2.toFixed(1)} → ${m0.toFixed(1)} kg</span></div>`+
-        `<div class="kv"><span>Ritmo real</span><span>${c.ritmo} %/sem</span></div>`+
-        `<div class="kv"><span>TDEE REAL (tus datos)</span><span>${c.tdeeReal} kcal</span></div>`+
+        `<div class="kv"><span>Media de hace ${_vtTxt} → hoy</span><span>${calibNum(m2,1)} → ${calibNum(m0,1)} kg</span></div>`+
+        `<div class="kv"><span>Pesajes detrás de cada media</span><span>${nV2} y ${nV0} <span class="hint" style="display:inline">(ventanas de 7 días)</span></span></div>`+
+        `<div class="kv"><span>Ritmo real</span><span>${calibNum(c.ritmo,2)} %/sem</span></div>`+
+        `<div class="kv"><span>TDEE REAL (tus datos)</span><span>${calibNum(c.tdeeReal,0)} kcal</span></div>`+
         `<div class="eyebrow-lbl">Decisión del coach</div><p class="coachline">${c.dec}</p>`+
-        `<p class="hint">Comiendo ~${calSrc} kcal ${real?`(<b style="color:var(--soft)">media REAL de tu diario</b>, ${real.ndias} días completos)`:`(objetivo del plan — apunta tus comidas en la pestaña Comida y calibraré con lo que comes de verdad)`}, tu peso fue ${m2.toFixed(1)}→${m0.toFixed(1)} kg en 2 semanas (${c.ritmo} %/sem). Para <b style="color:var(--soft)">${objTxt}</b> el ritmo sano es <b style="color:var(--soft)">${rango}</b>. La fórmula del día 1 decía ${rec.tdee} kcal; tus datos dicen ${c.tdeeReal}. <b style="color:var(--soft)">El cuerpo manda.</b></p>`+
+        `<p class="hint">Comiendo ~${calibNum(calSrc,0)} kcal ${real?`(<b style="color:var(--soft)">media REAL de tu diario</b>, ${real.ndias} de ${calW} días completos)`:`(objetivo del plan — apunta tus comidas en la pestaña Comida y calibraré con lo que comes de verdad)`}, tu peso fue ${calibNum(m2,1)}→${calibNum(m0,1)} kg en ${_vtTxt} (${calibNum(c.ritmo,2)} %/sem), a partir de <b style="color:var(--soft)">${nV2} y ${nV0} pesaje${_plu}</b>.${_notaVent} Para <b style="color:var(--soft)">${objTxt}</b> el ritmo sano es <b style="color:var(--soft)">${rango}</b>. La fórmula del día 1 decía ${calibNum(rec.tdee,0)} kcal; tus datos dicen ${calibNum(c.tdeeReal,0)}${_objCal!=null?`, que con tu mismo ${p.objetivo==="ganar_musculo"?"superávit":"déficit"} saldrían a un objetivo de <b style="color:var(--soft)">${calibNum(_objCal,0)} kcal</b>`:""}. <b style="color:var(--soft)">El cuerpo manda.</b>${_cobAviso}${_pasoTxt}</p>`+
         btn;
     }
   } else {
-    // #4 · proactiva: cuántos datos hay y cuánto falta para la 1ª calibración
+    // #4 · proactiva: cuántos datos hay y cuánto falta para la 1ª calibración.
+    // mejora 3 · aquí NUNCA va un guion mudo ni un «no hay datos suficientes». Se enseñan las dos
+    // cuentas que de verdad gobiernan el panel —RECORRIDO en días y PESAJES de esta semana— con su
+    // barra cada una, y el texto dice qué falta para cada cosa: una para que haya calibración, la
+    // otra para que además se pueda tocar el plan. Son cosas distintas y se explican por separado.
     let extra="";
     if(ws.length){
       const fechas=ws.map(function(x){ return x.f; }).sort();
       const t0=Date.parse(fechas[0]+'T12:00:00'), tn=Date.parse(hoyC+'T12:00:00');
       const span=(!isNaN(t0)&&!isNaN(tn)) ? Math.max(0, Math.round((tn-t0)/864e5)) : 0;
-      const faltan=Math.max(0, 14-span);
-      extra="<div class='kv'><span>Pesos registrados</span><span>"+ws.length+"</span></div>"+
-        "<div class='kv'><span>Datos acumulados</span><span>~"+Math.min(span,14)+" / 14 días</span></div>"+
-        "<div class='pbar'><i style='width:"+Math.round(Math.min(1,span/14)*100)+"%'></i></div>"+
+      const META=CALIB_VENTANAS[CALIB_VENTANAS.length-1];   // 14 días: la ventana más corta de la escalera
+      const faltan=Math.max(0, META-span);
+      const nSem=pesajesEnVentana(ws,0);                    // pesajes de la semana que acaba en el último
+      extra="<div class='kv'><span>Pesajes registrados</span><span>"+ws.length+"</span></div>"+
+        "<div class='kv'><span>Recorrido</span><span>"+Math.min(span,META)+" / "+META+" días</span></div>"+
+        "<div class='pbar'><i style='width:"+Math.round(Math.min(1,span/META)*100)+"%'></i></div>"+
+        "<div class='kv' style='margin-top:8px'><span>Pesajes de esta semana</span><span>"+
+          (nSem>=CALIB_N_MIN ? nSem+" <span class='hint' style='display:inline'>(con "+CALIB_N_MIN+" me basta ✓)</span>" : nSem+" / "+CALIB_N_MIN)+"</span></div>"+
+        "<div class='pbar'><i style='width:"+Math.round(Math.min(1,nSem/CALIB_N_MIN)*100)+"%'></i></div>"+
         (faltan>0
-          ? "<p class='hint'>Te faltan ~<b style='color:var(--soft)'>"+faltan+" día"+(faltan===1?"":"s")+"</b> de datos para tu primera calibración. Pésate a diario en ayunas; manda la media semanal, no el dato de un día.</p>"
-          : "<p class='hint'>Ya casi: en cuanto tenga media de hace 2 semanas vs hoy, calculo tu TDEE real.</p>");
+          ? "<p class='hint'>Te falta"+(faltan===1?"":"n")+" <b style='color:var(--soft)'>"+faltan+" día"+(faltan===1?"":"s")+"</b> de recorrido para tu primera calibración: comparo la media de esta semana con la de hace dos, y todavía no tengo las dos puntas. Pésate a diario en ayunas — manda la media de la semana, no el dato de un día.</p>"
+          : "<p class='hint'>Recorrido tienes de sobra, pero <b style='color:var(--soft)'>me falta algún pesaje en la semana de hace dos</b>: esa punta está vacía y sin ella no hay con qué comparar. Vuelve a pesarte unos días seguidos y en cuanto las dos puntas tengan dato, calculo tu gasto real.</p>")
+        +(nSem<CALIB_N_MIN
+          ? "<p class='hint'>Y para que además pueda <b style='color:var(--soft)'>proponerte un ajuste</b> del plan necesito <b style='color:var(--soft)'>"+CALIB_N_MIN+" pesajes</b> en cada una de las dos semanas que comparo: en ésta llevas "+nSem+". Con menos, la «media» es un dato suelto y no me fío de ella para tocarte las calorías.</p>"
+          : "");
     } else {
       extra="<p class='hint'>Apunta tu peso a diario (en ayunas) en la pestaña <b style='color:var(--soft)'>Peso</b>. En ~2 semanas calculo tu gasto REAL y te ajusto el plan.</p>";
     }
