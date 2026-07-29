@@ -310,11 +310,24 @@
   .cb-j{align-self:flex-start;background:var(--ink-3);border:1px solid var(--line-soft);color:var(--bone);border-bottom-left-radius:4px}
   .cb-u{align-self:flex-end;background:var(--ember-soft);border:1px solid rgba(255,106,61,.4);color:#ffd9cd;border-bottom-right-radius:4px}
   .cb-cita{display:block;margin-top:6px;font-family:var(--mono);font-size:.66rem;color:var(--mute)}
+  /* 📖 FORMATO DOPAMINA (v0.58.0) · el campo `r` de las fichas puede traer negrita, saltos y
+     listas. El reset global (*{margin:0;padding:0}) deja las listas SIN sangría ni viñeta
+     utilizable, así que se les devuelve aquí — y sólo dentro de la burbuja del bot. */
+  .cb-b b{font-weight:700;color:var(--bone)}
+  .cb-b ol,.cb-b ul{margin:7px 0;padding-left:1.45em}
+  .cb-b ol{list-style:decimal}
+  .cb-b ul{list-style:disc}
+  .cb-b li{margin:3px 0;padding-left:2px}
   .cb-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
   .cb-chip{font-size:.74rem;padding:6px 11px;border-radius:100px;border:1px solid var(--line);background:transparent;
     color:var(--jade);cursor:pointer;width:auto;margin:0;box-shadow:none;font-family:var(--body);font-weight:500}
   .cb-chip:hover{border-color:var(--jade);box-shadow:none}
   .cb-chip:active{transform:translateY(1px)}
+  /* 🧭 «¿Quisiste decir…?» (v0.58.0) · chips de vecindad DENTRO de la burbuja del bot.
+     Van aquí y no en #cb_chips a propósito: cbChips() reescribe esa caja entera y se llevaría por
+     delante los chips de seguimiento de la ficha. */
+  .cb-qd{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;align-items:center}
+  .cb-qd-t{flex-basis:100%;font-size:.72rem;color:var(--mute);font-family:var(--mono)}
   .cb-send{flex:none;width:auto;margin:0;padding:0 16px}
 
   /* ===== 🧠 JARVIS v0.13.1 · estado vacío misterioso (SOLO capa de presentación) ===== */
@@ -684,7 +697,7 @@
 <header class="brandbar">
   <div class="logo"><span class="dot"></span>JV <b>Fitness</b></div>
   <div style="display:flex;align-items:center">
-    <span class="tag">MVP v0.58.0 · motor v0.7</span>
+    <span class="tag">MVP v0.59.0 · motor v0.7</span>
     <!-- ⚙️ tanda #22 · hub de AJUSTES (no es pestaña): modal a pantalla completa -->
     <button class="gearbtn" id="btn_hub" type="button" title="Ajustes" aria-label="Abrir ajustes" onclick="hubAbrir()">⚙️</button>
   </div>
@@ -13451,7 +13464,7 @@ function resetTodo(){ if(!confirm("⚠️ Esto borra TODO: perfil, pesos, entren
 // Reemplazo total con confirmación. Reusa get/set, hoyLocal, toast, validar, render. NO toca motor ni gate.
 function exportarJSON(){ try{ set("jvf_last_export",hoyLocal()); }catch(e){}
   try{
-    var data={ app:"jvf", schema:1, app_version:"0.58.0", exportadoEl:new Date().toISOString(),
+    var data={ app:"jvf", schema:1, app_version:"0.59.0", exportadoEl:new Date().toISOString(),
       perfil:get(LS_P,null), pesos:get(LS_W,[]), entrenos:get(LS_E,[]), notas_ej:get("jvf_notas_ej",{}), comida:get("jvf_comida",[]), agua:get("jvf_agua",{}), suples_cfg:get("jvf_suples_cfg",null), suples_log:get("jvf_suples_log",{}),
       rutinas:get("jvf_rutinas",[]), meals:get("jvf_meals",[]), ent_start:get("jvf_ent_start",null),   // v0.10 · backup completo
       alimentos_propios:get("jvf_alimentos_propios",[]), barcode_cache:get("jvf_barcode_cache",{}),   // I5/I6 · también viajan en el backup
@@ -13552,6 +13565,7 @@ function procesarImport(file){
     if(Array.isArray(data.sinonimos)) set("jvf_sinonimos", data.sinonimos.filter(function(g){ return Array.isArray(g); }));   // 🟰 sinónimos de ejercicios [[a,b],...]
     if(Array.isArray(data.desvios)) set("jvf_desvios", data.desvios.filter(function(d){ return d && d.f; }));   // 🧭 log de desvíos del Cerebro [{f,...}]
     if(data.vol_ajuste && typeof data.vol_ajuste==="object" && !Array.isArray(data.vol_ajuste)) set("jvf_vol_ajuste", data.vol_ajuste);   // 💪 ajustes de volumen por músculo {mus:{resp,prio}}
+    calibSanearOffGuardado();   // 🩹 [CALIBMIGRA] · un backup viejo puede traer el cal_off desbocado
     render();
     toast("✓ Datos importados");
   };
@@ -13918,13 +13932,13 @@ var CEREBRO_KB=[
   {
     tronco:"motivacion", rama:"no-tengo-ganas-de-entrenar",
     claves:["no tengo ganas de entrenar","no tengo ganas","no tengo motivacion","sin motivacion","no quiero entrenar hoy","hoy no tengo ganas","me da palo entrenar","no me apetece entrenar","no me apetece ir al gym","paso del gym hoy"],
-    r:"Que hoy no tengas ganas no significa que te falte fuerza de voluntad: la motivación es una emoción y sube y baja sola. El truco es no negociar cada día contigo mismo. Baja el listón: comprométete solo a ponerte la ropa e ir a hacer la primera serie; casi siempre, una vez estás dentro, sigues. La acción suele venir ANTES que las ganas, no al revés. Y recuerda: la constancia es la media de las semanas, no de un día suelto. El mejor plan es el que cumples. (— guía general de hábitos y adherencia; el cierre conecta con la Tesis #10 del máster: 'el mejor protocolo es el que de verdad cumples')",
+    r:"<b>Que hoy no tengas ganas no significa que te falte fuerza de voluntad.</b><br><br>La motivación es una emoción: sube y baja sola. El truco no es tener más ganas, es no negociar cada día contigo mismo.<br><br>Baja el listón y comprométete solo a esto:<ol><li>Ponerte la ropa.</li><li>Ir y hacer la PRIMERA serie.</li></ol>Casi siempre, una vez estás dentro, sigues: la acción suele venir ANTES que las ganas, no al revés. 💪<br><br>Y recuerda: la constancia es la media de las semanas, no la de un día suelto. El mejor plan es el que cumples. (— guía general de hábitos y adherencia; el cierre conecta con la Tesis #10 del máster: 'el mejor protocolo es el que de verdad cumples')",
     chips:["me da pereza","la disciplina puede mas que la motivacion","empezar por lo minimo","no soy constante"]
   },
   {
     tronco:"motivacion", rama:"me-da-pereza",
     claves:["me da pereza","que pereza","me da pereza ir al gym","me da pereza entrenar","que pereza el gym","tengo mucha pereza","pereza de ir a entrenar","me da palo ir al gym"],
-    r:"La pereza es de lo más humano, y casi siempre está en la PUERTA, no dentro: lo que cuesta es ir, no entrenar. Así que atácala en la fase de salir de casa, no en el gym. Deja la bolsa preparada la noche antes, ve directo sin sentarte al llegar a casa, y hazte una promesa pequeña: solo caliento y hago un ejercicio. Empezar es el grueso del trabajo; el cuerpo suele arrancar solo cuando se pone en marcha. (— guía general)",
+    r:"<b>La pereza casi siempre está en la PUERTA, no dentro: cuesta ir, no entrenar.</b><br><br>Es de lo más humano, así que atácala donde de verdad vive: en la fase de salir de casa, no en el gym.<br><br>Tres cosas que funcionan:<ol><li>Deja la bolsa preparada la noche antes.</li><li>Ve directo, sin sentarte al llegar a casa.</li><li>Hazte una promesa pequeña: solo caliento y hago un ejercicio.</li></ol>Empezar es el grueso del trabajo; el cuerpo suele arrancar solo cuando se pone en marcha. (— guía general)",
     chips:["no tengo ganas de entrenar","hacer el gym mas ameno","empezar por lo minimo"]
   },
   {
@@ -13939,19 +13953,19 @@ var CEREBRO_KB=[
   {
     tronco:"motivacion", rama:"siempre-lo-dejo-a-las-dos-semanas",
     claves:["siempre lo dejo a las dos semanas","siempre lo dejo","lo dejo a las dos semanas","siempre abandono","empiezo y lo dejo","lo dejo siempre","nunca aguanto mas de un mes"],
-    r:"Que lo dejes a las dos semanas no es falta de carácter: casi siempre es que empiezas demasiado fuerte. Arrancar a tope (todos los días, dos horas, dieta estricta) es insostenible, y a las dos semanas el cuerpo y la cabeza dicen basta. Dale la vuelta: empieza por MENOS de lo que crees que puedes, tan poco que te parezca fácil, y sube despacio. Cuenta con que la novedad se apaga sobre esa fecha; ahí es donde el hábito, y no las ganas, tiene que sostenerte. (— guía general de adherencia y hábitos)",
+    r:"<b>Que lo dejes a las dos semanas no es falta de carácter.</b><br><br>Casi siempre es que empiezas demasiado fuerte. Arrancar a tope (todos los días, dos horas, dieta estricta) es insostenible, y a las dos semanas el cuerpo y la cabeza dicen basta.<br><br>Dale la vuelta:<ol><li>Empieza por MENOS de lo que crees que puedes, tan poco que te parezca fácil.</li><li>Sube despacio.</li></ol>Y cuenta con que la novedad se apaga sobre esa fecha: ahí es donde el hábito, y no las ganas, tiene que sostenerte. (— guía general de adherencia y hábitos)",
     chips:["como creo el habito","miedo a quemarme","la disciplina puede mas que la motivacion","no soy constante"]
   },
   {
     tronco:"motivacion", rama:"como-crear-el-habito",
     claves:["como creo el habito","como crear el habito","crear el habito de entrenar","como hago del gym un habito","empezar por lo minimo","hacer del gym una rutina fija","como me acostumbro a entrenar","cuando se hace automatico entrenar"],
-    r:"Un hábito de entrenar no se crea con fuerza de voluntad ni con un número mágico de días: se crea repitiendo la misma sesión, en el mismo momento, con la menor fricción posible. Ánclalo a una señal fija (mismos días, misma hora, justo después del trabajo o nada más levantarte) y haz que el primer paso sea diminuto: a veces basta con ponerte la ropa de entreno y hacer 5 minutos, no la sesión perfecta. Ten paciencia — entrenar se vuelve automático a base de semanas, no de golpe — y si un día fallas no se borra nada: simplemente retomas al día siguiente, sin darle más vueltas. (— guía general)",
+    r:"<b>El hábito no se crea a fuerza de voluntad ni con días mágicos.</b><br><br>No hay un número mágico de días: se crea repitiendo la MISMA sesión, en el MISMO momento, con la menor fricción posible.<br><br>Cómo se monta:<ol><li>Ánclalo a una señal fija: mismos días, misma hora, justo después del trabajo o nada más levantarte.</li><li>Haz que el primer paso sea diminuto — a veces basta con ponerte la ropa de entreno y hacer 5 minutos, no la sesión perfecta.</li></ol>Ten paciencia: entrenar se vuelve automático a base de semanas, no de golpe.<br><br>Y si un día fallas no se borra nada: simplemente retomas al día siguiente, sin darle más vueltas. (— guía general)",
     chips:["siempre lo dejo a las dos semanas","no soy constante","miedo a quemarme"]
   },
   {
     tronco:"motivacion", rama:"no-veo-resultados-y-me-desanimo",
     claves:["no veo resultados y me desanimo","no veo cambios y me desanimo","no progreso y me frustro","llevo semanas sin ver nada","me desanimo porque no avanzo","no noto mejoria y lo dejo","no veo resultados y lo dejo","no veo resultados y llevo un mes"],
-    r:"Es de lo más desmoralizante, y también de lo más normal: los resultados tardan y no van en línea recta. El espejo y la báscula son ruidosos y engañan a corto plazo. Mide mejor: fotos cada varias semanas, tus pesos y repeticiones en la libreta, cómo te queda la ropa. Al principio mucho del progreso es de técnica y fuerza antes de que se vea en tamaño. No lo dejes justo en el valle; y si de verdad llevas tiempo sin avanzar en nada, ahí sí toca revisar el plan. (— guía general)",
+    r:"<b>Los resultados tardan y no van en línea recta: es lo normal.</b><br><br>Es de lo más desmoralizante, y también de lo más normal — el espejo y la báscula son ruidosos y engañan a corto plazo.<br><br>Mide mejor, con cosas que no mienten:<ol><li>Fotos cada varias semanas.</li><li>Tus pesos y repeticiones en la libreta.</li><li>Cómo te queda la ropa.</li></ol>Al principio mucho del progreso es de técnica y fuerza, antes de que se vea en tamaño. No lo dejes justo en el valle. 📈<br><br>Y si de verdad llevas tiempo sin avanzar en nada, ahí sí toca revisar el plan. (— guía general)",
     chips:["me comparo con los demas","como me pongo metas realistas","hago siempre lo mismo","la motivacion va y viene"]
   },
   {
@@ -13976,13 +13990,13 @@ var CEREBRO_KB=[
   {
     tronco:"motivacion", rama:"disciplina-vs-motivacion",
     claves:["la disciplina puede mas que la motivacion","disciplina vs motivacion","disciplina o motivacion","la motivacion no dura","la motivacion va y viene","mejor disciplina que motivacion","no dependas de la motivacion","como ser disciplinado","no consigo ser constante"],
-    r:"La motivación es una emoción: va y viene, y por eso no puedes construir sobre ella. Lo que sostiene el entreno es un sistema: decides una vez tus días fijos, quitas la pregunta diaria de si te apetece, bajas la fricción y dejas que la identidad tire de ti (soy alguien que entrena). Disciplina no es apretar los dientes cada día; es diseñar las cosas para no depender de las ganas. (— guía general)",
+    r:"<b>Disciplina no es apretar los dientes: es no depender de las ganas.</b><br><br>La motivación es una emoción: va y viene, y por eso no puedes construir sobre ella. Lo que sostiene el entreno es un SISTEMA.<br><br>El sistema son cuatro decisiones:<ol><li>Decides UNA vez tus días fijos.</li><li>Quitas la pregunta diaria de si te apetece.</li><li>Bajas la fricción.</li><li>Dejas que la identidad tire de ti: soy alguien que entrena.</li></ol>Es diseñar las cosas para no depender de las ganas, no apretar los dientes cada día. (— guía general)",
     chips:["como creo el habito","no soy constante","me da pereza"]
   },
   {
     tronco:"motivacion", rama:"no-tengo-tiempo-para-entrenar",
     claves:["nunca tengo tiempo","nunca tengo tiempo de entrenar","no me da la vida para el gym","siempre me falta tiempo para entrenar","no tengo tiempo para ir al gym"],
-    r:"Casi siempre hace falta menos tiempo del que crees. Pocas sesiones bien aprovechadas, con ejercicios básicos que trabajan mucho músculo a la vez, rinden más que muchas sesiones a medias. Si vas justo, acorta la sesión, no la semana: sesiones cortas y constantes mantienen y hasta construyen. Agenda el entreno como una cita fija contigo. El mejor plan es el que encaja en tu vida. (— Tema 4 del máster / volumen mínimo eficaz + Tesis #10 / adherencia)",
+    r:"<b>Casi siempre hace falta menos tiempo del que crees.</b><br><br>Pocas sesiones bien aprovechadas, con ejercicios básicos que trabajan mucho músculo a la vez, rinden más que muchas sesiones a medias.<br><br>Si vas justo:<ol><li>Acorta la sesión, no la semana — sesiones cortas y constantes mantienen y hasta construyen.</li><li>Agenda el entreno como una cita fija contigo. ⏱️</li></ol>El mejor plan es el que encaja en tu vida. (— Tema 4 del máster / volumen mínimo eficaz + Tesis #10 / adherencia)",
     chips:["cómo creo el hábito","la disciplina puede más que la motivación","miedo a quemarme"]
   },
   {
@@ -14018,13 +14032,13 @@ var CEREBRO_KB=[
       // Fix adversarial 18-07 (bloqueante 5): «recai y quiero volver a empezar» — el motor no empareja
       // recai↔recaer (formas distintas) pero sí recai↔recaido (raíz común), y la clave corta cubre el resto.
       "he recaido y quiero volver a empezar","quiero volver a empezar"],
-    r:"Recaer no es fracasar: forma parte del proceso. Los que lo consiguen no son los que nunca paran, sino los que vuelven a empezar más veces. No entrenes el doble para recuperar lo perdido: el riesgo real no es ganar menos, es lesionarte, porque el tendón readapta más despacio que el músculo. Retoma hoy con cargas más suaves que las de antes (no al peso que dejaste), sube poco a poco cada semana y para si algo te duele. La buena noticia: el músculo vuelve hasta 2 veces más rápido la segunda vez. (— Tema 4: vuelta de parón / Rahmati 2022)",
+    r:"<b>Recaer no es fracasar: forma parte del proceso.</b><br><br>Los que lo consiguen no son los que nunca paran, sino los que vuelven a empezar más veces.<br><br>Lo que importa es CÓMO vuelves. No entrenes el doble para recuperar lo perdido: el riesgo real no es ganar menos, es lesionarte, porque el tendón readapta más despacio que el músculo.<ol><li>Retoma hoy con cargas más suaves que las de antes, no al peso que dejaste.</li><li>Sube poco a poco cada semana.</li><li>Para si algo te duele.</li></ol>La buena noticia: el músculo vuelve hasta 2 veces más rápido la segunda vez. (— Tema 4: vuelta de parón / Rahmati 2022)",
     chips:["como creo el habito","siempre lo dejo a las dos semanas","soy nuevo"]
   },
   {
     tronco:"motivacion", rama:"no-me-veo-capaz",
     claves:["no me veo capaz","no creo que pueda con esto","no valgo para el gym","siento que no puedo con esto","me falta confianza en el gym","creo que no lo voy a lograr","no me veo haciendolo"],
-    r:"Esa vocecita de 'yo no valgo para esto' la hemos tenido casi todos, y no es un veredicto: la capacidad se construye, no se nace con ella. Empieza por debajo de tu límite para ganar pronto y ve acumulando pequeñas pruebas de que sí puedes. Casi siempre, el que cree que no está hecho para el gym solo empezó demasiado fuerte o se comparó demasiado pronto. Si apareces, tu cuerpo se adapta. (— guía general)",
+    r:"<b>La capacidad se construye, no se nace con ella: no es un veredicto.</b><br><br>Esa vocecita de «yo no valgo para esto» la hemos tenido casi todos.<br><br>Dos movimientos que la desmontan:<ol><li>Empieza por DEBAJO de tu límite, para ganar pronto.</li><li>Ve acumulando pequeñas pruebas de que sí puedes.</li></ol>Casi siempre, el que cree que no está hecho para el gym solo empezó demasiado fuerte o se comparó demasiado pronto.<br><br>Si apareces, tu cuerpo se adapta. (— guía general)",
     chips:["como me pongo metas realistas","me comparo con los demas","como creo el habito"]
   },
 
@@ -14709,7 +14723,7 @@ var CEREBRO_KB=[
   {
     tronco:"adherencia", rama:"mejor-plan-el-que-cumples",
     claves:["cual es la rutina perfecta","rutina perfecta","rutina ideal","rutina definitiva","cual es la mejor rutina","cual es la mejor dieta","cual es el mejor plan","tengo que hacer lo optimo","el plan perfecto","la rutina optima","que rutina es mejor","me aburre mi rutina","no soy constante","como ser constante","lo optimo o lo que disfruto","el mejor entrenamiento cual es","que dieta es la mejor","sigo un video de youtube o me monto mi rutina"],
-    r:"La mejor rutina o dieta no es la \"óptima\" del paper: es la que de verdad SOSTIENES. La adherencia multiplica la ciencia. Si el plan teóricamente perfecto (full-body días alternos, volumen al máximo) te aburre y lo abandonas, rinde MENOS que un plan algo menos óptimo que disfrutas y mantienes. Dos reglas: máximo volumen RECUPERABLE (no el máximo a secas) y elegir lo que te motive, dentro de la ciencia. Hasta Jeff Nippard bajó su volumen y entrenó mejor por disfrutarlo (el \"focus effect\"). (— Tesis del proyecto pto. 10 / Jeff Nippard, T25)",
+    r:"<b>La mejor rutina o dieta no es la «óptima»: es la que de verdad sostienes.</b><br><br>La adherencia MULTIPLICA la ciencia, y lo óptimo del paper no gana por serlo. El plan teóricamente perfecto (full-body días alternos, volumen al máximo) que te aburre y abandonas rinde MENOS que uno algo menos óptimo que disfrutas y mantienes.<br><br>De ahí salen dos reglas para elegir:<ol><li><b>Máximo volumen RECUPERABLE</b>, no el máximo a secas.</li><li><b>Lo que te motive</b>, dentro de la ciencia.</li></ol>Y no es una excusa de vagos: hasta Jeff Nippard bajó su volumen y entrenó mejor por disfrutarlo — el «focus effect». (— Tesis del proyecto pto. 10 / Jeff Nippard, T25)",
     chips:["¿qué es volumen recuperable?","¿cuántas veces por semana?","¿qué es lo básico del músculo?","¿cómo creo el hábito?"]
   },
   {
@@ -16485,6 +16499,171 @@ function cerebroSaludo(texto){
 }
 // [CEREBRO-PURE-FIN]
 
+// [VECINAS-PURE-INICIO] — 🧠 «¿QUISISTE DECIR…?» (v0.58.0) · vecindad léxica para el fallback y el
+// match FLOJO. PURO: sin DOM, sin storage, sin red. Va en su PROPIO centinela y NO dentro de
+// [CEREBRO-PURE] a propósito (decisión declarada): así el bloque del motor queda BYTE-IDÉNTICO y las
+// ~10 suites y el runner v4 que lo extraen siguen midiendo exactamente lo mismo de antes. Depende del
+// bloque del motor (cerebroNormQ, cerebroContSign, cerebroTokEq, cerebroFold, cerebroScoreDetalle,
+// CEREBRO_KB…), que va ARRIBA en la misma <script> → los tests evalúan [CEREBRO-PURE] y luego este.
+var VECINAS_SOLAPE=0.4;   // solape léxico mínimo para proponer una vecina (40 %, del pliego)
+var VECINAS_MAX=3;        // tope DURO de chips «¿quisiste decir…?» (del pliego)
+// UMBRAL DE MATCH FLOJO — MEDIDO, no elegido a ojo. La puntuación del motor es
+// 10 + 4·palabras-contenido (frase exacta) o 7 + 4·palabras-contenido (difuso), + longitud/100 (la
+// clave normalizada más larga de la KB mide 59 → ese sumando nunca llega a 1). Así que los escalones
+// reales son: 11,xx = difuso de UNA palabra · 14,xx = exacta de UNA palabra · 15,xx = difuso de DOS.
+// Cortar en 15 significa exactamente «el motor ganó con UNA sola palabra-contenido» — la familia
+// ficha-imán que M-3 ya documentó como la primera causa de mal-enrutado. Medido sobre el banco de 362
+// con la KB de 326 fichas: 30 preguntas por debajo de 15 (1 hub sin ficha con 10,00 y 29 exactas de una
+// palabra) + 13 fallbacks nulos = 43 (11,9 %) enseñarían chips. Con el corte en 18 serían 74 (20,4 %):
+// demasiado ruido para un aviso que solo debe salir cuando el motor va justo de pistas.
+var VECINAS_FLOJO=15;
+// PALABRAS DÉBILES — propias de esta capa, NO del motor (para el score son contenido y hacen bien).
+// Aquí estorban: no dicen de qué TEMA va la pregunta y al contarlas en el solape MIENTEN. La lista es
+// la misma que ya usa tools/cerebro-bots/mina-norec.js (misma técnica, no se reinventa), más las
+// genéricas que el propio motor declara (CEREBRO_GEN_SOLA + CEREBRO_HUB_GEN).
+var VECINAS_DEBIL=["antes","despues","luego","ahora","mientras","durante","siempre","todavia","entonces",
+  "bueno","buena","buenos","buenas","malo","mala","malos","malas","peor","normal","importante",
+  "mucho","mucha","muchos","muchas","poco","poca","pocos","pocas","algo","nada","cosa","cosas",
+  "sirve","sirven","servir","vale","valen","funciona","funcionan","merece","pena","pasa",
+  "verdad","cierto","manera","forma","modo","rollo",
+  "puedo","puedes","puede","podria","podemos","pueden",
+  "tengo","tienes","tiene","quiero","quieres","debo","debes","deberia",
+  "hago","haces","hace","hacer","hacen","necesito","necesitas",
+  "suelo","sueles","voy","vas","estoy","estas"];
+// Se comparan por HUELLA de dictado (cerebroFold), no por grafía: si no, «sirbe algo el gym?» dejaba
+// «sirbe» como palabra-contenido y proponía de vecinas todo lo que llevara «sirve» en sus claves
+// (bicarbonato, bosu, creatina…). Es la misma lección que M-2/CEREBRO_IMPERS: quien dicta escribe
+// «sirbe», «aser», «kuanto». Medido: con la lista literal, 3 chips absurdos; con la huella, 0 chips.
+var VECINAS_DEBIL_F=null;
+function vecinasDebil(w){
+  if(!VECINAS_DEBIL_F){
+    VECINAS_DEBIL_F=Object.create(null);
+    VECINAS_DEBIL.forEach(function(k){ VECINAS_DEBIL_F[cerebroFold(k)]=1; });
+    Object.keys(CEREBRO_GEN_SOLA).forEach(function(k){ VECINAS_DEBIL_F[cerebroFold(k)]=1; });
+    Object.keys(CEREBRO_HUB_GEN).forEach(function(k){ VECINAS_DEBIL_F[cerebroFold(k)]=1; });
+  }
+  return VECINAS_DEBIL_F[cerebroFold(w)]===1;
+}
+// Palabras-CONTENIDO de la consulta a efectos de vecindad: las del motor (cerebroContSign, que ya
+// quita vacías y marcadores), menos las negadas, las de menos de 4 letras y las débiles. Sin repetir.
+function vecinasContenido(texto){
+  var t=cerebroNormQ(texto); if(!t) return [];
+  var cs=cerebroContSign(t.split(" ")), out=[], visto=Object.create(null), i, w;
+  for(i=0;i<cs.length;i++){
+    w=cs[i].w;
+    if(cs[i].neg || w.length<4 || vecinasDebil(w) || visto[w]) continue;
+    visto[w]=1; out.push(w);
+  }
+  return out;
+}
+// Índice palabra → fichas, construido UNA vez por KB (se rehace si le pasan otra, p. ej. en los tests).
+//  · _vecVoc   palabra (≥4 letras) → índices de ficha que la llevan en claves o en el NOMBRE tronco/rama
+//  · _vecNom   ficha → palabras que están en su NOMBRE (desempate: la ficha que SE LLAMA como el tema
+//              es mejor destino que otra que solo lo roza de pasada — lección de la mina, 27-07)
+//  · _vecLindo texto normalizado → chip ORIGINAL de la KB que lo produce. Los chips están escritos en
+//              castellano de verdad («¿cuántas horas hay que dormir?») y las claves no llevan tildes;
+//              como ambos pasan por cerebroNormQ, el chip es el gemelo BONITO de la clave y se puede
+//              pintar en su lugar sin inventar ni una letra. Cobertura medida: 197 de 326 fichas.
+var _vecKb=null, _vecVoc=null, _vecNom=null, _vecLindo=null;
+function vecinasIndice(kb){
+  if(_vecKb===kb) return;
+  _vecKb=kb; _vecVoc=Object.create(null); _vecNom=Object.create(null); _vecLindo=Object.create(null);
+  for(var i=0;i<kb.length;i++){
+    var f=kb[i], bolsa=Object.create(null), nom=Object.create(null), j, k, w;
+    var cl=f.claves||[];
+    for(j=0;j<cl.length;j++){
+      var pal=cerebroNormQ(cl[j]).split(" ");
+      for(k=0;k<pal.length;k++) if(pal[k].length>=4) bolsa[pal[k]]=1;
+    }
+    var nm=String(f.tronco||"").split(/[^a-zñ0-9]+/i).concat(String(f.rama||"").split(/[^a-zñ0-9]+/i));
+    for(j=0;j<nm.length;j++){ w=nm[j].toLowerCase(); if(w.length>=4){ bolsa[w]=1; nom[w]=1; } }
+    for(w in bolsa) (_vecVoc[w]=_vecVoc[w]||[]).push(i);
+    _vecNom[i]=nom;
+    var ch=f.chips||[];
+    for(j=0;j<ch.length;j++){ var n=cerebroNormQ(ch[j]); if(n && _vecLindo[n]===undefined) _vecLindo[n]=ch[j]; }
+  }
+}
+// El texto con el que se propone una ficha: su clave más presentable y más específica, con el gemelo
+// bonito si existe. NO se verifica en caliente que ese texto vuelva a su ficha: se MIDIÓ sobre la KB
+// entera (323 de 323 fichas no-hub vuelven a la suya a la primera, 0 fallos) y la comprobación cuesta
+// ~100 ms por ficha (cerebroMatch), o sea medio segundo de espera en el móvil para un no-op. La
+// garantía vive donde no cuesta: _tests/test-vecinas.node.js la exige sobre TODA la KB (0 callejones),
+// así que el día que una ficha nueva rompa el invariante lo dice el gate, no el usuario.
+function vecinasPregunta(f, kb){
+  vecinasIndice(kb||CEREBRO_KB);
+  var cl=(f.claves||[]).map(function(c){
+    var n=cerebroNormQ(c);
+    return { c:c, lindo:(_vecLindo[n]!==undefined)?1:0, cont:cerebroContSign(n.split(" ")).length, len:n.length };
+  });
+  if(!cl.length) return null;
+  cl.sort(function(a,b){ return b.lindo-a.lindo || b.cont-a.cont || b.len-a.len || a.c.localeCompare(b.c); });
+  var g=cerebroNormQ(cl[0].c);
+  if(_vecLindo[g]!==undefined) return _vecLindo[g];
+  var s=String(cl[0].c).trim();
+  return "¿"+s.charAt(0).toUpperCase()+s.slice(1)+(/[?!.]$/.test(s)?"":"?");
+}
+// cerebroVecinas(texto, n, kb) → hasta n {q, destino, solape}: las preguntas CONOCIDAS más cercanas al
+// texto por solape léxico de palabras-contenido. Determinista y sin efectos. Reglas duras:
+//  · se descarta toda vecina con solape < VECINAS_SOLAPE (40 %)
+//  · nunca se propone la pregunta IDÉNTICA al texto (misma normalización del motor)
+//  · nunca se proponen los HUBS (son menús de tema, no preguntas) ni dos veces la misma pregunta
+// Orden: solape ↓, afinidad del motor con esa ficha (cerebroScoreDetalle) ↓, palabras en el NOMBRE ↓,
+// y alfabético por tronco/rama para que el empate sea reproducible.
+function cerebroVecinas(texto, n, kb){
+  kb=kb||CEREBRO_KB;
+  n=(n>0)?n:VECINAS_MAX;
+  vecinasIndice(kb);
+  var cont=vecinasContenido(texto);
+  if(!cont.length) return [];
+  var yo=cerebroNormQ(texto);
+  var comunes=Object.create(null), enNombre=Object.create(null), i, v, j;
+  for(i=0;i<cont.length;i++){
+    var w=cont[i], toca=Object.create(null);
+    for(v in _vecVoc){
+      if(v!==w && !cerebroTokEq(w,v)) continue;   // misma igualdad DIFUSA del motor (typo/raíz/dictado)
+      var lst=_vecVoc[v];
+      for(j=0;j<lst.length;j++){
+        var f=lst[j]; if(toca[f]) continue; toca[f]=1;
+        comunes[f]=(comunes[f]||0)+1;
+        if(_vecNom[f][v]) enNombre[f]=(enNombre[f]||0)+1;
+      }
+    }
+  }
+  var t=cerebroNormQ(texto), toks=t.split(" "), cand=[], idx;
+  for(idx in comunes){
+    var e=kb[Number(idx)];
+    if(!e || e.rama==="hub") continue;
+    var sol=comunes[idx]/cont.length;
+    if(sol<VECINAS_SOLAPE) continue;
+    cand.push({ e:e, sol:sol, nom:enNombre[idx]||0, sc:cerebroScoreDetalle(t, toks, e.claves||[]).score });
+  }
+  cand.sort(function(a,b){
+    return b.sol-a.sol || b.sc-a.sc || b.nom-a.nom ||
+      (a.e.tronco+"/"+a.e.rama).localeCompare(b.e.tronco+"/"+b.e.rama);
+  });
+  var out=[];
+  for(i=0;i<cand.length && out.length<n;i++){
+    var q=vecinasPregunta(cand[i].e, kb);
+    if(!q) continue;
+    var qn=cerebroNormQ(q);
+    if(qn===yo) continue;                                   // jamás la pregunta idéntica a la suya
+    var rep=false;
+    for(j=0;j<out.length;j++) if(cerebroNormQ(out[j].q)===qn) rep=true;
+    if(rep) continue;
+    out.push({ q:q, destino:cand[i].e.tronco+"/"+cand[i].e.rama, solape:cand[i].sol });
+  }
+  return out;
+}
+// cerebroQuisiste(texto, servido, kb) → lo que se PINTA: hasta VECINAS_MAX (3) vecinas, quitando la
+// ficha que la app acaba de servir (en el match FLOJO no tiene sentido ofrecer de alternativa la misma
+// respuesta que se está leyendo). Pura: el render solo la convierte en botones.
+function cerebroQuisiste(texto, servido, kb){
+  var v=cerebroVecinas(texto, VECINAS_MAX+(servido?1:0), kb);
+  if(servido) v=v.filter(function(x){ return x.destino!==servido; });
+  return v.slice(0, VECINAS_MAX);
+}
+// [VECINAS-PURE-FIN]
+
 // [LESIONES-PURE-INICIO] — 🩹 SUB-MOTOR de FISIO/LESIONES v1 (rehab por CARGA). PURO (sin DOM ni storage):
 // _tests/test-lesiones.node.js extrae este bloque (junto al de CEREBRO, para reutilizar cerebroNorm) y lo
 // evalúa tal cual. Fuente ÚNICA: _INVESTIGACION-LESIONES-2026-07-09.md (investigación por lesión + verificación
@@ -16757,6 +16936,20 @@ function cbChips(arr){
   box.innerHTML=(arr||[]).map(function(c){ return "<button type='button' class='cb-chip' onclick='cbChip(this)'>"+esc(c)+"</button>"; }).join("");
 }
 function cbChip(btn){ cbEnviarTexto(btn.textContent); }
+// 🧭 «¿QUISISTE DECIR…?» (v0.58.0) — capa de PRESENTACIÓN de [VECINAS-PURE]. Devuelve el HTML de hasta
+// 3 chips que RE-ENVÍAN una pregunta CONOCIDA por el flujo normal (cbChip → cbEnviarTexto, el mismo
+// patrón de chips de siempre), o "" si no hay ninguna vecina por encima del 40 % de solape — en ese
+// caso el mensaje queda exactamente como estaba. Van DENTRO de la burbuja y no en la caja #cb_chips
+// porque cbChips() la reescribe entera. `servido` = "tronco/rama" que la app acaba de contestar (null
+// en el fallback), para no ofrecer como alternativa la misma respuesta que se está leyendo. El texto
+// sale de la KB pero se escapa igual con esc(): el chip acaba dentro de innerHTML.
+function cbQuisisteHtml(txt, servido){
+  var v;
+  try{ v=cerebroQuisiste(txt, servido||null); }catch(e){ return ""; }
+  if(!v || !v.length) return "";
+  return "<span class='cb-qd'><span class='cb-qd-t'>¿Quisiste decir…?</span>"+
+    v.map(function(x){ return "<button type='button' class='cb-chip' onclick='cbChip(this)'>"+esc(x.q)+"</button>"; }).join("")+"</span>";
+}
 function cbEnviar(){ var el=$("cb_in"), v=el?el.value:""; if(!String(v).trim()) return; if(el) el.value=""; cbTopicsClose(); cbEnviarTexto(v); }
 
 // ===== v0.13.1 · Pop-up de temas al enfocar el input (SOLO presentación + wiring a flujos existentes) =====
@@ -16843,11 +17036,20 @@ function cbNavTronco(tr){
     box.appendChild(b);
   });
 }
+// 📖 FORMATO DOPAMINA (v0.58.0) — el campo `r` de las fichas admite un subconjunto CERRADO de
+// etiquetas para poder respirar: <b> (la tesis y los términos clave), <br> (el aire entre párrafos)
+// y <ol>/<ul>/<li> (las reglas en lista). El escapado NO se relaja: se escapa TODO con esc() y
+// después se DESHACE el escapado de esas etiquetas EXACTAS. Como la regex exige el nombre pegado al
+// «>», no cabe ningún atributo: un «<b onclick=…>» dentro de una ficha saldría escrito, no ejecutado.
+// Se hizo así, y no quitando esc(), porque `r` es DATO y el dato no se ejecuta.
+// Ojo con los signos matemáticos: hay 6 fichas que escriben «sesiones de <45-60 min», «>90-100 kg» o
+// «varias noches <6 h». Esos «<» y «>» siguen saliendo tal cual — no casan con la regex.
+function cbRicoHtml(t){ return esc(t).replace(/&lt;(\/?)(b|i|br|ol|ul|li)&gt;/g, "<$1$2>"); }
 // La cita del master «(— Tema X, …)» se pinta pequeña y en mono, como sello de fuente.
 function cbHtmlRespuesta(r){
   var m=/^([\s\S]*?)\s*(\(—[^)]*\))\s*$/.exec(r);
-  if(m) return esc(m[1])+"<span class='cb-cita'>"+esc(m[2])+"</span>";
-  return esc(r);
+  if(m) return cbRicoHtml(m[1])+"<span class='cb-cita'>"+esc(m[2])+"</span>";
+  return cbRicoHtml(r);
 }
 function cbEnviarTexto(txt){
   txt=String(txt||"").trim(); if(!txt) return;
@@ -16990,7 +17192,12 @@ function cbResponder(txt){
     }
     cbStat(m.hub?"hubs":"directas");          // F-M1 · métrica: hub de tema vs respuesta directa
     if(e.rama.indexOf("ESTADO-")===0){ cbCaptura(e, txt); return; }
-    cbMsg("j", cbHtmlRespuesta(e.r));
+    // 🧭 MATCH FLOJO (v0.58.0): score < VECINAS_FLOJO significa que el motor ganó con UNA sola
+    // palabra-contenido (11,xx difuso · 14,xx exacto) — la familia ficha-imán de M-3. La respuesta se
+    // sirve IGUAL y debajo se ofrecen hasta 3 preguntas conocidas cercanas. Las urgencias (score 99)
+    // y los matches de ≥2 palabras (15,xx en adelante) no enseñan nada: no hay ruido donde el motor
+    // va sobrado. La ficha servida se excluye de las sugerencias.
+    cbMsg("j", cbHtmlRespuesta(e.r)+((m.score<VECINAS_FLOJO)?cbQuisisteHtml(txt, e.tronco+"/"+e.rama):""));
     cbChips(e.chips||[]);
     return;
   }
@@ -17006,7 +17213,10 @@ function cbResponder(txt){
   // Fallback honesto (doctrina): lo digo y guardo la pregunta — cola de ampliación del flywheel.
   cbStat("nulls");                            // F-M1 · métrica: pregunta sin patrón (el número a bajar)
   cbNorecGuardar({f:hoyLocal(), q:txt});   // 🧠 M4 · embudo ÚNICO de escritura
-  cbMsg("j", esc(t("cb_fallback")));
+  // 🧭 «¿QUISISTE DECIR…?» (v0.58.0) · el registro NOREC se guarda IGUAL (línea de arriba, intacta):
+  // ofrecer una salida no le quita comida al flywheel. Si no hay vecina razonable devuelve "" y el
+  // fallback honesto queda byte a byte como estaba.
+  cbMsg("j", esc(t("cb_fallback"))+cbQuisisteHtml(txt, null));
   cbChips(["¿Cuánta proteína al día?","¿Cuántos carbos?","¿Cuánto hay que dormir?"]);
 }
 // Captura sin fricción: «he dormido mal» / «estoy reventado» / «no puedo ir al gym» → se registra
@@ -18331,6 +18541,65 @@ function aplicarDecision(delta){
     : "✓ Plan ajustado "+(real>0?"+":"")+real+" kcal · tope de seguridad: no bajo de "+calibSuelo(rec,p)+" kcal/día");
 }
 // [APLICADEC-FIN]
+
+// [CALIBMIGRA-INICIO] — 🩹 SANEADO AL CARGAR (migración de los perfiles anteriores al arreglo del BUG B).
+// EL AGUJERO QUE TAPA. Las dos puertas de ESCRITURA del offset —aplicarDecision ([APLICADEC]) y
+// aplicarAjustes ([AJUSTECLAMP])— ya recortan con calibClampOff, así que a partir de hoy NADIE puede
+// dejar un `cal_off` fuera de banda. Pero quien pulsó el botón muchas veces ANTES del arreglo ya lo
+// tiene guardado en el navegador: 12 pulsaciones del lazo roto = −3600 kcal, y el render —que suma sin
+// recortar— le pintaba −1535 kcal/día de objetivo en la pestaña Plan. Ese perfil se cura solo… pero
+// solo cuando el usuario vuelve a pulsar el botón o a tocar la pestaña Ajustar. Hasta entonces, un
+// número absurdo (a veces NEGATIVO) en la pantalla principal. Esto lo cura ANTES del primer pintado.
+// POR QUÉ AQUÍ Y NO SOLO EN EL RENDER. Recortar al LEER taparía el síntoma sin curar el dato: el valor
+// malo seguiría en el almacén y volvería a asomar por cualquier otra lectura. Se cura la fuente, no el
+// espejo — y por eso este saneado sigue haciendo falta aunque el render también acote.
+// ⚑ ACTUALIZADO 29-07-2026 al fusionar con la 3.ª tanda del suelo. Aquí ponía que el render conserva la
+// suma desnuda `cal=rec.cal+(ov.cal_off||0);` y que el test la congela byte a byte. Ya NO es cierto:
+// esa línea la absorbió calibPlanDia() ([CALIB-PURE]), que hace la misma suma y además la acota contra
+// el suelo en las dos ramas (offset y macros fijados). El centinela no se ha perdido, se ha mudado.
+// Ahora son TRES capas y esta es la del medio:
+//   1) ESCRITURA acotada — aplicarDecision + aplicarAjustes, las dos con calibClampOff
+//   2) SANEADO al cargar — esto, que cura el perfil que YA venía envenenado
+//   3) LECTURA acotada   — calibPlanDia, red para lo que se cuele por otra ruta o un backup importado
+// LA REGLA NO SE DUPLICA: aquí se llama a la MISMA calibClampOff que usan las dos puertas (ni un
+// Math.max ni un Math.min propios). Si mañana cambia la banda de seguridad, cambia en un solo sitio.
+// IDEMPOTENTE Y EN CADA CARGA, no «una vez con bandera»: un perfil sano no se toca (recortar un valor
+// que ya está dentro devuelve el mismo valor y no se escribe nada), y si el plan cambia —peso nuevo,
+// otro objetivo, una lesión— y el offset de ayer se queda por debajo del suelo de hoy, se vuelve a
+// sanear solo. Una bandera «ya migrado» daría UNA reparación; esto las da todas, sin clave que mantener.
+// TAMBIÉN NORMALIZA EL TIPO: un `cal_off` guardado como TEXTO (backup editado a mano, import de otra
+// versión) hacía que el render CONCATENARA en vez de sumar — 2065 + "-100" pinta «2065-100», no 1965.
+// Al pasar por `+crudo` sale número o sale 0. Eso se escribe siempre, pero solo se AVISA al usuario
+// cuando el valor se ha movido de verdad: un cambio de tipo no le cambia las calorías, no es noticia.
+// IMPURA (get/set del perfil + toast): _tests/test-calibracion.node.js la extrae y la evalúa con los
+// mismos mocks que [APLICADEC]. NUNCA puede tumbar el arranque: si plan() reventara con un perfil
+// corrupto se cae al tope duro ±CALIB_OFF_MAX (el fail-safe que ya documenta calibClampOff), y si algo
+// más fallara, el try/catch de fuera devuelve null y la app arranca igual — nunca una pantalla en blanco.
+// Devuelve el parte {antes, ahora, suelo, movido} si ha tocado algo, o null si no había nada que tocar.
+function calibSanearOffGuardado(){
+  try{
+    var p=get(LS_P);
+    if(!p || !p.ov || typeof p.ov!=="object") return null;
+    var crudo=p.ov.cal_off;
+    if(crudo==null) return null;                     // sin offset guardado: el `||0` del render ya acierta
+    var antes=+crudo; if(!isFinite(antes)) antes=0;  // basura ("hola", NaN) → 0, que es «sin ajuste»
+    var rec=null;
+    try{
+      var _lesion=false; try{ _lesion=lesionesGet().length>0; }catch(e){}
+      rec=plan(_lesion?Object.assign({},p,{lesionActiva:true}):p);   // el MISMO rec que usan las dos puertas
+    }catch(e){ rec=null; }
+    if(!(rec && isFinite(+rec.cal))) rec=null;       // sin plan válido, calibClampOff deja solo el tope duro
+    var ahora=calibClampOff(antes, rec, p);
+    if(ahora===crudo) return null;                   // ya era un número y ya estaba en banda: no se toca nada
+    p.ov.cal_off=ahora; set(LS_P,p);
+    var parte={antes:antes, ahora:ahora, suelo:(rec?calibSuelo(rec,p):null), movido:(ahora!==antes)};
+    if(parte.movido && parte.suelo!=null){
+      try{ toast("🛟 Tenías guardado un ajuste de "+(antes>0?"+":"")+antes+" kcal que dejaba tu objetivo fuera de lo seguro: lo dejo en "+(ahora>0?"+":"")+ahora+" (no bajo de "+parte.suelo+" kcal/día)"); }catch(e){}
+    }
+    return parte;
+  }catch(e){ return null; }
+}
+// [CALIBMIGRA-FIN]
 
 // ══════════ ⚙️ HUB DE AJUSTES (tanda #22 · v0.21) ══════════
 // [AJUSTES-PURE-INICIO] — lógica pura del hub (sin DOM, sin storage; _tests/test-ajustes.node.js la extrae y evalúa)
@@ -23098,6 +23367,10 @@ function animCelebrarMeta(meta, fecha){
   }catch(e){}
 })();
 
+// 🩹 [CALIBMIGRA] · antes del PRIMER pintado: un perfil de una versión con el lazo roto trae el
+// `cal_off` desbocado y la pestaña Plan le enseñaría un objetivo imposible hasta que volviera a
+// tocar el botón. Se sanea el perfil, no la pantalla.
+calibSanearOffGuardado();
 render();
 </script>
 <script>
