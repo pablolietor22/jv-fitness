@@ -15877,7 +15877,14 @@ function cerebroFold(s){
 // un artículo/clítico soldado delante. Se acepta si la palabra de la clave (≥5 letras) es el FINAL del
 // token y lo que sobra es una de esas partículas. «no/sin/nunca» NO están en la lista: soldarlos cambiaría
 // el SIGNO de la frase y la polaridad (F-M1.1) no se toca.
-var CEREBRO_PEGA_F=(function(){ var o={}; ["la","el","los","las","lo","le","les","me","te","se","mi","tu","su","de","del","al","un","una","y","que","por","con","para","en","es","a"].forEach(function(p){ o[cerebroFold(p)]=1; }); return o; })();
+// M-2b (30-07-2026, agente J) · LA COSTURA. La huella se calcula sobre el token YA PEGADO, y la regla
+// R1 de cerebroFold (n[pb]→m[pb]) actúa sobre la unión: «en»+«perder» → fold «emperder», cuyo prefijo
+// es «em», no «en». Al construir esta lista plegando cada partícula AISLADA, las tres que acaban en «n»
+// (en/un/con → en/un/kon) dejaban de reconocerse justo delante de p/b y el pegado se perdía: medido en
+// 56 casos del censo de escritura sucia del 30-07 («cuanto tardo enperder peso», «solo conproteina se
+// gana musculo», «un poco»→«umpoco»). Se registra también la variante con «m» final, que es la que el
+// fold produce de verdad en ese contexto. Curados 53/56 · claves limpias movidas: 0 de 3.569.
+var CEREBRO_PEGA_F=(function(){ var o={}; ["la","el","los","las","lo","le","les","me","te","se","mi","tu","su","de","del","al","un","una","y","que","por","con","para","en","es","a"].forEach(function(p){ var f=cerebroFold(p); o[f]=1; if(f.slice(-1)==="n") o[f.slice(0,f.length-1)+"m"]=1; }); return o; })();
 function cerebroPegado(a,b){
   if(b.length<5 || a.length<=b.length) return false;
   if(a.slice(a.length-b.length)!==b) return false;
