@@ -982,6 +982,18 @@
   <div class="eyebrow-lbl" style="margin-top:14px">🎬 Animaciones</div>
   <p class="hint" style="margin-top:0">Los anillos que se llenan, las barras de macros, el contador de calorías que rueda y los pequeños rebotes de confirmación. Si prefieres la app quieta, apágalas: todo eso aparece al instante. Si tu móvil ya pide «menos movimiento», se respeta siempre (mande este interruptor lo que mande).</p>
   <label style="display:flex;align-items:center;gap:8px;cursor:pointer;margin-top:6px"><input type="checkbox" id="aj_anim" checked onchange="animSetActiva(this.checked)" style="width:auto;margin:0"> Animaciones activadas</label>
+  <!-- 🆕 idea #33 Jorge · el ⏱ Descanso arrancaba SIEMPRE en 2 min sin dónde cambiarlo. La función
+       interna (LS_REST/restSegDefault) ya existía; esto es solo la puerta visible. -->
+  <div class="eyebrow-lbl" style="margin-top:14px">⏱️ Descanso entre series</div>
+  <p class="hint" style="margin-top:0">Con cuánto arranca el ⏱ cuando no has puesto un descanso propio en el ejercicio.</p>
+  <div class="row" style="gap:6px">
+    <button class="sec" type="button" style="flex:1;width:auto;padding:8px" onclick="restSegDefaultSet(60)">1 min</button>
+    <button class="sec" type="button" style="flex:1;width:auto;padding:8px" onclick="restSegDefaultSet(120)">2 min</button>
+    <button class="sec" type="button" style="flex:1;width:auto;padding:8px" onclick="restSegDefaultSet(180)">3 min</button>
+    <button class="sec" type="button" style="flex:1;width:auto;padding:8px" onclick="restSegDefaultSet(300)">5 min</button>
+  </div>
+  <label style="margin-top:8px">O un número exacto (segundos, 10–900)</label>
+  <input id="aj_rest_seg" type="number" inputmode="numeric" min="10" max="900" step="15" onchange="restSegDefaultSet(this.value)">
   <!-- ⚙️ tanda #22 · lo que antes vivía aquí (recordatorios, base España, pasos automáticos) se MUDÓ
        al hub de AJUSTES (engranaje arriba): esta pestaña queda para ajustar EL PLAN a tu gusto. -->
   <p class="hint" style="margin-top:14px">🔔 Recordatorios, 🔌 conectores, 🗄️ bases de alimentos y 📦 copias de seguridad viven ahora en <b style="color:var(--soft)">⚙️ Ajustes</b> (el engranaje de arriba).</p>
@@ -1705,6 +1717,20 @@ Tus datos se guardan solo en este dispositivo.</p>
     <div id="plate_res" style="margin-top:10px"></div>
     <p class="hint">Juego estándar por lado: 25 · 20 · 15 · 10 · 5 · 2,5 · 1,25 kg. La barra que elijas se recuerda.</p>
     <button class="sec" type="button" onclick="plateCerrar()">Cerrar</button>
+  </div>
+</div>
+
+<!-- MODAL: 🔥 rampa de aproximación (idea Jorge 31-jul). Peso de tu serie efectiva → 4 series
+     de calentamiento progresivas (30/50/70/85%, reps decrecientes). Solo orientación: no crea
+     series, no toca tu historial. Prefill automático con tu último topset de este ejercicio. -->
+<div id="aproxModal" class="modal hidden">
+  <div class="modal-card">
+    <button class="modal-x" type="button" title="Cerrar" aria-label="Cerrar" onclick="aproxCerrar()">✕</button>
+    <h2>🔥 Rampa de aproximación</h2>
+    <label>Peso de tu serie efectiva (kg)</label>
+    <input id="aprox_obj" type="number" inputmode="decimal" step="0.5" placeholder="ej. 100" oninput="aproxRender()">
+    <div id="aprox_res" style="margin-top:10px"></div>
+    <button class="sec" type="button" onclick="aproxCerrar()">Cerrar</button>
   </div>
 </div>
 
@@ -17849,7 +17875,7 @@ function flexPesoChipsRender(){
     }).join("");
 }
 function flexPesoChipToggle(id){ _flexPesoCtxSel[id]=!_flexPesoCtxSel[id]; flexPesoChipsRender(); }
-function flexInitUI(){ try{ flexRefrescar(); flexSyncAjustes(); flexPesoChipsRender(); apodoSyncUI(); levantarSyncUI(); }catch(e){} }   // 🏷️ E7 apodo + ⚖️ E10 horas de levantarse: reflejados en Ajustes en cada render
+function flexInitUI(){ try{ flexRefrescar(); flexSyncAjustes(); flexPesoChipsRender(); apodoSyncUI(); levantarSyncUI(); restSegSyncUI(); }catch(e){} }   // 🏷️ E7 apodo + ⚖️ E10 horas de levantarse + ⏱️ idea #33 descanso: reflejados en Ajustes en cada render
 
 // Count-up: anima el número de un elemento de su valor previo hasta target (solo si cambia).
 // Respeta reduced-motion (pone el valor final directo). suffix opcional (ej. "g", " kcal").
@@ -18869,14 +18895,17 @@ function rirSheetBorrar(){
 }
 function entSync(){
   var ejs=document.querySelectorAll('#ent_form .ent-ej');
-  _ent.ejercicios=[].map.call(ejs,function(el){
-    // D v0.12 · el DOM guarda también el tipo de serie (data-t), el descanso propio (.ent-desc)
-    // y la marca de superserie (data-ss): así entSync no pierde nada al re-renderizar.
-    var descEl=el.querySelector('.ent-desc');
+  var _prevEjs=_ent.ejercicios||[];   // 🔥 idea Jorge (31-jul) · para conservar el desc de plantilla, ver abajo
+  _ent.ejercicios=[].map.call(ejs,function(el,idx){
+    // D v0.12 · el DOM guarda también el tipo de serie (data-t) y la marca de superserie (data-ss).
+    // 🔥 idea Jorge (31-jul) · el input manual .ent-desc ya NO existe en el DOM (se quitó de la
+    // vista); si una RUTINA trajo un descanso propio calibrado, se conserva leyendo el valor que
+    // _ent YA tenía para este ejercicio, en vez de perderlo en el primer entSync().
     var estEl=el.querySelector('.ent-est');   // 🎚️ #17 · estación/polea opcional (texto libre)
+    var _descPrev=(_prevEjs[idx]&&_prevEjs[idx].desc!=null)?_prevEjs[idx].desc:'';
     return {
       nombre: el.querySelector('.ent-nombre').value,
-      desc: (descEl?descEl.value:''),
+      desc: _descPrev,
       est: (estEl?estEl.value:''),            // 🎚️ #17 · se conserva al re-render y viaja a guardarEntreno
       ss: el.getAttribute('data-ss')==='1',
       bw: el.getAttribute('data-bw')==='1',   // A8 · flag de peso corporal (peso = lastre añadido)
@@ -19025,12 +19054,17 @@ function renderEntForm(){
       +'<input class="ent-est" list="est-usadas" placeholder="🎚️ ¿Qué polea/estación? (opcional)" value="'+escAttr(ej.est||'')+'" onchange="entEstCambia(this,'+i+')" title="Opcional. Si distingues poleas/estaciones que pesan distinto («la del fondo», «polea espejo»), escribe cuál: su histórico de peso irá aparte. En blanco funciona igual que hoy." style="margin-top:6px;font-size:.82rem">'
       +ultHtml+metaHtml+estHtml+bwLbl+serieHead+sets
       +'<div class="hint" style="margin:8px 0 0;font-size:.68rem">'+infoTip('rir')+' RIR: <b style="color:var(--soft)">0 = al límite</b> (ninguna completa más) · <b style="color:var(--soft)">fallo</b> = intentas otra y no sale · negativo (−1, −2) = más allá del fallo (parciales/ayuda)</div>'
-      // D v0.12 · descanso PROPIO del ejercicio en segundos (opcional): el ⏱ lo usa; vacío = global
+      // 🔥 idea Jorge (31-jul) · el input manual de "seg" SE QUITA (pedido repetido: "no tiene
+      // sentido, ocupa espacio"). El descanso propio por ejercicio SIGUE existiendo por dentro —
+      // lo fijan las RUTINAS del catálogo (122 ejercicios con su desc ya calibrado) — pero ya no
+      // es editable a mano desde esta fila. Ver entSync() para cómo se conserva sin este input.
       +'<div class="row" style="margin-top:10px;gap:6px"><button class="sec" type="button" style="flex:2" onclick="entAddSerie('+i+')">+ Serie</button>'
-      +'<input class="ent-desc" type="number" inputmode="numeric" min="10" max="900" placeholder="seg" value="'+escAttr(ej.desc==null?'':ej.desc)+'" title="Descanso de ESTE ejercicio en segundos (lo usa el ⏱; vacío = el global)" style="flex:0 0 64px;width:64px;margin:0">'
-      +'<button class="sec" type="button" style="flex:1" onclick="restStartEj('+i+')" title="Temporizador de descanso (usa los segundos de este ejercicio si los pones)">⏱ Descanso</button>'
+      +'<button class="sec" type="button" style="flex:1" onclick="restStartEj('+i+')" title="Temporizador de descanso (usa el de la rutina si lo trae; si no, el global de Ajustar)">⏱ Descanso</button>'
       +ssBtn
       +'</div>'
+      // 🔥 idea Jorge (31-jul) · fila propia (no comparte con +Serie/⏱ Descanso, que ya iban justos
+      // de espacio — ver idea #26/#127) para no reintroducir el desborde que se arregló entonces.
+      +'<div class="row" style="margin-top:6px;gap:6px"><button class="sec" type="button" style="flex:1;font-size:.82rem" onclick="aproxAbrir('+i+')" title="Calcula tu rampa de calentamiento (series de aproximación progresivas) a partir del peso de tu serie efectiva">🔥 Aproximación</button></div>'
       +'</div>';
   }).join('');
   try{ rutBtnSync(); }catch(e){}   // F1 · "Guardar como rutina" solo si hay ≥1 ejercicio con nombre
@@ -19237,6 +19271,20 @@ function calcDiscos(objetivo, barra){
   return {discos:out, porLado:+porLado.toFixed(2), resto:resto, logrado:logrado, exacto:resto<0.005};
 }
 // [PLATE-PURE-FIN]
+// [APROX-PURE-INICIO] — idea Jorge (31-jul) · rampa de series de APROXIMACIÓN al peso efectivo
+// (topset). Protocolo @alvigalan (verificado en _INGESTA-PENDIENTE-2026-07-31.md §7bis, coincide
+// en esencia con @sastrehybrid y con la propuesta personal de Jorge 25/50/75): 30/50/70/85% con
+// reps DECRECIENTES 8/5/2/1, techo explícito 85% (pasar de ahí ya no es aproximación, es fatiga).
+// Redondea al medio kilo (mismo step que .ent-peso). SOLO ORIENTACIÓN — no autorrellena series,
+// el usuario manda (fase futura si se quiere). Capa "inteligente" (nº de pasos según nivel del
+// usuario / complejidad del ejercicio, avisos activos) queda PENDIENTE de verificar la ciencia de
+// fondo con /ajedrez sobre el bloque 7bis del master-file — no inventar umbrales aquí sin eso.
+var APROX_PASOS=[{pct:30,reps:8},{pct:50,reps:5},{pct:70,reps:2},{pct:85,reps:1}];
+function aproxRampa(pesoBase){
+  var pb=+pesoBase; if(!(pb>0)) return null;
+  return APROX_PASOS.map(function(p){ return {pct:p.pct, reps:p.reps, kg:Math.round((pb*p.pct/100)/0.5)*0.5}; });
+}
+// [APROX-PURE-FIN]
 var LS_PLATE_BARRA="jvf_plate_barra";
 // 🏋️ de una fila de serie: abre el modal con el peso de ESA fila ya puesto (si lo hay).
 function plateAbrir(btn){
@@ -19264,11 +19312,41 @@ function plateRender(){
     +"<div class='kv' style='margin-top:6px'><span>Cargarás</span><span style='color:var(--jade);font-weight:700'>"+esc(String(r.logrado).replace(".",","))+" kg</span></div>"
     +(r.exacto?"":"<div class='aviso' style='margin-top:8px'>Con discos estándar no se puede clavar: faltan "+esc(String(r.resto).replace(".",","))+" kg por lado. Redondea, o usa microdiscos si tu gym los tiene.</div>");
 }
+// 🔥 idea Jorge (31-jul) · calculadora de rampa de aproximación. Prefill con tu ÚLTIMO topset de
+// ESTE ejercicio (ultimaVez, ya existente — respeta sinónimos #16 y estación #17) si lo hay; si no,
+// el usuario lo escribe a mano. Solo lectura: no toca tus series ni tu historial.
+function aproxAbrir(i){
+  var ej=(_ent.ejercicios||[])[i]||{};
+  var o=$("aprox_obj");
+  if(o){
+    var uv=null; try{ uv=ultimaVez(ej.nombre, ej.est); }catch(e){}
+    o.value=(uv && uv.top && uv.top.peso>0) ? uv.top.peso : "";
+  }
+  show("aproxModal", true);
+  aproxRender();
+  if(!o || !o.value){ setTimeout(function(){ try{ $("aprox_obj").focus(); }catch(e){} },60); }
+}
+function aproxCerrar(){ show("aproxModal", false); }
+function aproxRender(){
+  var res=$("aprox_res"); if(!res) return;
+  var obj=parseFloat(String((($("aprox_obj")||{}).value)||"").replace(",","."));
+  if(!(obj>0)){ res.innerHTML="<p class='hint'>Pon el peso de tu serie efectiva (topset) y te propongo la rampa.</p>"; return; }
+  var r=aproxRampa(obj);
+  var lista=r.map(function(p){
+    return "<div class='kv'><span>"+p.pct+"% · ×"+p.reps+"</span><span style='color:var(--jade);font-weight:700'>"+esc(String(p.kg).replace(".",","))+" kg</span></div>";
+  }).join("");
+  res.innerHTML=lista
+    +"<p class='hint' style='margin-top:8px'>Descansa 30-60s ENTRE aproximaciones (lo que tardas en cargar/descargar discos) — nada de descansar como en la serie efectiva. <b style='color:var(--soft)'>Nunca pases del 85-90%</b> antes de tu serie real: si lo haces, ya no es aproximación, es fatiga.</p>";
+}
 // ======= TEMPORIZADOR DE DESCANSO (auto-arranque al añadir serie) =======
 // Cuenta por TIMESTAMP, no por ticks: si se apaga/bloquea la pantalla, al volver el tiempo restante sigue siendo correcto.
 var LS_REST="jvf_rest_seg";
 var _restEnd=0, _restTimer=null;
 function restSegDefault(){ var v=+get(LS_REST,120); return (v>=10 && v<=900)?v:120; }
+// 🆕 idea #33 Jorge · el default SIEMPRE existió por dentro pero no había puerta visible para
+// cambiarlo (solo el "+15s" de la barra, que alarga la cuenta actual, no el default guardado).
+function restSegDefaultSet(v){ var n=Math.round(+String(v==null?"":v).replace(",",".")); if(!(n>=10&&n<=900)) n=120; set(LS_REST,n); var i=$("aj_rest_seg"); if(i) i.value=n; }
+function restSegSyncUI(){ var i=$("aj_rest_seg"); if(i && document.activeElement!==i) i.value=restSegDefault(); }
 function restBarEl(){
   var b=$("restBar"); if(b) return b;
   b=document.createElement("div"); b.id="restBar";
