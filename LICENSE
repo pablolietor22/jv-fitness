@@ -1,0 +1,33 @@
+Copyright (c) 2026 Pablo Andrés Martínez. Todos los derechos reservados.
+All Rights Reserved.
+
+Este software y su código fuente son propiedad intelectual de Pablo Andrés
+Martínez. Queda prohibida su copia, redistribución, modificación, uso
+comercial o inclusión en obras derivadas sin permiso escrito previo del
+titular. La visualización pública del sitio en línea no concede derecho
+alguno de reutilización del código.
+
+Solo se autoriza el uso personal, transitorio y no comercial en el propio
+navegador del usuario para acceder al servicio ofrecido.
+
+
+EXCEPCIONES A ESTOS TÉRMINOS
+────────────────────────────
+Los contenidos del directorio `data/db/` (base de datos derivada de Open Food
+Facts) NO están cubiertos por esta licencia. Se distribuyen bajo la Open
+Database License v1.0 (ODbL) y su Database Contents License v1.0 (DbCL) de
+Open Knowledge Foundation. Consulta `data/db/LICENSE.md` para el texto y
+condiciones aplicables.
+
+
+AVISO SOBRE FORKS DENTRO DE GITHUB
+──────────────────────────────────
+Al alojar este repositorio en github.com, la Sección D.4 de los GitHub Terms
+of Service («License Grant to Other Users») otorga a otros usuarios del
+Servicio una licencia limitada para visualizar y crear forks del repositorio
+dentro del propio GitHub. Ese uso queda restringido a lo mínimo permitido
+por dichos Términos; cualquier uso, redistribución o publicación fuera del
+Servicio GitHub queda expresamente prohibido y sujeto a las presentes
+condiciones.
+
+Para consultas de licenciamiento: repositorio pablolietor22/jv-fitness.

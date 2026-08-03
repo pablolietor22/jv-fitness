@@ -10,3 +10,12 @@ jvf-backup-*.json
 db.BAK-*/
 *.BAK-*/
 data/db.BAK-*/
+
+# ── Nunca publicar en el repo publico (rotacion 03-08-2026 · seguridad) ──
+# Los siguientes ficheros eran servidos por Pages y filtraban la contrasena
+# del gate en abierto. La documentacion interna vive en el TALLER (jvfitness-dev),
+# no aqui. Si algun deploy vuelve a copiarlos, este .gitignore los tumba.
+_DEPLOY.md
+CLAUDE.md
+_BRUJULA-REPOS.md
+_headers

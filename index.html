@@ -663,14 +663,17 @@
 </div>
 <script>
 (function(){
-  var KEY="jvf_gate_ok_v1", PW="lietor";
+  // 🔐 Contraseña rotada 03-08-2026 (sesión de seguridad). Passphrase temporal —
+  // se recomienda migrar a autenticación real (Cloudflare Access) sobre un
+  // subdominio beta antes de compartir con tester nuevo.
+  var KEY="jvf_gate_ok_v1", PW="fanal-yunta-cometa-paseo-salvia";
   function abrir(){ try{ localStorage.setItem(KEY,"1"); }catch(e){} var g=document.getElementById("gate"); if(g) g.style.display="none"; }
   var unlocked=false; try{ unlocked=localStorage.getItem(KEY)==="1"; }catch(e){}
   // Modo desarrollador (Pablo): si abres el ARCHIVO en local (file://, p.ej. desde OneDrive en tu PC o tu S24) -> sin contraseña.
   // El enlace web (https, GitHub) SIGUE pidiendo la contraseña a los usuarios.
   try{ if(location.protocol==="file:") unlocked=true; }catch(e){}
-  // Enlace mágico de Pablo: abrir con ...?k=lietor entra sin pedir contraseña (y lo recuerda en ese dispositivo).
-  try{ if(/[?&]k=lietor(&|$)/i.test(location.search)) unlocked=true; }catch(e){}
+  // [enlace mágico ?k= RETIRADO 03-08-2026 — metía la contraseña en la propia URL,
+  //  con lo que quedaba en historiales del navegador, previsualizaciones de LinkedIn y logs de Pages]
   if(unlocked){ abrir(); }
   window.gateTry=function(){
     var v=(document.getElementById("gate_pw").value||"").trim().toLowerCase();
