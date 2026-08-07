@@ -289,7 +289,7 @@ html.js .reveal.d2{transition-delay:.16s}
 }
 @keyframes fxpar{0%,49%{opacity:1}50%,100%{opacity:0}}
 
-/* N4 · rotulador jade sobre el dato de rigor más fuerte («77 baterías de
+/* N4 · rotulador jade sobre el dato de rigor más fuerte («95 baterías de
    pruebas»). Se engancha al .in que ya pone el revelado: sin JS nuevo. */
 html.js .fx-mark{
   background-image:linear-gradient(rgba(61,220,151,.3),rgba(61,220,151,.3));
@@ -483,14 +483,14 @@ html.fx-fin .stage__node{opacity:1 !important;transform:none !important;transiti
     <!-- Feature 3 · motor Jarvis -->
     <div class="frow reveal">
       <div class="frow__text">
-        <span class="feat-eyebrow">Asistente «Jarvis» · 259 fichas</span>
+        <span class="feat-eyebrow">Asistente «Jarvis» · 329 fichas · 3.887 claves</span>
         <!-- N2 · el titular se escribe con cursor: es el asistente contestando -->
         <h3 data-fx="type">Pregunta y te cita la fuente</h3>
         <p class="lead">Responde tus dudas de entreno y nutrición <strong>citando de dónde sale cada respuesta</strong>. Si no lo sabe, lo dice.</p>
         <details class="under">
           <summary>Ver más <span class="chev" aria-hidden="true">›</span></summary>
           <div class="body">
-            Motor determinista por reglas, no un modelo que alucine: cada una de sus <strong>259 fichas referencia su origen</strong> (p.&nbsp;ej. <code>Morton 2018 / Bagheri 2024</code>). Detecta preguntas ambiguas y <strong>desambigua antes de responder</strong> en vez de soltar media respuesta, y encadena preguntas de seguimiento.
+            Motor determinista por reglas, no un modelo que alucine: cada una de sus <strong>329 fichas referencia su origen</strong> (p.&nbsp;ej. <code>Morton 2018 / Bagheri 2024</code>). Detecta preguntas ambiguas y <strong>desambigua antes de responder</strong> en vez de soltar media respuesta, y encadena preguntas de seguimiento. Cada ficha se mide contra un censo de <strong>362 preguntas reales</strong> y no se publica si baja el porcentaje de aciertos.
           </div>
         </details>
       </div>
@@ -515,7 +515,32 @@ html.fx-fin .stage__node{opacity:1 !important;transform:none !important;transiti
         <span class="feat-eyebrow">Matemática auditada</span>
         <h3>Calorías y macros que puedes creerte</h3>
         <!-- N4 · el rotulador jade barre el dato de rigor más fuerte de la página -->
-        <p>El motor de cálculo pasa una revisión adversarial y <strong class="fx-mark">77 baterías de pruebas</strong> antes de cada publicación.</p>
+        <p>El motor de cálculo pasa una revisión adversarial y <strong class="fx-mark">95 baterías de pruebas</strong> antes de cada publicación.</p>
+      </div>
+    </div>
+
+    <!-- Sub-sección: Rigor. Lo que un producto de fitness NO suele hacer. -->
+    <div class="sec-head reveal" style="margin-top:clamp(28px,4vw,42px)">
+      <p class="eyebrow">Rigor</p>
+      <h2>Sabe cuándo no sabe</h2>
+      <svg class="ul" viewBox="0 0 200 9" preserveAspectRatio="none" aria-hidden="true" focusable="false"><path pathLength="1" d="M2 6 C46 2, 104 8.4, 198 3.4"/></svg>
+      <p>La diferencia con otra app de fitness no es el color de los gráficos: es qué hace cuando el dato no da para una respuesta segura.</p>
+    </div>
+    <div class="spec-grid">
+      <div class="spec-card reveal">
+        <span class="feat-eyebrow">Calibgate v0.60.1</span>
+        <h3>No juzga por debajo de la báscula</h3>
+        <p>Si el cambio de peso de la semana es más pequeño que el error de tu báscula, el panel de calibración lo dice: <strong>no puede saberlo</strong>. No inventa un veredicto. Antes hablaba el 67,8&nbsp;% de las veces; ahora sólo cuando el dato lo aguanta.</p>
+      </div>
+      <div class="spec-card reveal d1">
+        <span class="feat-eyebrow">4 perfiles reales</span>
+        <h3>Responde adaptándose a quién pregunta</h3>
+        <p>El asistente se calibra contra cuatro perfiles: calisténico, principiante, chica y avanzado. En el censo interno de <strong>362 preguntas reales</strong>, los «no sé» bajaron del 33,5&nbsp;% al 24,5&nbsp;%. El perfil que más gana es «chica»: del 40&nbsp;% al 28&nbsp;% de NULL.</p>
+      </div>
+      <div class="spec-card reveal d2">
+        <span class="feat-eyebrow">Auditoría de citas</span>
+        <h3>Cita el paper, o no cita</h3>
+        <p>Cada afirmación con número lleva su PMID. Cuando una cifra circula con un PMID auténtico pero no está en el paper, el sistema la <strong>marca</strong> —tachada, con el porqué al lado— en vez de repetirla. Es como cazamos hace tres días un umbral falso atribuido a un meta-análisis que en realidad no lo contiene.</p>
       </div>
     </div>
   </div>
@@ -541,11 +566,11 @@ html.fx-fin .stage__node{opacity:1 !important;transform:none !important;transiti
         <div class="lbl">ejercicios con guía anatómica</div>
       </div>
       <div class="stat reveal d2">
-        <div class="num" data-count="259">259</div>
+        <div class="num" data-count="329">329</div>
         <div class="lbl">fichas del asistente, cada una con su fuente</div>
       </div>
       <div class="stat reveal">
-        <div class="num" data-count="77">77</div>
+        <div class="num" data-count="95">95</div>
         <div class="lbl">baterías de pruebas antes de cada publicación</div>
       </div>
       <div class="stat live reveal d1">
@@ -568,8 +593,8 @@ html.fx-fin .stage__node{opacity:1 !important;transform:none !important;transiti
     </div>
     <ul class="reveal">
       <li><span><b>Buscador de alimentos:</b> con búsquedas de dos palabras («leche entera») el mejor resultado aún puede salir tarde en la lista.</span></li>
-      <li><span><b>Base mundial de alimentos:</b> construida y en verificación; aún sin publicar.</span></li>
-      <li><span><b>Asistente:</b> falta que aprenda de lo que no sabe responder y limpiar las sugerencias viejas.</span></li>
+      <li><span><b>Nueve huecos del asistente sin respuesta:</b> reducción localizada de grasa, BFR, técnicas de intensidad, ciclo menstrual, tasa real de ganancia natural, y otros cuatro. Ninguno se rellena por si acaso: se investiga con fuente o no se contesta.</span></li>
+      <li><span><b>Carril salud con firma humana:</b> las fichas de salud que el asistente propone nunca se publican solas — esperan que las firme una persona. Es un guardarraíl a propósito, pero ralentiza.</span></li>
     </ul>
   </div>
 </section>
@@ -609,7 +634,7 @@ html.fx-fin .stage__node{opacity:1 !important;transform:none !important;transiti
         <span class="stage__node" aria-hidden="true"></span>
         <div class="stage__k">FASE 04</div>
         <h3>Puerta de calidad</h3>
-        <p>77 baterías de pruebas y un escaneo de secretos. Si algo falla, no sale.</p>
+        <p>95 baterías de pruebas y un escaneo de secretos. Si algo falla, no sale.</p>
       </div>
       <div class="stage reveal">
         <span class="stage__node" aria-hidden="true"></span>
