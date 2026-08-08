@@ -2,6 +2,32 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
+<!-- ============================================================================
+     showcase-ultra.html · VERSIÓN ULTRA-ANIMADA (experimento para comparar con
+     showcase-flow.html). MISMO contenido, cifras y CSP; cambia solo la CAPA DE
+     ANIMACIÓN. Se construyó sobre una copia byte-idéntica de showcase-flow.html.
+
+     TÉCNICAS APLICADAS (recetas de Pablo · _PIPELINES-DISENO-WEB.md + Bandeja de
+     Ideas de Instagram):
+       · P1 capa-apple  (skill apple-design · reel @migue.baena 7669078788562488598):
+         muelles de Apple — crítico damping 1.0 = cubic-bezier(.32,.72,0,1); entrada
+         con vida = cubic-bezier(.2,.8,.2,1); SOLO transform/opacity; display -0.02em;
+         materiales translúcidos; INTERRUMPIBILIDAD (el intro se salta con un gesto).
+       · P2 reveal-scroll (reel @codevibes_1 7651983085638094102): fondo oscuro,
+         revelado encadenado por scroll, sin gradientes de relleno.
+       · P3 capa-cine (_ADDENDUM-CAPA-CINE-MUNDO): gramática de plano — intro
+         cinematográfico que presenta la marca «JV Fitness» y se retira.
+       · Web «Alethia» (Bandeja 29-07): escena que MUTA con el progreso del scroll
+         → scroll-driven 3D («que rote como los reels»): las tarjetas basculan en
+         rotateX según su posición en el viewport (IntersectionObserver + un único
+         manejador de scroll con rAF-throttle; sin rAF perpetuo; sin librerías).
+       · HyperFrames (_HYPERFRAMES-PROMPTS, «contador Apple»): odómetro de cifras y
+         count-up de macros del plato.
+
+     REGLAS DURAS: self-contained (sin CDN; fuentes self-hosted en assets/fonts);
+     prefers-reduced-motion degrada TODO a estático; failsafe para bots/prerender;
+     impresión limpia. CSP idéntica a la del flow (línea siguiente).
+     ============================================================================ -->
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; form-action 'none'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; font-src 'self'; script-src 'self' 'unsafe-inline'; connect-src 'self'">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#0A100E">
@@ -375,9 +401,160 @@ html.fx-fin .stage__node{opacity:1 !important;transform:none !important;transiti
   h1.title{font-size:5.2rem}
   .shot{max-width:400px}
 }
+
+/* ══════════════════════════════════════════════════════════════════════
+   CAPA ULTRA · animación a tope, ENCIMA del showcase-flow (sin tocarlo).
+   Solo transform/opacity (compositor). Muelles Apple: crítico
+   cubic-bezier(.32,.72,0,1); entrada con vida cubic-bezier(.2,.8,.2,1).
+   Estados «ocultos» SIEMPRE bajo html.js (sin JS → todo visible), igual
+   que el flow. Degradación total en el bloque reduced-motion del final.
+   ══════════════════════════════════════════════════════════════════════ */
+
+/* — Barra de progreso de lectura — */
+.uprog{position:fixed;left:0;top:0;height:3px;width:100%;z-index:120;
+  transform:scaleX(0);transform-origin:0 50%;will-change:transform;
+  background:linear-gradient(90deg,var(--jade),var(--ember));
+  box-shadow:0 0 14px rgba(61,220,151,.5)}
+
+/* — Intro cinematográfico (presenta «JV Fitness» y se retira) — */
+.intro{position:fixed;inset:0;z-index:200;display:grid;place-items:center;overflow:hidden;
+  background:radial-gradient(1200px 620px at 50% 42%,#0e1a15,var(--bg) 72%);
+  animation:introOut .8s cubic-bezier(.7,0,.25,1) 1.75s forwards;will-change:opacity,transform}
+.intro__brand{position:relative;font-family:var(--display);font-weight:700;line-height:1;
+  font-size:clamp(2.4rem,13vw,7rem);letter-spacing:-.03em;display:flex}
+.intro__brand .c{display:inline-block;transform-origin:50% 90%;color:var(--bone)}
+.intro__brand .c.j{color:var(--jade)}
+.intro__brand .c.sp{width:.3em}
+.intro__line{position:absolute;left:50%;bottom:-16px;height:2px;width:min(78%,440px);
+  transform:translateX(-50%) scaleX(0);transform-origin:50% 50%;
+  background:linear-gradient(90deg,transparent,var(--jade),transparent)}
+.intro__tag{position:absolute;left:0;right:0;bottom:clamp(46px,14vh,120px);text-align:center;
+  font-family:var(--mono);font-size:.72rem;letter-spacing:.34em;text-transform:uppercase;color:var(--mute);opacity:0}
+.intro__brand::after{content:"";position:absolute;inset:-4px;pointer-events:none;
+  background:linear-gradient(105deg,transparent 42%,rgba(238,242,236,.5) 50%,transparent 58%);transform:translateX(-140%)}
+@keyframes introOut{to{opacity:0;visibility:hidden;transform:translateY(-4%) scale(1.04);pointer-events:none}}
+@keyframes cDrop{0%{opacity:0;transform:rotateX(-92deg) translateY(.42em)}60%{opacity:1}100%{opacity:1;transform:none}}
+@keyframes sheenX{to{transform:translateX(140%)}}
+@keyframes lineX{to{transform:translateX(-50%) scaleX(1)}}
+@keyframes fadeIn{to{opacity:1}}
+@media (prefers-reduced-motion:no-preference){
+  .intro__brand .c{opacity:0;animation:cDrop .72s cubic-bezier(.2,.8,.2,1) forwards;animation-delay:calc(.15s + var(--i,0)*.06s)}
+  .intro__brand::after{animation:sheenX 1.1s cubic-bezier(.3,.7,.2,1) 1s both}
+  .intro__line{animation:lineX .7s cubic-bezier(.32,.72,0,1) 1s forwards}
+  .intro__tag{animation:fadeIn .6s ease 1.2s forwards}
+}
+
+/* — Título del hero: ensamblaje 3D letra a letra + barrido de luz — */
+h1.title .ttl{position:relative;display:inline-flex;flex-wrap:wrap}
+h1.title .ch{display:inline-block;transform-origin:50% 90%;color:var(--bone)}
+h1.title .ch.j{color:var(--jade);font-weight:700}
+h1.title .ch.sp{width:.26em}
+h1.title .ttl::after{content:"";position:absolute;inset:-2px;pointer-events:none;
+  background:linear-gradient(105deg,transparent 44%,rgba(61,220,151,.3) 50%,transparent 56%);transform:translateX(-150%)}
+html.js h1.title .ch{opacity:0}   /* oculto hasta que el intro se retira: el JS añade .lettersgo */
+@media (prefers-reduced-motion:no-preference){
+  html.js.lettersgo h1.title .ch{animation:cDrop .7s cubic-bezier(.2,.8,.2,1) both;animation-delay:calc(var(--i,0)*.055s)}
+  html.js.lettersgo h1.title .ttl::after{animation:sheenX 1.3s cubic-bezier(.3,.7,.2,1) .55s both}
+}
+
+/* — Foto de Pablo: anillo jade que se traza + entrada con muelle — */
+.byline .ph{position:relative;width:52px;height:52px;flex:none}
+.byline .ph img{width:52px;height:52px;border-radius:50%;object-fit:cover;object-position:center top;
+  border:1.5px solid var(--jade);background:var(--panel);display:block}
+.byline .ph .ring{position:absolute;inset:-5px;width:62px;height:62px;transform:rotate(-90deg);pointer-events:none}
+.byline .ph .ring circle{fill:none;stroke:var(--jade);stroke-width:2;stroke-linecap:round;stroke-dasharray:1;stroke-dashoffset:0;opacity:.9}
+html.js .byline .ph .ring circle{stroke-dashoffset:1}   /* oculto hasta .lettersgo */
+@media (prefers-reduced-motion:no-preference){
+  html.js.lettersgo .byline .ph .ring circle{animation:ringDraw 1s cubic-bezier(.3,.7,.2,1) .5s both}
+  html.js.lettersgo .byline .ph img{animation:phPop .7s cubic-bezier(.2,.8,.2,1) .35s both}
+}
+@keyframes ringDraw{to{stroke-dashoffset:0}}
+@keyframes phPop{from{opacity:.001;transform:scale(.7)}to{opacity:1;transform:none}}
+
+/* — Scroll-3D «reel»: el transform lo compone el JS (perspective+rotateX+scale) — */
+html.js .r3d{backface-visibility:hidden}
+html.js .r3d.r3d--on{will-change:transform}
+html.js .reveal.r3d{transform:none}   /* el reveal aporta el fundido; el 3D lo pone el JS */
+
+/* — Franja «un plato, sus macros» (SVG temático de nutrición) — */
+.plate{background:var(--bg-2);border-top:1px solid var(--line-soft);border-bottom:1px solid var(--line-soft)}
+.plate__grid{display:grid;grid-template-columns:1fr;gap:clamp(24px,5vw,52px);align-items:center;margin-top:clamp(24px,4vw,40px)}
+.plate__art{position:relative;max-width:360px;width:100%;margin:0 auto}
+.plate__art svg{width:100%;height:auto;overflow:visible;display:block}
+.plate .food{transform-origin:center}
+.plate .seg{fill:none;transform:rotate(-90deg);transform-box:fill-box;transform-origin:center;
+  stroke-dasharray:var(--l) var(--rest);stroke-dashoffset:0}
+html.js .plate .food{opacity:0}
+html.js .plate .seg{stroke-dashoffset:var(--l)}
+@media (prefers-reduced-motion:no-preference){
+  html.js .plate.in .food{animation:foodIn .7s cubic-bezier(.2,.8,.2,1) both}
+  html.js .plate.in .food.f1{animation-delay:.04s}
+  html.js .plate.in .food.f2{animation-delay:.16s}
+  html.js .plate.in .food.f3{animation-delay:.28s}
+  html.js .plate.in .food.f4{animation-delay:.4s}
+  html.js .plate.in .seg{animation:segDraw 1s cubic-bezier(.3,.7,.2,1) both}
+  html.js .plate.in .seg.s1{animation-delay:.5s}
+  html.js .plate.in .seg.s2{animation-delay:.68s}
+  html.js .plate.in .seg.s3{animation-delay:.86s}
+}
+@keyframes foodIn{from{opacity:0;transform:scale(.4) rotate(-8deg)}to{opacity:1;transform:none}}
+@keyframes segDraw{to{stroke-dashoffset:0}}
+.plate__macros{display:flex;gap:22px;flex-wrap:wrap}
+.macro b{display:block;font-family:var(--mono);font-size:1.55rem;font-weight:500;letter-spacing:-.02em;line-height:1}
+.macro.p b{color:var(--ember)} .macro.c b{color:var(--jade)} .macro.g b{color:var(--soft)}
+.macro span{font-family:var(--mono);font-size:.7rem;letter-spacing:.08em;text-transform:uppercase;color:var(--mute)}
+.plate__note{font-family:var(--mono);font-size:.72rem;color:var(--mute-2);margin-top:1rem;line-height:1.5}
+@media (min-width:760px){ .plate__grid{grid-template-columns:1fr 1fr} }
+
+/* — Stats: chispa jade al revelarse (el nodo lo crea el JS) — */
+.stat{position:relative;overflow:hidden}
+.stat .spark{position:absolute;left:0;right:0;top:0;height:2px;transform:scaleX(0);transform-origin:0 50%;
+  background:linear-gradient(90deg,var(--jade),transparent);pointer-events:none}
+@media (prefers-reduced-motion:no-preference){
+  html.js .stat.reveal.in .spark{animation:sparkIn 1.15s cubic-bezier(.32,.72,0,1) .12s both}
+}
+@keyframes sparkIn{0%{transform:scaleX(0);opacity:1}60%{transform:scaleX(1);opacity:1}100%{transform:scaleX(1);opacity:.35}}
+
+/* ——— Garantía dura: sin intro, sin 3D, todo estático y legible ——— */
+@media (prefers-reduced-motion:reduce){
+  .intro{display:none!important}
+  .uprog{display:none!important}
+  html.js .r3d{transform:none!important;will-change:auto!important}
+  html.js h1.title .ch{opacity:1!important;transform:none!important;animation:none!important}
+  h1.title .ttl::after,.intro__brand::after{display:none!important}
+  html.js .plate .food{opacity:1!important;transform:none!important;animation:none!important}
+  html.js .plate .seg{stroke-dashoffset:0!important;animation:none!important}
+  html.js .byline .ph .ring circle{stroke-dashoffset:0!important;animation:none!important}
+  html.js .byline .ph img{opacity:1!important;transform:none!important;animation:none!important}
+  .stat .spark{display:none!important}
+}
+@media print{
+  .intro,.uprog,.stat .spark,h1.title .ttl::after{display:none!important}
+  html.js .r3d{transform:none!important}
+  html.js .plate .food{opacity:1!important;transform:none!important}
+  html.js .plate .seg{stroke-dashoffset:0!important}
+  html.js .byline .ph .ring circle{stroke-dashoffset:0!important}
+}
+/* Failsafe estático (bots/prerender), en la misma línea que el flow */
+html.fx-fin .r3d{transform:none!important;will-change:auto!important}
+html.fx-fin .plate .food{opacity:1!important;transform:none!important}
+html.fx-fin .plate .seg{stroke-dashoffset:0!important}
+html.fx-fin .byline .ph .ring circle{stroke-dashoffset:0!important}
 </style>
 </head>
 <body>
+
+<!-- ULTRA · barra de progreso de lectura -->
+<div class="uprog" aria-hidden="true"></div>
+
+<!-- ULTRA · intro cinematográfico: presenta la marca y se retira; interrumpible (un gesto lo salta); oculto con reduced-motion -->
+<div class="intro" aria-hidden="true">
+  <div class="intro__brand">
+    <span class="c" style="--i:0">J</span><span class="c" style="--i:1">V</span><span class="c sp" style="--i:2">&nbsp;</span><span class="c j" style="--i:3">F</span><span class="c j" style="--i:4">i</span><span class="c j" style="--i:5">t</span><span class="c j" style="--i:6">n</span><span class="c j" style="--i:7">e</span><span class="c j" style="--i:8">s</span><span class="c j" style="--i:9">s</span>
+    <span class="intro__line"></span>
+  </div>
+  <span class="intro__tag">Nutrición y entrenamiento con base científica</span>
+</div>
 
 <!-- ================= HERO ================= -->
 <header class="hero">
@@ -392,7 +569,7 @@ html.fx-fin .stage__node{opacity:1 !important;transform:none !important;transiti
       </div>
 
       <p class="eyebrow" style="margin-top:1.6rem">PWA de nutrición y entrenamiento · ciencia, no humo</p>
-      <h1 class="title"><span class="brand">JV&nbsp;<b>Fitness</b></span></h1>
+      <h1 class="title" aria-label="JV Fitness"><span class="brand ttl" aria-hidden="true"><span class="ch" style="--i:0">J</span><span class="ch" style="--i:1">V</span><span class="ch sp" style="--i:2">&nbsp;</span><span class="ch j" style="--i:3">F</span><span class="ch j" style="--i:4">i</span><span class="ch j" style="--i:5">t</span><span class="ch j" style="--i:6">n</span><span class="ch j" style="--i:7">e</span><span class="ch j" style="--i:8">s</span><span class="ch j" style="--i:9">s</span></span></h1>
       <p class="tagline">Nutrición y entrenamiento con base científica, en el móvil.</p>
 
       <div class="cta-row">
@@ -400,7 +577,10 @@ html.fx-fin .stage__node{opacity:1 !important;transform:none !important;transiti
       </div>
 
       <div class="byline">
-        <img src="assets/pablo.png" alt="Retrato de Pablo Andrés Martínez" width="52" height="52">
+        <span class="ph">
+          <img src="assets/pablo.png" alt="Retrato de Pablo Andrés Martínez" width="52" height="52">
+          <svg class="ring" viewBox="0 0 62 62" aria-hidden="true" focusable="false"><circle cx="31" cy="31" r="29.5" pathLength="1"/></svg>
+        </span>
         <div class="who">
           <b>Pablo Andrés Martínez</b><br>
           <span>Creador de JV Fitness</span>
@@ -495,6 +675,61 @@ html.fx-fin .stage__node{opacity:1 !important;transform:none !important;transiti
         <span class="feat-eyebrow">Auditoría de citas</span>
         <h3>Cita el paper, o no cita</h3>
         <p>Cada afirmación con número lleva su PMID. Cuando una cifra circula con un PMID auténtico pero no está en el paper, el sistema la <strong>marca</strong> (tachada, con el porqué al lado) en vez de repetirla. Es como cazamos hace tres días un umbral falso atribuido a un meta-análisis que en realidad no lo contiene.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= UN PLATO, SUS MACROS (ULTRA · animación de comida) ================= -->
+<section class="plate">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <p class="eyebrow">Diario de comida</p>
+      <h2>Un plato, y sus macros al instante</h2>
+      <svg class="ul" viewBox="0 0 200 9" preserveAspectRatio="none" aria-hidden="true" focusable="false"><path pathLength="1" d="M2 6 C46 2, 104 8.4, 198 3.4"/></svg>
+      <p>Apuntas lo que comes y ves la foto nutricional del plato: proteína, carbohidrato y grasa, sin echar cuentas a mano.</p>
+    </div>
+    <div class="plate__grid">
+      <div class="plate__art">
+        <svg viewBox="0 0 360 300" role="img" aria-label="Ilustración de un plato de comida con un anillo de macronutrientes">
+          <!-- plato -->
+          <ellipse cx="120" cy="152" rx="112" ry="112" fill="#101E19" stroke="#1E3A31" stroke-width="2"/>
+          <ellipse cx="120" cy="152" rx="92" ry="92" fill="none" stroke="#16281F" stroke-width="1.5"/>
+          <!-- proteína (filete) -->
+          <g class="food f1"><ellipse cx="95" cy="118" rx="45" ry="30" fill="#FF6A3D"/><ellipse cx="95" cy="118" rx="45" ry="30" fill="none" stroke="#c0492a" stroke-width="1.5" opacity=".55"/></g>
+          <!-- carbohidrato (arroz) -->
+          <g class="food f2"><ellipse cx="153" cy="128" rx="40" ry="27" fill="#EEF2EC"/><ellipse cx="153" cy="128" rx="40" ry="27" fill="none" stroke="#c7cdc6" stroke-width="1" opacity=".5"/></g>
+          <!-- grasa (aguacate en gajos) -->
+          <g class="food f3">
+            <ellipse cx="96" cy="188" rx="15" ry="27" fill="#2ea877" transform="rotate(-24 96 188)"/>
+            <ellipse cx="118" cy="193" rx="15" ry="27" fill="#35c489" transform="rotate(-3 118 193)"/>
+            <ellipse cx="140" cy="188" rx="15" ry="27" fill="#2ea877" transform="rotate(18 140 188)"/>
+          </g>
+          <!-- verdura (brócoli) -->
+          <g class="food f4">
+            <circle cx="166" cy="176" r="13" fill="#3DDC97"/>
+            <circle cx="184" cy="185" r="12" fill="#35c489"/>
+            <circle cx="171" cy="196" r="11" fill="#3DDC97"/>
+            <circle cx="151" cy="189" r="10" fill="#35c489"/>
+          </g>
+          <!-- anillo de macros (3 aros concéntricos, se dibujan al entrar) -->
+          <g transform="translate(280,150)">
+            <circle r="54" fill="none" stroke="#16281F" stroke-width="12"/>
+            <circle r="41" fill="none" stroke="#16281F" stroke-width="12"/>
+            <circle r="28" fill="none" stroke="#16281F" stroke-width="12"/>
+            <circle class="seg s1" r="54" fill="none" stroke="#FF6A3D" stroke-width="12" stroke-linecap="round" pathLength="1" style="--l:.37;--rest:.63"/>
+            <circle class="seg s2" r="41" fill="none" stroke="#3DDC97" stroke-width="12" stroke-linecap="round" pathLength="1" style="--l:.49;--rest:.51"/>
+            <circle class="seg s3" r="28" fill="none" stroke="#CBD8D1" stroke-width="12" stroke-linecap="round" pathLength="1" style="--l:.15;--rest:.85"/>
+          </g>
+        </svg>
+      </div>
+      <div class="plate__txt">
+        <div class="plate__macros">
+          <div class="macro p"><b><span data-g="45">45</span> g</b><span>Proteína</span></div>
+          <div class="macro c"><b><span data-g="60">60</span> g</b><span>Carbohidrato</span></div>
+          <div class="macro g"><b><span data-g="18">18</span> g</b><span>Grasa</span></div>
+        </div>
+        <p class="plate__note">Plato de ejemplo · la app calcula estos números a partir de la base de 234.976 alimentos, también sin cobertura.</p>
       </div>
     </div>
   </div>
@@ -1011,6 +1246,137 @@ html.fx-fin .stage__node{opacity:1 !important;transform:none !important;transiti
     if(document.hidden){ vivo=false; cancelAnimationFrame(raf); }
     else if(!vivo){ vivo=true; raf=requestAnimationFrame(frame); }
   });
+})();
+
+/* ═══════════════ CAPA ULTRA · scroll-3D · parallax · progreso · plato ═══════════════
+   Un único manejador de scroll con rAF-throttle (patrón performante estándar): sin
+   rAF perpetuo, solo recalcula al hacer scroll/resize. Respeta reduced-motion (no
+   instala nada con movimiento) y NO toca el motion narrativo del flow de arriba. */
+(function(){
+  "use strict";
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var root = document.documentElement;
+
+  /* ---------- Intro cinematográfico: interrumpible + red de seguridad ----------
+     La retirada base la hace el CSS (animation forwards). Esto solo la acelera con
+     el primer gesto (interrumpibilidad, apple-design §3), limpia el nodo del DOM y
+     DISPARA el ensamblaje del título del hero (.lettersgo) justo al retirarse. */
+  var intro = document.querySelector('.intro');
+  if(intro){
+    var quitar = function(){
+      if(!intro) return;
+      var n = intro; intro = null;
+      root.classList.add('lettersgo');   /* el hero se ensambla cuando el intro se va */
+      n.style.transition = 'opacity .5s ease, transform .5s ease';
+      n.style.opacity = '0';
+      n.style.transform = 'translateY(-4%) scale(1.04)';
+      n.style.pointerEvents = 'none';
+      setTimeout(function(){ if(n && n.parentNode) n.parentNode.removeChild(n); }, 600);
+    };
+    intro.addEventListener('animationend', function(e){ if(e && e.animationName === 'introOut') quitar(); });
+    setTimeout(quitar, 3200);   /* red dura: pase lo que pase, el intro se va */
+    if(!reduce){
+      var saltar = function(){ quitar(); off(); };
+      var off = function(){ ['pointerdown','keydown','wheel','touchstart'].forEach(function(g){ window.removeEventListener(g, saltar); }); };
+      /* un margen para ver arrancar el ensamblaje antes de permitir el salto */
+      setTimeout(function(){ ['pointerdown','keydown','wheel','touchstart'].forEach(function(g){ window.addEventListener(g, saltar, { passive:true }); }); }, 750);
+    } else {
+      quitar();   /* con reduced-motion el CSS ya lo oculta; se retira por limpieza */
+    }
+  } else {
+    root.classList.add('lettersgo');   /* sin intro: el hero se ensambla de inmediato */
+  }
+
+  if(reduce) return;   /* nada de scroll-3D / parallax con movimiento reducido */
+
+  var prog = document.querySelector('.uprog');
+  var vh = window.innerHeight || document.documentElement.clientHeight;
+  var MAX = 11;                 /* grados máximos de basculación */
+  var actives = [];             /* elementos 3D actualmente en el viewport */
+
+  function place(el){
+    var r = el.getBoundingClientRect();
+    if(r.height === 0) return;
+    var t = (r.top + r.height/2) / vh;      /* 0 arriba .. 1 abajo */
+    if(t < 0) t = 0; else if(t > 1) t = 1;
+    var deg = (t - 0.5) * 2 * MAX;          /* abajo +MAX, centro 0, arriba -MAX */
+    var d = Math.abs(t - 0.5) * 2;          /* 0 centro .. 1 extremos */
+    var sc = (1 - d * 0.05).toFixed(3);
+    el.style.transform = 'perspective(1200px) rotateX(' + deg.toFixed(2) + 'deg) scale(' + sc + ')';
+  }
+
+  /* marcar los elementos que bascular (ya son .reveal → el fundido lo da el flow) */
+  var r3dEls = Array.prototype.slice.call(document.querySelectorAll('.frow, .spec-card, .stat, .stage'));
+  r3dEls.forEach(function(el){ el.classList.add('r3d'); });
+
+  var io = ('IntersectionObserver' in window) ? new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      var el = e.target;
+      if(e.isIntersecting){
+        if(actives.indexOf(el) < 0){ actives.push(el); el.classList.add('r3d--on'); place(el); }
+      } else {
+        var k = actives.indexOf(el);
+        if(k >= 0){ actives.splice(k, 1); el.classList.remove('r3d--on'); el.style.transform = ''; }
+      }
+    });
+  }, { rootMargin: '8% 0px 8% 0px', threshold: 0 }) : null;
+  if(io){ r3dEls.forEach(function(el){ io.observe(el); }); }
+  else { r3dEls.forEach(place); }   /* sin IO: los dejamos colocados una vez */
+
+  /* parallax sutil del campo de partículas y del contenido del hero (solo transform) */
+  var pars = [];
+  (function(){
+    var f = document.querySelector('.hero__field'); if(f){ f.setAttribute('data-par', '0.16'); pars.push(f); }
+    var hi = document.querySelector('.hero__inner'); if(hi){ hi.setAttribute('data-par', '0.05'); pars.push(hi); }
+  })();
+
+  /* chispa jade en cada tarjeta de cifras (se anima sola al entrar vía .reveal.in) */
+  document.querySelectorAll('.stats .stat').forEach(function(s){
+    var sp = document.createElement('span'); sp.className = 'spark'; sp.setAttribute('aria-hidden', 'true');
+    s.appendChild(sp);
+  });
+
+  function docH(){ return Math.max(document.body.scrollHeight, document.documentElement.scrollHeight); }
+  function update(){
+    var y = window.pageYOffset || document.documentElement.scrollTop || 0;
+    if(prog){ var m = docH() - vh; prog.style.transform = 'scaleX(' + (m > 0 ? Math.min(y/m, 1) : 0).toFixed(4) + ')'; }
+    for(var i=0;i<actives.length;i++) place(actives[i]);
+    for(var j=0;j<pars.length;j++){
+      var factor = parseFloat(pars[j].getAttribute('data-par')) || 0;
+      pars[j].style.transform = 'translate3d(0,' + (y * factor).toFixed(1) + 'px,0)';
+    }
+  }
+  var ticking = false;
+  function onScroll(){ if(!ticking){ ticking = true; requestAnimationFrame(function(){ update(); ticking = false; }); } }
+  window.addEventListener('scroll', onScroll, { passive:true });
+  window.addEventListener('resize', function(){ vh = window.innerHeight || document.documentElement.clientHeight; update(); }, { passive:true });
+
+  /* ---------- Plato: se monta al entrar; los gramos hacen count-up ---------- */
+  var plate = document.querySelector('.plate');
+  if(plate){
+    var contado = false;
+    function contar(){
+      if(contado) return; contado = true;
+      document.querySelectorAll('.plate [data-g]').forEach(function(el){
+        var to = parseInt(el.getAttribute('data-g'), 10) || 0, t0 = null, dur = 1100;
+        function step(ts){
+          if(t0 === null) t0 = ts;
+          var p = Math.min((ts - t0)/dur, 1), e = 1 - Math.pow(1-p, 3);
+          el.textContent = Math.round(to * e);
+          if(p < 1) requestAnimationFrame(step);
+        }
+        requestAnimationFrame(step);
+      });
+    }
+    if('IntersectionObserver' in window){
+      var pio = new IntersectionObserver(function(entries){
+        entries.forEach(function(e){ if(e.isIntersecting){ plate.classList.add('in'); contar(); pio.unobserve(plate); } });
+      }, { threshold: .4 });
+      pio.observe(plate);
+    } else { plate.classList.add('in'); contar(); }
+  }
+
+  update();   /* primera pasada: coloca lo visible al cargar */
 })();
 </script>
 </body>
