@@ -33,7 +33,41 @@
 <meta name="theme-color" content="#0A100E">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <title>JV Fitness · nutrición y entrenamiento con base científica · Pablo Andrés Martínez</title>
-<meta name="description" content="JV Fitness: app de nutrición y entrenamiento con base científica. Diario con 234.976 alimentos sin cobertura, 1.500 ejercicios con guía anatómica y un asistente que cita la fuente de cada respuesta.">
+<!-- ============================================================================
+     CIFRAS TALLADAS A MANO · TODAS CADUCAN · última medición: 21-08-2026 (v0.67.0)
+     ----------------------------------------------------------------------------
+     Esta página no puede leer estas cifras sola: contarlas en caliente obligaría a
+     descargar 1,84 MB para pintar un número. Así que están escritas a mano, y por
+     eso envejecen. Las DOS que sí se leen solas (la píldora EN VIVO y el cuadro de
+     versión, que hacen un fetch del index) NO están en esta lista: esas no mienten.
+
+     Antes de tocar cualquiera de estas, VOLVER A MEDIR. Nunca contra
+     _ESTADO-PROYECTO.md, que va desfasado; siempre contra el artefacto publicado.
+
+       cifra                          valor    dónde vive
+       -----------------------------  -------  --------------------------------
+       fichas del asistente             362    eyebrow del motor + odómetro
+       claves del asistente           6.269    eyebrow del motor
+       fichas que citan su Tema         229    entradilla del motor
+       ejercicios                     1.500    eyebrow + odómetro
+       ejercicios con instrucciones   1.287    entradilla de ejercicios
+       alimentos de España          234.976    tarjeta del diario + odómetro
+       perfiles del barrido               8    tarjeta de perfiles
+       preguntas del barrido          1.032    tarjeta de perfiles
+       NULL antes / ahora        33,5 / 22,8   tarjeta de perfiles
+       Temas del fichero maestro         47    tarjeta de auditoría
+       PMID del fichero maestro         134    tarjeta de auditoría
+       baterías de pruebas              109    odómetro
+       pases del Vigía (26/26)           26    línea honesta del pie
+       fusiones en el taller            221    acto 4 (solo SUBE: nunca miente por exceso)
+                                               git rev-list --merges origin/master --count
+
+     CÓMO SE VUELVEN A MEDIR TODAS DE UNA VEZ:
+       python verificador.py     (fase C de la obra del escaparate; mide contra
+                                  `git show origin/main:index.html` y contra el
+                                  taller. Ninguna cifra nueva aquí sin su línea allí)
+     ============================================================================ -->
+<meta name="description" content="JV Fitness: app de nutrición y entrenamiento con base científica. Diario con 234.976 alimentos sin cobertura, 1.500 ejercicios con guía anatómica y un asistente que cita su fuente cuando la tiene y dice «no lo sé» cuando no.">
 <meta name="robots" content="index,follow">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://pablolietor22.github.io/jv-fitness/showcase.html">
@@ -73,6 +107,24 @@
   --body:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
   --maxw:1080px;
   --r:16px;
+
+  /* ============ SISTEMA DE MOVIMIENTO (E.4) ============
+     Cuatro curvas y cinco duraciones con nombre. Todo lo que se anime a partir
+     de aquí las usa: sin esto, cada escena nueva inventa su tempo y el viaje
+     suena desafinado.
+     Las curvas NO son valores nuevos: son las cuatro que el fichero ya usaba
+     (9, 6, 5 y 1 veces). Se promocionan por uso, no se importan de fuera. */
+  --ease-casa:cubic-bezier(.32,.72,0,1);   /* manda. 9 usos. Es la curva del cajón de iOS (Emil Kowalski la publica como --ease-drawer) */
+  --ease-entra:cubic-bezier(.2,.8,.2,1);   /* algo aparece. 6 usos. Muelle apple-design del propio fichero */
+  --ease-traza:cubic-bezier(.3,.7,.2,1);   /* algo se dibuja: trazos, recortes, rotulador. 5 usos */
+  --ease-sale:cubic-bezier(.7,0,.25,1);    /* algo se va. 1 uso: el telón del intro, el único gesto de salida de la página */
+
+  --t-1:110ms;    /* micro respuesta: pulsar */
+  --t-2:150ms;    /* borde, sombra, color */
+  --t-3:240ms;    /* gesto de interfaz. Techo NN/g: 300 ms */
+  --t-4:400ms;    /* aparición por scroll. Techo NN/g */
+  --t-5:700ms;    /* momento ilustrativo, y solo con motivo: cuenta algo */
+  --stagger:38ms; /* escalonado entre hermanos; el total nunca pasa de 300 ms */
 }
 
 /* ============ RESET / BASE ============ */
@@ -145,17 +197,21 @@ h1.title .brand b{color:var(--jade);font-weight:700}
   display:inline-flex;align-items:center;gap:.55em;font-family:var(--display);font-weight:700;
   font-size:.98rem;padding:13px 20px;border-radius:12px;cursor:pointer;border:1px solid transparent;
   /* capa-apple §1: la respuesta vive en el gesto. Muelle crítico (sin rebote) — response ~.34s. */
-  transition:transform .34s cubic-bezier(.32,.72,0,1), box-shadow .18s ease, background .18s ease, border-color .18s ease;
-  will-change:transform;
+  transition:transform var(--t-3) var(--ease-casa), box-shadow var(--t-2) var(--ease-casa), background var(--t-2) var(--ease-casa), border-color var(--t-2) var(--ease-casa);
 }
 .btn--primary{background:var(--jade);color:#05221a;box-shadow:0 8px 26px rgba(61,220,151,.24)}
-.btn--primary:hover{box-shadow:0 12px 34px rgba(61,220,151,.36);transform:translateY(-1px)}
 .btn--ghost{background:transparent;color:var(--soft);border-color:var(--line)}
-.btn--ghost:hover{border-color:var(--jade);color:var(--bone)}
-/* capa-apple §1: feedback INSTANTÁNEO al pulsar (pointer-down), no al soltar. */
-.btn:active{transform:scale(.97);transition-duration:.08s}
-.btn .arw{transition:transform .34s cubic-bezier(.32,.72,0,1)}
-.btn:hover .arw{transform:translateX(3px)}
+/* capa-apple §1: feedback INSTANTÁNEO al pulsar (pointer-down), no al soltar.
+   .btn:active se queda FUERA de la puerta táctil a propósito: pulsar sí existe con el dedo. */
+.btn:active{transform:scale(.97);transition-duration:var(--t-1)}
+.btn .arw{transition:transform var(--t-3) var(--ease-casa)}   /* ⚠️ SIN ESTRENAR: 0 elementos .arw en el marcado. Se señala, no se borra */
+/* P7: el hover SIEMPRE con puerta táctil. Sin ella, en el móvil el estado se
+   queda pegado después de tocar (no hay «salir» de un dedo). */
+@media (hover:hover) and (pointer:fine){
+  .btn--primary:hover{box-shadow:0 12px 34px rgba(61,220,151,.36);transform:translateY(-1px)}
+  .btn--ghost:hover{border-color:var(--jade);color:var(--bone)}
+  .btn:hover .arw{transform:translateX(3px)}
+}
 .byline{display:flex;align-items:center;gap:13px;margin-top:2rem;
   padding-top:1.4rem;border-top:1px solid var(--line-soft)}
 .byline img{width:52px;height:52px;border-radius:50%;object-fit:cover;object-position:center top;
@@ -176,7 +232,7 @@ section{padding:clamp(48px,9vw,88px) 0}
 .ul path{fill:none;stroke:var(--jade);stroke-width:2.4;stroke-linecap:round;
   vector-effect:non-scaling-stroke;stroke-dasharray:1;stroke-dashoffset:0}
 html.js .sec-head .ul path{stroke-dashoffset:1;
-  transition:stroke-dashoffset .8s cubic-bezier(.3,.7,.2,1) .14s}
+  transition:stroke-dashoffset var(--t-5) var(--ease-traza) calc(var(--stagger) * 4)}
 html.js .sec-head.in .ul path{stroke-dashoffset:0}
 
 /* ============ FEATURES ============ */
@@ -188,6 +244,11 @@ html.js .sec-head.in .ul path{stroke-dashoffset:0}
 .shot{border:1px solid var(--line);border-radius:20px;overflow:hidden;background:var(--panel-2);
   box-shadow:0 24px 60px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.03);max-width:340px;margin:0 auto}
 .shot img{width:100%;height:auto}
+/* La captura de anatomía es 720x1649: a 360px se pinta a 824px de alto y se come la sección.
+   Se estrecha SOLO ella. Nada de recortar: la parte de abajo es la que prueba lo que promete.
+   Dos clases a propósito (.shot.shot--tall): así gana a .shot{max-width:360px} del
+   @media (min-width:760px) sin depender del orden en el fichero. */
+.shot.shot--tall{max-width:270px}
 .feat-eyebrow{font-family:var(--mono);font-weight:500;font-size:.68rem;text-transform:uppercase;
   letter-spacing:.19em;color:var(--jade)}
 .frow h3{font-size:clamp(1.4rem,3.4vw,2rem);margin:.55rem 0 .8rem}
@@ -200,8 +261,8 @@ details.under .body code{font-family:var(--mono);color:var(--soft);background:rg
 .spec-card{border:1px solid var(--line-soft);border-radius:var(--r);padding:22px;
   background:linear-gradient(180deg,var(--panel),var(--panel-2));
   /* capa-apple §16: lo que parece una tarjeta responde al puntero. Muelle crítico, sin rebote. */
-  transition:transform .34s cubic-bezier(.32,.72,0,1), border-color .34s ease, box-shadow .34s ease}
-@media (hover:hover){
+  transition:transform var(--t-3) var(--ease-casa), border-color var(--t-3) var(--ease-casa), box-shadow var(--t-3) var(--ease-casa)}
+@media (hover:hover) and (pointer:fine){
   .spec-card:hover{transform:translateY(-3px);border-color:var(--line);
     box-shadow:0 18px 40px rgba(0,0,0,.34)}
 }
@@ -211,6 +272,9 @@ details.under .body code{font-family:var(--mono);color:var(--soft);background:rg
 
 /* ============ STATS / CONTADORES ============ */
 .stats{background:var(--bg-2);border-top:1px solid var(--line-soft);border-bottom:1px solid var(--line-soft)}
+/* ACTO 2 · banda propia del tramo de rigor. Tokens existentes, cero valores nuevos.
+   El color definitivo del tramo lo pone la fase E (velos por sección); esto solo abre el hueco. */
+.rigor{background:var(--panel-2);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
 .stat-grid{display:grid;grid-template-columns:1fr;gap:14px}
 .stat{border:1px solid var(--line-soft);border-radius:var(--r);padding:24px 22px;
   background:linear-gradient(180deg,var(--panel),var(--panel-2))}
@@ -223,7 +287,11 @@ details.under .body code{font-family:var(--mono);color:var(--soft);background:rg
   box-shadow:0 0 10px var(--jade)}
 
 /* ============ EN CONSTRUCCIÓN ============ */
-.wip{border-top:1px solid var(--line-soft);background:var(--bg-2)}
+/* ACTO 4 · velo propio. Medido en la captura entera: .stats + .plate + .wip compartían
+   --bg-2 (2,88 pantallas de un solo color) y los actos 3 y 4 se leían como una sola banda.
+   Mismo tratamiento que .rigor (los dos actos de confianza comparten material): tokens
+   existentes, cero valores nuevos. Stats + plato quedan cosidos a propósito (son un acto). */
+.wip{background:var(--panel-2);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
 .wip ul{list-style:none;margin-top:clamp(22px,3.5vw,34px);display:grid;gap:12px}
 .wip li{display:flex;gap:.85em;align-items:flex-start;border:1px solid var(--line-soft);
   border-radius:12px;padding:15px 17px;background:linear-gradient(180deg,var(--panel),var(--panel-2));
@@ -237,32 +305,43 @@ details.under .body code{font-family:var(--mono);color:var(--soft);background:rg
 .foot__cta{display:flex;flex-wrap:wrap;gap:14px;align-items:center}
 .foot__cta .btn--code{background:var(--jade);color:#05221a;font-size:1.02rem;padding:15px 24px;
   box-shadow:0 8px 26px rgba(61,220,151,.22)}
-.foot__cta .btn--code:hover{transform:translateY(-1px);box-shadow:0 12px 34px rgba(61,220,151,.34)}
 .foot__try{font-family:var(--mono);font-size:.82rem;color:var(--mute);border-bottom:1px dashed var(--mute-2);
   padding-bottom:1px}
-.foot__try:hover{color:var(--jade);border-color:var(--jade)}
+/* P7: puerta táctil también en el pie. .btn--code se estrena en esta obra, así que su
+   :hover pasa de ser CSS muerto a alcanzable: sin puerta se quedaría pegado en el móvil. */
+@media (hover:hover) and (pointer:fine){
+  .foot__cta .btn--code:hover{transform:translateY(-1px);box-shadow:0 12px 34px rgba(61,220,151,.34)}
+  .foot__try:hover{color:var(--jade);border-color:var(--jade)}
+}
 .foot__meta{margin-top:2.2rem;padding-top:1.6rem;border-top:1px solid var(--line-soft);
   display:grid;gap:.5rem;color:var(--mute);font-size:.86rem}
 .foot__meta .honest{font-family:var(--mono);font-size:.76rem;letter-spacing:.03em;color:var(--soft)}
 .foot__meta a.mail{color:var(--jade)}
+.foot__meta .honest a{color:var(--jade);border-bottom:1px solid var(--jade-dim)}
 .foot__sig{color:var(--mute-2);font-size:.78rem;margin-top:.6rem}
 
 /* ============ REVEAL (guardado tras .js) ============ */
 /* capa-apple §4/§11: muelle crítico (damping 1.0, sin overshoot), response ~.5s, solo transform+opacity. */
 html.js .reveal{opacity:0;transform:translateY(14px);will-change:transform,opacity;
-  transition:opacity .5s cubic-bezier(.32,.72,0,1), transform .5s cubic-bezier(.32,.72,0,1)}
+  transition:opacity var(--t-4) var(--ease-casa), transform var(--t-4) var(--ease-casa)}
 html.js .reveal.in{opacity:1;transform:none}
-html.js .reveal.d1{transition-delay:.08s}
-html.js .reveal.d2{transition-delay:.16s}
+html.js .reveal.d1{transition-delay:calc(var(--stagger) * 2)}
+html.js .reveal.d2{transition-delay:calc(var(--stagger) * 4)}
 
 /* ============ ANIMACIONES AMBIENTALES (solo si el usuario las permite) ============ */
 @media (prefers-reduced-motion: no-preference){
   .livebar .dot::after{content:"";position:absolute;inset:-5px;border-radius:50%;
     border:1px solid var(--jade);opacity:.5;animation:ring 2.6s ease-out infinite}
   .stat.live .pulse{animation:beat 2.2s ease-in-out infinite}
-  html.js .stage__node{opacity:.35;transform:scale(.8);transition:opacity .5s ease, transform .5s ease}
+  html.js .stage__node{opacity:.35;transform:scale(.92);transition:opacity var(--t-4) var(--ease-entra), transform var(--t-4) var(--ease-entra)}
   html.js .stage.in .stage__node{opacity:1;transform:scale(1)}
 }
+/* Puerta de visibilidad para lo que late en bucle. Fuera de pantalla no late:
+   ring y beat valen ~11 puntos de CPU medidos, y beat latía a 5.000 px del hero
+   para nadie. Se quita el NOMBRE de la animación, no se pausa: una animación
+   pausada sigue contando en getAnimations() y ahí es donde mira la compuerta. */
+html.js .vis-off .dot::after,
+html.js .vis-off .pulse{animation-name:none}
 @keyframes ring{0%{transform:scale(.6);opacity:.6}100%{transform:scale(2);opacity:0}}
 @keyframes beat{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.35);opacity:.65}}
 
@@ -291,13 +370,15 @@ html.js .reveal.d2{transition-delay:.16s}
 }
 @keyframes fxpar{0%,49%{opacity:1}50%,100%{opacity:0}}
 
-/* N4 · rotulador jade sobre el dato de rigor más fuerte («95 baterías de
-   pruebas»). Se engancha al .in que ya pone el revelado: sin JS nuevo. */
+/* N4 · rotulador jade sobre el dato de rigor más fuerte («109 baterías de
+   pruebas»). Se engancha al .in que ya pone el revelado: sin JS nuevo.
+   ⚠️ SIN ESTRENAR (21-08-2026): .fx-mark no aparece ni una vez en el marcado.
+   Se señala, no se borra (norma de la casa). Si se estrena, va sobre esa cifra. */
 html.js .fx-mark{
   background-image:linear-gradient(rgba(61,220,151,.3),rgba(61,220,151,.3));
   background-repeat:no-repeat;background-position:0 88%;background-size:0% 60%;
   -webkit-box-decoration-break:clone;box-decoration-break:clone;
-  transition:background-size .62s cubic-bezier(.3,.7,.3,1) .3s;
+  transition:background-size var(--t-5) var(--ease-traza) var(--t-3);
 }
 html.js .reveal.in .fx-mark{background-size:100% 60%}
 
@@ -309,7 +390,7 @@ html.js .reveal.in .fx-mark{background-size:100% 60%}
    el clip-path del propio elemento al calcular su intersección, y un elemento
    recortado al 100% tiene área 0: observarlo a él sería un cerrojo sin llave. */
 html.js .shot img{clip-path:inset(100% 0 0 0);
-  transition:clip-path .82s cubic-bezier(.22,.75,.2,1) .1s}
+  transition:clip-path var(--t-5) var(--ease-traza) var(--t-1)}
 html.js .shot.shot--vis img{clip-path:inset(0 0 0 0)}
 
 /* N6 · interferencia SOLO en «Lo que aún no está»: lo que todavía no existe se
@@ -338,13 +419,13 @@ html.js .shot.shot--vis img{clip-path:inset(0 0 0 0)}
 .hero__halo{position:absolute;left:0;top:0;width:560px;height:560px;
   margin:-280px 0 0 -280px;border-radius:50%;pointer-events:none;z-index:0;opacity:0;
   background:radial-gradient(circle closest-side,var(--jade) 0%,transparent 72%);
-  mix-blend-mode:screen;transition:opacity .32s ease}
+  mix-blend-mode:screen;transition:opacity var(--t-3) var(--ease-casa)}
 .hero__halo.on{opacity:.07}
 
 /* N10 · ola en el enlace del pie: una sola pasada al pasar el ratón. */
 .fx-w{display:inline-block}
-.fx-ola .fx-w{animation:fxola .6s cubic-bezier(.32,.72,.35,1) both;
-  animation-delay:calc(var(--i) * 32ms)}
+.fx-ola .fx-w{animation:fxola var(--t-5) var(--ease-casa) both;
+  animation-delay:calc(var(--i) * var(--stagger))}
 @keyframes fxola{0%{transform:none}45%{transform:translate3d(0,-6px,0)}100%{transform:none}}
 
 /* garantía dura: si el usuario pide menos movimiento, nada se oculta ni se transforma */
@@ -416,10 +497,50 @@ html.fx-fin .stage__node{opacity:1 !important;transform:none !important;transiti
   background:linear-gradient(90deg,var(--jade),var(--ember));
   box-shadow:0 0 14px rgba(61,220,151,.5)}
 
+/* La barra de lectura, al motor nativo del navegador (E.3, «deriva decorativa»).
+   Corre en el compositor: sigue fluida aunque el hilo principal esté ocupado, y
+   cuesta cero JavaScript. Detrás de @supports porque Firefox estable todavía no
+   lo trae (cobertura ~89,8 % en España); quien no lo tenga ve la barra pilotada
+   por el JS de siempre, que sigue ahí para él. NINGUNA de las dos rutas escribe
+   a la vez: el JS se desconecta solo si el navegador soporta esto.
+   Las tres trampas: el atajo va PRIMERO (reinicia el timeline a auto en
+   silencio), la duración de 1 ms es obligatoria (Firefox no admite cero), y la
+   tercera (fotograma 50/80 %) es de view() y aquí se usa scroll(), donde el
+   100 % es de verdad el final del documento. */
+@keyframes uprogLee{ from{transform:scaleX(0)} to{transform:scaleX(1)} }
+@supports (animation-timeline: scroll()){
+  @media (prefers-reduced-motion: no-preference){
+    .uprog{
+      animation:uprogLee linear both;       /* 1º el atajo */
+      animation-duration:1ms;               /* 2º la duración distinta de cero */
+      animation-timeline:scroll(root block);/* 3º el reloj, SIEMPRE el último */
+    }
+  }
+}
+
+/* ═══ CADENCIA COMPUESTA · EXCEPCIÓN DECLARADA AL SISTEMA DE TOKENS ═══
+   De aquí hasta el final del intro y del plato NO hay «duraciones de interfaz»:
+   hay tres secuencias compuestas (el telón del intro, el ensamblaje del título,
+   el montaje del plato) más dos latidos ambientales (ring y beat). Sus números
+   valen unos RESPECTO DE OTROS, no por su valor absoluto.
+   No se tokenizan, y no es pereza. Tres motivos, los tres medidos:
+     1. Tokenizarlas no es sustituir un valor: es RE-COREOGRAFIARLAS.
+     2. Hay un contrato duro con el JavaScript. El 750 del setTimeout del intro
+        es exactamente el .15s + 10 x .06s del retardo por letra (cuándo cae la
+        última letra), y la red dura de 3.200 ms cubre los 2.550 ms (1,75 + 0,8)
+        del telón. Cambiar el CSS sin cambiar el JS desincroniza el salto del
+        intro SIN dar ningún error.
+     3. ring (2,6 s) y beat (2,2 s) son ritmo ambiental, no un gesto de interfaz.
+        Su presupuesto lo vigila la puerta de visibilidad, no el token.
+   REGLA PARA QUIEN VENGA: aquí dentro no se añade nada nuevo. Todo lo nuevo
+   usa los tokens de :root. Si algún día hay que retocar esta coreografía, se
+   retoca ENTERA y se revisan las tres constantes del JS citadas arriba.
+   ═════════════════════════════════════════════════════════════════════ */
+
 /* — Intro cinematográfico (presenta «JV Fitness» y se retira) — */
 .intro{position:fixed;inset:0;z-index:200;display:grid;place-items:center;overflow:hidden;
   background:radial-gradient(1200px 620px at 50% 42%,#0e1a15,var(--bg) 72%);
-  animation:introOut .8s cubic-bezier(.7,0,.25,1) 1.75s forwards;will-change:opacity,transform}
+  animation:introOut .8s var(--ease-sale) 1.75s forwards;will-change:opacity,transform}
 .intro__brand{position:relative;font-family:var(--display);font-weight:700;line-height:1;
   font-size:clamp(2.4rem,13vw,7rem);letter-spacing:-.03em;display:flex}
 .intro__brand .c{display:inline-block;transform-origin:50% 90%;color:var(--bone)}
@@ -438,9 +559,9 @@ html.fx-fin .stage__node{opacity:1 !important;transform:none !important;transiti
 @keyframes lineX{to{transform:translateX(-50%) scaleX(1)}}
 @keyframes fadeIn{to{opacity:1}}
 @media (prefers-reduced-motion:no-preference){
-  .intro__brand .c{opacity:0;animation:cDrop .72s cubic-bezier(.2,.8,.2,1) forwards;animation-delay:calc(.15s + var(--i,0)*.06s)}
-  .intro__brand::after{animation:sheenX 1.1s cubic-bezier(.3,.7,.2,1) 1s both}
-  .intro__line{animation:lineX .7s cubic-bezier(.32,.72,0,1) 1s forwards}
+  .intro__brand .c{opacity:0;animation:cDrop .72s var(--ease-entra) forwards;animation-delay:calc(.15s + var(--i,0)*.06s)}
+  .intro__brand::after{animation:sheenX 1.1s var(--ease-traza) 1s both}
+  .intro__line{animation:lineX .7s var(--ease-casa) 1s forwards}
   .intro__tag{animation:fadeIn .6s ease 1.2s forwards}
 }
 
@@ -453,8 +574,8 @@ h1.title .ttl::after{content:"";position:absolute;inset:-2px;pointer-events:none
   background:linear-gradient(105deg,transparent 44%,rgba(61,220,151,.3) 50%,transparent 56%);transform:translateX(-150%)}
 html.js h1.title .ch{opacity:0}   /* oculto hasta que el intro se retira: el JS añade .lettersgo */
 @media (prefers-reduced-motion:no-preference){
-  html.js.lettersgo h1.title .ch{animation:cDrop .7s cubic-bezier(.2,.8,.2,1) both;animation-delay:calc(var(--i,0)*.055s)}
-  html.js.lettersgo h1.title .ttl::after{animation:sheenX 1.3s cubic-bezier(.3,.7,.2,1) .55s both}
+  html.js.lettersgo h1.title .ch{animation:cDrop .7s var(--ease-entra) both;animation-delay:calc(var(--i,0)*.055s)}
+  html.js.lettersgo h1.title .ttl::after{animation:sheenX 1.3s var(--ease-traza) .55s both}
 }
 
 /* — Foto de Pablo: anillo jade que se traza + entrada con muelle — */
@@ -465,8 +586,8 @@ html.js h1.title .ch{opacity:0}   /* oculto hasta que el intro se retira: el JS 
 .byline .ph .ring circle{fill:none;stroke:var(--jade);stroke-width:2;stroke-linecap:round;stroke-dasharray:1;stroke-dashoffset:0;opacity:.9}
 html.js .byline .ph .ring circle{stroke-dashoffset:1}   /* oculto hasta .lettersgo */
 @media (prefers-reduced-motion:no-preference){
-  html.js.lettersgo .byline .ph .ring circle{animation:ringDraw 1s cubic-bezier(.3,.7,.2,1) .5s both}
-  html.js.lettersgo .byline .ph img{animation:phPop .7s cubic-bezier(.2,.8,.2,1) .35s both}
+  html.js.lettersgo .byline .ph .ring circle{animation:ringDraw 1s var(--ease-traza) .5s both}
+  html.js.lettersgo .byline .ph img{animation:phPop .7s var(--ease-entra) .35s both}
 }
 @keyframes ringDraw{to{stroke-dashoffset:0}}
 @keyframes phPop{from{opacity:.001;transform:scale(.7)}to{opacity:1;transform:none}}
@@ -475,6 +596,12 @@ html.js .byline .ph .ring circle{stroke-dashoffset:1}   /* oculto hasta .letters
 html.js .r3d{backface-visibility:hidden}
 html.js .r3d.r3d--on{will-change:transform}
 html.js .reveal.r3d{transform:none}   /* el reveal aporta el fundido; el 3D lo pone el JS */
+/* Ley del dueño único: mientras una tarjeta bascula, su transform lo escribe el
+   JS en cada cuadro (place). La transición de .reveal era su segunda dueña y
+   hacía que la basculación PERSIGUIERA al scroll con 400 ms de retraso,
+   re-apuntando una transición viva en cada cuadro. El fundido (opacity) sigue
+   siendo del reveal, con su duración y su curva intactas. */
+html.js .reveal.r3d--on{transition-property:opacity}
 
 /* — Franja «un plato, sus macros» (SVG temático de nutrición) — */
 .plate{background:var(--bg-2);border-top:1px solid var(--line-soft);border-bottom:1px solid var(--line-soft)}
@@ -487,12 +614,12 @@ html.js .reveal.r3d{transform:none}   /* el reveal aporta el fundido; el 3D lo p
 html.js .plate .food{opacity:0}
 html.js .plate .seg{stroke-dashoffset:var(--l)}
 @media (prefers-reduced-motion:no-preference){
-  html.js .plate.in .food{animation:foodIn .7s cubic-bezier(.2,.8,.2,1) both}
+  html.js .plate.in .food{animation:foodIn .7s var(--ease-entra) both}
   html.js .plate.in .food.f1{animation-delay:.04s}
   html.js .plate.in .food.f2{animation-delay:.16s}
   html.js .plate.in .food.f3{animation-delay:.28s}
   html.js .plate.in .food.f4{animation-delay:.4s}
-  html.js .plate.in .seg{animation:segDraw 1s cubic-bezier(.3,.7,.2,1) both}
+  html.js .plate.in .seg{animation:segDraw 1s var(--ease-traza) both}
   html.js .plate.in .seg.s1{animation-delay:.5s}
   html.js .plate.in .seg.s2{animation-delay:.68s}
   html.js .plate.in .seg.s3{animation-delay:.86s}
@@ -511,7 +638,7 @@ html.js .plate .seg{stroke-dashoffset:var(--l)}
 .stat .spark{position:absolute;left:0;right:0;top:0;height:2px;transform:scaleX(0);transform-origin:0 50%;
   background:linear-gradient(90deg,var(--jade),transparent);pointer-events:none}
 @media (prefers-reduced-motion:no-preference){
-  html.js .stat.reveal.in .spark{animation:sparkIn 1.15s cubic-bezier(.32,.72,0,1) .12s both}
+  html.js .stat.reveal.in .spark{animation:sparkIn var(--t-5) var(--ease-casa) calc(var(--stagger) * 3) both}
 }
 @keyframes sparkIn{0%{transform:scaleX(0);opacity:1}60%{transform:scaleX(1);opacity:1}100%{transform:scaleX(1);opacity:.35}}
 
@@ -540,6 +667,12 @@ html.fx-fin .r3d{transform:none!important;will-change:auto!important}
 html.fx-fin .plate .food{opacity:1!important;transform:none!important}
 html.fx-fin .plate .seg{stroke-dashoffset:0!important}
 html.fx-fin .byline .ph .ring circle{stroke-dashoffset:0!important}
+/* Los dos huecos que cazó la captura de bot real (Chrome headless, reloj virtual congelado):
+   las letras del H1 (ocultas por html.js h1.title .ch) y la foto (oculta por el relleno hacia
+   atrás de phPop) solo tenían rescate en el bloque reduced-motion. Clones de esas reglas:
+   con las animaciones congeladas, la marca y la cara se ven igual. */
+html.fx-fin h1.title .ch{opacity:1!important;transform:none!important;animation:none!important}
+html.fx-fin .byline .ph img{opacity:1!important;transform:none!important;animation:none!important}
 </style>
 </head>
 <body>
@@ -573,7 +706,7 @@ html.fx-fin .byline .ph .ring circle{stroke-dashoffset:0!important}
       <p class="tagline">Nutrición y entrenamiento con base científica, en el móvil.</p>
 
       <div class="cta-row">
-        <a class="btn btn--ghost" href="index.html?k=lietor">Probar la app en vivo</a><!-- enlace mágico: quien venga del showcase (reclutadores) entra SIN la puerta de contraseña; el resto del mundo la sigue viendo -->
+        <a class="btn btn--primary" href="index.html">Probar la app en vivo</a><!-- enlace mágico: quien venga del showcase (reclutadores) entra SIN la puerta de contraseña; el resto del mundo la sigue viendo -->
       </div>
 
       <div class="byline">
@@ -619,20 +752,20 @@ html.fx-fin .byline .ph .ring circle{stroke-dashoffset:0!important}
       <div class="frow__text">
         <span class="feat-eyebrow">1.500 ejercicios</span>
         <h3>Te enseña dónde tiene que apretar</h3>
-        <p class="lead">Instrucciones paso a paso y una ilustración que pinta en <strong style="color:var(--ember)">rojo el músculo principal</strong> y en naranja los secundarios. De un vistazo sabes qué estás trabajando.</p>
+        <p class="lead">Los 1.500 llevan ilustración: pinta en <strong style="color:var(--ember)">rojo el músculo principal</strong> y en naranja los secundarios. 1.287 traen además las instrucciones paso a paso. De un vistazo sabes qué estás trabajando.</p>
       </div>
       <div class="frow__media">
-        <figure class="shot"><img src="assets/shots/exercise-anatomy.webp" alt="Ficha del ejercicio «Press banca» en JV Fitness: foto del movimiento, dos siluetas anatómicas (frente y espalda) con el pecho resaltado en rojo y los hombros en naranja, chips de músculo, y las instrucciones «Cómo se hace» paso a paso." width="720" height="1649" loading="lazy"></figure>
+        <figure class="shot shot--tall"><img src="assets/shots/exercise-anatomy.webp" alt="Ficha del ejercicio «Press banca» en JV Fitness: foto del movimiento, dos siluetas anatómicas (frente y espalda) con el pecho resaltado en rojo y los hombros en naranja, chips de músculo, y las instrucciones «Cómo se hace» paso a paso." width="720" height="1649" loading="lazy"></figure>
       </div>
     </div>
 
     <!-- Feature 3 · motor Jarvis -->
     <div class="frow reveal">
       <div class="frow__text">
-        <span class="feat-eyebrow">Asistente «Jarvis» · 329 fichas · 3.887 claves</span>
+        <span class="feat-eyebrow">Asistente «Jarvis» · 362 fichas · 6.269 claves</span>
         <!-- N2 · el titular se escribe con cursor: es el asistente contestando -->
-        <h3 data-fx="type">Pregunta y te cita la fuente</h3>
-        <p class="lead">Responde tus dudas de entreno y nutrición <strong>citando de dónde sale cada respuesta</strong>. Si no lo sabe, lo dice.</p>
+        <h3 data-fx="type">Pregunta, y no se lo inventa</h3>
+        <p class="lead">Motor determinista: cada respuesta sale de una ficha escrita a mano, no de un modelo que improvisa. <strong>229 de las 362 fichas dicen de qué Tema salen.</strong> Y si no lo sabe, lo dice.</p>
       </div>
       <div class="frow__media">
         <figure class="shot"><img src="assets/shots/jarvis-chat.webp" alt="Chat del motor Jarvis en JV Fitness: ante «¿cuánta proteína?» primero desambigua, y luego da una respuesta que cita la fuente «(← Tema 3, Morton 2018 / Bagheri 2024)», con preguntas de seguimiento encadenadas." width="720" height="906" loading="lazy"></figure>
@@ -652,29 +785,68 @@ html.fx-fin .byline .ph .ring circle{stroke-dashoffset:0!important}
         <p>Los vasos de agua y los miligramos de cafeína del día, en la misma pestaña.</p>
       </div>
     </div>
+  </div>
+</section>
 
-    <!-- Sub-sección: Rigor. Lo que un producto de fitness NO suele hacer. -->
-    <div class="sec-head reveal" style="margin-top:clamp(28px,4vw,42px)">
-      <p class="eyebrow">Rigor</p>
-      <h2>Sabe cuándo no sabe</h2>
+<!-- ================= ACTO 2 · SABE CUÁNDO NO SABE (era sub-sección de features) ================= -->
+<section class="rigor">
+  <div class="wrap">
+      <div class="sec-head reveal">
+        <p class="eyebrow">Rigor</p>
+        <h2>Sabe cuándo no sabe</h2>
+        <svg class="ul" viewBox="0 0 200 9" preserveAspectRatio="none" aria-hidden="true" focusable="false"><path pathLength="1" d="M2 6 C46 2, 104 8.4, 198 3.4"/></svg>
+        <p>La diferencia con otra app de fitness no es el color de los gráficos: es qué hace cuando el dato no da para una respuesta segura.</p>
+      </div>
+      <div class="spec-grid">
+        <div class="spec-card reveal">
+          <span class="feat-eyebrow">Calibgate</span><!-- sin número de versión a propósito: un número de versión tallado a mano se pudre solo; la versión en vivo la enseña la píldora del hero, que no puede mentir -->
+          <h3>No juzga por debajo de la báscula</h3>
+          <p>Si el cambio de peso de la semana es más pequeño que el error de tu báscula, el panel de calibración lo dice: <strong>no puede saberlo</strong>. No inventa un veredicto. Antes hablaba el 67,8&nbsp;% de las veces; ahora sólo cuando el dato lo aguanta.</p>
+        </div>
+        <div class="spec-card reveal d1">
+          <span class="feat-eyebrow">8 perfiles · 1.032 preguntas</span>
+          <h3>Responde adaptándose a quién pregunta</h3>
+          <p>El asistente se mide contra ocho perfiles de persona: principiante, calisténico, chica, mayor de 60, sin tiempo en casa, avanzado, vuelve tras años y come distinto. En el barrido de <strong>1.032 preguntas reales</strong>, los «no sé» bajaron del 33,5&nbsp;% al 22,8&nbsp;%. El que más gana es quien no tiene tiempo: del 52,3&nbsp;% al 26,9&nbsp;%.</p>
+        </div>
+        <div class="spec-card reveal d2">
+          <span class="feat-eyebrow">Auditoría de citas</span>
+          <h3>Cita el paper, o no cita</h3>
+          <p>El conocimiento sale de un fichero maestro de <strong>47 Temas con 134 PMID</strong>, y antes de entrar pasa una auditoría que comprueba cita por cita. Esa auditoría cazó un tamaño de efecto inventado que circulaba con un PMID auténtico (0,86 donde el paper dice 2,16) y dos citas invertidas. Lo que no supera la auditoría no entra.</p>
+        </div>
+      </div>
+  </div>
+</section>
+
+<!-- ================= STATS ================= -->
+<section class="stats">
+  <div class="wrap">
+    <div class="sec-head reveal" style="margin-bottom:clamp(24px,4vw,40px)">
+      <p class="eyebrow">En números</p>
+      <h2>Nada de esto es una maqueta</h2>
       <svg class="ul" viewBox="0 0 200 9" preserveAspectRatio="none" aria-hidden="true" focusable="false"><path pathLength="1" d="M2 6 C46 2, 104 8.4, 198 3.4"/></svg>
-      <p>La diferencia con otra app de fitness no es el color de los gráficos: es qué hace cuando el dato no da para una respuesta segura.</p>
     </div>
-    <div class="spec-grid">
-      <div class="spec-card reveal">
-        <span class="feat-eyebrow">Calibgate v0.60.1</span>
-        <h3>No juzga por debajo de la báscula</h3>
-        <p>Si el cambio de peso de la semana es más pequeño que el error de tu báscula, el panel de calibración lo dice: <strong>no puede saberlo</strong>. No inventa un veredicto. Antes hablaba el 67,8&nbsp;% de las veces; ahora sólo cuando el dato lo aguanta.</p>
+    <!-- N3 · odómetro. La cifra FINAL viaja en el HTML (quien no ejecute JS lee el
+         dato bueno, no un «0»); el contador la pone a cero justo al arrancar. -->
+    <div class="stat-grid">
+      <div class="stat reveal">
+        <div class="num" data-count="234976" data-format="mil">234.976</div>
+        <div class="lbl">alimentos de España, consultables sin cobertura</div>
       </div>
-      <div class="spec-card reveal d1">
-        <span class="feat-eyebrow">4 perfiles reales</span>
-        <h3>Responde adaptándose a quién pregunta</h3>
-        <p>El asistente se calibra contra cuatro perfiles: calisténico, principiante, chica y avanzado. En el censo interno de <strong>362 preguntas reales</strong>, los «no sé» bajaron del 33,5&nbsp;% al 24,5&nbsp;%. El perfil que más gana es «chica»: del 40&nbsp;% al 28&nbsp;% de NULL.</p>
+      <div class="stat reveal d1">
+        <div class="num" data-count="1500" data-format="mil">1.500</div>
+        <div class="lbl">ejercicios con guía anatómica</div>
       </div>
-      <div class="spec-card reveal d2">
-        <span class="feat-eyebrow">Auditoría de citas</span>
-        <h3>Cita el paper, o no cita</h3>
-        <p>Cada afirmación con número lleva su PMID. Cuando una cifra circula con un PMID auténtico pero no está en el paper, el sistema la <strong>marca</strong> (tachada, con el porqué al lado) en vez de repetirla. Es como cazamos hace tres días un umbral falso atribuido a un meta-análisis que en realidad no lo contiene.</p>
+      <div class="stat reveal d2">
+        <div class="num" data-count="362">362</div>
+        <div class="lbl">fichas del asistente, escritas a mano</div>
+      </div>
+      <div class="stat reveal">
+        <div class="num" data-count="109">109</div>
+        <div class="lbl">baterías de pruebas antes de cada publicación</div>
+      </div>
+      <div class="stat live reveal d1">
+        <div class="num"><span class="pulse" aria-hidden="true"></span><span data-live-num>···</span></div>
+        <div class="lbl">versión pública en vivo ahora mismo <span data-live-motor class="dim mono" style="font-size:.82rem"></span></div>
       </div>
     </div>
   </div>
@@ -735,38 +907,30 @@ html.fx-fin .byline .ph .ring circle{stroke-dashoffset:0!important}
   </div>
 </section>
 
-<!-- ================= STATS ================= -->
-<section class="stats">
+<!-- ================= ACTO 4 · EL PROCESO ================= -->
+<!-- Estrena DOS piezas que llevaban meses en el fichero sin un solo elemento que las usara:
+     · la caja de .wip (CSS 226-233): banda, rejilla, tarjeta con punto ámbar. Cero CSS nuevo.
+     · la escena .stage / .stage__node (CSS 263-264 y 382, JS 1101/1127/1172/1309).
+     Por qué <ul>/<li> y no .spec-card: el JS de la línea 1309 escribe style.transform inline en
+     .frow, .spec-card, .stat y .stage. Un style inline gana a una transición CSS, así que un
+     .stage__node que además fuera .spec-card tendría DOS dueños de transform y el de CSS no se
+     pintaría jamás. Aquí el contenedor (.stage) lo bascula el JS y los nodos los anima el CSS:
+     un dueño por propiedad y por elemento.
+     El <span> de dentro de cada <li> es obligatorio: .wip li es flex y su ::before es el punto. -->
+<section class="wip">
   <div class="wrap">
-    <div class="sec-head reveal" style="margin-bottom:clamp(24px,4vw,40px)">
-      <p class="eyebrow">En números</p>
-      <h2>Nada de esto es una maqueta</h2>
+    <div class="sec-head reveal">
+      <p class="eyebrow">Cómo trabajo</p>
+      <h2>Lo que hay detrás de que esto siga en pie</h2>
       <svg class="ul" viewBox="0 0 200 9" preserveAspectRatio="none" aria-hidden="true" focusable="false"><path pathLength="1" d="M2 6 C46 2, 104 8.4, 198 3.4"/></svg>
+      <p>Que la app funcione hoy no dice gran cosa. Esto es lo que tengo montado para que siga funcionando mañana sin que yo esté delante.</p>
     </div>
-    <!-- N3 · odómetro. La cifra FINAL viaja en el HTML (quien no ejecute JS lee el
-         dato bueno, no un «0»); el contador la pone a cero justo al arrancar. -->
-    <div class="stat-grid">
-      <div class="stat reveal">
-        <div class="num" data-count="234976" data-format="mil">234.976</div>
-        <div class="lbl">alimentos de España, consultables sin cobertura</div>
-      </div>
-      <div class="stat reveal d1">
-        <div class="num" data-count="1500" data-format="mil">1.500</div>
-        <div class="lbl">ejercicios con guía anatómica</div>
-      </div>
-      <div class="stat reveal d2">
-        <div class="num" data-count="329">329</div>
-        <div class="lbl">fichas del asistente, cada una con su fuente</div>
-      </div>
-      <div class="stat reveal">
-        <div class="num" data-count="95">95</div>
-        <div class="lbl">baterías de pruebas antes de cada publicación</div>
-      </div>
-      <div class="stat live reveal d1">
-        <div class="num"><span class="pulse" aria-hidden="true"></span><span data-live-num>···</span></div>
-        <div class="lbl">versión pública en vivo ahora mismo <span data-live-motor class="dim mono" style="font-size:.82rem"></span></div>
-      </div>
-    </div>
+    <ul class="stage">
+      <li class="stage__node"><span><b>Cada pieza grande, su rama y su fusión.</b> Llevo 221 fusiones registradas en el taller, hechas de una en una para que cualquiera se pueda deshacer sola.</span></li>
+      <li class="stage__node"><span><b>Una compuerta que puede decirme que no.</b> Antes de publicar corro la batería entera de pruebas. Está escrita para poder tumbar mi propio trabajo: si una sola falla, devuelve error y ese cambio no sale.</span></li>
+      <li class="stage__node"><span><b>Un robot publica por mí.</b> El taller es privado. Un robot recoge el código, lo tritura y publica solo el resultado. Antes de soltarlo comprueba cuatro cosas y aborta si falla una: que no viaje ninguna contraseña, que no viaje ninguna clave, que el fichero no salga vacío y que la política de seguridad siga puesta.</span></li>
+      <li class="stage__node"><span><b>Un vigía lo mira desde fuera.</b> Cada mañana, en los servidores de GitHub y con mi ordenador apagado, un agente de solo lectura y sin ninguna clave abre la web publicada y comprueba que responde, que la versión que sirve es la del repositorio y que no falta ninguna pieza. Si algo falla, sale rojo y me llega el aviso: <a class="jade" style="border-bottom:1px dashed currentColor" href="https://github.com/pablolietor22/jv-fitness/actions/workflows/vigia-despliegue.yml" target="_blank" rel="noopener">ni un rojo desde el 28 de julio</a>.</span></li>
+    </ul>
   </div>
 </section>
 
@@ -779,23 +943,32 @@ html.fx-fin .byline .ph .ring circle{stroke-dashoffset:0!important}
       <svg class="ul" viewBox="0 0 200 9" preserveAspectRatio="none" aria-hidden="true" focusable="false"><path pathLength="1" d="M2 6 C46 2, 104 8.4, 198 3.4"/></svg>
       <p>El motor determinista es la base y no se mueve: cada respuesta seguirá citando su fuente. Todo esto se construye <strong>encima</strong>, no en su lugar.</p>
     </div>
+    <!-- ACTO 5 · la hoja de ruta, partida en DOS estados. Lo construido manda sobre lo
+         prometido, y por eso va a ancho completo: sin grid-template-columns:1fr, a partir
+         de 760 px la única tarjeta construida ocuparía un tercio y quedaría huérfana.
+         .eyebrow y .dim ya existen: cero CSS nuevo. -->
+    <p class="eyebrow" style="margin-top:clamp(24px,4vw,36px)">Construido, esperando prueba en móvil real</p>
+    <div class="spec-grid" style="grid-template-columns:1fr">
+      <div class="spec-card reveal">
+        <span class="feat-eyebrow">Health Connect</span>
+        <h3>Pasos y actividad, solos</h3>
+        <p>Ya está cableado con Health Connect: el móvil cuenta los pasos y entran en el plan sin que apuntes nada. Queda probarlo en un teléfono de verdad. Menos fricción, más constancia, que es lo que de verdad mueve la aguja.</p>
+      </div>
+    </div>
+
+    <p class="eyebrow dim" style="margin-top:clamp(24px,4vw,36px)">Sin empezar</p>
     <div class="spec-grid">
       <div class="spec-card reveal">
-        <span class="feat-eyebrow">Sin teclear</span>
-        <h3>Pasos y actividad, solos</h3>
-        <p>El móvil cuenta los pasos y entran en el plan sin que apuntes nada (Health Connect / motor de pasos nativo). Menos fricción, más constancia, que es lo que de verdad mueve la aguja.</p>
-      </div>
-      <div class="spec-card reveal d1">
         <span class="feat-eyebrow">Voz · IA local</span>
         <h3>Habla con el coach en el momento</h3>
         <p>Preguntar en voz alta y que responda al instante, con un modelo de IA <strong>abierto, gratuito y corriendo en tu propio móvil</strong>: privado por diseño, sin suscripción, y con el motor de confianza citando la fuente debajo de cada respuesta.</p>
       </div>
-      <div class="spec-card reveal d2">
+      <div class="spec-card reveal d1">
         <span class="feat-eyebrow">IA viva</span>
         <h3>Un plan que se adapta solo</h3>
         <p>La IA cruza lo que <strong>comes</strong> y lo que <strong>entrenas</strong>, aprende de cómo responde tu cuerpo de verdad y ajusta el plan. La parte creativa la pone la IA; el cómputo y la cita del artículo siguen siendo deterministas.</p>
       </div>
-      <div class="spec-card reveal">
+      <div class="spec-card reveal d2">
         <span class="feat-eyebrow">El destino</span>
         <h3>Un sistema que lo entrelaza todo</h3>
         <p>Un CRM que conecta todos tus ámbitos (comida, entreno, descanso, hábitos), encuentra las relaciones entre ellos y las usa para hacerte mejorar en <strong>todos a la vez</strong>. Ahí es donde va JV Fitness: IA y datos propios, trabajando juntos.</p>
@@ -811,15 +984,16 @@ html.fx-fin .byline .ph .ring circle{stroke-dashoffset:0!important}
   <div class="wrap">
     <div class="sec-head reveal" style="margin-bottom:1.6rem">
       <p class="eyebrow">Míralo tú mismo</p>
-      <h2>El código está abierto</h2>
+      <h2>El código está abierto y se vigila solo</h2>
       <svg class="ul" viewBox="0 0 200 9" preserveAspectRatio="none" aria-hidden="true" focusable="false"><path pathLength="1" d="M2 6 C46 2, 104 8.4, 198 3.4"/></svg>
     </div>
     <div class="foot__cta reveal">
-      <a class="foot__try" href="index.html?k=lietor">o probar la app en vivo</a>
+      <a class="btn btn--code" href="https://github.com/pablolietor22/jv-fitness" target="_blank" rel="noopener">Ver el repositorio</a>
+      <a class="foot__try" href="index.html">o probar la app en vivo</a>
     </div>
 
     <div class="foot__meta reveal">
-      <div class="honest">En desarrollo casi a diario · uso personal + testers externos · sin cifras infladas.</div>
+      <div class="honest">En desarrollo casi a diario · uso personal + testers externos · sin cifras infladas. Abierto: este escaparate, la app publicada y <a href="https://github.com/pablolietor22/jv-fitness/actions/workflows/vigia-despliegue.yml" target="_blank" rel="noopener">el vigía que comprueba cada día que sigue en pie</a> (26 pases, 26 verdes). El taller donde se desarrolla es privado.</div>
       <div>Contacto: <a class="mail jv-email" href="#">correo</a> · <a href="privacidad.html">Privacidad</a></div>
       <div class="foot__sig">JV Fitness · Pablo Andrés Martínez · 2026</div>
     </div>
@@ -888,6 +1062,14 @@ html.fx-fin .byline .ph .ring circle{stroke-dashoffset:0!important}
     document.querySelectorAll('.num[data-count]').forEach(function(el){
       el.setAttribute('data-done','1');
       el.textContent = valorFinal(el);
+    });
+    /* Los gramos del plato son del módulo ULTRA, pero congelarlos es asunto de quien
+       congela, y tiene que ser SÍNCRONO: reproducido en captura de bot real que el bot
+       deja de servir cuadros de rAF y el plato salía con 40/53/16 g en vez de 45/60/18.
+       El bucle del módulo ULTRA mira html.fx-fin y escribe este mismo valor final:
+       dos escritores coordinados en el mismo número, nunca en desacuerdo. */
+    document.querySelectorAll('.plate [data-g]').forEach(function(el){
+      el.textContent = el.getAttribute('data-g');
     });
   }
   function runCounter(el){
@@ -1101,10 +1283,15 @@ html.fx-fin .byline .ph .ring circle{stroke-dashoffset:0!important}
   var stages  = Array.prototype.slice.call(document.querySelectorAll('.stage'));
   var fxio = null;
 
+  /* Asienta lo narrativo YA EN MARCHA: restituye el texto real y destruye las capas
+     fantasma. No toca fxio: lo aún no visto conserva su efecto. */
+  function fxAsienta(){
+    while(finales.length){ try{ finales.pop()(); }catch(err){} }
+  }
   /* Cierra de golpe todo lo narrativo dejándolo en su estado final y quieto. */
   function fxCerrar(){
     if(fxio){ fxio.disconnect(); fxio = null; }
-    while(finales.length){ try{ finales.pop()(); }catch(err){} }
+    fxAsienta();
   }
 
   if(reduce || !('IntersectionObserver' in window)){
@@ -1116,15 +1303,48 @@ html.fx-fin .byline .ph .ring circle{stroke-dashoffset:0!important}
     /* Revelado (fundido de opacidad): puede adelantarse un 18% bajo el pliegue
        — un fundido que llega hecho no pierde nada. Solo eso: los contadores y
        los recortes NO cuelgan de aquí (animarían sin ser vistos). */
+
+    /* will-change es un préstamo, no un regalo: se pide para el movimiento y se
+       devuelve al acabarlo. Sin esto, los 25 .reveal se quedan con capa propia
+       de compositor para siempre, que es de lo que avisa la documentación.
+       Los dos guardas no son adorno: transitionend BURBUJEA desde los hijos, y
+       dentro de un .reveal hay hijos que transicionan (el trazo del subrayado,
+       el recorte de la captura, el rotulador). Sin filtrar, el primer hijo que
+       acabase soltaría la capa del padre a media entrada.
+       LIMITACIÓN DECLARADA: si la transición nunca corre (html.fx-fin y @media
+       print anulan las transiciones), transitionend no llega y el oyente se
+       queda puesto. En esas dos rutas la página se captura y se descarta, así
+       que se acepta a propósito antes que poner 25 temporizadores de red. */
+    function soltarCapa(el){
+      function suelta(ev){
+        if(ev.target !== el || ev.propertyName !== 'opacity') return;
+        el.removeEventListener('transitionend', suelta);
+        el.style.willChange = 'auto';
+      }
+      el.addEventListener('transitionend', suelta);
+    }
     var io = new IntersectionObserver(function(entries){
       entries.forEach(function(e){
         if(!e.isIntersecting) return;
         e.target.classList.add('in');
         io.unobserve(e.target);
+        soltarCapa(e.target);
       });
     }, { threshold:0, rootMargin:'0px 0px 18% 0px' });
     reveals.forEach(function(el){ io.observe(el); });
     stages.forEach(function(el){ io.observe(el); });
+
+    /* Puerta de visibilidad de los dos latidos ambientales (ring en la píldora
+       EN VIVO, beat en la tarjeta de versión). Este observador NO hace unobserve:
+       tiene que seguir vigilando la ida Y la vuelta. Un observador quieto no
+       pide cuadros ni gasta. */
+    var latidos = document.querySelectorAll('.livebar, .stat.live');
+    if(latidos.length){
+      var lio = new IntersectionObserver(function(entries){
+        entries.forEach(function(e){ e.target.classList.toggle('vis-off', !e.isIntersecting); });
+      }, { threshold: 0 });
+      latidos.forEach(function(el){ lio.observe(el); });
+    }
 
     /* N3 (odómetro) + N5 (recorte): observador PROPIO, umbral .35 y SIN
        rootMargin — estos dos narran, y solo arrancan con el elemento DE VERDAD
@@ -1163,11 +1383,15 @@ html.fx-fin .byline .ph .ring circle{stroke-dashoffset:0!important}
        nada se anima a ciegas). El primer gesto humano (rueda, tecla, toque,
        ratón, scroll) CANCELA el temporizador: para una persona, lo que aparece
        lo decide su scroll, nunca un reloj.
-       OJO: NO llama a fxCerrar — fxio sigue vivo, así que si un humano llega
-       tarde, N1/N2/N6 aún cuentan su historia al entrar en pantalla. */
+       OJO: NO llama a fxCerrar (fxio sigue vivo, así que si un humano llega
+       tarde, N1/N2/N6 aún cuentan su historia al entrar en pantalla), pero SÍ
+       asienta lo YA en marcha con fxAsienta: reproducido en captura de bot real
+       que sin esto la máquina de escribir salía congelada a mitad de frase
+       («Pregunta, y n» + cursor), porque el bot deja de servir cuadros de rAF. */
     function revealAllEstatico(){
       root.classList.add('fx-fin');
       congelarContadores();
+      fxAsienta();
       reveals.forEach(function(el){ el.classList.add('in'); });
       stages.forEach(function(el){ el.classList.add('in'); });
       document.querySelectorAll('.shot').forEach(function(el){ el.classList.add('shot--vis'); });
@@ -1197,8 +1421,27 @@ html.fx-fin .byline .ph .ring circle{stroke-dashoffset:0!important}
   if(!host || !c) return;
   var x = c.getContext('2d'), W, H, dpr, parts = [], mouse = {x:-999,y:-999}, raf, vivo = true;
 
+  /* Un solo dueño de «hay que dibujar»: manda la pestaña Y manda la pantalla.
+     Antes solo mandaba la pestaña, así que el lienzo seguía pintando con el hero
+     6.372 px fuera de la vista. Un observador quieto no cuesta nada; un lienzo
+     que repinta 60 veces por segundo cuesta 42,6 % de un núcleo. */
+  var enPantalla = true, pestanaViva = true, last = 0;
+  function debeCorrer(){ return enPantalla && pestanaViva; }
+  function arranca(){
+    if(vivo || !debeCorrer()) return;
+    vivo = true; last = 0;                 /* last a cero: al despertar no hay salto */
+    raf = requestAnimationFrame(frame);
+  }
+  function para(){
+    if(!vivo) return;
+    vivo = false; if(raf) cancelAnimationFrame(raf); raf = 0;
+  }
+
   function size(){
-    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    /* Tope 1,5 y no 2: higiene de área, no palanca (el verificador del banco
+       tumbó que esto mueva la CPU en este portátil). A densidad 3 de móvil sí
+       importa, y no cuesta nada. */
+    dpr = Math.min(window.devicePixelRatio || 1, 1.5);
     var r = host.getBoundingClientRect();
     // Robustez: si el layout aún no da ancho (panel colapsado / carga temprana),
     // reintenta al siguiente frame en vez de quedarse con un canvas de 1px.
@@ -1214,11 +1457,19 @@ html.fx-fin .byline .ph .ring circle{stroke-dashoffset:0!important}
       r:(Math.random()*1.5+.5)*dpr
     });
   }
-  function frame(){
+  function frame(t){
+    raf = 0;
+    /* Reloj por TIEMPO, no por fotogramas. k = cuántos cuadros de 60 Hz han
+       pasado de verdad, así que a 30 Hz las partículas van a la misma velocidad
+       de siempre en vez de a la mitad. Tope de 50 ms (3 cuadros): al despertar
+       tras un rato parado, sin tope las partículas darían un salto. */
+    var k = 1;
+    if(last && t){ var dt = t - last; if(dt > 50) dt = 50; k = dt / 16.667; }
+    if(t) last = t;
     x.clearRect(0,0,W,H);
     var LINK = 128*dpr, MDIST = 170*dpr;
     for(var i=0;i<parts.length;i++){
-      var p = parts[i]; p.x += p.vx; p.y += p.vy;
+      var p = parts[i]; p.x += p.vx * k; p.y += p.vy * k;
       if(p.x<0||p.x>W) p.vx*=-1; if(p.y<0||p.y>H) p.vy*=-1;
       x.beginPath(); x.arc(p.x,p.y,p.r,0,6.2832); x.fillStyle='rgba(61,220,151,.6)'; x.fill();
       for(var j=i+1;j<parts.length;j++){
@@ -1243,9 +1494,20 @@ html.fx-fin .byline .ph .ring circle{stroke-dashoffset:0!important}
   host.addEventListener('mousemove', localMouse, {passive:true});
   host.addEventListener('mouseleave', function(){ mouse.x=-999; mouse.y=-999; });
   document.addEventListener('visibilitychange', function(){
-    if(document.hidden){ vivo=false; cancelAnimationFrame(raf); }
-    else if(!vivo){ vivo=true; raf=requestAnimationFrame(frame); }
+    pestanaViva = !document.hidden;
+    if(pestanaViva) arranca(); else para();
   });
+
+  /* Puerta de visibilidad. Se observa el HOST (.hero), no el lienzo: el lienzo
+     lleva una máscara, y el propio fichero ya avisa en N5 de que observar un
+     elemento recortado es «un cerrojo sin llave». El umbral 0 hace que despierte
+     en cuanto entra 1 px, o sea en el cuadro siguiente. */
+  if('IntersectionObserver' in window){
+    new IntersectionObserver(function(es){
+      enPantalla = es[es.length-1].isIntersecting;
+      if(enPantalla) arranca(); else para();
+    }, { threshold: 0 }).observe(host);
+  }
 })();
 
 /* ═══════════════ CAPA ULTRA · scroll-3D · parallax · progreso · plato ═══════════════
@@ -1267,7 +1529,10 @@ html.fx-fin .byline .ph .ring circle{stroke-dashoffset:0!important}
       if(!intro) return;
       var n = intro; intro = null;
       root.classList.add('lettersgo');   /* el hero se ensambla cuando el intro se va */
-      n.style.transition = 'opacity .5s ease, transform .5s ease';
+      /* curva del sistema (--ease-sale: es la retirada del telón), no la 'ease' genérica.
+         El .5s se queda: vive en el contrato de la cadencia compuesta y la red de 600 ms
+         de abajo lo cubre. var() en style en línea resuelve contra :root sin problema. */
+      n.style.transition = 'opacity .5s var(--ease-sale), transform .5s var(--ease-sale)';
       n.style.opacity = '0';
       n.style.transform = 'translateY(-4%) scale(1.04)';
       n.style.pointerEvents = 'none';
@@ -1276,10 +1541,16 @@ html.fx-fin .byline .ph .ring circle{stroke-dashoffset:0!important}
     intro.addEventListener('animationend', function(e){ if(e && e.animationName === 'introOut') quitar(); });
     setTimeout(quitar, 3200);   /* red dura: pase lo que pase, el intro se va */
     if(!reduce){
-      var saltar = function(){ quitar(); off(); };
+      var saltado = false;
+      var saltar = function(){ saltado = true; quitar(); off(); };
       var off = function(){ ['pointerdown','keydown','wheel','touchstart'].forEach(function(g){ window.removeEventListener(g, saltar); }); };
-      /* un margen para ver arrancar el ensamblaje antes de permitir el salto */
-      setTimeout(function(){ ['pointerdown','keydown','wheel','touchstart'].forEach(function(g){ window.addEventListener(g, saltar, { passive:true }); }); }, 750);
+      /* El teclado se arma desde el instante 0: el telón (z-index 200) es opaco pero no
+         atrapa el foco, y un Tab+Enter muy temprano alcanzaría un enlace de detrás sin
+         verlo. El primer keydown retira el telón y el lector ve dónde está su foco.
+         El margen de 750 ms queda SOLO para rueda y puntero (estético: ver arrancar
+         el ensamblaje antes de permitir el salto). */
+      window.addEventListener('keydown', saltar, { passive:true });
+      setTimeout(function(){ if(saltado) return; ['pointerdown','wheel','touchstart'].forEach(function(g){ window.addEventListener(g, saltar, { passive:true }); }); }, 750);
     } else {
       quitar();   /* con reduced-motion el CSS ya lo oculta; se retira por limpieza */
     }
@@ -1290,7 +1561,20 @@ html.fx-fin .byline .ph .ring circle{stroke-dashoffset:0!important}
   if(reduce) return;   /* nada de scroll-3D / parallax con movimiento reducido */
 
   var prog = document.querySelector('.uprog');
+  /* Ley del dueño único. Si el navegador sabe mover la barra él solo (CSS, en el
+     compositor), el JS se aparta: si no, el bucle seguiría midiendo y escribiendo
+     un transform que la animación CSS DEROGA EN SILENCIO. Y de paso desaparece
+     del bucle de scroll la lectura de scrollHeight de docH(), que es la única
+     lectura de geometría del bucle que se puede quitar sin tocar la basculación. */
+  if(window.CSS && CSS.supports && CSS.supports('animation-timeline','scroll()')) prog = null;
   var vh = window.innerHeight || document.documentElement.clientHeight;
+  /* Alto del hero, leído UNA vez (y en cada resize, donde leer geometría ya es
+     legal). No se lee dentro del bucle de scroll: la prohibición E.6 nº6 es
+     precisamente esa, y está medida (1,167 ms por llamada leyendo-escribiendo
+     contra 0,124 solo leyendo). */
+  var heroEl = document.querySelector('.hero');
+  var heroH = heroEl ? heroEl.offsetHeight : 0;
+  var parPintado = true;
   var MAX = 11;                 /* grados máximos de basculación */
   var actives = [];             /* elementos 3D actualmente en el viewport */
 
@@ -1341,15 +1625,23 @@ html.fx-fin .byline .ph .ring circle{stroke-dashoffset:0!important}
     var y = window.pageYOffset || document.documentElement.scrollTop || 0;
     if(prog){ var m = docH() - vh; prog.style.transform = 'scaleX(' + (m > 0 ? Math.min(y/m, 1) : 0).toFixed(4) + ')'; }
     for(var i=0;i<actives.length;i++) place(actives[i]);
-    for(var j=0;j<pars.length;j++){
-      var factor = parseFloat(pars[j].getAttribute('data-par')) || 0;
-      pars[j].style.transform = 'translate3d(0,' + (y * factor).toFixed(1) + 'px,0)';
+    /* El hero tiene overflow:hidden y mide heroH px. Pasado ese punto el
+       parallax escribía transformaciones que nadie puede ver, en cada cuadro,
+       durante el 92 % del recorrido. Se escribe un último cuadro al salir (para
+       dejarlo en su sitio) y se corta hasta que el hero vuelve. */
+    var verPar = y < heroH;
+    if(verPar || parPintado){
+      parPintado = verPar;
+      for(var j=0;j<pars.length;j++){
+        var factor = parseFloat(pars[j].getAttribute('data-par')) || 0;
+        pars[j].style.transform = 'translate3d(0,' + (y * factor).toFixed(1) + 'px,0)';
+      }
     }
   }
   var ticking = false;
   function onScroll(){ if(!ticking){ ticking = true; requestAnimationFrame(function(){ update(); ticking = false; }); } }
   window.addEventListener('scroll', onScroll, { passive:true });
-  window.addEventListener('resize', function(){ vh = window.innerHeight || document.documentElement.clientHeight; update(); }, { passive:true });
+  window.addEventListener('resize', function(){ vh = window.innerHeight || document.documentElement.clientHeight; heroH = heroEl ? heroEl.offsetHeight : 0; update(); }, { passive:true });
 
   /* ---------- Plato: se monta al entrar; los gramos hacen count-up ---------- */
   var plate = document.querySelector('.plate');
@@ -1360,6 +1652,10 @@ html.fx-fin .byline .ph .ring circle{stroke-dashoffset:0!important}
       document.querySelectorAll('.plate [data-g]').forEach(function(el){
         var to = parseInt(el.getAttribute('data-g'), 10) || 0, t0 = null, dur = 1100;
         function step(ts){
+          /* html.fx-fin es la señal entre módulos (la pone revealAllEstatico, que ya
+             escribió el valor final): aquí el gramo se clava en ese MISMO valor y el
+             bucle muere, para que nunca haya dos escritores en desacuerdo. */
+          if(root.classList.contains('fx-fin')){ el.textContent = to; return; }
           if(t0 === null) t0 = ts;
           var p = Math.min((ts - t0)/dur, 1), e = 1 - Math.pow(1-p, 3);
           el.textContent = Math.round(to * e);
