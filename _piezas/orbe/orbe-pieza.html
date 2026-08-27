@@ -1,0 +1,481 @@
+<!-- =====================================================================
+     ORBE JARVIS v3 . PIEZA PORTABLE
+     =====================================================================
+     Que es: el orbe del Cerebro de JV Fitness, el mismo de la app, con DOS
+     capas nuevas que solo salen cuando esta PENSANDO.
+
+     Se pega tal cual en el escaparate o dentro de la app. El molde vive en
+     un <template>, asi que al pegar esto NO aparece ningun orbe suelto:
+     solo aparece donde tu lo clones.
+
+     LAS TRES PIEZAS DE ESTE FICHERO
+       1) <style>    el CSS (bloque A: el orbe literal de la app; bloque B: lo nuevo)
+       2) <template> el molde del marcado
+       3) <script>   dos funciones: crear un orbe y cambiarle de estado
+
+     SI LO PEGAS DENTRO DE LA APP (app/jv-fitness-mvp.html):
+       BORRA el BLOQUE A del <style>. El .cb-orb ya existe alli (linea 407)
+       y duplicarlo no aporta nada. Todo lo demas se pega igual.
+     ===================================================================== -->
+
+<style>
+/* ---------------------------------------------------------------------
+   BLOQUE A . EL ORBE, COPIA LITERAL DE LA APP
+   Fuente: C:\dev\jvfitness-dev\app\jv-fitness-mvp.html, lineas 407 a 421.
+   NO se ha tocado ni un valor. Si algun dia cambia en la app, se recopia.
+   (Dentro de la app este bloque SOBRA: borralo.)
+   --------------------------------------------------------------------- */
+.cb-orb{position:relative;flex:none;border-radius:50%;
+  background:radial-gradient(circle at 35% 28%, #d6ffee 0%, #6fe9b8 22%, #3DDC97 42%, #1c8f66 64%, #0c4331 84%, #072a20 100%);
+  box-shadow:0 0 44px 6px rgba(61,220,151,.30), 0 0 92px 24px rgba(255,106,61,.22),
+    inset -6px -9px 26px rgba(0,0,0,.55), inset 7px 9px 22px rgba(255,255,255,.28);
+  animation:cbbreath 6s ease-in-out infinite}
+.cb-orb::before{content:"";position:absolute;inset:8%;border-radius:50%;
+  background:radial-gradient(circle at 50% 55%, rgba(61,220,151,.6) 0%, rgba(61,220,151,0) 62%);
+  mix-blend-mode:screen;animation:cbcore 6s ease-in-out infinite}
+.cb-orb::after{content:"";position:absolute;inset:0;border-radius:50%;
+  background:radial-gradient(circle at 32% 26%, rgba(255,255,255,.5) 0%, rgba(255,255,255,0) 30%);
+  mix-blend-mode:screen;animation:cbsheen 11s linear infinite}
+.cb-orb-lg{width:132px;height:132px}
+.cb-orb-sm{width:26px;height:26px;animation-duration:5s;
+  box-shadow:0 0 10px 1px rgba(61,220,151,.5), 0 0 16px 4px rgba(255,106,61,.28),
+    inset -2px -3px 7px rgba(0,0,0,.5), inset 2px 3px 6px rgba(255,255,255,.3)}
+@keyframes cbbreath{0%,100%{transform:scale(1)}50%{transform:scale(1.055)}}
+@keyframes cbcore{0%,100%{opacity:.4;transform:scale(.9)}50%{opacity:.9;transform:scale(1.06)}}
+@keyframes cbsheen{0%{transform:rotate(0)}100%{transform:rotate(360deg)}}
+
+
+/* =====================================================================
+   BLOQUE B . LO NUEVO: LAS DOS CAPAS DEL "PENSANDO"
+   =====================================================================
+
+   GEOMETRIA, para que las dos capas NO se peleen por los mismos pixeles.
+   Ese fue el fallo medido de la v2: los anillos tapaban el resplandor.
+
+   El envoltorio mide lo mismo que el orbe. Las dos capas se salen de el
+   con inset:-80%, o sea ocupan 2,6 veces el orbe (132px pasa a 343,2px),
+   pero NO empujan nada del layout porque van en position:absolute.
+
+   Repartidas en ese lienzo (0% es el centro, 100% es el borde del lienzo):
+     . el orbe            ocupa del 0% al 38,5%
+     . el RESPLANDOR      vive del 22% al 76%     (pegado al orbe, lo enciende)
+     . los ANILLOS        viajan del 38,5% al 90% (el aire de fuera)
+   Se solapan poco a proposito: el resplandor manda cerca, los anillos
+   acompanan lejos. No se pelean por el mismo pixel.
+
+   ORDEN DE PINTADO, la otra mitad del arreglo:
+     z-index 1  anillos    (DETRAS del orbe: no pueden taparlo jamas)
+     z-index 2  el orbe
+     z-index 3  resplandor (ENCIMA, con mix-blend-mode:screen)
+   El screen es luz aditiva: no tapa, enciende. Es lo mismo que hace
+   Gargantua con su .latido-horizonte (z-index 2, encima de la foto).
+   --------------------------------------------------------------------- */
+
+/* El envoltorio. z-index:0 crea un grupo propio: asi el screen del
+   resplandor se mezcla con el orbe (que esta dentro) y los z-index de las
+   capas NO se escapan al resto de la pagina donde pegues esto.
+
+   inline-flex NO es un capricho, es un bug medido: .cb-orb es un <span>, y
+   un span es inline, o sea que se salta width y height. En la app funciona
+   porque vive dentro de un contenedor flex (.cb-hero y .cb-headorb). Con
+   inline-block el envoltorio se quedaba en 0x0 pixeles y no se veia nada.
+   Con inline-flex el orbe vuelve a ser un hijo flex y respeta sus 132px. */
+.jv-orbe{position:relative;z-index:0;display:inline-flex;flex:none;line-height:0}
+.jv-orbe > .cb-orb{z-index:2}
+
+
+/* ---------------------------------------------------------------------
+   CAPA 1 . EL RESPLANDOR (la gramatica de Gargantua)
+   ---------------------------------------------------------------------
+   HONESTIDAD SOBRE LA HERENCIA:
+     . Los TIEMPOS y las OPACIDADES son los de Gargantua, calcados de
+       showcase-jarvis-es/assets/styles.css (lineas 847 a 864):
+       periodos 5,3s y 7,9s (7,9/5,3 = 1,49, no son multiplos, por eso
+       respira en vez de marcar el compas como un metronomo), ease-in-out,
+       alternate, opacidad .22 a .37 y .16 a .29, escala 1,5% y 1,2%.
+     . La GEOMETRIA es distinta y tiene que serlo: alli la luz enciende un
+       disco de acrecion (una elipse achatada); aqui enciende una ESFERA,
+       asi que el degradado es un anillo centrado en el orbe. Se dice
+       claro: se copia el pulso, no la forma.
+
+   Por que el centro va a alfa 0 hasta el 22%: para no lavar la cara del
+   orbe. El brillo especular y el sombreado 3D se quedan intactos; lo que
+   se enciende es el borde oscuro y el aire de alrededor.
+
+   El mix-blend-mode va en el PADRE (.jv-orbe__luz), no en los pseudos.
+   Motivo tecnico, y es justo la trampa en la que cayo la v2: este elemento
+   lleva opacity animada para entrar y salir, y opacity crea un grupo
+   aislado. Si el screen estuviera en los hijos, se mezclarian solo entre
+   ellos dentro del grupo y la luz dejaria de ser aditiva sobre el orbe.
+   --------------------------------------------------------------------- */
+.jv-orbe__luz{
+  position:absolute;inset:-80%;z-index:3;pointer-events:none;
+  border-radius:50%;
+  mix-blend-mode:screen;
+  opacity:0;                                             /* reposo: no existe */
+  transition:opacity 760ms cubic-bezier(.25,.1,.25,1);   /* la SALIDA, lenta */
+  will-change:opacity;
+}
+.jv-orbe__luz::before,
+.jv-orbe__luz::after{
+  content:"";position:absolute;inset:0;border-radius:50%;
+  animation-timing-function:ease-in-out;
+  animation-iteration-count:infinite;
+  animation-direction:alternate;
+  animation-play-state:paused;                           /* reposo: quieto */
+  will-change:opacity,transform;
+}
+/* Capa A, jade: el halo cercano. Pico justo en el borde del orbe (40%). */
+.jv-orbe__luz::before{
+  background:radial-gradient(circle closest-side,
+    rgba(61,220,151,0) 22%, rgba(61,220,151,.62) 42%,
+    rgba(61,220,151,.32) 56%, rgba(61,220,151,0) 78%);
+  opacity:.22;
+  animation-name:jvorbe-latido-a;
+  animation-duration:5.3s;
+  animation-delay:-2.65s;   /* medio periodo en negativo: arranca en su valor
+                               MEDIO, no en un extremo, asi no da un salto al
+                               aparecer. Es el mismo truco de Gargantua. */
+}
+/* Capa B, ember: el halo ancho. Va mas flojo porque cubre mucha mas
+   superficie. Mismo criterio que la capa B de Gargantua. */
+.jv-orbe__luz::after{
+  background:radial-gradient(circle closest-side,
+    rgba(255,106,61,0) 32%, rgba(255,106,61,.26) 52%,
+    rgba(255,106,61,.12) 66%, rgba(255,106,61,0) 82%);
+  opacity:.16;
+  animation-name:jvorbe-latido-b;
+  animation-duration:7.9s;
+  animation-delay:-3.95s;
+}
+/* Valores calcados de latido-horizonte-a y latido-horizonte-b. */
+@keyframes jvorbe-latido-a{
+  from{ opacity:.22; transform:scale(1) }
+  to  { opacity:.37; transform:scale(1.015) }
+}
+@keyframes jvorbe-latido-b{
+  from{ opacity:.16; transform:scale(1) }
+  to  { opacity:.29; transform:scale(1.012) }
+}
+
+
+/* ---------------------------------------------------------------------
+   CAPA 2 . LOS ANILLOS (capa NUEVA, no viene de Gargantua)
+   ---------------------------------------------------------------------
+   AVISO DE HECHO: Gargantua NO tiene anillos que se expanden. Verificado
+   barriendo todos los @keyframes del showcase: acercamiento, blip,
+   deriva-nave, latido-horizonte-a, latido-horizonte-b, latido-nave y los
+   metodo-*. Ninguno es un anillo. Esta capa la pidio Pablo expresamente y
+   es invencion propia. No se vende como copiada de lo que no lo es.
+
+   Son el ACENTO, no el protagonista. Por eso:
+     . van DETRAS del orbe, no pueden taparlo
+     . nacen en el borde del orbe (scale 1) y se van al 2,35
+     . son una linea de 1px, nunca una masa
+   --------------------------------------------------------------------- */
+.jv-orbe__ondas{
+  position:absolute;inset:-80%;z-index:1;pointer-events:none;
+  opacity:0;
+  transition:opacity 760ms cubic-bezier(.25,.1,.25,1);
+  will-change:opacity;
+}
+.jv-orbe__onda{
+  position:absolute;inset:30.7692%;   /* justo el tamano del orbe: 0,8/2,6 */
+  /* NO es un circulo perfecto (peticion de Pablo 27-08). El border-radius
+     lleva OCHO valores (cuatro horizontales / cuatro verticales): al ser
+     distintos entre si, el borde se abomba mas por unos lados que por otros.
+     Este es el valor de REPOSO de la forma; encima va la animacion que lo
+     hace ondular. Se pone aqui a proposito y no solo en los keyframes: asi,
+     si alguna animacion no llegara a aplicar, el anillo NUNCA vuelve a ser
+     un circulo perfecto, que es justo lo que no queremos. */
+  border-radius:44% 56% 59% 41% / 54% 44% 56% 46%;
+  border:1px solid rgba(61,220,151,.55);
+  opacity:0;
+  animation:jvorbe-onda 4.2s cubic-bezier(.22,.61,.36,1) infinite,
+            jvorbe-ondula-a 5.1s ease-in-out infinite,
+            jvorbe-gira-lento 23s linear infinite;
+  animation-play-state:paused;
+  will-change:opacity,transform;
+}
+
+
+/* Nace en scale(1), que es exactamente el borde del orbe. NUNCA desde
+   scale(0): un objeto que aparece de la nada del tamano de un punto es de
+   videojuego, no de esto. */
+
+/* ---------------------------------------------------------------------
+   ONDAS ELECTRONICAS SOBRE EL ORBE  ·  anadido 27-08 a peticion de Pablo
+   ("un poquito mas rollo JARVIS, no tan lineal, con ondas electronicas
+   por encima del propio cerebro").
+   Como funciona: son lineas horizontales finas (un degradado repetido)
+   recortadas al circulo del orbe y mezcladas como LUZ. Al mezclarse como
+   luz NO tapan el orbe: lo recorren, como un escaner. Solo existen
+   mientras piensa.
+   --------------------------------------------------------------------- */
+.jv-orbe__scan{
+  position:absolute; inset:0; border-radius:50%;
+  pointer-events:none; opacity:0; z-index:3;
+  mix-blend-mode:screen;
+  background:repeating-linear-gradient(0deg,
+    rgba(214,255,238,0)    0px,
+    rgba(214,255,238,.13)  1px,
+    rgba(214,255,238,.13)  2px,
+    rgba(214,255,238,0)    4px);
+  -webkit-mask:radial-gradient(circle closest-side, #000 78%, transparent 100%);
+          mask:radial-gradient(circle closest-side, #000 78%, transparent 100%);
+}
+.jv-orbe.jv-orbe--pensando .jv-orbe__scan{
+  will-change:opacity,transform;
+  animation:jvorbe-scan 2.7s cubic-bezier(.42,0,.24,1) infinite,
+            jvorbe-parpadeo 3.9s ease-in-out infinite;
+}
+@keyframes jvorbe-scan{
+  0%   { opacity:0;   transform:translateY(-46%) }
+  12%  { opacity:.85 }
+  76%  { opacity:.62 }
+  100% { opacity:0;   transform:translateY(46%) }
+}
+/* El parpadeo es lo que rompe la linealidad: apaga el escaner en instantes
+   sueltos, como un aparato que trabaja a tirones en vez de a compas. */
+@keyframes jvorbe-parpadeo{
+  /* SUAVIZADO el 28-08. La primera version usaba steps() con un salto de
+     brillo x2,1 a x0,35: un destello duro que enciende y apaga de golpe.
+     Eso es riesgo real para personas fotosensibles y ademas se ve barato.
+     Ahora la irregularidad se consigue variando la OPACIDAD con transiciones
+     suaves y en momentos que no caen a compas: se sigue notando que el
+     aparato trabaja a tirones, sin ningun cambio brusco de luz. */
+  0%,  38% { opacity:1 }
+  44%     { opacity:.72 }
+  52%     { opacity:1 }
+  69%     { opacity:.55 }
+  78%     { opacity:.92 }
+  100%    { opacity:1 }
+}
+
+
+/* ---------------------------------------------------------------------
+   ONDAS QUE NO SON CIRCULOS PERFECTOS  ·  27-08, peticion de Pablo
+   ("que los circulos que salen no fueran circulos perfectos, sino que
+   tuvieran ondas").
+   COMO SE HACE: border-radius acepta OCHO valores, cuatro para el eje
+   horizontal y cuatro para el vertical. Si se ponen distintos, el circulo
+   deja de ser un circulo y se abomba por unos lados mas que por otros.
+   Animando esos ocho valores, el borde ONDULA mientras la onda crece.
+   Cada uno de los tres anillos lleva su propio ritmo y su propio giro
+   lento, asi que nunca se alinean: es lo que hace que parezca organico y
+   no una figura girando. Cuesta lo mismo que antes (sigue siendo un solo
+   elemento con borde).
+   --------------------------------------------------------------------- */
+@keyframes jvorbe-ondula-a{
+  0%   { border-radius:44% 56% 59% 41% / 54% 44% 56% 46% }
+  33%  { border-radius:63% 37% 39% 61% / 40% 62% 38% 60% }
+  66%  { border-radius:38% 62% 64% 36% / 62% 39% 61% 38% }
+  100% { border-radius:44% 56% 59% 41% / 54% 44% 56% 46% }
+}
+@keyframes jvorbe-ondula-b{
+  0%   { border-radius:58% 42% 39% 61% / 43% 60% 40% 57% }
+  40%  { border-radius:36% 64% 63% 37% / 64% 36% 64% 36% }
+  75%  { border-radius:62% 38% 41% 59% / 37% 64% 36% 63% }
+  100% { border-radius:58% 42% 39% 61% / 43% 60% 40% 57% }
+}
+@keyframes jvorbe-gira-lento{
+  from{ rotate:0deg }
+  to  { rotate:360deg }
+}
+
+@keyframes jvorbe-onda{
+  /* Menos lineal (peticion de Pablo): la onda sale con empuje, se frena a
+     medio camino y vuelve a soltarse al final, en vez de crecer a velocidad
+     constante. Es el mismo gesto que hace algo VIVO al expandirse. */
+  0%  { opacity:0;   transform:scale(1) }
+  14% { opacity:.44 }
+  38% { opacity:.30; transform:scale(1.52) }
+  62% { opacity:.22; transform:scale(1.74) }
+  100%{ opacity:0;   transform:scale(2.35) }
+}
+
+
+/* ---------------------------------------------------------------------
+   EL INTERRUPTOR: la clase .jv-orbe--pensando
+   ---------------------------------------------------------------------
+   Reposo     -> sin clase. Orbe identico al de la app. Cero luz, cero anillos.
+   Pensando   -> con clase. Entran las dos capas y se ponen en marcha.
+   Respondido -> se quita la clase. Las dos capas se van en 760ms y se quedan
+                 congeladas donde estaban mientras se desvanecen: no hay
+                 tiron ni vuelta brusca al fotograma cero.
+
+   EL ORBE NO SE TOCA AL PENSAR. Decision consciente y con motivo medido:
+   cambiarle la duracion a una animacion que ya esta en marcha produce un
+   salto visible, porque el navegador recalcula el progreso sobre la
+   duracion nueva. Toda la intensificacion vive en la LUZ, que es
+   exactamente lo que pidio Pablo ("el orbe respira luz al pensar").
+   --------------------------------------------------------------------- */
+.jv-orbe--pensando .jv-orbe__luz,
+.jv-orbe--pensando .jv-orbe__ondas{
+  opacity:1;
+  transition-duration:520ms;            /* la ENTRADA, mas viva que la salida */
+}
+.jv-orbe--pensando .jv-orbe__luz::before,
+.jv-orbe--pensando .jv-orbe__luz::after,
+.jv-orbe__onda:nth-child(2){
+  animation:jvorbe-onda 4.2s cubic-bezier(.22,.61,.36,1) 1.4s infinite,
+            jvorbe-ondula-b 6.7s ease-in-out .6s infinite,
+            jvorbe-gira-lento 29s linear -7s infinite reverse;
+}
+.jv-orbe__onda:nth-child(3){
+  animation:jvorbe-onda 4.2s cubic-bezier(.22,.61,.36,1) 2.8s infinite,
+            jvorbe-ondula-a 7.9s ease-in-out 1.9s infinite,
+            jvorbe-gira-lento 37s linear -14s infinite;
+}
+.jv-orbe--pensando .jv-orbe__onda{
+  animation-play-state:running;
+}
+
+
+/* ---------------------------------------------------------------------
+   MOVIMIENTO REDUCIDO . cero cuadros pedidos, pose fija y legible
+   ---------------------------------------------------------------------
+   Aqui NO se usa el truco de Gargantua (animation-play-state:paused con
+   retardo negativo). Motivo medido: la app lleva en su linea 457 una regla
+   global que machaca con !important la duracion de TODA animacion
+   (*{animation-duration:.001ms!important}). Con esa duracion, un retardo
+   negativo cae en un punto impredecible del ciclo y la pose sale al azar.
+   Con animation:none y valores fijos escritos a mano, la pose es siempre
+   la misma y no se pide ni un solo fotograma.
+   --------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce){
+  .jv-orbe__luz,.jv-orbe__ondas{transition:none}
+
+  /* El orbe se congela en su punto MEDIO de respiracion, no en un extremo. */
+  .jv-orbe .cb-orb{animation:none;transform:scale(1.0275)}
+  .jv-orbe .cb-orb::before{animation:none;opacity:.65;transform:scale(.98)}
+  .jv-orbe .cb-orb::after{animation:none;transform:rotate(0)}
+
+  /* El resplandor se queda encendido en su valor medio: sigue informando de
+     que ahi hay luz, que es lo que distingue pensando de reposo. */
+  .jv-orbe__luz::before{animation:none;opacity:.295;transform:scale(1.008)}
+  .jv-orbe__luz::after {animation:none;opacity:.225;transform:scale(1.006)}
+
+  /* Los anillos se quedan quietos a tres radios distintos: se lee que hay
+     ondas sin que nada se mueva. */
+  /* El escaner tambien se apaga (arreglado el 28-08). Se quedo fuera al
+     anadirlo y era el fallo mas grave de la pieza: su parpadeo enciende y
+     apaga de golpe (filter:brightness), que es EXACTAMENTE de lo que protege
+     esta opcion y un riesgo para personas fotosensibles. Queda una pose fija:
+     las lineas visibles y quietas, sin pedir ni un cuadro y sin filtro. */
+  .jv-orbe.jv-orbe--pensando .jv-orbe__scan,
+  .jv-orbe .jv-orbe__scan{animation:none;opacity:.5;transform:none;filter:none}
+  .jv-orbe__onda{animation:none;border-radius:57% 43% 40% 60% / 42% 59% 41% 58%}
+  .jv-orbe__onda:nth-child(1){opacity:.40;transform:scale(1.42)}
+  .jv-orbe__onda:nth-child(2){opacity:.26;transform:scale(1.84)}
+  .jv-orbe__onda:nth-child(3){opacity:.12;transform:scale(2.16)}
+}
+</style>
+
+
+<!-- =====================================================================
+     EL MOLDE
+     =====================================================================
+     Va dentro de <template> a proposito: el navegador NO pinta nada de lo
+     que hay aqui dentro. Asi puedes pegar esta pieza en cualquier sitio sin
+     que aparezca un orbe fantasma suelto (eso paso en la v1).
+     El orbe solo existe donde tu lo clones con jvOrbeCrear().
+     ===================================================================== -->
+<template id="jv-orbe-molde">
+  <span class="jv-orbe" aria-hidden="true">
+    <span class="jv-orbe__ondas">
+      <i class="jv-orbe__onda"></i>
+      <i class="jv-orbe__onda"></i>
+      <i class="jv-orbe__onda"></i>
+    </span>
+    <span class="cb-orb cb-orb-lg"></span>
+    <!-- Ondas electronicas POR ENCIMA del orbe (pedido de Pablo: "rollo JARVIS").
+         Van despues del orbe para quedar por delante, y se mezclan como LUZ
+         (screen), asi que no lo tapan: lo recorren. -->
+    <span class="jv-orbe__scan" aria-hidden="true"></span>
+    <span class="jv-orbe__luz"></span>
+  </span>
+</template>
+
+
+<script>
+/* =====================================================================
+   LAS DOS FUNCIONES. No hay mas.
+   ===================================================================== */
+
+/* jvOrbeCrear("lg" | "sm")
+   Devuelve un orbe listo para meter donde quieras. Ejemplo:
+     document.getElementById("cb_hero").prepend(jvOrbeCrear("lg"));
+     document.getElementById("cb_headorb").prepend(jvOrbeCrear("sm")); */
+function jvOrbeCrear(tamano){
+  var molde = document.getElementById("jv-orbe-molde");
+  var orbe  = molde.content.firstElementChild.cloneNode(true);
+  if(tamano === "sm"){
+    var bola = orbe.querySelector(".cb-orb");
+    bola.classList.remove("cb-orb-lg");
+    bola.classList.add("cb-orb-sm");
+  }
+  return orbe;
+}
+
+/* jvOrbeEstado(orbe, "reposo" | "pensando" | "respondido")
+   Es lo unico que hay que llamar. "respondido" y "reposo" hacen lo mismo:
+   quitar la clase. Existen los dos nombres porque en el codigo del Cerebro
+   se lee mejor decir "respondido" cuando acaba de contestar. */
+function jvOrbeEstado(orbe, estado){
+  orbe.classList.toggle("jv-orbe--pensando", estado === "pensando");
+}
+
+/* jvOrbePensar(orbe, minimoMs)
+   ---------------------------------------------------------------------
+   El problema que resuelve, y es real: el Cerebro es determinista y
+   contesta en milisegundos. Si se pone "pensando" y se quita en el mismo
+   suspiro, la animacion no llega a verse: entra y sale sin que al ojo le
+   de tiempo. Esta funcion garantiza que, una vez encendida, la animacion
+   dure AL MENOS lo que se le pida.
+
+   minimoMs por defecto = 700 (decision de Pablo, 28-08). En la APP se
+   llama con 0 para que no haya ninguna espera artificial: alli la
+   animacion aparece y se va con el ritmo real del Cerebro.
+
+   Uso:
+     var fin = jvOrbePensar(orbe);        // escaparate: minimo 700 ms
+     var fin = jvOrbePensar(orbe, 0);     // app: sin minimo
+     ... resuelves la pregunta ...
+     fin();                               // apaga (respetando el minimo)
+
+   Devuelve una funcion: llamala cuando tengas la respuesta. Si aun no ha
+   pasado el minimo, espera lo que falte; si ya paso, apaga en el acto.
+   Es a prueba de llamadas repetidas: apagar dos veces no hace nada raro. */
+function jvOrbePensar(orbe, minimoMs){
+  var minimo = (typeof minimoMs === "number") ? minimoMs : 700;
+  var desde  = Date.now();
+  var hecho  = false;
+  jvOrbeEstado(orbe, "pensando");
+  return function apagar(){
+    if(hecho) return;
+    hecho = true;
+    var falta = minimo - (Date.now() - desde);
+    if(falta > 0) setTimeout(function(){ jvOrbeEstado(orbe, "respondido"); }, falta);
+    else jvOrbeEstado(orbe, "respondido");
+  };
+}
+
+/* ---------------------------------------------------------------------
+   COMO SE ENGANCHA EN EL CEREBRO DE LA APP (ejemplo, no se ejecuta)
+   ---------------------------------------------------------------------
+   var orbe = document.querySelector("#cb_hero .jv-orbe");
+
+   // justo antes de resolver la pregunta:
+   jvOrbeEstado(orbe, "pensando");
+
+   // en cuanto pintas la respuesta:
+   jvOrbeEstado(orbe, "respondido");
+
+   Si la respuesta es instantanea (el Cerebro es determinista y tarda
+   milisegundos), dejalo pensando un minimo de unos 600ms. Si no, la capa
+   entra y sale en el mismo suspiro y no se ve nada. Ese minimo es una
+   decision de producto, no un adorno: el contraste entre quieto y activo
+   es lo unico que hace que se NOTE que esta pensando.
+   --------------------------------------------------------------------- */
+</script>
