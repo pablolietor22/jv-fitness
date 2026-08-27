@@ -125,6 +125,17 @@
   --t-4:400ms;    /* aparición por scroll. Techo NN/g */
   --t-5:700ms;    /* momento ilustrativo, y solo con motivo: cuenta algo */
   --stagger:38ms; /* escalonado entre hermanos; el total nunca pasa de 300 ms */
+
+  /* VIAJE (21-08) · velos de sección: la banda deja ver el cielo de detrás.
+     Mismos colores de la casa (bg-2 / panel-2) con alfa; un solo dueño aquí.
+     El pie va más opaco a propósito: protege el contraste de --mute-2 (deuda
+     conocida de E.8) contra la luz del amanecer. */
+  --velo-banda:rgba(12,21,18,.66);
+  --velo-panel:rgba(13,27,22,.72);
+  --velo-suelo:rgba(12,21,18,.78);
+  /* VIAJE · serifa editorial de las derivas (gramática pear.no, anexo b.2):
+     pila del SISTEMA, cero bytes de fuente nueva. */
+  --serif:Georgia,'Times New Roman',serif;
 }
 
 /* ============ RESET / BASE ============ */
@@ -271,10 +282,10 @@ details.under .body code{font-family:var(--mono);color:var(--soft);background:rg
 .spec-card p{color:var(--mute);font-size:.96rem}
 
 /* ============ STATS / CONTADORES ============ */
-.stats{background:var(--bg-2);border-top:1px solid var(--line-soft);border-bottom:1px solid var(--line-soft)}
+.stats{background:var(--velo-banda);border-top:1px solid var(--line-soft);border-bottom:1px solid var(--line-soft)}
 /* ACTO 2 · banda propia del tramo de rigor. Tokens existentes, cero valores nuevos.
    El color definitivo del tramo lo pone la fase E (velos por sección); esto solo abre el hueco. */
-.rigor{background:var(--panel-2);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.rigor{background:var(--velo-panel);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
 .stat-grid{display:grid;grid-template-columns:1fr;gap:14px}
 .stat{border:1px solid var(--line-soft);border-radius:var(--r);padding:24px 22px;
   background:linear-gradient(180deg,var(--panel),var(--panel-2))}
@@ -291,7 +302,7 @@ details.under .body code{font-family:var(--mono);color:var(--soft);background:rg
    --bg-2 (2,88 pantallas de un solo color) y los actos 3 y 4 se leían como una sola banda.
    Mismo tratamiento que .rigor (los dos actos de confianza comparten material): tokens
    existentes, cero valores nuevos. Stats + plato quedan cosidos a propósito (son un acto). */
-.wip{background:var(--panel-2);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.wip{background:var(--velo-panel);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
 .wip ul{list-style:none;margin-top:clamp(22px,3.5vw,34px);display:grid;gap:12px}
 .wip li{display:flex;gap:.85em;align-items:flex-start;border:1px solid var(--line-soft);
   border-radius:12px;padding:15px 17px;background:linear-gradient(180deg,var(--panel),var(--panel-2));
@@ -301,7 +312,7 @@ details.under .body code{font-family:var(--mono);color:var(--soft);background:rg
 .wip li b{color:var(--bone);font-family:var(--display);font-weight:700}
 
 /* ============ FOOTER ============ */
-.foot{background:var(--bg-2);border-top:1px solid var(--line);padding:clamp(44px,7vw,72px) 0}
+.foot{background:var(--velo-suelo);border-top:1px solid var(--line);padding:clamp(44px,7vw,72px) 0}
 .foot__cta{display:flex;flex-wrap:wrap;gap:14px;align-items:center}
 .foot__cta .btn--code{background:var(--jade);color:#05221a;font-size:1.02rem;padding:15px 24px;
   box-shadow:0 8px 26px rgba(61,220,151,.22)}
@@ -604,7 +615,7 @@ html.js .reveal.r3d{transform:none}   /* el reveal aporta el fundido; el 3D lo p
 html.js .reveal.r3d--on{transition-property:opacity}
 
 /* — Franja «un plato, sus macros» (SVG temático de nutrición) — */
-.plate{background:var(--bg-2);border-top:1px solid var(--line-soft);border-bottom:1px solid var(--line-soft)}
+.plate{background:var(--velo-banda);border-top:1px solid var(--line-soft);border-bottom:1px solid var(--line-soft)}
 .plate__grid{display:grid;grid-template-columns:1fr;gap:clamp(24px,5vw,52px);align-items:center;margin-top:clamp(24px,4vw,40px)}
 .plate__art{position:relative;max-width:360px;width:100%;margin:0 auto}
 .plate__art svg{width:100%;height:auto;overflow:visible;display:block}
@@ -673,9 +684,219 @@ html.fx-fin .byline .ph .ring circle{stroke-dashoffset:0!important}
    con las animaciones congeladas, la marca y la cara se ven igual. */
 html.fx-fin h1.title .ch{opacity:1!important;transform:none!important;animation:none!important}
 html.fx-fin .byline .ph img{opacity:1!important;transform:none!important;animation:none!important}
+
+/* ══════════════════════════════════════════════════════════════════════
+   CAPA VIAJE · el cielo del recorrido (obra 21-08-2026 · fase E del plan
+   maestro + anexo 19-08). El mundo deja de acabarse en el píxel 588: un
+   solo elemento fijo detrás de todo, con la noche del hero de base y un
+   velo de color por tramo (noche → azul → jade → cálido → amanecer, la
+   gramática de «un color de mundo por acto»).
+   Reglas de la casa que esta capa cumple entera:
+     · ELEMENTO position:fixed, jamás background-attachment:fixed (Safari
+       iOS histórico, plan «LO QUE NO SABEMOS» nº7);
+     · cero JS, cero canvas, cero animación perpetua: la base es estática
+       y los velos van en opacity pilotados por el scroll en el COMPOSITOR
+       (animation-timeline), o sea solo cuestan mientras te mueves;
+     · las tres trampas E.7: el atajo animation: primero, duración 1ms,
+       timeline SIEMPRE el último; todo detrás de @supports — sin soporte
+       (Firefox estable) queda la noche del primer tramo, completa y legible;
+     · `linear` no es una curva nueva: es el mapeo neutro de un timeline de
+       scroll (precedente en esta casa: .uprog).
+   ══════════════════════════════════════════════════════════════════════ */
+.cielo{position:fixed;inset:0;z-index:-1;pointer-events:none;
+  background:
+    radial-gradient(1100px 620px at 74% -10%, var(--jade-glow), transparent 60%),
+    radial-gradient(820px 520px at 10% 4%, rgba(255,106,61,.05), transparent 58%),
+    linear-gradient(180deg, var(--bg) 0%, var(--bg-2) 55%, var(--bg) 100%)}
+/* estrellas: dos densidades de puntos diminutos, ESTÁTICAS a propósito
+   (las estrellas DOM animadas están prohibidas: 15 fps en móvil x4, E.6 nº7) */
+.cielo::before,.cielo::after{content:"";position:absolute;inset:0}
+.cielo::before{opacity:.5;background-image:
+  radial-gradient(1px 1px at 22px 34px, rgba(238,242,236,.5), transparent 1.5px),
+  radial-gradient(1px 1px at 118px 96px, rgba(238,242,236,.34), transparent 1.5px),
+  radial-gradient(1.5px 1.5px at 201px 150px, rgba(61,220,151,.4), transparent 2px),
+  radial-gradient(1px 1px at 66px 187px, rgba(238,242,236,.42), transparent 1.5px);
+  background-size:260px 230px}
+.cielo::after{opacity:.35;background-image:
+  radial-gradient(1px 1px at 40px 60px, rgba(238,242,236,.4), transparent 1.5px),
+  radial-gradient(2px 2px at 300px 220px, rgba(238,242,236,.5), transparent 2.5px),
+  radial-gradient(1px 1px at 180px 310px, rgba(203,216,209,.36), transparent 1.5px);
+  background-size:420px 390px}
+/* Los cuatro velos de mundo. Apagados de base: sin @supports (o con
+   movimiento reducido) el cielo se queda en la noche del primer tramo. */
+.cielo__velo{position:absolute;inset:0;opacity:0}
+/* Cada velo = un TINTE uniforme de pantalla completa (lo que hace que el
+   mundo entero cambie, no solo una esquina) + un glow direccional encima. */
+.cielo__velo--azul{background:
+  radial-gradient(130% 90% at 70% -5%, rgba(64,124,205,.5), transparent 62%),
+  linear-gradient(180deg, rgba(18,44,86,.62), rgba(16,34,66,.34))}
+.cielo__velo--jade{background:
+  radial-gradient(130% 90% at 30% 0%, rgba(61,220,151,.32), transparent 62%),
+  linear-gradient(180deg, rgba(14,66,48,.5), rgba(12,46,34,.28))}
+.cielo__velo--calido{background:
+  radial-gradient(130% 90% at 70% 0%, rgba(255,138,76,.34), transparent 62%),
+  linear-gradient(180deg, rgba(88,44,20,.48), rgba(64,34,16,.26))}
+.cielo__velo--alba{background:
+  radial-gradient(130% 75% at 50% 112%, rgba(255,166,102,.5), rgba(255,116,66,.18) 42%, transparent 68%),
+  linear-gradient(0deg, rgba(110,56,26,.4), rgba(30,52,84,.3))}
+/* ── FOTOGRAMAS TALLADOS · CADUCAN ────────────────────────────────────
+   Los % salen de la página MEDIDA (21-08-2026, obra completa con rótulos:
+   8085 px de alto, ventana 771, recorrido 7314) con la sonda ofs.mjs del
+   banco del viaje: fracción = (top de la sección - 55% de ventana) /
+   recorrido. Fronteras: features 2,2 · stats 50,0 · plate 59,9 ·
+   roadmap 82,8. Cada fundido dura ~5,5% del recorrido (~400 px ≈ 1 s de
+   scroll normal), centrado en su frontera. Si el contenido cambia de
+   reparto, VOLVER A MEDIR con ofs.mjs y retallar estos números: son el
+   equivalente del bloque de cifras talladas de la cabecera. */
+@keyframes cieloAzul{0%,3%{opacity:0} 9%,47.5%{opacity:1} 52.5%,100%{opacity:0}}
+@keyframes cieloJade{0%,47.5%{opacity:0} 52.5%,57%{opacity:1} 62.5%,100%{opacity:0}}
+@keyframes cieloCalido{0%,57%{opacity:0} 62.5%,80%{opacity:1} 85.5%,100%{opacity:0}}
+@keyframes cieloAlba{0%,80%{opacity:0} 85.5%,100%{opacity:1}}
+@supports (animation-timeline: scroll()){
+  @media (prefers-reduced-motion: no-preference){
+    .cielo__velo--azul{
+      animation:cieloAzul linear both;      /* 1º el atajo */
+      animation-duration:1ms;               /* 2º la duración distinta de cero */
+      animation-timeline:scroll(root block);/* 3º el reloj, SIEMPRE el último */
+    }
+    .cielo__velo--jade{
+      animation:cieloJade linear both;
+      animation-duration:1ms;
+      animation-timeline:scroll(root block);
+    }
+    .cielo__velo--calido{
+      animation:cieloCalido linear both;
+      animation-duration:1ms;
+      animation-timeline:scroll(root block);
+    }
+    .cielo__velo--alba{
+      animation:cieloAlba linear both;
+      animation-duration:1ms;
+      animation-timeline:scroll(root block);
+    }
+  }
+}
+/* Degradación triple del cielo (contrato E.8). Movimiento reducido: la
+   noche del primer tramo, quieta (el *{animation:none} de arriba ya mata
+   los velos; esto deja el estado escrito). Impresión: papel limpio, sin
+   cielo. fx-fin (bots): nada que congelar — no hay animación por tiempo,
+   y en lo alto de la página los velos están a 0 igual que sin JS. */
+@media (prefers-reduced-motion: reduce){
+  .cielo__velo{opacity:0 !important;animation:none !important}
+}
+@media print{
+  .cielo{display:none !important}
+}
+html.fx-fin .cielo__velo{animation:none !important;opacity:0 !important}
+
+/* — Rótulos de estación (obra 21-08, paso 2): cada tramo anuncia dónde estás.
+     position:sticky (Mozilla lo recomienda frente a reposicionar desde el
+     evento de scroll: no escribe en el DOM mientras te mueves — cero trabajo
+     por cuadro). Tipografía de la casa (el eyebrow mono), ningún estilo
+     inventado. NO son pulsables: el rail con enlaces es del paso 3 de E.9,
+     que es otra obra. Estaciones del plan: el Cielo es el hero (se anuncia
+     solo con su título); Instrumentos, Lo medido, La mesa y El destino
+     llevan rótulo. Sticky no es animación: con movimiento reducido se queda
+     (visible y quieto), y el fundido de entrada lo hereda de .reveal, que ya
+     tiene sus tres salidas (reduce / print / fx-fin). */
+.rotulo{position:sticky;top:14px;z-index:6;width:fit-content;
+  font-family:var(--mono);font-weight:500;font-size:.68rem;text-transform:uppercase;
+  letter-spacing:.22em;color:var(--soft);display:flex;align-items:center;gap:.6em;
+  background:rgba(10,16,14,.72);border:1px solid var(--line-soft);border-radius:100px;
+  padding:7px 14px;margin:0 0 clamp(18px,3vw,28px)}
+.rotulo::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--jade);
+  box-shadow:0 0 8px var(--jade);flex:none}
+@media print{
+  .rotulo{position:static}
+}
+
+/* — Montaje por piezas (obra 21-08, paso 3 · patrón del anexo a.2).
+     DIANA DECLARADA: el patrón pedía el muñeco anatómico del acto 1, pero esa
+     demo es una CAPTURA raster (exercise-anatomy.webp): trocearla exigiría
+     imágenes nuevas (peso) o cirugía mayor del marcado. El anexo prevé la
+     alternativa y se aplica: los 4 nodos del acto del proceso CONVERGEN sobre
+     su sitio al entrar en pantalla, alternando lado, con transform + view().
+     Cero imágenes, cero peso, cero JS.
+     Dueño único: dentro de este @supports el transform/opacity del NODO pasa
+     a ser de ESTA animación (la transición de «ANIMACIONES AMBIENTALES» queda
+     derogada aquí con transition:none; sin soporte, esa transición sigue
+     siendo la dueña, como hasta hoy). El transform del CONTENEDOR .stage
+     sigue siendo del JS de la basculación: elementos distintos, dueños
+     distintos. P7: se parte de scale(.96) + opacity 0, jamás scale(0); techo
+     de escala 5% respetado (4%). El efecto COMPLETA en el fotograma 50%
+     (trampa E.7 nº3: el 100% de view() cae con el elemento ya saliendo). */
+@keyframes stageMonta{
+  from{opacity:0;transform:translate3d(var(--monta-x,0),14px,0) scale(.96)}
+  50%,to{opacity:1;transform:none}
+}
+@supports (animation-timeline: scroll()){
+  @media (prefers-reduced-motion: no-preference){
+    html.js .stage__node{
+      transition:none;
+      animation:stageMonta linear both;   /* 1º el atajo */
+      animation-duration:1ms;             /* 2º la duración distinta de cero */
+      animation-timeline:view();          /* 3º el reloj, SIEMPRE el último */
+    }
+    html.js .stage__node:nth-child(odd){--monta-x:-34px}
+    html.js .stage__node:nth-child(even){--monta-x:34px}
+  }
+}
+/* Degradación del montaje: con movimiento reducido no hay animación (el
+   *{animation:none} global) y el nodo queda visible en su sitio; en print y
+   en fx-fin se fija el estado final DE VERDAD (sin animación, no un frame 0%).
+   La regla fx-fin de opacity/transform del nodo ya existe arriba (línea del
+   bloque failsafe); aquí solo se le quita el reloj. */
+@media print{
+  html.js .stage__node{animation:none !important;opacity:1 !important;transform:none !important;transition:none !important}
+}
+html.fx-fin .stage__node{animation:none !important}
+
+/* — Marca de agua tipográfica (obra 21-08, paso 4 · anexo a.4): el texto
+     gigante en serifa de las demos de Emergent, aplicado a vestir las
+     estaciones. Un nodo por tramo, serifa del SISTEMA (--serif: cero bytes
+     de fuente nueva), recortada a su sección (el recorte vive en .deriva,
+     NUNCA en la sección: un overflow en la sección mataría el sticky de los
+     rótulos).
+     ⚠️ REVERSIÓN MEDIDA (21-08, banco del viaje): la DERIVA por scroll que
+     pedía el anexo se construyó (animation-timeline: scroll(root), solo
+     transform, compositor) y SE RETIRÓ: la capa compositada del span costaba
+     1 cuadro doblado (33,4-50 ms) por recorrido, medido con mediana de 3 en
+     dos tamaños (11rem y 8rem); sin la animación, 0. El gate de cero cuadros
+     perdidos no se negocia (E.9 paso 7). La marca queda ESTÁTICA: sin
+     animación no hay capa propia, se pinta con su sección y su coste quedó
+     medido en el suelo. Quien quiera resucitar la deriva: que vuelva a medir
+     con mide.mjs y solo si da 0 perdidos en mediana de 3. */
+.deriva{position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:0}
+.deriva span{position:absolute;left:0;right:0;top:clamp(30px,8vw,90px);text-align:center;
+  white-space:nowrap;font-family:var(--serif);font-weight:700;line-height:1;
+  /* tope 8rem: con 11rem la palabra larga desbordaba el recorte por los dos
+     lados en portátil; a 8rem viste sin comerse el tramo. (El tamaño ya NO es
+     asunto de rendimiento: estática no tiene capa propia — ver reversión.) */
+  font-size:clamp(4rem,12vw,8rem);letter-spacing:-.01em;
+  color:rgba(238,242,236,.055);user-select:none}
+/* Las cuatro secciones con estación anclan su deriva; su .wrap sube a z1
+   para que el contenido siempre lea por encima de la marca de agua. */
+.features,.stats,.plate,.roadmap{position:relative}
+.features>.wrap,.stats>.wrap,.plate>.wrap,.roadmap>.wrap{position:relative;z-index:1}
+/* Degradación de la marca de agua: estática por construcción (sin animación
+   no hay nada que degradar en reduce ni en fx-fin); en impresión no existe
+   (papel limpio). */
+@media print{
+  .deriva{display:none !important}
+}
 </style>
 </head>
 <body>
+
+<!-- VIAJE · el cielo: un solo elemento fijo detrás de todo. Base = la noche
+     del hero; los velos cambian el color del mundo por tramo, pilotados por
+     el scroll en el compositor (CSS puro, cero JS). Decorado puro. -->
+<div class="cielo" aria-hidden="true">
+  <div class="cielo__velo cielo__velo--azul"></div>
+  <div class="cielo__velo cielo__velo--jade"></div>
+  <div class="cielo__velo cielo__velo--calido"></div>
+  <div class="cielo__velo cielo__velo--alba"></div>
+</div>
 
 <!-- ULTRA · barra de progreso de lectura -->
 <div class="uprog" aria-hidden="true"></div>
@@ -726,7 +947,9 @@ html.fx-fin .byline .ph img{opacity:1!important;transform:none!important;animati
 <!-- ================= FEATURES ================= -->
 <main>
 <section class="features">
+  <div class="deriva" aria-hidden="true"><span>Instrumentos</span></div>
   <div class="wrap">
+    <p class="rotulo reveal">Instrumentos</p>
     <div class="sec-head reveal">
       <p class="eyebrow">Qué hace</p>
       <h2>Herramientas de verdad, no promesas</h2>
@@ -819,7 +1042,9 @@ html.fx-fin .byline .ph img{opacity:1!important;transform:none!important;animati
 
 <!-- ================= STATS ================= -->
 <section class="stats">
+  <div class="deriva" aria-hidden="true"><span>Lo medido</span></div>
   <div class="wrap">
+    <p class="rotulo reveal">Lo medido</p>
     <div class="sec-head reveal" style="margin-bottom:clamp(24px,4vw,40px)">
       <p class="eyebrow">En números</p>
       <h2>Nada de esto es una maqueta</h2>
@@ -854,7 +1079,9 @@ html.fx-fin .byline .ph img{opacity:1!important;transform:none!important;animati
 
 <!-- ================= UN PLATO, SUS MACROS (ULTRA · animación de comida) ================= -->
 <section class="plate">
+  <div class="deriva" aria-hidden="true"><span>La mesa</span></div>
   <div class="wrap">
+    <p class="rotulo reveal">La mesa</p>
     <div class="sec-head reveal">
       <p class="eyebrow">Diario de comida</p>
       <h2>Un plato, y sus macros al instante</h2>
@@ -936,7 +1163,9 @@ html.fx-fin .byline .ph img{opacity:1!important;transform:none!important;animati
 
 <!-- ================= HACIA DÓNDE VA (visión / roadmap) ================= -->
 <section class="roadmap">
+  <div class="deriva" aria-hidden="true"><span>El destino</span></div>
   <div class="wrap">
+    <p class="rotulo reveal">El destino</p>
     <div class="sec-head reveal">
       <p class="eyebrow">Próximamente · hoja de ruta</p>
       <h2>Hacia dónde va</h2>
