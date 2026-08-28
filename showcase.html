@@ -46,33 +46,36 @@
 
        cifra                          valor    dónde vive
        -----------------------------  -------  --------------------------------
-       fichas del asistente             362    eyebrow del motor + odómetro
-       claves del asistente           6.269    eyebrow del motor
-       fichas que citan su Tema         229    entradilla del motor
-       ejercicios                     1.500    eyebrow + odómetro
-       ejercicios con instrucciones   1.287    entradilla de ejercicios
+       fichas del asistente             467    eyebrow del motor + odómetro
+       claves del asistente           7.896    eyebrow del motor
+       fichas que citan su Tema         314    entradilla del motor
+       ejercicios                     1.502    eyebrow + odómetro
+       ejercicios con instrucciones   1.289    entradilla de ejercicios
        alimentos de España          234.976    tarjeta del diario + odómetro
        perfiles del barrido               8    tarjeta de perfiles
        preguntas del barrido          1.032    tarjeta de perfiles
-       NULL antes / ahora        33,5 / 22,8   tarjeta de perfiles
+       NULL antes / ahora        33,5 / 20,3   tarjeta de perfiles
        Temas del fichero maestro         47    tarjeta de auditoría
-       PMID del fichero maestro         134    tarjeta de auditoría
-       baterías de pruebas              109    odómetro
-       pases del Vigía (26/26)           26    línea honesta del pie
-       fusiones en el taller            221    acto 4 (solo SUBE: nunca miente por exceso)
+       PMID del fichero maestro         138    tarjeta de auditoría
+       baterías de pruebas              121    odómetro
+       pases del Vigía (33/33)           33    línea honesta del pie
+       fusiones en el taller            301    acto 4 (solo SUBE: nunca miente por exceso)
                                                git rev-list --merges origin/master --count
 
      CÓMO SE VUELVEN A MEDIR TODAS DE UNA VEZ:
-       python verificador.py     (fase C de la obra del escaparate; mide contra
-                                  `git show origin/main:index.html` y contra el
-                                  taller. Ninguna cifra nueva aquí sin su línea allí)
+       Desde el repo del TALLER (jvfitness-dev), con este fichero a mano:
+         node tools/cerebro-bots/verificador-escaparate.js --showcase <ruta a showcase.html>
+       Mide EJECUTANDO el motor del taller y lo compara con la tabla de arriba.
+       Sale en rojo con la lista de las que no cuadran. (Ojo: lee ESTA tabla, no
+       el texto visible — si tocas una cifra en el cuerpo, tócala también aquí.)
+       Actualizado 28-08-2026 (antes decía `python verificador.py`, que no existe).
      ============================================================================ -->
-<meta name="description" content="JV Fitness: app de nutrición y entrenamiento con base científica. Diario con 234.976 alimentos sin cobertura, 1.500 ejercicios con guía anatómica y un asistente que cita su fuente cuando la tiene y dice «no lo sé» cuando no.">
+<meta name="description" content="JV Fitness: app de nutrición y entrenamiento con base científica. Diario con 234.976 alimentos sin cobertura, 1.502 ejercicios con guía anatómica y un asistente que cita su fuente cuando la tiene y dice «no lo sé» cuando no.">
 <meta name="robots" content="index,follow">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://pablolietor22.github.io/jv-fitness/showcase.html">
 <meta property="og:title" content="JV Fitness · nutrición y entrenamiento con base científica">
-<meta property="og:description" content="Nutrición y entrenamiento con base científica: 234.976 alimentos sin cobertura, 1.500 ejercicios con guía anatómica y un asistente que cita sus fuentes. En desarrollo casi a diario.">
+<meta property="og:description" content="Nutrición y entrenamiento con base científica: 234.976 alimentos sin cobertura, 1.502 ejercicios con guía anatómica y un asistente que cita sus fuentes. En desarrollo casi a diario.">
 <!-- og:image ABSOLUTA (LinkedIn/WhatsApp ignoran rutas relativas) + tarjeta 1200×630 dedicada, no la foto de retrato -->
 <meta property="og:image" content="https://pablolietor22.github.io/jv-fitness/assets/og.png">
 <meta property="og:image:width" content="1200">
@@ -381,7 +384,7 @@ html.js .vis-off .pulse{animation-name:none}
 }
 @keyframes fxpar{0%,49%{opacity:1}50%,100%{opacity:0}}
 
-/* N4 · rotulador jade sobre el dato de rigor más fuerte («109 baterías de
+/* N4 · rotulador jade sobre el dato de rigor más fuerte («121 baterías de
    pruebas»). Se engancha al .in que ya pone el revelado: sin JS nuevo.
    ⚠️ SIN ESTRENAR (21-08-2026): .fx-mark no aparece ni una vez en el marcado.
    Se señala, no se borra (norma de la casa). Si se estrena, va sobre esa cifra. */
@@ -973,9 +976,9 @@ html.fx-fin .stage__node{animation:none !important}
     <!-- Feature 2 · biblioteca de ejercicios -->
     <div class="frow frow--flip reveal">
       <div class="frow__text">
-        <span class="feat-eyebrow">1.500 ejercicios</span>
+        <span class="feat-eyebrow">1.502 ejercicios</span>
         <h3>Te enseña dónde tiene que apretar</h3>
-        <p class="lead">Los 1.500 llevan ilustración: pinta en <strong style="color:var(--ember)">rojo el músculo principal</strong> y en naranja los secundarios. 1.287 traen además las instrucciones paso a paso. De un vistazo sabes qué estás trabajando.</p>
+        <p class="lead">Los 1.502 llevan ilustración: pinta en <strong style="color:var(--ember)">rojo el músculo principal</strong> y en naranja los secundarios. 1.289 traen además las instrucciones paso a paso. De un vistazo sabes qué estás trabajando.</p>
       </div>
       <div class="frow__media">
         <figure class="shot shot--tall"><img src="assets/shots/exercise-anatomy.webp" alt="Ficha del ejercicio «Press banca» en JV Fitness: foto del movimiento, dos siluetas anatómicas (frente y espalda) con el pecho resaltado en rojo y los hombros en naranja, chips de músculo, y las instrucciones «Cómo se hace» paso a paso." width="720" height="1649" loading="lazy"></figure>
@@ -1029,12 +1032,12 @@ html.fx-fin .stage__node{animation:none !important}
         <div class="spec-card reveal d1">
           <span class="feat-eyebrow">8 perfiles · 1.032 preguntas</span>
           <h3>Responde adaptándose a quién pregunta</h3>
-          <p>El asistente se mide contra ocho perfiles de persona: principiante, calisténico, chica, mayor de 60, sin tiempo en casa, avanzado, vuelve tras años y come distinto. En el barrido de <strong>1.032 preguntas reales</strong>, los «no sé» bajaron del 33,5&nbsp;% al 22,8&nbsp;%. El que más gana es quien no tiene tiempo: del 52,3&nbsp;% al 26,9&nbsp;%.</p>
+          <p>El asistente se mide contra ocho perfiles de persona: principiante, calisténico, chica, mayor de 60, sin tiempo en casa, avanzado, vuelve tras años y come distinto. En el barrido de <strong>1.032 preguntas reales</strong>, los «no sé» bajaron del 33,5&nbsp;% al 20,3&nbsp;%. El que más gana es quien no tiene tiempo: del 52,3&nbsp;% al 26,2&nbsp;%.</p>
         </div>
         <div class="spec-card reveal d2">
           <span class="feat-eyebrow">Auditoría de citas</span>
           <h3>Cita el paper, o no cita</h3>
-          <p>El conocimiento sale de un fichero maestro de <strong>47 Temas con 134 PMID</strong>, y antes de entrar pasa una auditoría que comprueba cita por cita. Esa auditoría cazó un tamaño de efecto inventado que circulaba con un PMID auténtico (0,86 donde el paper dice 2,16) y dos citas invertidas. Lo que no supera la auditoría no entra.</p>
+          <p>El conocimiento sale de un fichero maestro de <strong>47 Temas con 138 PMID</strong>, y antes de entrar pasa una auditoría que comprueba cita por cita. Esa auditoría cazó un tamaño de efecto inventado que circulaba con un PMID auténtico (0,86 donde el paper dice 2,16) y dos citas invertidas. Lo que no supera la auditoría no entra.</p>
         </div>
       </div>
   </div>
@@ -1058,15 +1061,15 @@ html.fx-fin .stage__node{animation:none !important}
         <div class="lbl">alimentos de España, consultables sin cobertura</div>
       </div>
       <div class="stat reveal d1">
-        <div class="num" data-count="1500" data-format="mil">1.500</div>
+        <div class="num" data-count="1502" data-format="mil">1.502</div>
         <div class="lbl">ejercicios con guía anatómica</div>
       </div>
       <div class="stat reveal d2">
-        <div class="num" data-count="362">362</div>
+        <div class="num" data-count="467">467</div>
         <div class="lbl">fichas del asistente, escritas a mano</div>
       </div>
       <div class="stat reveal">
-        <div class="num" data-count="109">109</div>
+        <div class="num" data-count="121">121</div>
         <div class="lbl">baterías de pruebas antes de cada publicación</div>
       </div>
       <div class="stat live reveal d1">
@@ -1153,7 +1156,7 @@ html.fx-fin .stage__node{animation:none !important}
       <p>Que la app funcione hoy no dice gran cosa. Esto es lo que tengo montado para que siga funcionando mañana sin que yo esté delante.</p>
     </div>
     <ul class="stage">
-      <li class="stage__node"><span><b>Cada pieza grande, su rama y su fusión.</b> Llevo 221 fusiones registradas en el taller, hechas de una en una para que cualquiera se pueda deshacer sola.</span></li>
+      <li class="stage__node"><span><b>Cada pieza grande, su rama y su fusión.</b> Llevo 301 fusiones registradas en el taller, hechas de una en una para que cualquiera se pueda deshacer sola.</span></li>
       <li class="stage__node"><span><b>Una compuerta que puede decirme que no.</b> Antes de publicar corro la batería entera de pruebas. Está escrita para poder tumbar mi propio trabajo: si una sola falla, devuelve error y ese cambio no sale.</span></li>
       <li class="stage__node"><span><b>Un robot publica por mí.</b> El taller es privado. Un robot recoge el código, lo tritura y publica solo el resultado. Antes de soltarlo comprueba cuatro cosas y aborta si falla una: que no viaje ninguna contraseña, que no viaje ninguna clave, que el fichero no salga vacío y que la política de seguridad siga puesta.</span></li>
       <li class="stage__node"><span><b>Un vigía lo mira desde fuera.</b> Cada mañana, en los servidores de GitHub y con mi ordenador apagado, un agente de solo lectura y sin ninguna clave abre la web publicada y comprueba que responde, que la versión que sirve es la del repositorio y que no falta ninguna pieza. Si algo falla, sale rojo y me llega el aviso: <a class="jade" style="border-bottom:1px dashed currentColor" href="https://github.com/pablolietor22/jv-fitness/actions/workflows/vigia-despliegue.yml" target="_blank" rel="noopener">ni un rojo desde el 28 de julio</a>.</span></li>
