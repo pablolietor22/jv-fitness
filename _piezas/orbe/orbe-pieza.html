@@ -330,6 +330,12 @@
 .jv-orbe--pensando .jv-orbe__onda{
   animation-play-state:running;
 }
+/* [28-08] En REPOSO los anillos tienen que estar QUIETOS, y no lo estaban: medido en el
+   banco daba 77 animaciones corriendo con nadie pensando. Van a opacidad 0, o sea que no
+   se ven, pero corren igual y gastan bateria en el movil. La regla de arriba solo enciende;
+   faltaba la que apaga cuando NO se piensa. Selector con :not() para que pese mas (0,3,0)
+   y gane a las reglas por anillo; al pensar no aplica y manda la de arriba. */
+.jv-orbe:not(.jv-orbe--pensando) .jv-orbe__onda{animation-play-state:paused}
 
 
 /* ---------------------------------------------------------------------
@@ -355,6 +361,14 @@
      que ahi hay luz, que es lo que distingue pensando de reposo. */
   .jv-orbe__luz::before{animation:none;opacity:.295;transform:scale(1.008)}
   .jv-orbe__luz::after {animation:none;opacity:.225;transform:scale(1.006)}
+  /* [28-08] Las dos de arriba NO bastaban: al pensar, la luz la enciende
+     '.jv-orbe--pensando .jv-orbe__luz::before', que pesa (0,2,1) y GANA a
+     '.jv-orbe__luz::before' de aqui, que pesa (0,1,1). Medido con la media query forzada:
+     seguian corriendo jvorbe-onda + ondula-b + gira-lento en bucle infinito, justo a quien
+     pidio no ver movimiento. Se repiten los selectores con --pensando para igualar el peso
+     y ganar por orden en el documento. */
+  .jv-orbe--pensando .jv-orbe__luz::before{animation:none;opacity:.295;transform:scale(1.008)}
+  .jv-orbe--pensando .jv-orbe__luz::after {animation:none;opacity:.225;transform:scale(1.006)}
 
   /* Los anillos se quedan quietos a tres radios distintos: se lee que hay
      ondas sin que nada se mueva. */
