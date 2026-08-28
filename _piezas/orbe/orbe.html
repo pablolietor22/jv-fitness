@@ -253,6 +253,11 @@
   .jv-orbe.jv-orbe--pensando .jv-orbe__scan,
   .jv-orbe .jv-orbe__scan{animation:none;opacity:.5;transform:none;filter:none}
   .jv-orbe__onda{animation:none;border-radius:57% 43% 40% 60% / 42% 59% 41% 58%}
+  /* [28-08 bis] La de arriba pesa (0,1,0) y PIERDE contra las reglas de fuera
+     que animan los anillos 2 y 3 ('.jv-orbe__onda:nth-child(2|3)', (0,2,0)):
+     al pensar seguian corriendo con la media forzada. Misma familia de fallo
+     que la luz: se iguala el peso y se gana por orden en el documento. */
+  .jv-orbe__onda:nth-child(2),.jv-orbe__onda:nth-child(3){animation:none}
   .jv-orbe__onda:nth-child(1){opacity:.40;transform:scale(1.42)}
   .jv-orbe__onda:nth-child(2){opacity:.26;transform:scale(1.84)}
   .jv-orbe__onda:nth-child(3){opacity:.12;transform:scale(2.16)}

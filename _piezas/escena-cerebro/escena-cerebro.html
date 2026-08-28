@@ -1,0 +1,394 @@
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<!-- Solo cuentan sueltas (showcase trae las suyas): sin charset, tildes
+ rotas (medido); sin viewport, el movil pinta a 980px. -->
+<!-- ESCENA 1 . EL CEREBRO CONVERSANDO . PIEZA PORTABLE
+     Suelta (doble clic) o pegada en showcase.html: hereda los tokens
+     var(--jade,...) o usa la reserva. ORBE: se usa #jv-orbe-molde si existe;
+     si no, la RESERVA de abajo (file:// impide enlazar). RESPUESTAS: texto
+     LITERAL del motor (empezar/hub, proteina/cuanta-al-dia,
+     sueno/cuantas-horas; comprobadas 28-08-2026). -->
+<style>
+/* mute2 de reserva: AA 4,5:1. */
+.jvce{--ce-jade:var(--jade,#3DDC97);--ce-bone:var(--bone,#EEF2EC);--ce-soft:var(--soft,#CBD8D1);--ce-mute2:var(--mute-2,#7E968B);--ce-line:var(--line,#1E3A31);--ce-lines:var(--line-soft,#16281F);--ce-panel:var(--panel,#101E19);--ce-panel2:var(--panel-2,#0D1B16);--ce-r:var(--r,16px);--ce-display:var(--display,'Space Grotesk',system-ui,sans-serif);--ce-mono:var(--mono,ui-monospace,Consolas,monospace);--ce-body:var(--body,system-ui,-apple-system,'Segoe UI',Roboto,sans-serif);--ce-casa:var(--ease-casa,cubic-bezier(.32,.72,0,1));--ce-entra:var(--ease-entra,cubic-bezier(.2,.8,.2,1))}
+html.jvce-suelta body{margin:0;background:#0A100E;color:#EEF2EC;font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+.jvce{position:relative;padding:clamp(26px,6vw,72px) 0;color:var(--ce-bone);font-family:var(--ce-body);line-height:1.62}
+.jvce *{box-sizing:border-box}
+.jvce-wrap{width:100%;max-width:560px;margin:0 auto;padding:0 18px}
+.jvce-eyebrow{font-family:var(--ce-mono);font-weight:500;font-size:.68rem;margin:0;text-transform:uppercase;letter-spacing:.2em;color:var(--ce-jade);display:flex;align-items:center;gap:.6em;width:fit-content}
+.jvce-eyebrow::before{content:"";width:16px;height:1px;background:var(--ce-jade);opacity:.7}
+.jvce-h{font-family:var(--ce-display);font-weight:700;letter-spacing:-.02em;line-height:1.1;font-size:clamp(1.45rem,5.4vw,2.05rem);margin:.6rem 0 0}
+.jvce-h b{color:var(--ce-jade)}
+.jvce-orbe{display:grid;place-items:center;height:132px;margin:clamp(14px,3vw,22px) 0 4px}
+.jvce-marco{border:1px solid var(--ce-line);border-radius:var(--ce-r);overflow:hidden;background:linear-gradient(180deg,var(--ce-panel),var(--ce-panel2));box-shadow:0 24px 60px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.03)}
+.jvce-barra{display:flex;align-items:center;gap:.6em;padding:11px 14px;font-size:.7rem;border-bottom:1px solid var(--ce-lines);font-family:var(--ce-mono);letter-spacing:.04em;color:var(--ce-soft)}
+.jvce-vivo{width:7px;height:7px;border-radius:50%;background:var(--ce-jade);flex:none;box-shadow:0 0 8px var(--ce-jade)}
+.jvce-barra i{margin-left:auto;color:var(--ce-mute2);font-size:.64rem;font-style:normal}
+/* hidden, NO auto: el dedo del movil quedaba atrapado; el guion usa scrollTop. */
+.jvce-hilo{height:clamp(320px,42vh,430px);overflow:hidden;padding:16px 14px 18px;display:flex;flex-direction:column;gap:12px;transition:opacity 380ms var(--ce-casa),transform 380ms var(--ce-casa)}
+.jvce-hilo.se-va{opacity:0;transform:translateY(-10px)}
+.jvce-b{max-width:88%;border-radius:14px;padding:11px 14px;font-size:.94rem;line-height:1.5;opacity:0;transform:translateY(16px);transition:opacity 420ms var(--ce-entra),transform 420ms var(--ce-entra)}
+.jvce-b.in{opacity:1;transform:none}
+.jvce-b--yo{align-self:flex-end;background:rgba(61,220,151,.13);color:var(--ce-bone);border:1px solid rgba(61,220,151,.3);border-bottom-right-radius:5px;transform:translateY(22px) scale(.96)}
+.jvce-b--bot{align-self:flex-start;max-width:96%;background:rgba(12,21,18,.72);border:1px solid var(--ce-lines);border-bottom-left-radius:5px;color:var(--ce-soft)}
+.jvce-b--bot b{color:var(--ce-bone);font-weight:600}
+.jvce-bl,.jvce-li,.jvce-chip{opacity:0;transform:translateY(8px);transition:opacity 340ms var(--ce-entra),transform 340ms var(--ce-entra)}
+.jvce-bl.in,.jvce-li.in,.jvce-chip.in{opacity:1;transform:none}
+.jvce-tit{font-family:var(--ce-display);font-weight:700;color:var(--ce-bone);font-size:1.02rem;line-height:1.32;letter-spacing:-.01em}
+.jvce-p{margin-top:9px}
+.jvce-ol{margin:8px 0 0;padding-left:1.35em;list-style:decimal}
+.jvce-li{margin:3px 0}
+.jvce-fuente{margin-top:12px;border-left:2px solid var(--ce-jade);padding:2px 0 2px 10px;font-family:var(--ce-mono);font-size:.72rem;line-height:1.45;color:var(--ce-soft)}
+.jvce-fuente span{display:block;color:var(--ce-jade);font-size:.6rem;letter-spacing:.2em;text-transform:uppercase;margin-bottom:2px}
+.jvce-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+.jvce-chip{font-size:.74rem;line-height:1.35;padding:6px 11px;border-radius:100px;font-weight:500;border:1px solid var(--ce-line);color:var(--ce-jade);transform:translateY(6px) scale(.96)}
+.jvce-sello{margin-top:12px;padding-top:8px;border-top:1px dashed var(--ce-lines);font-family:var(--ce-mono);font-size:.62rem;letter-spacing:.06em;color:var(--ce-mute2)}
+.jvce-entrada{display:flex;align-items:center;gap:10px;padding:12px 14px;border-top:1px solid var(--ce-lines);background:rgba(12,21,18,.5)}
+.jvce-campo{flex:1;min-width:0;font-size:.92rem;color:var(--ce-bone);white-space:pre-wrap;overflow-wrap:anywhere}
+/* :empty no casa (cursor hijo fijo): hueco por clase. */
+.jvce-campo.esta-vacio::before{content:attr(data-hueco);color:var(--ce-mute2)}
+.jvce-cursor{display:inline-block;width:2px;height:1.02em;background:var(--ce-jade);vertical-align:-.14em;margin-left:2px;opacity:0}
+.jvce-enviar{flex:none;width:32px;height:32px;border-radius:50%;display:grid;place-items:center;border:1px solid var(--ce-lines);color:var(--ce-mute2);transition:color .2s var(--ce-casa),border-color .2s var(--ce-casa),background .2s var(--ce-casa)}
+.jvce-enviar.esta-listo{color:#05221a;background:var(--ce-jade);border-color:var(--ce-jade)}
+.jvce-nota{margin:14px 0 0;font-family:var(--ce-mono);font-size:.68rem;line-height:1.6;color:var(--ce-mute2)}
+.jvce-puntos{display:flex;gap:8px;margin-top:14px;justify-content:center}
+.jvce-punto{width:26px;height:26px;padding:0;border:0;background:none;cursor:pointer;display:grid;place-items:center}
+.jvce-punto::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--ce-mute2);transition:background .22s var(--ce-casa),transform .22s var(--ce-casa)}
+.jvce-punto[aria-current="true"]::before{background:var(--ce-jade);transform:scale(1.3)}
+/* Pausa (WCAG 2.2.2). */
+.jvce-pausa{height:26px;padding:0 8px;border:1px solid var(--ce-lines);border-radius:100px;background:none;color:var(--ce-mute2);cursor:pointer;font-size:.72rem;line-height:1}
+.jvce-pausa[aria-pressed="true"]{color:var(--ce-jade);border-color:var(--ce-jade)}
+.jvce :focus-visible{outline:2px solid var(--ce-jade);outline-offset:3px;border-radius:4px}
+.jvce.esta-en-pantalla .jvce-cursor{animation:jvce-parp 1.06s steps(1) infinite}
+.jvce.esta-en-pantalla .jvce-vivo{animation:jvce-late 2.6s ease-in-out infinite}
+/* Apagado por CLASE: la animacion pisa la opacity en linea. (0,3,0) y despues. */
+.jvce .jvce-cursor.jvce-cursor--off{animation:none;opacity:0}
+@keyframes jvce-parp{0%,49%{opacity:1}50%,100%{opacity:0}}
+@keyframes jvce-late{0%,100%{opacity:1}50%{opacity:.35}}
+/* EL ORBE SE PARA fuera de pantalla: play-state no reinicia; (0,3,0) gana a .cb-orb. */
+.jvce:not(.esta-en-pantalla) .cb-orb,
+.jvce:not(.esta-en-pantalla) .cb-orb::before,
+.jvce:not(.esta-en-pantalla) .cb-orb::after{animation-play-state:paused}
+@media (min-width:640px){.jvce-wrap{max-width:600px;padding:0 22px}.jvce-hilo{height:430px}}
+/* Movil: orbe a 96px (medido a 375px). */
+@media (max-width:639px){.jvce-orbe{height:96px}.jvce-orbe .jv-orbe{transform:scale(.727)}}
+/* REDUCIDO: cero animaciones (el guion ni arranca). SELECTOR DOBLADO: la media
+   NO suma especificidad y anima '.jvce.esta-en-pantalla .jvce-cursor' (0,3,0);
+   con (0,2,0) el cinturon PERDIA. 3a vez de esta trampa (anillos y luz del
+   orbe): apagar con el mismo peso o mas, y DESPUES. */
+@media (prefers-reduced-motion:reduce){
+ .jvce.jvce .jvce-cursor{animation:none;opacity:0}
+ .jvce.jvce .jvce-vivo{animation:none;opacity:1}
+ .jvce .jvce-b,.jvce .jvce-bl,.jvce .jvce-li,.jvce .jvce-chip{transition:none;opacity:1;transform:none}
+ .jvce .jvce-hilo,.jvce .jvce-enviar,.jvce .jvce-punto::before{transition:none}
+ /* Ruta quieta: sin esto la respuesta quedaba CORTADA. */
+ .jvce .jvce-hilo{height:auto}
+}</style>
+
+<!-- ==== CORTE . RESERVA DEL ORBE: BORRARLA ENTERA al pegar en el escaparate
+     (ya trae #jv-orbe-molde). Espejo de orbe-pieza.html 28-08-2026. -->
+<template id="jvce-orbe-repuesto">
+<style>
+.cb-orb{position:relative;flex:none;border-radius:50%;background:radial-gradient(circle at 35% 28%, #d6ffee 0%, #6fe9b8 22%, #3DDC97 42%, #1c8f66 64%, #0c4331 84%, #072a20 100%);box-shadow:0 0 44px 6px rgba(61,220,151,.30),0 0 92px 24px rgba(255,106,61,.22),inset -6px -9px 26px rgba(0,0,0,.55),inset 7px 9px 22px rgba(255,255,255,.28);animation:cbbreath 6s ease-in-out infinite}
+.cb-orb::before{content:"";position:absolute;inset:8%;border-radius:50%;mix-blend-mode:screen;background:radial-gradient(circle at 50% 55%, rgba(61,220,151,.6) 0%, rgba(61,220,151,0) 62%);animation:cbcore 6s ease-in-out infinite}
+.cb-orb::after{content:"";position:absolute;inset:0;border-radius:50%;mix-blend-mode:screen;background:radial-gradient(circle at 32% 26%, rgba(255,255,255,.5) 0%, rgba(255,255,255,0) 30%);animation:cbsheen 11s linear infinite}
+.cb-orb-lg{width:132px;height:132px}
+@keyframes cbbreath{0%,100%{transform:scale(1)}50%{transform:scale(1.055)}}
+@keyframes cbcore{0%,100%{opacity:.4;transform:scale(.9)}50%{opacity:.9;transform:scale(1.06)}}
+@keyframes cbsheen{0%{transform:rotate(0)}100%{transform:rotate(360deg)}}
+.jv-orbe{position:relative;z-index:0;display:inline-flex;flex:none;line-height:0}
+.jv-orbe > .cb-orb{z-index:2}
+.jv-orbe__luz{position:absolute;inset:-80%;z-index:3;pointer-events:none;border-radius:50%;mix-blend-mode:screen;opacity:0;transition:opacity 760ms cubic-bezier(.25,.1,.25,1);will-change:opacity}
+.jv-orbe__luz::before,.jv-orbe__luz::after{content:"";position:absolute;inset:0;border-radius:50%;animation-timing-function:ease-in-out;animation-iteration-count:infinite;animation-direction:alternate;animation-play-state:paused;will-change:opacity,transform}
+.jv-orbe__luz::before{opacity:.22;animation-name:jvorbe-latido-a;animation-duration:5.3s;animation-delay:-2.65s;background:radial-gradient(circle closest-side,rgba(61,220,151,0) 22%,rgba(61,220,151,.62) 42%,rgba(61,220,151,.32) 56%,rgba(61,220,151,0) 78%)}
+.jv-orbe__luz::after{opacity:.16;animation-name:jvorbe-latido-b;animation-duration:7.9s;animation-delay:-3.95s;background:radial-gradient(circle closest-side,rgba(255,106,61,0) 32%,rgba(255,106,61,.26) 52%,rgba(255,106,61,.12) 66%,rgba(255,106,61,0) 82%)}
+@keyframes jvorbe-latido-a{from{opacity:.22;transform:scale(1)}to{opacity:.37;transform:scale(1.015)}}
+@keyframes jvorbe-latido-b{from{opacity:.16;transform:scale(1)}to{opacity:.29;transform:scale(1.012)}}
+.jv-orbe__ondas{position:absolute;inset:-80%;z-index:1;pointer-events:none;opacity:0;transition:opacity 760ms cubic-bezier(.25,.1,.25,1);will-change:opacity}
+.jv-orbe__onda{position:absolute;inset:30.7692%;border:1px solid rgba(61,220,151,.55);opacity:0;border-radius:44% 56% 59% 41% / 54% 44% 56% 46%;animation-play-state:paused;will-change:opacity,transform;animation:jvorbe-onda 4.2s cubic-bezier(.22,.61,.36,1) infinite,jvorbe-ondula-a 5.1s ease-in-out infinite,jvorbe-gira-lento 23s linear infinite}
+.jv-orbe__scan{position:absolute;inset:0;border-radius:50%;pointer-events:none;opacity:0;z-index:3;mix-blend-mode:screen;background:repeating-linear-gradient(0deg,rgba(214,255,238,0) 0px,rgba(214,255,238,.13) 1px,rgba(214,255,238,.13) 2px,rgba(214,255,238,0) 4px);-webkit-mask:radial-gradient(circle closest-side,#000 78%,transparent 100%);mask:radial-gradient(circle closest-side,#000 78%,transparent 100%)}
+.jv-orbe.jv-orbe--pensando .jv-orbe__scan{will-change:opacity,transform;animation:jvorbe-scan 2.7s cubic-bezier(.42,0,.24,1) infinite,jvorbe-parpadeo 3.9s ease-in-out infinite}
+@keyframes jvorbe-scan{0%{opacity:0;transform:translateY(-46%)}12%{opacity:.85}76%{opacity:.62}100%{opacity:0;transform:translateY(46%)}}
+@keyframes jvorbe-parpadeo{0%,38%{opacity:1}44%{opacity:.72}52%{opacity:1}69%{opacity:.55}78%{opacity:.92}100%{opacity:1}}
+@keyframes jvorbe-ondula-a{0%{border-radius:44% 56% 59% 41% / 54% 44% 56% 46%}33%{border-radius:63% 37% 39% 61% / 40% 62% 38% 60%}
+ 66%{border-radius:38% 62% 64% 36% / 62% 39% 61% 38%}100%{border-radius:44% 56% 59% 41% / 54% 44% 56% 46%}}
+@keyframes jvorbe-ondula-b{0%{border-radius:58% 42% 39% 61% / 43% 60% 40% 57%}40%{border-radius:36% 64% 63% 37% / 64% 36% 64% 36%}
+ 75%{border-radius:62% 38% 41% 59% / 37% 64% 36% 63%}100%{border-radius:58% 42% 39% 61% / 43% 60% 40% 57%}}
+@keyframes jvorbe-gira-lento{from{rotate:0deg}to{rotate:360deg}}
+@keyframes jvorbe-onda{0%{opacity:0;transform:scale(1)}14%{opacity:.44}38%{opacity:.30;transform:scale(1.52)}
+ 62%{opacity:.22;transform:scale(1.74)}100%{opacity:0;transform:scale(2.35)}}
+.jv-orbe--pensando .jv-orbe__luz,.jv-orbe--pensando .jv-orbe__ondas{opacity:1;transition-duration:520ms}
+.jv-orbe--pensando .jv-orbe__luz::before,.jv-orbe--pensando .jv-orbe__luz::after,.jv-orbe__onda:nth-child(2){
+ animation:jvorbe-onda 4.2s cubic-bezier(.22,.61,.36,1) 1.4s infinite,jvorbe-ondula-b 6.7s ease-in-out .6s infinite,jvorbe-gira-lento 29s linear -7s infinite reverse}
+.jv-orbe__onda:nth-child(3){animation:jvorbe-onda 4.2s cubic-bezier(.22,.61,.36,1) 2.8s infinite,jvorbe-ondula-a 7.9s ease-in-out 1.9s infinite,jvorbe-gira-lento 37s linear -14s infinite}
+.jv-orbe--pensando .jv-orbe__onda{animation-play-state:running}
+.jv-orbe:not(.jv-orbe--pensando) .jv-orbe__onda{animation-play-state:paused}
+@media (prefers-reduced-motion: reduce){
+ .jv-orbe__luz,.jv-orbe__ondas{transition:none}
+ .jv-orbe .cb-orb{animation:none;transform:scale(1.0275)}
+ .jv-orbe .cb-orb::before{animation:none;opacity:.65;transform:scale(.98)}
+ .jv-orbe .cb-orb::after{animation:none;transform:rotate(0)}
+ .jv-orbe__luz::before,.jv-orbe--pensando .jv-orbe__luz::before{animation:none;opacity:.295;transform:scale(1.008)}
+ .jv-orbe__luz::after,.jv-orbe--pensando .jv-orbe__luz::after{animation:none;opacity:.225;transform:scale(1.006)}
+ .jv-orbe .jv-orbe__scan,.jv-orbe.jv-orbe--pensando .jv-orbe__scan{animation:none;opacity:.5;transform:none;filter:none}
+ .jv-orbe__onda{animation:none;border-radius:57% 43% 40% 60% / 42% 59% 41% 58%}
+ .jv-orbe__onda:nth-child(2),.jv-orbe__onda:nth-child(3){animation:none}
+ .jv-orbe__onda:nth-child(1){opacity:.40;transform:scale(1.42)}
+ .jv-orbe__onda:nth-child(2){opacity:.26;transform:scale(1.84)}
+ .jv-orbe__onda:nth-child(3){opacity:.12;transform:scale(2.16)}
+}
+</style>
+<template id="jv-orbe-molde">
+ <span class="jv-orbe" aria-hidden="true">
+  <span class="jv-orbe__ondas"><i class="jv-orbe__onda"></i><i class="jv-orbe__onda"></i><i class="jv-orbe__onda"></i></span>
+  <span class="cb-orb cb-orb-lg"></span>
+  <span class="jv-orbe__scan" aria-hidden="true"></span>
+  <span class="jv-orbe__luz"></span>
+ </span>
+</template>
+</template>
+<!-- ==== FIN DE LA COPIA DE RESERVA ==== -->
+
+<!-- Epigrafe y h2 borrables si el escaparate ya pone titular. -->
+<section class="jvce" data-jv-escena-cerebro aria-labelledby="jvce_t">
+ <div class="jvce-wrap">
+  <p class="jvce-eyebrow">El cerebro contestando</p>
+  <h2 class="jvce-h" id="jvce_t">Le preguntas en cristiano.<br>Contesta <b>citando la fuente</b>.</h2>
+  <div class="jvce-orbe" id="jvce_orbe" aria-hidden="true"></div>
+  <div class="jvce-marco">
+   <div class="jvce-barra">
+    <span class="jvce-vivo" aria-hidden="true"></span><span>Cerebro de JV Fitness</span><i>motor determinista</i>
+   </div>
+   <div class="jvce-hilo" id="jvce_hilo"></div>
+   <div class="jvce-entrada">
+    <span class="jvce-campo esta-vacio" id="jvce_campo" data-hueco="Pregúntale lo que quieras"><i class="jvce-cursor" id="jvce_cur" aria-hidden="true"></i></span>
+    <span class="jvce-enviar" id="jvce_env" aria-hidden="true"><svg viewBox="0 0 16 16" width="14" height="14"><path d="M8 13V3M8 3 3.7 7.3M8 3l4.3 4.3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+   </div>
+  </div>
+  <p class="jvce-nota">Las tres preguntas y sus respuestas salen tal cual del motor de la app publicada. Esta escena las reproduce con su ritmo; no ejecuta el motor dentro de la página.</p>
+  <div class="jvce-puntos" id="jvce_puntos"></div>
+ </div>
+</section>
+
+<script>
+(function(){
+'use strict';
+var T={TECLA:38,AZAR:46,COMA:250,ENVIAR:320,
+PENSAR:850, /* LA PAUSA: sin minimo no llega a verse; ni se quita ni se acorta */
+BLOQUE:230,ITEM:95,FUENTE:300,CHIPS:260,CHIP:55,SELLO:220,
+LEE:2600,LEE_CHAR:12,LEE_TOPE:6500,CORTE:400};
+/* Texto del motor real (cabecera); el innerHTML solo recibe estas constantes. */
+var GUION=[
+{q:"Estoy abrumado, no sé cómo empezar",
+sello:"ficha empezar/hub · score 10",
+tit:"Empezar bien es más fácil de lo que parece — y no hay pregunta tonta.",
+cuerpo:[{k:"p",h:"Bienvenido 💪 ¿Por dónde quieres arrancar?"}],
+fuente:"hub temático, CEREBRO 2.0",
+chips:["¿por dónde empiezo del todo?","me da vergüenza ir","¿cuántos días a la semana?",
+"tengo 60 años, ¿puedo?","tengo 14 años, ¿puedo?","¿necesito entrenador?","¿máquinas o pesas?",
+"estoy muy delgado","estoy gordo, ¿por dónde empiezo?"]},
+{q:"¿Cuánta proteína tengo que comer?",
+sello:"ficha proteina/cuanta-al-dia · score 22,31",
+tit:"~1,5-1,6 g/kg de peso al día es SUFICIENTE para el caso general.",
+cuerpo:[{k:"p",h:"Por encima de ahí no se ha demostrado más síntesis ni más músculo: es una meseta. Doblarla a 3,2 g/kg da lo mismo."},
+{k:"p",h:"Lo importante es entrenar cerca del fallo y progresar; el margen calórico extra mételo en carbos, no en más proteína."}],
+fuente:"Tema 3, Morton 2018 / Bagheri 2024",
+chips:["¿y en definición?","¿de golpe o repartida?","¿el batido cuenta?","¿cambia con la edad?"]},
+{q:"¿Cuánto tengo que dormir?",
+sello:"ficha sueno/cuantas-horas · score 14,06",
+tit:"El objetivo son 7-9 horas.",
+cuerpo:[{k:"p",h:"Dormir es una variable anabólica crítica: por debajo de 6h crónicas el anabolismo se resiente aunque entrenes y comas perfecto."},
+{k:"p",h:"Higiene básica:"},
+{k:"ol",items:["Horarios consistentes.","Cuarto oscuro/fresco/silencioso.","Sin pantallas 1h antes.",
+ "Cortar la cafeína <b>por dosis</b>: un café normal (~100 mg) no alteró el sueño tomándolo 4 h antes de dormir (más cerca no se ha ensayado); un pre-entreno (200+ mg), unas 13 h antes."]},
+{k:"p",h:"Ningún suplemento compensa la falta de sueño."}],
+fuente:"Tema 27, Hirshkowitz 2015 / Lamon 2021 · corte por dosis: Gardiner 2023 y 2025",
+chips:["¿qué pasa si duermo mal una noche?","¿entreno igual si no dormí?","¿la creatina compensa dormir mal?"]}
+];
+function arranque(){
+var raiz=document.querySelector('[data-jv-escena-cerebro]');
+if(!raiz) return;
+function id(x){ return document.getElementById(x); }
+var hilo=id('jvce_hilo'),campo=id('jvce_campo'),cursor=id('jvce_cur'),
+   boton=id('jvce_env'),puntos=id('jvce_puntos');
+/* Suelto: vestirse y declarar lang. */
+var de=document.documentElement;
+if(!getComputedStyle(de).getPropertyValue('--bg').trim()){
+de.classList.add('jvce-suelta');
+de.lang='es';
+}
+if(!id('jv-orbe-molde')){
+var rep=id('jvce-orbe-repuesto');
+if(rep) document.head.appendChild(rep.content.cloneNode(true));
+}
+var orbe=null,molde=id('jv-orbe-molde');
+if(typeof jvOrbeCrear==='function') orbe=jvOrbeCrear('lg');
+else if(molde) orbe=molde.content.firstElementChild.cloneNode(true);
+if(orbe) id('jvce_orbe').appendChild(orbe);
+function orbeEstado(e){
+if(!orbe) return;
+if(typeof jvOrbeEstado==='function') return jvOrbeEstado(orbe,e);
+orbe.classList.toggle('jv-orbe--pensando',e==='pensando');
+}
+var quieto=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+/* Al parar, gen++: las citas en vuelo no hacen nada. */
+var gen=0,relojes=[],activa=false,idx=0,finPensar=null,pausado=false;
+function cita(ms,fn){
+var g=gen;
+relojes.push(setTimeout(function(){ if(g===gen&&activa) fn(); },ms));
+}
+function parar(){
+gen++; activa=false;
+for(var i=0;i<relojes.length;i++) clearTimeout(relojes[i]);
+relojes.length=0;
+if(finPensar){ finPensar(); finPensar=null; }
+orbeEstado('reposo');
+raiz.classList.remove('esta-en-pantalla');
+}
+/* .in en la misma tarea no transiciona: offsetWidth fuerza el estado de partida. */
+function pintar(el){ void el.offsetWidth; el.classList.add('in'); }
+function nodo(t,c,h){
+var e=document.createElement(t);
+e.className=c;
+if(h!=null) e.innerHTML=h;
+return e;
+}
+function seguir(el){
+var d=el.getBoundingClientRect().bottom-hilo.getBoundingClientRect().top
+     +hilo.scrollTop-hilo.clientHeight+16;
+if(d>hilo.scrollTop){
+ if(hilo.scrollTo) hilo.scrollTo({top:d,behavior:quieto?'auto':'smooth'});
+ else hilo.scrollTop=d;
+}
+}
+function montar(f){
+var caja=nodo('div','jvce-b jvce-b--bot'),pasos=[],t=0;
+function add(el,dt){ t+=dt; pasos.push([t,el]); return el; }
+caja.appendChild(add(nodo('div','jvce-bl jvce-tit',f.tit),0));
+for(var i=0;i<f.cuerpo.length;i++){
+ var p=f.cuerpo[i];
+ if(p.k==='ol'){
+  var ol=add(nodo('ol','jvce-bl jvce-ol'),T.BLOQUE);
+  for(var j=0;j<p.items.length;j++) ol.appendChild(add(nodo('li','jvce-li',p.items[j]),T.ITEM));
+  caja.appendChild(ol);
+ } else caja.appendChild(add(nodo('div','jvce-bl jvce-p',p.h),T.BLOQUE));
+}
+caja.appendChild(add(nodo('div','jvce-bl jvce-fuente','<span>Fuente</span>'+f.fuente),T.FUENTE));
+var chips=add(nodo('div','jvce-bl jvce-chips'),T.CHIPS);
+for(var m=0;m<f.chips.length;m++) chips.appendChild(add(nodo('span','jvce-chip',f.chips[m]),T.CHIP));
+caja.appendChild(chips);
+caja.appendChild(add(nodo('div','jvce-bl jvce-sello',f.sello),T.SELLO));
+return {caja:caja,pasos:pasos,fin:t};
+}
+function lectura(f){
+var n=f.tit.length+f.fuente.length+f.chips.join('').length;
+for(var i=0;i<f.cuerpo.length;i++)
+ n+=(f.cuerpo[i].k==='ol')?f.cuerpo[i].items.join('').length:f.cuerpo[i].h.length;
+return Math.min(T.LEE_TOPE,T.LEE+n*T.LEE_CHAR);
+}
+function limpiar(){
+marcar();
+hilo.classList.remove('se-va');
+hilo.innerHTML='';
+hilo.scrollTop=0;
+campo.textContent='';
+campo.appendChild(cursor);
+campo.classList.add('esta-vacio');
+boton.classList.remove('esta-listo');
+orbeEstado('reposo');
+}
+function teclear(txt,fin){
+var i=0;
+cursor.classList.remove('jvce-cursor--off');
+(function paso(){
+ if(i>=txt.length){ cita(T.ENVIAR,fin); return; }
+ var c=txt.charAt(i++);
+ campo.insertBefore(document.createTextNode(c),cursor);
+ if(i===1){ boton.classList.add('esta-listo'); campo.classList.remove('esta-vacio'); }
+ var espera=T.TECLA+Math.random()*T.AZAR;
+ if(c===','||c===':') espera+=T.COMA;
+ if(c===' ') espera*=.7;
+ cita(espera,paso);
+})();
+}
+function ciclo(){
+var f=GUION[idx];
+limpiar();
+teclear(f.q,function(){
+ campo.textContent=''; campo.appendChild(cursor);
+ campo.classList.add('esta-vacio');
+ cursor.classList.add('jvce-cursor--off');
+ boton.classList.remove('esta-listo');
+ var yo=nodo('div','jvce-b jvce-b--yo',f.q);
+ hilo.appendChild(yo); pintar(yo); seguir(yo);
+ finPensar=(typeof jvOrbePensar==='function'&&orbe)?jvOrbePensar(orbe,T.PENSAR)
+          :(orbeEstado('pensando'),function(){ orbeEstado('respondido'); });
+ cita(T.PENSAR,function(){
+  if(finPensar){ finPensar(); finPensar=null; }
+  var m=montar(f);
+  hilo.appendChild(m.caja); pintar(m.caja);
+  for(var i=0;i<m.pasos.length;i++)
+   (function(p){ cita(p[0],function(){ pintar(p[1]); seguir(p[1]); }); })(m.pasos[i]);
+  cita(m.fin+lectura(f),function(){
+   hilo.classList.add('se-va');
+   cita(T.CORTE,function(){ idx=(idx+1)%GUION.length; ciclo(); });
+  });
+ });
+});
+}
+/* Quieta. Sin 'esta-en-pantalla' el cursor ya es invisible. */
+function estatica(){
+var f=GUION[idx];
+limpiar();
+hilo.appendChild(nodo('div','jvce-b jvce-b--yo in',f.q));
+var m=montar(f);
+m.caja.classList.add('in');
+for(var i=0;i<m.pasos.length;i++) m.pasos[i][1].classList.add('in');
+hilo.appendChild(m.caja);
+}
+function marcar(){
+var b=puntos.children;
+for(var i=0;i<b.length;i++) b[i].setAttribute('aria-current',i===idx?'true':'false');
+}
+for(var n=0;n<GUION.length;n++)(function(k){
+var b=document.createElement('button');
+b.type='button'; b.className='jvce-punto';
+b.setAttribute('aria-label','Ver la pregunta '+(k+1)+' de '+GUION.length);
+b.addEventListener('click',function(){
+ idx=k;
+ if(quieto||pausado){ estatica(); return; }
+ parar(); activa=true; raiz.classList.add('esta-en-pantalla'); ciclo();
+});
+puntos.appendChild(b);
+})(n);
+function encender(){
+if(activa||quieto||pausado) return;
+activa=true;
+raiz.classList.add('esta-en-pantalla');
+ciclo();
+}
+if(quieto||!('IntersectionObserver' in window)){ estatica(); return; }
+var bp=nodo('button','jvce-pausa','⏸');
+bp.type='button';
+bp.setAttribute('aria-pressed','false');
+bp.setAttribute('aria-label','Pausar o reanudar la animación');
+bp.onclick=function(){
+pausado=!pausado;
+bp.setAttribute('aria-pressed',''+pausado);
+bp.textContent=pausado?'▶':'⏸';
+if(pausado) parar(); else if(dentro&&!document.hidden) encender();
+};
+puntos.appendChild(bp);
+var dentro=false;
+new IntersectionObserver(function(es){
+for(var i=0;i<es.length;i++){
+ dentro=es[i].isIntersecting;
+ if(dentro&&!document.hidden) encender(); else parar();
+}
+},{threshold:.2}).observe(raiz);
+document.addEventListener('visibilitychange',function(){
+if(document.hidden) parar(); else if(dentro) encender();
+});
+}
+if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',arranque);
+else arranque();
+})();</script>
