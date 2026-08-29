@@ -325,11 +325,14 @@ teclear(f.q,function(){
  finPensar=(typeof jvOrbePensar==='function'&&orbe)?jvOrbePensar(orbe,T.PENSAR)
           :(orbeEstado('pensando'),function(){ orbeEstado('respondido'); });
  cita(T.PENSAR,function(){
-  if(finPensar){ finPensar(); finPensar=null; }
+  /* [30-08] Orden de Pablo: el orbe sigue PENSANDO mientras responde, y solo se apaga al
+     terminar de responder (antes se apagaba aqui, justo al empezar a contestar). Si la
+     escena se corta a mitad, la red de seguridad de parar() lo apaga igual. */
   var m=montar(f);
   hilo.appendChild(m.caja); pintar(m.caja);
   for(var i=0;i<m.pasos.length;i++)
    (function(p){ cita(p[0],function(){ pintar(p[1]); seguir(p[1]); }); })(m.pasos[i]);
+  cita(m.fin,function(){ if(finPensar){ finPensar(); finPensar=null; } });
   cita(m.fin+lectura(f),function(){
    hilo.classList.add('se-va');
    cita(T.CORTE,function(){ idx=(idx+1)%GUION.length; ciclo(); });

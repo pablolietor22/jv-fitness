@@ -984,20 +984,8 @@ html.fx-fin .stage__node{animation:none !important}
         <figure class="shot shot--tall"><img src="assets/shots/exercise-anatomy.webp" alt="Ficha del ejercicio «Press banca» en JV Fitness: foto del movimiento, dos siluetas anatómicas (frente y espalda) con el pecho resaltado en rojo y los hombros en naranja, chips de músculo, y las instrucciones «Cómo se hace» paso a paso." width="720" height="1649" loading="lazy"></figure>
       </div>
     </div>
-
-    <!-- Feature 3 · motor Jarvis -->
-    <div class="frow reveal">
-      <div class="frow__text">
-        <span class="feat-eyebrow">Asistente «Jarvis» · 467 fichas · 7.896 claves</span>
-        <!-- N2 · el titular se escribe con cursor: es el asistente contestando -->
-        <h3 data-fx="type">Pregunta, y no se lo inventa</h3>
-        <p class="lead">Motor determinista: cada respuesta sale de una ficha escrita a mano, no de un modelo que improvisa. <strong>314 de las 467 fichas dicen de qué Tema salen.</strong> Y si no lo sabe, lo dice.</p>
-      </div>
-      <div class="frow__media">
-        <figure class="shot"><img src="assets/shots/jarvis-chat.webp" alt="Chat del motor Jarvis en JV Fitness: ante «¿cuánta proteína?» primero desambigua, y luego da una respuesta que cita la fuente «(← Tema 3, Morton 2018 / Bagheri 2024)», con preguntas de seguimiento encadenadas." width="720" height="906" loading="lazy"></figure>
-      </div>
-    </div>
-
+    <!-- Feature 3 (motor Jarvis, tarjeta estatica) RETIRADA el 30-08: la Escena 1 viva
+         de aqui abajo cuenta lo mismo demostrandolo. Orden de Pablo: «quita la parte que repites». -->
     <!-- tres funciones más (spec cards) -->
     <div class="spec-grid">
       <div class="spec-card reveal">
@@ -1346,11 +1334,14 @@ teclear(f.q,function(){
  finPensar=(typeof jvOrbePensar==='function'&&orbe)?jvOrbePensar(orbe,T.PENSAR)
           :(orbeEstado('pensando'),function(){ orbeEstado('respondido'); });
  cita(T.PENSAR,function(){
-  if(finPensar){ finPensar(); finPensar=null; }
+  /* [30-08] Orden de Pablo: el orbe sigue PENSANDO mientras responde, y solo se apaga al
+     terminar de responder (antes se apagaba aqui, justo al empezar a contestar). Si la
+     escena se corta a mitad, la red de seguridad de parar() lo apaga igual. */
   var m=montar(f);
   hilo.appendChild(m.caja); pintar(m.caja);
   for(var i=0;i<m.pasos.length;i++)
    (function(p){ cita(p[0],function(){ pintar(p[1]); seguir(p[1]); }); })(m.pasos[i]);
+  cita(m.fin,function(){ if(finPensar){ finPensar(); finPensar=null; } });
   cita(m.fin+lectura(f),function(){
    hilo.classList.add('se-va');
    cita(T.CORTE,function(){ idx=(idx+1)%GUION.length; ciclo(); });
