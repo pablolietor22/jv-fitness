@@ -1242,13 +1242,13 @@ orbe.classList.toggle('jv-orbe--pensando',e==='pensando');
 }
 var quieto=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 /* Al parar, gen++: las citas en vuelo no hacen nada. */
-var gen=0,relojes=[],activa=false,idx=0,finPensar=null,pausado=false;
+var gen=0,relojes=[],activa=false,idx=0,finPensar=null,pausado=false,completar=null;
 function cita(ms,fn){
 var g=gen;
 relojes.push(setTimeout(function(){ if(g===gen&&activa) fn(); },ms));
 }
 function parar(){
-gen++; activa=false;
+gen++; activa=false; completar=null;
 for(var i=0;i<relojes.length;i++) clearTimeout(relojes[i]);
 relojes.length=0;
 if(finPensar){ finPensar(); finPensar=null; }
@@ -1343,9 +1343,25 @@ teclear(f.q,function(){
    (function(p){ cita(p[0],function(){ pintar(p[1]); seguir(p[1]); }); })(m.pasos[i]);
   cita(m.fin,function(){ if(finPensar){ finPensar(); finPensar=null; } });
   cita(m.fin+lectura(f),function(){
+   completar=null;
    hilo.classList.add('se-va');
    cita(T.CORTE,function(){ idx=(idx+1)%GUION.length; ciclo(); });
   });
+  /* [30-08] Toque para completar: igual que hara la app (P2a del pliego del motor). Un toque en
+     el hilo pinta de golpe lo que quede, apaga el orbe y deja el tiempo de lectura entero. */
+  completar=function(){
+   completar=null;
+   gen++;
+   for(var k=0;k<relojes.length;k++) clearTimeout(relojes[k]);
+   relojes.length=0;
+   for(var k=0;k<m.pasos.length;k++) m.pasos[k][1].classList.add('in');
+   seguir(m.pasos.length?m.pasos[m.pasos.length-1][1]:m.caja);
+   if(finPensar){ finPensar(); finPensar=null; }
+   cita(lectura(f),function(){
+    hilo.classList.add('se-va');
+    cita(T.CORTE,function(){ idx=(idx+1)%GUION.length; ciclo(); });
+   });
+  };
  });
 });
 }
@@ -1402,6 +1418,9 @@ for(var i=0;i<es.length;i++){
 document.addEventListener('visibilitychange',function(){
 if(document.hidden) parar(); else if(dentro) encender();
 });
+/* [30-08] Toque para completar la respuesta (orden de Pablo: igual que la app). Solo actua
+   mientras hay respuesta revelandose; en pausa o en reposo no hace nada. */
+hilo.addEventListener('pointerdown',function(){ if(completar&&activa&&!pausado) completar(); });
 }
 if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',arranque);
 else arranque();
