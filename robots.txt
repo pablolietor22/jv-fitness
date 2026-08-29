@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+Disallow: /_piezas/
+
+Sitemap: https://pablolietor22.github.io/jv-fitness/sitemap.xml
