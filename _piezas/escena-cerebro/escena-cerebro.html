@@ -174,8 +174,10 @@ html.jvce-suelta body{margin:0;background:#0A100E;color:#EEF2EC;font-family:syst
 'use strict';
 var T={TECLA:38,AZAR:46,COMA:250,ENVIAR:320,
 PENSAR:850, /* LA PAUSA: sin minimo no llega a verse; ni se quita ni se acorta */
-BLOQUE:230,ITEM:95,FUENTE:300,CHIPS:260,CHIP:55,SELLO:220,
-LEE:2600,LEE_CHAR:12,LEE_TOPE:6500,CORTE:400};
+BLOQUE:340,ITEM:130,FUENTE:380,CHIPS:320,CHIP:70,SELLO:280,
+/* [30-08] Tiempos SUBIDOS por orden de Pablo tras verla: «no da tiempo a leer».
+   Antes: BLOQUE 230, ITEM 95, LEE 2600 + 12/car con tope 6500. */
+LEE:4200,LEE_CHAR:18,LEE_TOPE:10000,CORTE:500};
 /* Texto del motor real (cabecera); el innerHTML solo recibe estas constantes. */
 var GUION=[
 {q:"Estoy abrumado, no sé cómo empezar",
