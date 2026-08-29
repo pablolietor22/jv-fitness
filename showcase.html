@@ -1007,7 +1007,9 @@ html.fx-fin .stage__node{animation:none !important}
      meterlo en la showcase»). Es la pieza portable de _piezas/escena-cerebro/, pegada
      CON su reserva del orbe (esta pagina no lleva la pieza del orbe aparte) y sin la
      linea de metas que solo vale en el fichero suelto. Los textos son LITERALES del
-     motor de la app. Cualquier cambio: editarlo en la pieza y volver a pegar. -->
+     motor de la app. Cualquier cambio: editarlo en la pieza y volver a pegar.
+     [30-08 bis] RE-SINCRONIZADA con la ESCENA 1-bis encadenada: tras la 3a pregunta
+     entra el AVISO DE LA CREATINA. Trae dentro el espejo de _piezas/aviso-jarvis/. -->
 <!-- Solo cuentan sueltas (showcase trae las suyas): sin charset, tildes
  rotas (medido); sin viewport, el movil pinta a 980px. -->
 <!-- ESCENA 1 . EL CEREBRO CONVERSANDO . PIEZA PORTABLE
@@ -1015,7 +1017,11 @@ html.fx-fin .stage__node{animation:none !important}
      var(--jade,...) o usa la reserva. ORBE: se usa #jv-orbe-molde si existe;
      si no, la RESERVA de abajo (file:// impide enlazar). RESPUESTAS: texto
      LITERAL del motor (empezar/hub, proteina/cuanta-al-dia,
-     sueno/cuantas-horas; comprobadas 28-08-2026). -->
+     sueno/cuantas-horas; comprobadas 28-08-2026).
+     [30-08] ENCADENADA la ESCENA 1-bis: tras la 3a pregunta no se corta, entra el
+     AVISO DE LA CREATINA en la misma conversacion y despues vuelve el ciclo. La
+     tarjeta es la pieza _piezas/aviso-jarvis/ (espejo mas abajo) y su texto sale
+     literal de flexCreatinaHoy() de la app. -->
 <style>
 /* mute2 de reserva: AA 4,5:1. */
 .jvce{--ce-jade:var(--jade,#3DDC97);--ce-bone:var(--bone,#EEF2EC);--ce-soft:var(--soft,#CBD8D1);--ce-mute2:var(--mute-2,#7E968B);--ce-line:var(--line,#1E3A31);--ce-lines:var(--line-soft,#16281F);--ce-panel:var(--panel,#101E19);--ce-panel2:var(--panel-2,#0D1B16);--ce-r:var(--r,16px);--ce-display:var(--display,'Space Grotesk',system-ui,sans-serif);--ce-mono:var(--mono,ui-monospace,Consolas,monospace);--ce-body:var(--body,system-ui,-apple-system,'Segoe UI',Roboto,sans-serif);--ce-casa:var(--ease-casa,cubic-bezier(.32,.72,0,1));--ce-entra:var(--ease-entra,cubic-bezier(.2,.8,.2,1))}
@@ -1051,6 +1057,17 @@ html.jvce-suelta body{margin:0;background:#0A100E;color:#EEF2EC;font-family:syst
 .jvce-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
 .jvce-chip{font-size:.74rem;line-height:1.35;padding:6px 11px;border-radius:100px;font-weight:500;border:1px solid var(--ce-line);color:var(--ce-jade);transform:translateY(6px) scale(.96)}
 .jvce-sello{margin-top:12px;padding-top:8px;border-top:1px dashed var(--ce-lines);font-family:var(--ce-mono);font-size:.62rem;letter-spacing:.06em;color:var(--ce-mute2)}
+/* [30-08] EL CORTE que encadena con la Escena 1-bis: separador de chat, no texto que
+   leer. Color FIJO y no --ce-mute2: ese token vale #5E756B en showcase y da 3,5:1,
+   por debajo del AA de 4,5:1 (medido). #7E968B da 5,4:1 sobre el panel. */
+.jvce-corte{align-self:center;display:flex;align-items:center;gap:.7em;padding:2px 0;font-family:var(--ce-mono);font-size:.6rem;letter-spacing:.16em;text-transform:uppercase;color:#7E968B}
+.jvce-corte::before,.jvce-corte::after{content:"";width:22px;height:1px;background:var(--ce-lines)}
+/* [30-08] LA TARJETA DEL AVISO SE APLASTABA, y esto es un bug medido, no una precaucion:
+   dentro del hilo es un item de una columna flex de altura fija, y como la pieza lleva
+   overflow:hidden su min-height:auto pasa a valer 0, asi que el navegador la encoge.
+   Medido en Chrome: 24,6px de los ~140 que ocupa. flex:none se lo impide. La pieza NO
+   lleva esta regla a proposito: el aprieto lo pone este contenedor, no ella. */
+.jvce-hilo .jvav{flex:none}
 .jvce-entrada{display:flex;align-items:center;gap:10px;padding:12px 14px;border-top:1px solid var(--ce-lines);background:rgba(12,21,18,.5)}
 .jvce-campo{flex:1;min-width:0;font-size:.92rem;color:var(--ce-bone);white-space:pre-wrap;overflow-wrap:anywhere}
 /* :empty no casa (cursor hijo fijo): hueco por clase. */
@@ -1157,6 +1174,111 @@ html.jvce-suelta body{margin:0;background:#0A100E;color:#EEF2EC;font-family:syst
 </template>
 <!-- ==== FIN DE LA COPIA DE RESERVA ==== -->
 
+<!-- ==== ESPEJO de _piezas/aviso-jarvis/aviso-jarvis.html (30-08-2026), VERBATIM.
+     No se enlaza porque file:// lo impide, igual que la reserva del orbe. Si algun dia
+     la pagina ya trae la pieza, esto queda redundante pero inocuo: son las mismas reglas
+     y la misma funcion, y la segunda declaracion pisa a la primera con lo mismo.
+     Si tocas la pieza, VUELVE A PEGARLA aqui. ==== -->
+<style>
+/* --mute-2 NO se hereda: en showcase da 3,5:1, bajo AA. Fijo #7E968B = 5,1:1 sobre
+   el fondo, que tambien es fijo y propio: legible caiga donde caiga. */
+.jvav{--av-jade:var(--jade,#3DDC97);--av-bone:var(--bone,#EEF2EC);--av-soft:var(--soft,#CBD8D1);--av-mute:#7E968B;--av-line:var(--line,#1E3A31);--av-lines:var(--line-soft,#16281F);--av-mono:var(--mono,ui-monospace,Consolas,monospace);--av-entra:var(--ease-entra,cubic-bezier(.2,.8,.2,1));
+ position:relative;overflow:hidden;padding:12px 14px 11px 16px;border:1px solid var(--av-line);border-radius:14px;color:var(--av-soft);
+ background:linear-gradient(180deg,#16231D,#111F1A);box-shadow:0 10px 28px rgba(0,0,0,.34),inset 0 1px 0 rgba(255,255,255,.03);
+ opacity:0;transform:translateY(10px);transition:opacity 440ms var(--av-entra),transform 440ms var(--av-entra)}
+.jvav *{box-sizing:border-box}
+.jvav::before{content:"";position:absolute;left:0;top:0;bottom:0;width:2px;background:linear-gradient(180deg,var(--av-jade),rgba(61,220,151,.14))}
+.jvav.esta-dentro{opacity:1;transform:none}
+.jvav.se-va{opacity:0;transform:translateY(-6px)}
+.jvav-cab{display:flex;align-items:center;gap:.55em}
+.jvav-marca{width:7px;height:7px;flex:none;border-radius:50%;background:var(--av-jade);box-shadow:0 0 8px rgba(61,220,151,.7)}
+.jvav-tit{font-family:var(--av-mono);font-size:.64rem;letter-spacing:.18em;text-transform:uppercase;color:var(--av-jade)}
+.jvav-x{margin-left:auto;flex:none;width:26px;height:26px;padding:0;display:grid;place-items:center;cursor:pointer;border:1px solid var(--av-lines);border-radius:8px;background:none;color:var(--av-mute);transition:color .2s ease,border-color .2s ease}
+.jvav-x:hover{color:var(--av-bone);border-color:var(--av-line)}
+.jvav-msg{margin:8px 0 0;color:var(--av-bone);font-size:.95rem;line-height:1.5}
+.jvav-pie{margin:11px 0 0;padding-top:10px;border-top:1px solid var(--av-lines)}
+.jvav-sw{display:inline-flex;align-items:center;gap:.6em;padding:4px 0;border:0;background:none;cursor:pointer;color:var(--av-mute);font-family:var(--av-mono);font-size:.66rem;letter-spacing:.06em}
+.jvav-sw-via{position:relative;width:30px;height:17px;flex:none;border-radius:100px;border:1px solid var(--av-line);background:rgba(126,150,139,.18);transition:background .22s ease}
+.jvav-sw-bola{position:absolute;top:2px;left:2px;width:11px;height:11px;border-radius:50%;background:var(--av-mute);transition:transform .22s var(--av-entra),background .22s ease}
+.jvav-sw[aria-checked="true"]{color:var(--av-soft)}
+.jvav-sw[aria-checked="true"] .jvav-sw-via{background:rgba(61,220,151,.22)}
+.jvav-sw[aria-checked="true"] .jvav-sw-bola{background:var(--av-jade);transform:translateX(13px)}
+.jvav :focus-visible{outline:2px solid var(--av-jade);outline-offset:3px;border-radius:6px}
+/* REDUCIDO: pose final visible, transiciones fuera. SELECTOR DOBLADO a proposito: la
+   media NO suma especificidad y (0,1,0) perdia contra .se-va (0,2,0). 3a vez. */
+@media (prefers-reduced-motion:reduce){
+ .jvav.jvav{transition:none;opacity:1;transform:none}
+ .jvav.jvav .jvav-x,.jvav.jvav .jvav-sw-via,.jvav.jvav .jvav-sw-bola{transition:none}
+}</style>
+
+<!-- En template: si no, sale una tarjeta fantasma al pegar. -->
+<template id="jv-aviso-molde">
+ <div class="jvav" role="status">
+  <div class="jvav-cab">
+   <span class="jvav-marca" aria-hidden="true"></span>
+   <span class="jvav-tit"></span>
+   <button type="button" class="jvav-x" aria-label="Descartar el aviso por hoy"><svg viewBox="0 0 12 12" width="11" height="11" aria-hidden="true"><path d="M2.5 2.5l7 7M9.5 2.5l-7 7" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></button>
+  </div>
+  <p class="jvav-msg"></p>
+  <div class="jvav-pie">
+   <button type="button" class="jvav-sw" role="switch" aria-checked="true">
+    <span class="jvav-sw-via" aria-hidden="true"><span class="jvav-sw-bola"></span></span>
+    <span class="jvav-sw-txt"></span>
+   </button>
+  </div>
+ </div>
+</template>
+
+<script>
+/* jvAvisoMostrar(contenedor,texto,opciones) -> {el,cerrar(),destruir()}. API en LEEME.md.
+   texto entra con textContent (LITERAL). destruir() la quita YA. */
+function jvAvisoMostrar(contenedor, texto, opciones){
+  var o = opciones || {};
+  var molde = document.getElementById("jv-aviso-molde");
+  if(!contenedor || !molde) return null;
+  var el = molde.content.firstElementChild.cloneNode(true);
+  var q  = function(sel){ return el.querySelector(sel); };
+  var sw = q(".jvav-sw");
+  q(".jvav-tit").textContent = o.titulo || "Jarvis nota";
+  q(".jvav-msg").textContent = String(texto == null ? "" : texto);
+  q(".jvav-sw-txt").textContent = o.etiqueta || "Avisarme de esto";
+  var activo = (o.activo !== false);
+  sw.setAttribute("aria-checked", activo ? "true" : "false");
+  /* Reducido = sin transicion: un transitionend que no llega la dejaria colgada. */
+  var quieto = !!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+  /* transitionend BURBUJEA: sin filtrar por target, la bola borraria la tarjeta. */
+  function alAcabar(e){ if(e.target === el) mando.destruir(); }
+  var mando = {
+    el: el,
+    cerrar: function(){
+      if(!el.parentNode) return;
+      if(quieto){ mando.destruir(); return; }
+      el.classList.add("se-va");
+      el.addEventListener("transitionend", alAcabar);
+    },
+    destruir: function(){
+      el.removeEventListener("transitionend", alAcabar);
+      if(el.parentNode) el.parentNode.removeChild(el);
+    }
+  };
+  sw.addEventListener("click", function(){
+    activo = !activo;
+    sw.setAttribute("aria-checked", activo ? "true" : "false");
+    if(typeof o.alCambiar === "function") o.alCambiar(activo, mando);
+  });
+  q(".jvav-x").addEventListener("click", function(){
+    if(typeof o.alCerrar === "function") o.alCerrar(mando);
+    mando.cerrar();
+  });
+  contenedor.appendChild(el);
+  /* Sin offsetWidth, inicio y fin caen en la misma tarea y NO transiciona. */
+  void el.offsetWidth;
+  el.classList.add("esta-dentro");
+  return mando;
+}
+</script>
+<!-- ==== FIN DEL ESPEJO DEL AVISO ==== -->
+
 <!-- Epigrafe y h2 borrables si el escaparate ya pone titular. -->
 <section class="jvce" data-jv-escena-cerebro aria-labelledby="jvce_t">
  <div class="jvce-wrap">
@@ -1173,7 +1295,7 @@ html.jvce-suelta body{margin:0;background:#0A100E;color:#EEF2EC;font-family:syst
     <span class="jvce-enviar" id="jvce_env" aria-hidden="true"><svg viewBox="0 0 16 16" width="14" height="14"><path d="M8 13V3M8 3 3.7 7.3M8 3l4.3 4.3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
    </div>
   </div>
-  <p class="jvce-nota">Las tres preguntas y sus respuestas salen tal cual del motor de la app publicada. Esta escena las reproduce con su ritmo; no ejecuta el motor dentro de la página.</p>
+  <p class="jvce-nota">Las tres preguntas y sus respuestas salen tal cual del motor de la app publicada. Esta escena las reproduce con su ritmo; no ejecuta el motor dentro de la página. El aviso de la creatina también es literal: lo suelta la app sola cuando el suplemento está configurado y el día sigue sin marcar. El interruptor de «avisarme» es una propuesta de diseño, todavía no existe en la app: aquí se mueve, pero no guarda nada.</p>
   <div class="jvce-puntos" id="jvce_puntos"></div>
  </div>
 </section>
@@ -1186,7 +1308,21 @@ PENSAR:850, /* LA PAUSA: sin minimo no llega a verse; ni se quita ni se acorta *
 BLOQUE:340,ITEM:130,FUENTE:380,CHIPS:320,CHIP:70,SELLO:280,
 /* [30-08] Tiempos SUBIDOS por orden de Pablo tras verla: «no da tiempo a leer».
    Antes: BLOQUE 230, ITEM 95, LEE 2600 + 12/car con tope 6500. */
-LEE:4200,LEE_CHAR:18,LEE_TOPE:10000,CORTE:500};
+LEE:4200,LEE_CHAR:18,LEE_TOPE:10000,CORTE:500,
+/* [30-08] Escena 1-bis: el respiro entre el corte de montaje y la tarjeta del aviso.
+   Es la pausa que hace que el aviso se lea como algo que pasa DESPUES, no como otro
+   bloque mas de la respuesta. */
+AVISO:820};
+/* [30-08] ESCENA 1-bis . EL AVISO DE LA CREATINA.
+   texto: LITERAL de flexCreatinaHoy() (app/jv-fitness-mvp.html, variante "carinoso",
+   comprobado 30-08-2026). Ni una coma distinta: la frase cientifica es real.
+   corte: el edit que encadena. No es informacion que haya que leer, es el "mas tarde"
+   de un montaje; por eso va en minusculas, pequeno y centrado. */
+var AVISO={
+corte:"más tarde, en tu diario",
+mando:"Avisarme de esto",
+texto:"¿Creatina de hoy? 💊 Aún no la veo apuntada. Funciona por saturación: cada día suma, también los de descanso."
+};
 /* Texto del motor real (cabecera); el innerHTML solo recibe estas constantes. */
 var GUION=[
 {q:"Estoy abrumado, no sé cómo empezar",
@@ -1242,7 +1378,7 @@ orbe.classList.toggle('jv-orbe--pensando',e==='pensando');
 }
 var quieto=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 /* Al parar, gen++: las citas en vuelo no hacen nada. */
-var gen=0,relojes=[],activa=false,idx=0,finPensar=null,pausado=false,completar=null;
+var gen=0,relojes=[],activa=false,idx=0,finPensar=null,pausado=false,completar=null,avisoVivo=null;
 function cita(ms,fn){
 var g=gen;
 relojes.push(setTimeout(function(){ if(g===gen&&activa) fn(); },ms));
@@ -1266,6 +1402,12 @@ return e;
 function seguir(el){
 var d=el.getBoundingClientRect().bottom-hilo.getBoundingClientRect().top
      +hilo.scrollTop-hilo.clientHeight+16;
+/* [30-08] El scroll SUAVE se queda. Hubo un intento de cambiarlo por un salto seco
+   alegando que Chrome ignora scrollTo({behavior:'smooth'}) con overflow:hidden: ese
+   banco NO se reproduce (5 de 5 suaves llegaron al destino, y con la rafaga real
+   llego a 330,4 de 330). La tarjeta que no se veia era otra cosa: el aplastamiento
+   flex, arreglado arriba con .jvce-hilo .jvav{flex:none}. Se revierte al original,
+   que es lo que Pablo aprobo viendolo. */
 if(d>hilo.scrollTop){
  if(hilo.scrollTo) hilo.scrollTo({top:d,behavior:quieto?'auto':'smooth'});
  else hilo.scrollTop=d;
@@ -1298,6 +1440,10 @@ return Math.min(T.LEE_TOPE,T.LEE+n*T.LEE_CHAR);
 }
 function limpiar(){
 marcar();
+/* [30-08] La tarjeta del aviso se DESTRUYE aqui, no se deja al innerHTML: es una pieza
+   con su propio ciclo (puede tener una transicion de salida a medias) y quien la monta
+   es quien la tiene que quitar. Si la escena se corta a mitad, no queda colgada. */
+if(avisoVivo){ avisoVivo.destruir(); avisoVivo=null; }
 hilo.classList.remove('se-va');
 hilo.innerHTML='';
 hilo.scrollTop=0;
@@ -1321,6 +1467,32 @@ cursor.classList.remove('jvce-cursor--off');
  cita(espera,paso);
 })();
 }
+/* [30-08] EL ENCADENADO DE LA ESCENA 1-bis.
+   Antes, las dos salidas de un tramo (la normal y la del toque para completar) repetian
+   las mismas cuatro lineas. Ahora las dos llaman a cerrarTramo(), que es el UNICO sitio
+   que decide que pasa al acabar una respuesta: si es la ultima pregunta, en vez de
+   cortar entra el aviso; si no, se pasa a la siguiente como siempre.
+   Todo por cita(): si la escena sale de pantalla, parar() mata estos relojes tambien. */
+function avanzar(){
+hilo.classList.add('se-va');
+cita(T.CORTE,function(){ idx=(idx+1)%GUION.length; ciclo(); });
+}
+function leeAviso(){ return Math.min(T.LEE_TOPE,T.LEE+AVISO.texto.length*T.LEE_CHAR); }
+function tramoAviso(){
+var sep=nodo('div','jvce-bl jvce-corte',AVISO.corte);
+hilo.appendChild(sep); pintar(sep); seguir(sep);
+cita(T.AVISO,function(){
+ /* Si por lo que sea no hay pieza de aviso, la escena NO se queda parada: sigue. */
+ if(typeof jvAvisoMostrar!=='function'){ avanzar(); return; }
+ avisoVivo=jvAvisoMostrar(hilo,AVISO.texto,{etiqueta:AVISO.mando});
+ if(avisoVivo) seguir(avisoVivo.el); else { avanzar(); return; }
+ cita(leeAviso(),avanzar);
+});
+}
+function cerrarTramo(){
+completar=null;
+if(idx===GUION.length-1) tramoAviso(); else avanzar();
+}
 function ciclo(){
 var f=GUION[idx];
 limpiar();
@@ -1342,11 +1514,7 @@ teclear(f.q,function(){
   for(var i=0;i<m.pasos.length;i++)
    (function(p){ cita(p[0],function(){ pintar(p[1]); seguir(p[1]); }); })(m.pasos[i]);
   cita(m.fin,function(){ if(finPensar){ finPensar(); finPensar=null; } });
-  cita(m.fin+lectura(f),function(){
-   completar=null;
-   hilo.classList.add('se-va');
-   cita(T.CORTE,function(){ idx=(idx+1)%GUION.length; ciclo(); });
-  });
+  cita(m.fin+lectura(f),cerrarTramo);
   /* [30-08] Toque para completar: igual que hara la app (P2a del pliego del motor). Un toque en
      el hilo pinta de golpe lo que quede, apaga el orbe y deja el tiempo de lectura entero. */
   completar=function(){
@@ -1357,10 +1525,7 @@ teclear(f.q,function(){
    for(var k=0;k<m.pasos.length;k++) m.pasos[k][1].classList.add('in');
    seguir(m.pasos.length?m.pasos[m.pasos.length-1][1]:m.caja);
    if(finPensar){ finPensar(); finPensar=null; }
-   cita(lectura(f),function(){
-    hilo.classList.add('se-va');
-    cita(T.CORTE,function(){ idx=(idx+1)%GUION.length; ciclo(); });
-   });
+   cita(lectura(f),cerrarTramo);
   };
  });
 });
@@ -1374,6 +1539,13 @@ var m=montar(f);
 m.caja.classList.add('in');
 for(var i=0;i<m.pasos.length;i++) m.pasos[i][1].classList.add('in');
 hilo.appendChild(m.caja);
+/* [30-08] El aviso TAMBIEN sale en la ruta quieta. Sin esto, quien pide movimiento
+   reducido no veria nunca la Escena 1-bis: no se apaga la informacion, se apaga el
+   movimiento. La tarjeta ya trae su propio apagado por prefers-reduced-motion. */
+if(idx===GUION.length-1){
+hilo.appendChild(nodo('div','jvce-bl jvce-corte in',AVISO.corte));
+if(typeof jvAvisoMostrar==='function') avisoVivo=jvAvisoMostrar(hilo,AVISO.texto,{etiqueta:AVISO.mando});
+}
 }
 function marcar(){
 var b=puntos.children;

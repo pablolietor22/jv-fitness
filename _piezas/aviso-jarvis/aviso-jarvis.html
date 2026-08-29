@@ -1,0 +1,100 @@
+<!-- AVISO DE JARVIS . pieza portable v1 (30-08-2026) . porque y API en LEEME.md
+     Texto LITERAL. Cero animaciones infinitas, cero relojes, cero red. -->
+<style>
+/* --mute-2 NO se hereda: en showcase da 3,5:1, bajo AA. Fijo #7E968B = 5,1:1 sobre
+   el fondo, que tambien es fijo y propio: legible caiga donde caiga. */
+.jvav{--av-jade:var(--jade,#3DDC97);--av-bone:var(--bone,#EEF2EC);--av-soft:var(--soft,#CBD8D1);--av-mute:#7E968B;--av-line:var(--line,#1E3A31);--av-lines:var(--line-soft,#16281F);--av-mono:var(--mono,ui-monospace,Consolas,monospace);--av-entra:var(--ease-entra,cubic-bezier(.2,.8,.2,1));
+ position:relative;overflow:hidden;padding:12px 14px 11px 16px;border:1px solid var(--av-line);border-radius:14px;color:var(--av-soft);
+ background:linear-gradient(180deg,#16231D,#111F1A);box-shadow:0 10px 28px rgba(0,0,0,.34),inset 0 1px 0 rgba(255,255,255,.03);
+ opacity:0;transform:translateY(10px);transition:opacity 440ms var(--av-entra),transform 440ms var(--av-entra)}
+.jvav *{box-sizing:border-box}
+.jvav::before{content:"";position:absolute;left:0;top:0;bottom:0;width:2px;background:linear-gradient(180deg,var(--av-jade),rgba(61,220,151,.14))}
+.jvav.esta-dentro{opacity:1;transform:none}
+.jvav.se-va{opacity:0;transform:translateY(-6px)}
+.jvav-cab{display:flex;align-items:center;gap:.55em}
+.jvav-marca{width:7px;height:7px;flex:none;border-radius:50%;background:var(--av-jade);box-shadow:0 0 8px rgba(61,220,151,.7)}
+.jvav-tit{font-family:var(--av-mono);font-size:.64rem;letter-spacing:.18em;text-transform:uppercase;color:var(--av-jade)}
+.jvav-x{margin-left:auto;flex:none;width:26px;height:26px;padding:0;display:grid;place-items:center;cursor:pointer;border:1px solid var(--av-lines);border-radius:8px;background:none;color:var(--av-mute);transition:color .2s ease,border-color .2s ease}
+.jvav-x:hover{color:var(--av-bone);border-color:var(--av-line)}
+.jvav-msg{margin:8px 0 0;color:var(--av-bone);font-size:.95rem;line-height:1.5}
+.jvav-pie{margin:11px 0 0;padding-top:10px;border-top:1px solid var(--av-lines)}
+.jvav-sw{display:inline-flex;align-items:center;gap:.6em;padding:4px 0;border:0;background:none;cursor:pointer;color:var(--av-mute);font-family:var(--av-mono);font-size:.66rem;letter-spacing:.06em}
+.jvav-sw-via{position:relative;width:30px;height:17px;flex:none;border-radius:100px;border:1px solid var(--av-line);background:rgba(126,150,139,.18);transition:background .22s ease}
+.jvav-sw-bola{position:absolute;top:2px;left:2px;width:11px;height:11px;border-radius:50%;background:var(--av-mute);transition:transform .22s var(--av-entra),background .22s ease}
+.jvav-sw[aria-checked="true"]{color:var(--av-soft)}
+.jvav-sw[aria-checked="true"] .jvav-sw-via{background:rgba(61,220,151,.22)}
+.jvav-sw[aria-checked="true"] .jvav-sw-bola{background:var(--av-jade);transform:translateX(13px)}
+.jvav :focus-visible{outline:2px solid var(--av-jade);outline-offset:3px;border-radius:6px}
+/* REDUCIDO: pose final visible, transiciones fuera. SELECTOR DOBLADO a proposito: la
+   media NO suma especificidad y (0,1,0) perdia contra .se-va (0,2,0). 3a vez. */
+@media (prefers-reduced-motion:reduce){
+ .jvav.jvav{transition:none;opacity:1;transform:none}
+ .jvav.jvav .jvav-x,.jvav.jvav .jvav-sw-via,.jvav.jvav .jvav-sw-bola{transition:none}
+}</style>
+
+<!-- En template: si no, sale una tarjeta fantasma al pegar. -->
+<template id="jv-aviso-molde">
+ <div class="jvav" role="status">
+  <div class="jvav-cab">
+   <span class="jvav-marca" aria-hidden="true"></span>
+   <span class="jvav-tit"></span>
+   <button type="button" class="jvav-x" aria-label="Descartar el aviso por hoy"><svg viewBox="0 0 12 12" width="11" height="11" aria-hidden="true"><path d="M2.5 2.5l7 7M9.5 2.5l-7 7" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></button>
+  </div>
+  <p class="jvav-msg"></p>
+  <div class="jvav-pie">
+   <button type="button" class="jvav-sw" role="switch" aria-checked="true">
+    <span class="jvav-sw-via" aria-hidden="true"><span class="jvav-sw-bola"></span></span>
+    <span class="jvav-sw-txt"></span>
+   </button>
+  </div>
+ </div>
+</template>
+
+<script>
+/* jvAvisoMostrar(contenedor,texto,opciones) -> {el,cerrar(),destruir()}. API en LEEME.md.
+   texto entra con textContent (LITERAL). destruir() la quita YA. */
+function jvAvisoMostrar(contenedor, texto, opciones){
+  var o = opciones || {};
+  var molde = document.getElementById("jv-aviso-molde");
+  if(!contenedor || !molde) return null;
+  var el = molde.content.firstElementChild.cloneNode(true);
+  var q  = function(sel){ return el.querySelector(sel); };
+  var sw = q(".jvav-sw");
+  q(".jvav-tit").textContent = o.titulo || "Jarvis nota";
+  q(".jvav-msg").textContent = String(texto == null ? "" : texto);
+  q(".jvav-sw-txt").textContent = o.etiqueta || "Avisarme de esto";
+  var activo = (o.activo !== false);
+  sw.setAttribute("aria-checked", activo ? "true" : "false");
+  /* Reducido = sin transicion: un transitionend que no llega la dejaria colgada. */
+  var quieto = !!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+  /* transitionend BURBUJEA: sin filtrar por target, la bola borraria la tarjeta. */
+  function alAcabar(e){ if(e.target === el) mando.destruir(); }
+  var mando = {
+    el: el,
+    cerrar: function(){
+      if(!el.parentNode) return;
+      if(quieto){ mando.destruir(); return; }
+      el.classList.add("se-va");
+      el.addEventListener("transitionend", alAcabar);
+    },
+    destruir: function(){
+      el.removeEventListener("transitionend", alAcabar);
+      if(el.parentNode) el.parentNode.removeChild(el);
+    }
+  };
+  sw.addEventListener("click", function(){
+    activo = !activo;
+    sw.setAttribute("aria-checked", activo ? "true" : "false");
+    if(typeof o.alCambiar === "function") o.alCambiar(activo, mando);
+  });
+  q(".jvav-x").addEventListener("click", function(){
+    if(typeof o.alCerrar === "function") o.alCerrar(mando);
+    mando.cerrar();
+  });
+  contenedor.appendChild(el);
+  /* Sin offsetWidth, inicio y fin caen en la misma tarea y NO transiciona. */
+  void el.offsetWidth;
+  el.classList.add("esta-dentro");
+  return mando;
+}
+</script>
