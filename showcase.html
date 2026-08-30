@@ -34,7 +34,7 @@
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <title>JV Fitness · nutrición y entrenamiento con base científica · Pablo Andrés Martínez</title>
 <!-- ============================================================================
-     CIFRAS TALLADAS A MANO · TODAS CADUCAN · última medición: 29-08-2026 (v0.71.0)
+     CIFRAS TALLADAS A MANO · TODAS CADUCAN · última medición: 30-08-2026 (v0.71.0)
      ----------------------------------------------------------------------------
      Esta página no puede leer estas cifras sola: contarlas en caliente obligaría a
      descargar 1,84 MB para pintar un número. Así que están escritas a mano, y por
@@ -46,20 +46,33 @@
 
        cifra                          valor    dónde vive
        -----------------------------  -------  --------------------------------
-       fichas del asistente             467    eyebrow del motor + odómetro
-       claves del asistente           8.159    eyebrow del motor
-       fichas que citan su Tema         314    entradilla del motor
+       fichas del asistente             477    odómetro
+       claves del asistente           9.259    ⚠️ YA NO SE PINTA (ver nota abajo)
+       fichas que citan su Tema         315    ⚠️ YA NO SE PINTA (ver nota abajo)
        ejercicios                     1.502    eyebrow + odómetro
        ejercicios con instrucciones   1.289    entradilla de ejercicios
        alimentos de España          234.976    tarjeta del diario + odómetro
        perfiles del barrido               8    tarjeta de perfiles
        preguntas del barrido          1.032    tarjeta de perfiles
        NULL antes / ahora        33,5 / 20,3   tarjeta de perfiles
-       Temas del fichero maestro         47    tarjeta de auditoría
-       PMID del fichero maestro         138    tarjeta de auditoría
-       baterías de pruebas              121    odómetro
+       Temas del fichero maestro         52    tarjeta de «Auditoría de citas»
+       PMID del fichero maestro         160    tarjeta de «Auditoría de citas»
+       baterías de pruebas              123    odómetro (+ comentario CSS del N4)
        pases del Vigía (33/33)           33    línea honesta del pie
-       fusiones en el taller            301    acto 4 (solo SUBE: nunca miente por exceso)
+       fusiones en el taller            329    acto 4 (solo SUBE: nunca miente por exceso)
+
+     ⚠️ DOS CIFRAS HUÉRFANAS (detectado 30-08-2026). «claves del asistente» y
+     «fichas que citan su Tema» siguen en esta tabla pero YA NO APARECEN en ninguna
+     parte visible de la página: se quitaron del cuerpo y nadie limpió la tabla. Se
+     dejan con su valor MEDIDO y esta marca, no se borran, porque documentan qué se
+     midió y porque si algún día vuelven al cuerpo el dato ya está. La tabla avisa de
+     tocar aquí al tocar el cuerpo; hace falta también el camino inverso.
+
+     ⚠️ «alimentos de España 234.976» NO SE PUDO VERIFICAR el 30-08: esa cifra no
+     aparece ni en el artefacto publicado ni en el repo del taller (el JSON
+     `data/alimentos-espana-bedca.json` trae 61 alimentos, que es otra cosa). Se deja
+     intacta a propósito — no se toca una cifra que no se ha podido medir. Pendiente
+     de que Pablo diga de dónde sale.
                                                git rev-list --merges origin/master --count
 
      CÓMO SE VUELVEN A MEDIR TODAS DE UNA VEZ:
@@ -384,7 +397,7 @@ html.js .vis-off .pulse{animation-name:none}
 }
 @keyframes fxpar{0%,49%{opacity:1}50%,100%{opacity:0}}
 
-/* N4 · rotulador jade sobre el dato de rigor más fuerte («121 baterías de
+/* N4 · rotulador jade sobre el dato de rigor más fuerte («123 baterías de
    pruebas»). Se engancha al .in que ya pone el revelado: sin JS nuevo.
    ⚠️ SIN ESTRENAR (21-08-2026): .fx-mark no aparece ni una vez en el marcado.
    Se señala, no se borra (norma de la casa). Si se estrena, va sobre esa cifra. */
@@ -1623,7 +1636,7 @@ else arranque();
         <div class="spec-card reveal d2">
           <span class="feat-eyebrow">Auditoría de citas</span>
           <h3>Cita el paper, o no cita</h3>
-          <p>El conocimiento sale de un fichero maestro de <strong>47 Temas con 138 PMID</strong>, y antes de entrar pasa una auditoría que comprueba cita por cita. Esa auditoría cazó un tamaño de efecto inventado que circulaba con un PMID auténtico (0,86 donde el paper dice 2,16) y dos citas invertidas. Lo que no supera la auditoría no entra.</p>
+          <p>El conocimiento sale de un fichero maestro de <strong>52 Temas con 160 PMID</strong>, y antes de entrar pasa una auditoría que comprueba cita por cita. Esa auditoría cazó un tamaño de efecto inventado que circulaba con un PMID auténtico (0,86 donde el paper dice 2,16) y dos citas invertidas. Lo que no supera la auditoría no entra.</p>
         </div>
       </div>
   </div>
@@ -1651,11 +1664,11 @@ else arranque();
         <div class="lbl">ejercicios con guía anatómica</div>
       </div>
       <div class="stat reveal d2">
-        <div class="num" data-count="467">467</div>
+        <div class="num" data-count="477">477</div>
         <div class="lbl">fichas del asistente, escritas a mano</div>
       </div>
       <div class="stat reveal">
-        <div class="num" data-count="121">121</div>
+        <div class="num" data-count="123">123</div>
         <div class="lbl">baterías de pruebas antes de cada publicación</div>
       </div>
       <div class="stat live reveal d1">
@@ -1742,7 +1755,7 @@ else arranque();
       <p>Que la app funcione hoy no dice gran cosa. Esto es lo que tengo montado para que siga funcionando mañana sin que yo esté delante.</p>
     </div>
     <ul class="stage">
-      <li class="stage__node"><span><b>Cada pieza grande, su rama y su fusión.</b> Llevo 301 fusiones registradas en el taller, hechas de una en una para que cualquiera se pueda deshacer sola.</span></li>
+      <li class="stage__node"><span><b>Cada pieza grande, su rama y su fusión.</b> Llevo 329 fusiones registradas en el taller, hechas de una en una para que cualquiera se pueda deshacer sola.</span></li>
       <li class="stage__node"><span><b>Una compuerta que puede decirme que no.</b> Antes de publicar corro la batería entera de pruebas. Está escrita para poder tumbar mi propio trabajo: si una sola falla, devuelve error y ese cambio no sale.</span></li>
       <li class="stage__node"><span><b>Un robot publica por mí.</b> El taller es privado. Un robot recoge el código, lo tritura y publica solo el resultado. Antes de soltarlo comprueba cuatro cosas y aborta si falla una: que no viaje ninguna contraseña, que no viaje ninguna clave, que el fichero no salga vacío y que la política de seguridad siga puesta.</span></li>
       <li class="stage__node"><span><b>Un vigía lo mira desde fuera.</b> Cada mañana, en los servidores de GitHub y con mi ordenador apagado, un agente de solo lectura y sin ninguna clave abre la web publicada y comprueba que responde, que la versión que sirve es la del repositorio y que no falta ninguna pieza. Si algo falla, sale rojo y me llega el aviso: <a class="jade" style="border-bottom:1px dashed currentColor" href="https://github.com/pablolietor22/jv-fitness/actions/workflows/vigia-despliegue.yml" target="_blank" rel="noopener">ni un rojo desde el 28 de julio</a>.</span></li>
