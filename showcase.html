@@ -1345,7 +1345,7 @@ function jvAvisoMostrar(contenedor, texto, opciones){
     <span class="jvce-enviar" id="jvce_env" aria-hidden="true"><svg viewBox="0 0 16 16" width="14" height="14"><path d="M8 13V3M8 3 3.7 7.3M8 3l4.3 4.3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
    </div>
   </div>
-  <p class="jvce-nota">Las tres preguntas y sus respuestas salen tal cual del motor de la app publicada. Esta escena las reproduce con su ritmo; no ejecuta el motor dentro de la página. El aviso de la creatina también es literal: lo suelta la app sola cuando el suplemento está configurado y el día sigue sin marcar. El interruptor de «avisarme» es una propuesta de diseño, todavía no existe en la app: aquí se mueve, pero no guarda nada.</p>
+  <p class="jvce-nota">Las seis preguntas y sus respuestas salen tal cual del motor de la app publicada (recortadas, nunca reescritas: cada bloque aparece literal en su ficha). Esta escena las reproduce con su ritmo; no ejecuta el motor dentro de la página. El aviso de la creatina también es literal: lo suelta la app sola cuando el suplemento está configurado y el día sigue sin marcar. El interruptor de «avisarme» es una propuesta de diseño, todavía no existe en la app: aquí se mueve, pero no guarda nada.</p>
   <div class="jvce-puntos" id="jvce_puntos"></div>
  </div>
 </section>
@@ -1399,7 +1399,33 @@ cuerpo:[{k:"p",h:"Dormir es una variable anabólica crítica: por debajo de 6h c
  "Cortar la cafeína <b>por dosis</b>: un café normal (~100 mg) no alteró el sueño tomándolo 4 h antes de dormir (más cerca no se ha ensayado); un pre-entreno (200+ mg), unas 13 h antes."]},
 {k:"p",h:"Ningún suplemento compensa la falta de sueño."}],
 fuente:"Tema 27, Hirshkowitz 2015 / Lamon 2021 · corte por dosis: Gardiner 2023 y 2025",
-chips:["¿qué pasa si duermo mal una noche?","¿entreno igual si no dormí?","¿la creatina compensa dormir mal?"]}
+chips:["¿qué pasa si duermo mal una noche?","¿entreno igual si no dormí?","¿la creatina compensa dormir mal?"]},
+{q:"¿Me quedo bajito si hago pesas?",
+sello:"ficha menores/pesas-y-estatura · score 26,29",
+tit:"No. Levantar peso no frena el crecimiento — es un mito, y hay consenso internacional que lo dice por escrito.",
+cuerpo:[{k:"p",h:"La idea viene de casos antiguos de lesión de placa de crecimiento, y todos tenían el mismo patrón: chavales levantando al máximo, sin técnica y sin nadie delante. Ni un solo caso en programas supervisados y bien diseñados 👀."},
+{k:"p",h:"Y el metaanálisis de Pediatrics midió el efecto sobre la fuerza en menores de 18: +1,12 de tamaño de efecto (IC 95 % 0,9-1,3). Funciona."},
+{k:"p",h:"Lo que decide que sea seguro no es tu edad: es técnica antes que kilos, nada de máximos, y un adulto que sepa."},
+{k:"p",h:"Y la parte que casi nadie te dice: lo que sí te deja bajo de verdad es comer poco mientras creces 🍽️."}],
+fuente:"Lloyd 2014, BJSM / AAP Stricker 2020 / Behringer 2010",
+chips:["¿cuánto peso puedo levantar con 14?","¿cuántos días entreno siendo menor?","¿sirve entrenar antes de la pubertad?"]},
+{q:"¿A las mujeres mayores hay que meterles menos peso?",
+sello:"ficha mujer/mujeres-mayores-cargar-peso · score 30,49",
+tit:"Falso, y hay ensayos que lo dicen con números: en mujeres postmenopáusicas con el hueso YA frágil, entrenar pesado y supervisado subió la fuerza un 154 % y el contenido mineral del cuello del fémur un 4,9 % en doce semanas.",
+cuerpo:[{k:"p",h:"De dónde viene el mito, entonces 🤔: de confundir frágil con incapaz. Un hueso con poca densidad necesita más estímulo, no menos — el problema es que «menos peso» suena a prudente y no lo es: no cargar es lo que garantiza seguir perdiendo."},
+{k:"p",h:"🩺 Las dos condiciones que sí son innegociables, y están en los propios estudios: aquello fue supervisado y con técnica enseñada. Pesado y bien hecho no es lo mismo que pesado y a lo loco."}],
+fuente:"Mosti 2013, JSCR / Watson 2018, LIFTMOR",
+chips:["¿qué entreno hago para el hueso en la menopausia?","¿tengo osteoporosis, qué ejercicio hago?","¿por dónde empiezo si no he pisado un gimnasio?"]},
+{q:"¿Con Ozempic pierdo músculo?",
+sello:"ficha glp1/ozempic-y-musculo · score 22,26",
+tit:"Con Ozempic se pierde peso rápido, y parte de lo que se va es músculo: alrededor de una cuarta parte de lo perdido, según el mejor metaanálisis.",
+cuerpo:[{k:"p",h:"⚕️ Esto NO es consejo médico y la app no pauta fármacos: semaglutida y tirzepatida son medicamentos de prescripción. Si estás en tratamiento, quien manda es tu médico."},
+{k:"p",h:"La MAGNITUD está disputada, y es honesto decírtelo:"},
+{k:"ul",items:["El metaanálisis en red más grande (22 ensayos, 2.258 personas) mide ~0,86 kg de masa magra perdidos sobre ~3,55 kg de peso: en torno al 25 % de lo perdido. Y el porcentaje de magro del cuerpo NO empeoró.",
+ "La revisión de Diabetes Care es más dura: con las dosis potentes habla de ~10 % de la masa magra (~6 kg), «comparable a una década o más de envejecimiento»."]},
+{k:"p",h:"Traducido: el fármaco te quita el hambre, pero no decide de dónde sale el peso. Eso lo decides tú 💪."}],
+fuente:"Karakasis 2025, Metabolism / Diabetes Care 2024 / STEP 1",
+chips:["¿qué entreno hago si estoy con ozempic?","¿qué pasa cuando dejo el ozempic?","¿cuánta proteína necesito al día?"]}
 ];
 function arranque(){
 var raiz=document.querySelector('[data-jv-escena-cerebro]');
