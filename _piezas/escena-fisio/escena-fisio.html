@@ -1,0 +1,222 @@
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<!-- Solo cuentan sueltas (showcase trae las suyas): sin charset, tildes rotas; sin viewport, el movil pinta a 980px. -->
+<!-- ESCENA 4 . EL FISIO QUE ADAPTA . PIEZA PORTABLE
+     Suelta (doble clic) o pegada en showcase.html: hereda los tokens var(--jade,...) o usa la reserva.
+
+     QUE DEMUESTRA, Y POR QUE ESTA ESCENA CAMBIO
+     El guion del 21-08 pedia "una lesion -> que hace la app". Cuando se escribio eso, la app
+     pintaba un cartel de texto y no tocaba ni un ejercicio. El 30-08 se construyo la ORDEN 9 y
+     ahora la adaptacion es REAL, asi que la escena ensena lo que de verdad pasa.
+
+     TODO EL CONTENIDO ES LITERAL, medido contra master el 03-09-2026:
+       . las 13 zonas y sus emojis salen de LESIONES_KB
+       . el texto del hombro sale del bloque 'Hombro . manguito rotador'
+       . los 36 ejercicios marcados y sus motivos/alternativas salen de lesionMarca()
+         corriendo sobre el catalogo real de 1.502 ejercicios
+     Si manana cambia el motor, esta escena queda desfasada: se re-mide, no se retoca a ojo. -->
+<style>
+.jvfi{--fi-jade:var(--jade,#3DDC97);--fi-bone:var(--bone,#EEF2EC);--fi-soft:var(--soft,#CBD8D1);--fi-mute2:var(--mute-2,#7E968B);--fi-line:var(--line,#1E3A31);--fi-lines:var(--line-soft,#16281F);--fi-panel:var(--panel,#101E19);--fi-panel2:var(--panel-2,#0D1B16);--fi-r:var(--r,16px);--fi-display:var(--display,'Space Grotesk',system-ui,sans-serif);--fi-mono:var(--mono,ui-monospace,Consolas,monospace);--fi-body:var(--body,system-ui,-apple-system,'Segoe UI',Roboto,sans-serif);--fi-casa:var(--ease-casa,cubic-bezier(.32,.72,0,1));--fi-entra:var(--ease-entra,cubic-bezier(.2,.8,.2,1));--fi-amb:#F4C04E;--fi-rojo:#E8705A}
+html.jvfi-suelta body{margin:0;background:#0A100E;color:#EEF2EC;font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+.jvfi{position:relative;padding:clamp(26px,6vw,72px) 0;color:var(--fi-bone);font-family:var(--fi-body);line-height:1.62}
+.jvfi *{box-sizing:border-box}
+.jvfi-wrap{width:100%;max-width:560px;margin:0 auto;padding:0 18px}
+.jvfi-eyebrow{font-family:var(--fi-mono);font-weight:500;font-size:.68rem;margin:0;text-transform:uppercase;letter-spacing:.2em;color:var(--fi-jade);display:flex;align-items:center;gap:.6em;width:fit-content}
+.jvfi-eyebrow::before{content:"";width:16px;height:1px;background:var(--fi-jade);opacity:.7}
+.jvfi-h{font-family:var(--fi-display);font-weight:700;letter-spacing:-.02em;line-height:1.1;font-size:clamp(1.45rem,5.4vw,2.05rem);margin:.6rem 0 1.1rem}
+.jvfi-h b{color:var(--fi-jade)}
+.jvfi-marco{border:1px solid var(--fi-line);border-radius:var(--fi-r);overflow:hidden;background:linear-gradient(180deg,var(--fi-panel),var(--fi-panel2));box-shadow:0 24px 60px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.03)}
+.jvfi-barra{display:flex;align-items:center;gap:.6em;padding:11px 14px;font-size:.7rem;border-bottom:1px solid var(--fi-lines);font-family:var(--fi-mono);letter-spacing:.04em;color:var(--fi-soft)}
+.jvfi-vivo{width:7px;height:7px;border-radius:50%;background:var(--fi-jade);flex:none;box-shadow:0 0 8px var(--fi-jade)}
+.jvfi-barra i{margin-left:auto;color:var(--fi-mute2);font-size:.64rem;font-style:normal}
+.jvfi-cuerpo{padding:16px 14px 18px;min-height:clamp(340px,46vh,460px)}
+.jvfi-lead{font-size:.9rem;color:var(--fi-soft);margin:0 0 12px}
+/* rejilla de zonas */
+.jvfi-zonas{display:flex;flex-wrap:wrap;gap:7px;margin:0 0 8px}
+.jvfi-z{font-size:.8rem;padding:6px 10px;border-radius:999px;border:1px solid var(--fi-lines);background:rgba(12,21,18,.6);color:var(--fi-soft);opacity:0;transform:translateY(7px);transition:opacity 300ms var(--fi-entra),transform 300ms var(--fi-entra),background 260ms,border-color 260ms,color 260ms}
+.jvfi-z.in{opacity:1;transform:none}
+.jvfi-z.pick{background:rgba(61,220,151,.15);border-color:rgba(61,220,151,.5);color:var(--fi-bone)}
+/* tarjeta de la zona */
+.jvfi-bloque{opacity:0;transform:translateY(12px);transition:opacity 420ms var(--fi-entra),transform 420ms var(--fi-entra)}
+.jvfi-bloque.in{opacity:1;transform:none}
+.jvfi-tit{font-family:var(--fi-display);font-weight:700;color:var(--fi-bone);font-size:1.02rem;line-height:1.32;margin:14px 0 6px}
+.jvfi-tesis{font-size:.93rem;color:var(--fi-soft);margin:0 0 4px}
+.jvfi-tesis b{color:var(--fi-bone)}
+/* el contador que sube */
+.jvfi-cuenta{font-family:var(--fi-mono);font-size:.78rem;color:var(--fi-mute2);margin:14px 0 8px;letter-spacing:.02em}
+.jvfi-cuenta b{color:var(--fi-jade);font-size:1.5rem;font-weight:700;font-family:var(--fi-display);letter-spacing:-.02em}
+/* los ejercicios marcados */
+.jvfi-ej{border-left:2px solid var(--fi-amb);padding:7px 0 7px 11px;margin:0 0 9px;opacity:0;transform:translateX(-8px);transition:opacity 360ms var(--fi-entra),transform 360ms var(--fi-entra)}
+.jvfi-ej.in{opacity:1;transform:none}
+.jvfi-no{color:var(--fi-amb);font-size:.9rem;font-weight:600}
+.jvfi-por{color:var(--fi-mute2);font-size:.82rem}
+.jvfi-si{color:var(--fi-jade);font-size:.87rem;margin-top:2px}
+.jvfi-si b{color:var(--fi-bone);font-weight:600}
+.jvfi-mas{font-family:var(--fi-mono);font-size:.75rem;color:var(--fi-mute2);margin:2px 0 0}
+/* prehab */
+.jvfi-prehab{border-left:2px solid var(--fi-jade);padding:8px 0 8px 11px;margin:12px 0 0;font-size:.87rem;color:var(--fi-soft);opacity:0;transform:translateY(8px);transition:opacity 380ms var(--fi-entra),transform 380ms var(--fi-entra)}
+.jvfi-prehab.in{opacity:1;transform:none}
+.jvfi-prehab b{color:var(--fi-jade)}
+/* bandera */
+.jvfi-band{margin:13px 0 0;padding:9px 11px;border-radius:10px;background:rgba(232,112,90,.09);border:1px solid rgba(232,112,90,.28);font-size:.83rem;color:var(--fi-soft);opacity:0;transition:opacity 380ms var(--fi-entra)}
+.jvfi-band.in{opacity:1}
+.jvfi-cita{font-family:var(--fi-mono);font-size:.72rem;color:var(--fi-mute2);margin:11px 0 0;opacity:0;transition:opacity 340ms var(--fi-entra)}
+.jvfi-cita.in{opacity:1}
+.jvfi-nota{font-size:.78rem;color:var(--fi-mute2);margin:14px auto 0;max-width:560px;padding:0 18px;line-height:1.55}
+@media (prefers-reduced-motion:reduce){
+  .jvfi-z,.jvfi-bloque,.jvfi-ej,.jvfi-prehab,.jvfi-band,.jvfi-cita{transition:none!important;opacity:1!important;transform:none!important}
+}
+</style>
+
+<section class="jvfi" id="jvfi" aria-label="El fisio adapta tu rutina">
+  <div class="jvfi-wrap">
+    <p class="jvfi-eyebrow">Escena 4 · JV Galeno</p>
+    <h2 class="jvfi-h">Le dices <b>dónde te duele</b>.<br>Te cambia la rutina.</h2>
+
+    <div class="jvfi-marco">
+      <div class="jvfi-barra"><span class="jvfi-vivo"></span> 🩺 FISIO EN TU BOLSILLO <i>catálogo: 1.502 ejercicios</i></div>
+      <div class="jvfi-cuerpo">
+        <p class="jvfi-lead">¿Qué te molesta? Elige la zona.</p>
+        <div class="jvfi-zonas" id="jvfi-zonas"></div>
+        <div id="jvfi-salida"></div>
+      </div>
+    </div>
+  </div>
+  <p class="jvfi-nota">Los 36 ejercicios, sus motivos y sus alternativas salen del motor real de la
+  app corriendo sobre su catálogo de 1.502. No es una maqueta: es lo que contesta si abres la app
+  y declaras esa lesión.</p>
+</section>
+
+<script>
+(function(){
+  var raiz = document.getElementById('jvfi');
+  if (!raiz || raiz.dataset.listo) return;
+  raiz.dataset.listo = '1';
+  if (!document.querySelector('.jvce')) document.documentElement.classList.add('jvfi-suelta');
+
+  var quieto = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // — LAS 13 ZONAS, literales de LESIONES_KB —
+  var ZONAS = ['🦵 Rodilla','💪 Hombro','✋ Dedo / muñeca','💪 Codo','🔩 Zona lumbar','🦶 Tobillo',
+               '🍑 Cadera / glúteo','🧣 Cuello','🦵 Isquios','🦵 Gemelo','🦶 Aquiles','🦶 Pie','🎽 Cintilla'];
+  var ELEGIDA = 1;   // el hombro: la lesion mas comun de gimnasio
+
+  // — LO QUE CONTESTA, literal del motor (medido 03-09-2026 contra master) —
+  var HOMBRO = {
+    tit: '💪 Hombro · manguito rotador',
+    tesis: 'Primera línea = <b>ejercicio progresivo</b>. NO parar ni operar: la cirugía descompresiva <b>no supera al placebo</b>. Mejora esperable en 6-12 semanas.',
+    n: 36,
+    ejercicios: [
+      { no:'Fondos en paralelas',   por:'el fondo profundo estira mucho la parte de delante', si:'fondos parando en unos 90°, o press de banca' },
+      { no:'Remo al mentón con barra', por:'sube el codo por encima del hombro',              si:'remo con agarre neutro o face pull' },
+      { no:'Jalón tras nuca',       por:'rango extremo que pinza el tendón',                  si:'el mismo jalón por delante' }
+    ],
+    prehab: 'Rotación externa con banda, codo al costado y tempo lento — el pilar del manguito.',
+    band: '🩺 La lista de «evita» es biomecánica, no una prohibición de por vida: se individualiza por lo que a ti te dé síntomas. Si no mejora en ~12 semanas o pierdes fuerza de golpe, a un profesional.',
+    cita: '— CSAW, Beard 2018, Lancet · PMID 29169668'
+  };
+
+  var T = { ZONA:52, PICK:520, BLOQUE:420, CUENTA:900, EJ:560, PREHAB:520, BAND:460, CITA:380 };
+  var tempos = [];
+  function cita(ms, fn){ tempos.push(setTimeout(fn, quieto ? Math.min(ms,60) : ms)); }
+
+  var cZonas = document.getElementById('jvfi-zonas');
+  var cSalida = document.getElementById('jvfi-salida');
+
+  ZONAS.forEach(function(z, i){
+    var b = document.createElement('span');
+    b.className = 'jvfi-z'; b.textContent = z;
+    cZonas.appendChild(b);
+    cita(120 + i*T.ZONA, function(){ b.classList.add('in'); });
+  });
+
+  var tras = 120 + ZONAS.length*T.ZONA + 380;
+
+  // el dedo elige el hombro
+  cita(tras, function(){ cZonas.children[ELEGIDA].classList.add('pick'); });
+
+  cita(tras + T.PICK, function(){
+    var d = document.createElement('div');
+    d.className = 'jvfi-bloque';
+    d.innerHTML = '<p class="jvfi-tit">' + HOMBRO.tit + '</p>'
+                + '<p class="jvfi-tesis">' + HOMBRO.tesis + '</p>'
+                + '<p class="jvfi-cuenta">He revisado tu catálogo y he marcado <b id="jvfi-n">0</b> ejercicios</p>'
+                + '<div id="jvfi-ejs"></div>';
+    cSalida.appendChild(d);
+    void d.offsetWidth;
+    d.classList.add('in');
+
+    // el contador sube hasta 36: lo que hace la app de verdad
+    var n = document.getElementById('jvfi-n');
+    if (quieto) { n.textContent = HOMBRO.n; }
+    else {
+      var v = 0, paso = Math.max(16, Math.floor(T.CUENTA / HOMBRO.n));
+      var t = setInterval(function(){
+        v++; n.textContent = v;
+        if (v >= HOMBRO.n) clearInterval(t);
+      }, paso);
+      tempos.push(t);
+    }
+  });
+
+  var base = tras + T.PICK + T.BLOQUE + T.CUENTA;
+
+  HOMBRO.ejercicios.forEach(function(e, i){
+    cita(base + i*T.EJ, function(){
+      var d = document.createElement('div');
+      d.className = 'jvfi-ej';
+      d.innerHTML = '<div class="jvfi-no">⛔ ' + e.no + '</div>'
+                  + '<div class="jvfi-por">' + e.por + '</div>'
+                  + '<div class="jvfi-si">✅ En su lugar: <b>' + e.si + '</b></div>';
+      document.getElementById('jvfi-ejs').appendChild(d);
+      void d.offsetWidth;
+      d.classList.add('in');
+    });
+  });
+
+  var tEj = base + HOMBRO.ejercicios.length*T.EJ;
+
+  cita(tEj, function(){
+    var p = document.createElement('p');
+    p.className = 'jvfi-mas';
+    p.textContent = '… y ' + (HOMBRO.n - HOMBRO.ejercicios.length) + ' más, marcados en el buscador de ejercicios.';
+    document.getElementById('jvfi-ejs').appendChild(p);
+  });
+
+  cita(tEj + T.PREHAB, function(){
+    var d = document.createElement('div');
+    d.className = 'jvfi-prehab';
+    d.innerHTML = '<b>🛡️ Para que no vuelva:</b> ' + HOMBRO.prehab;
+    cSalida.appendChild(d);
+    void d.offsetWidth;
+    d.classList.add('in');
+  });
+
+  cita(tEj + T.PREHAB + T.BAND, function(){
+    var d = document.createElement('div');
+    d.className = 'jvfi-band';
+    d.textContent = HOMBRO.band;
+    cSalida.appendChild(d);
+    void d.offsetWidth;
+    d.classList.add('in');
+  });
+
+  cita(tEj + T.PREHAB + T.BAND + T.CITA, function(){
+    var d = document.createElement('p');
+    d.className = 'jvfi-cita';
+    d.textContent = HOMBRO.cita;
+    cSalida.appendChild(d);
+    void d.offsetWidth;
+    d.classList.add('in');
+  });
+
+  // Un toque completa la escena: nadie espera a una animacion si ya sabe lo que busca.
+  raiz.addEventListener('click', function(){
+    tempos.forEach(function(t){ clearTimeout(t); clearInterval(t); });
+    tempos = [];
+    raiz.querySelectorAll('.jvfi-z,.jvfi-bloque,.jvfi-ej,.jvfi-prehab,.jvfi-band,.jvfi-cita')
+        .forEach(function(el){ el.classList.add('in'); });
+    var n = document.getElementById('jvfi-n');
+    if (n) n.textContent = HOMBRO.n;
+  }, { once:false });
+})();
+</script>
