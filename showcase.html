@@ -34,7 +34,19 @@
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <title>JV Fitness · nutrición y entrenamiento con base científica · Pablo Andrés Martínez</title>
 <!-- ============================================================================
-     CIFRAS TALLADAS A MANO · TODAS CADUCAN · última medición: 01-09-2026 (v0.71.0, 2.ª vez)
+     CIFRAS TALLADAS A MANO · TODAS CADUCAN · última medición: 03-09-2026 (v0.71.0)
+
+     ⚠️ RETALLADO 03-09 — «fichas» 487 → 495 y «claves» 9.681 → 9.986, tras fusionarse
+     el PR #270 (ÁREA 2 · BLOQUE 2: se rompe el imán de `menopausia-composicion` con 8
+     fichas nuevas y 305 claves) y desplegarse el artefacto desde jvfitness-dev@972fb79.
+     Medido con `node tools/cerebro-bots/verificador-escaparate.js --showcase <este fichero>`
+     contra el motor REAL, no a ojo: las otras 6 cifras comparables salieron CUADRADAS
+     (315 fichas con Tema · 1.502 ejercicios · 1.289 con instrucciones · 52 Temas ·
+     160 PMID · 123 baterías), así que sólo se tocan las dos que descuadraban.
+     🔍 La VERSIÓN se dejó en v0.71.0 a propósito: es la que pinta la app en su etiqueta
+     («MVP v0.71.0 · motor v0.7»). En el HTML hay un `v0.72.0` suelto, pero es un COMENTARIO
+     sobre trabajo futuro — contarlo como versión publicada habría sido una afirmación falsa,
+     que es justo lo que este bloque existe para evitar.
 
      ⚠️ RETALLADO 01-09 (segunda vez el mismo día) — «fichas» 482 → 487 y «claves»
      9.474 → 9.681, tras fusionarse el ÁREA 2 (menopausia) y desplegarse el artefacto.
@@ -43,7 +55,7 @@
      falta corregirla dos veces en un día. Medido EJECUTANDO el motor sobre el
      ARTEFACTO PUBLICADO (git show origin/main:index.html, minificado, commit 53a320c
      = jvfitness-dev@e461058), nunca contra _ESTADO-PROYECTO.md.
-     Comprobado: 487 fichas · 9.681 claves · 61 troncos.
+     Comprobado: 495 fichas · 9.986 claves · 61 troncos.
      ----------------------------------------------------------------------------
      Esta página no puede leer estas cifras sola: contarlas en caliente obligaría a
      descargar 1,84 MB para pintar un número. Así que están escritas a mano, y por
@@ -55,8 +67,8 @@
 
        cifra                          valor    dónde vive
        -----------------------------  -------  --------------------------------
-       fichas del asistente             487    odómetro
-       claves del asistente           9.681    ⚠️ YA NO SE PINTA (ver nota abajo)
+       fichas del asistente             495    odómetro
+       claves del asistente           9.986    ⚠️ YA NO SE PINTA (ver nota abajo)
        fichas que citan su Tema         315    ⚠️ YA NO SE PINTA (ver nota abajo)
        ejercicios                     1.502    eyebrow + odómetro
        ejercicios con instrucciones   1.289    entradilla de ejercicios
@@ -1673,7 +1685,7 @@ else arranque();
         <div class="lbl">ejercicios con guía anatómica</div>
       </div>
       <div class="stat reveal d2">
-        <div class="num" data-count="487">487</div>
+        <div class="num" data-count="495">495</div>
         <div class="lbl">fichas del asistente, escritas a mano</div>
       </div>
       <div class="stat reveal">
