@@ -36,6 +36,19 @@
 <!-- ============================================================================
      CIFRAS TALLADAS A MANO · TODAS CADUCAN · última medición: 03-09-2026 (v0.71.0)
 
+     ⚠️ RETALLADO 03-09 (TERCERA vez el mismo día) — «fichas» 505 → 506 y «claves»
+     10.271 → 10.289, tras fusionarse el PR #265 (barrido de Jorge: la ficha braquial) y
+     desplegarse el artefacto desde jvfitness-dev@9a6971b.
+     🕐 SE ESPERÓ A PROPÓSITO a que el despliegue saliera de la cola. Cuando el #265 entró en
+     `master`, esta página seguía diciendo 505 y era CORRECTO: el artefacto publicado tampoco
+     llevaba aún la ficha. Retallar en ese momento habría publicado un número que todavía no era
+     verdad. La regla no es «seguir a master», es «seguir a lo PUBLICADO», y hoy hubo casi dos
+     horas de diferencia entre las dos cosas por el atasco del runner.
+     🔧 Y un límite que conviene saber: `verificador-escaparate.js --app <artefacto publicado>`
+     NO funciona — el minificador se come los centinelas `[OTRO-PURE]`/`[CEREBRO-PURE]` y sin
+     ellos no puede leer la KB (medido: 0 ocurrencias). Para saber si el despliegue ya salió se
+     busca una ficha nueva conocida dentro del `index.html` publicado (aquí, «braquial»).
+
      ⚠️ RETALLADO 03-09 (SEGUNDA vez el mismo día) — «fichas» 495 → 505 y «claves»
      9.986 → 10.271, tras fusionarse el PR #275 (ÁREA 3 · ADOLESCENTES Y PESAS: tronco
      NUEVO `menores`, 10 fichas y 285 claves) y desplegarse el artefacto desde
@@ -83,8 +96,8 @@
 
        cifra                          valor    dónde vive
        -----------------------------  -------  --------------------------------
-       fichas del asistente             505    odómetro
-       claves del asistente          10.271    ⚠️ YA NO SE PINTA (ver nota abajo)
+       fichas del asistente             506    odómetro
+       claves del asistente          10.289    ⚠️ YA NO SE PINTA (ver nota abajo)
        fichas que citan su Tema         315    ⚠️ YA NO SE PINTA (ver nota abajo)
        ejercicios                     1.502    eyebrow + odómetro
        ejercicios con instrucciones   1.289    entradilla de ejercicios
@@ -1950,7 +1963,7 @@ html.jvfi-suelta body{margin:0;background:#0A100E;color:#EEF2EC;font-family:syst
         <div class="lbl">ejercicios con guía anatómica</div>
       </div>
       <div class="stat reveal d2">
-        <div class="num" data-count="505">505</div>
+        <div class="num" data-count="506">506</div>
         <div class="lbl">fichas del asistente, escritas a mano</div>
       </div>
       <div class="stat reveal">
