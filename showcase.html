@@ -36,6 +36,22 @@
 <!-- ============================================================================
      CIFRAS TALLADAS A MANO · TODAS CADUCAN · última medición: 03-09-2026 (v0.71.0)
 
+     ⚠️ RETALLADO 03-09 (SEGUNDA vez el mismo día) — «fichas» 495 → 505 y «claves»
+     9.986 → 10.271, tras fusionarse el PR #275 (ÁREA 3 · ADOLESCENTES Y PESAS: tronco
+     NUEVO `menores`, 10 fichas y 285 claves) y desplegarse el artefacto desde
+     jvfitness-dev@bf4704a. Los troncos pasan de 61 a 62 — es el primer tronco nuevo
+     desde `glp1`. Medido con el verificador contra el motor REAL: de las 8 cifras
+     comparables sólo descuadraban estas dos; las otras 6 salieron CUADRADAS y NO se
+     tocan (315 fichas con Tema · 1.502 ejercicios · 1.289 con instrucciones · 52 Temas
+     · 160 PMID · 123 baterías).
+     🔢 OJO A LA UNIDAD, que casi cuesta un error: esta tabla publica las claves EN
+     BRUTO (10.271). El medidor del suelo diario cuenta las NORMALIZADAS con
+     `cerebroNormQ` y da 10.261 — diez menos, porque deduplica variantes. Las dos son
+     correctas y miden cosas distintas; la de esta página es la bruta, como en los
+     retallados anteriores. La cifra 10.261 que aparece en el acta y el PR del 03-09 es
+     la normalizada, y NO es la que va aquí.
+     🔍 La VERSIÓN sigue en v0.71.0 por lo dicho abajo: sin cambios de versión hoy.
+
      ⚠️ RETALLADO 03-09 — «fichas» 487 → 495 y «claves» 9.681 → 9.986, tras fusionarse
      el PR #270 (ÁREA 2 · BLOQUE 2: se rompe el imán de `menopausia-composicion` con 8
      fichas nuevas y 305 claves) y desplegarse el artefacto desde jvfitness-dev@972fb79.
@@ -55,7 +71,7 @@
      falta corregirla dos veces en un día. Medido EJECUTANDO el motor sobre el
      ARTEFACTO PUBLICADO (git show origin/main:index.html, minificado, commit 53a320c
      = jvfitness-dev@e461058), nunca contra _ESTADO-PROYECTO.md.
-     Comprobado: 495 fichas · 9.986 claves · 61 troncos.
+     Comprobado (03-09, primer retallado del día): 495 fichas · 9.986 claves · 61 troncos.
      ----------------------------------------------------------------------------
      Esta página no puede leer estas cifras sola: contarlas en caliente obligaría a
      descargar 1,84 MB para pintar un número. Así que están escritas a mano, y por
@@ -67,8 +83,8 @@
 
        cifra                          valor    dónde vive
        -----------------------------  -------  --------------------------------
-       fichas del asistente             495    odómetro
-       claves del asistente           9.986    ⚠️ YA NO SE PINTA (ver nota abajo)
+       fichas del asistente             505    odómetro
+       claves del asistente          10.271    ⚠️ YA NO SE PINTA (ver nota abajo)
        fichas que citan su Tema         315    ⚠️ YA NO SE PINTA (ver nota abajo)
        ejercicios                     1.502    eyebrow + odómetro
        ejercicios con instrucciones   1.289    entradilla de ejercicios
@@ -1685,7 +1701,7 @@ else arranque();
         <div class="lbl">ejercicios con guía anatómica</div>
       </div>
       <div class="stat reveal d2">
-        <div class="num" data-count="495">495</div>
+        <div class="num" data-count="505">505</div>
         <div class="lbl">fichas del asistente, escritas a mano</div>
       </div>
       <div class="stat reveal">
