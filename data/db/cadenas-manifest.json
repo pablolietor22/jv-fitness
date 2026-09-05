@@ -1,0 +1,46 @@
+{
+ "version": "2026-09-05",
+ "fuente": "Cartas oficiales de cada cadena (URL y fecha de consulta en cada fila) · JV Fitness",
+ "total": 1194,
+ "cadenas": [
+  {
+   "cadena": "Domino's",
+   "count": 237
+  },
+  {
+   "cadena": "KFC",
+   "count": 149
+  },
+  {
+   "cadena": "Papa John's",
+   "count": 58
+  },
+  {
+   "cadena": "Pizza Hut",
+   "count": 309
+  },
+  {
+   "cadena": "Popeyes",
+   "count": 127
+  },
+  {
+   "cadena": "Subway",
+   "count": 38
+  },
+  {
+   "cadena": "Taco Bell",
+   "count": 199
+  },
+  {
+   "cadena": "Telepizza",
+   "count": 77
+  }
+ ],
+ "chunks": [
+  {
+   "file": "cadenas.jsonl.gz",
+   "count": 1194,
+   "bytes": 28594
+  }
+ ]
+}
