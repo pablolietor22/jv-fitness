@@ -34,6 +34,22 @@
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <title>JV Fitness · nutrición y entrenamiento con base científica · Pablo Andrés Martínez</title>
 <!-- ============================================================================
+     ⚠️ RETALLADO 05-09-2026 — «fichas» 506 → 519, «claves» 10.289 → 11.072 (brutas) y
+     «baterías de pruebas» 123 → 126, tras fusionarse el PR #284 (ORDEN 6.4: 6 fichas de
+     condiciones médicas) y el PR #287 (ÁREA 4: tronco nuevo `longevidad`, 7 fichas).
+     🕐 SE ESPERÓ AL DESPLIEGUE, como el 03-09. Cuando los dos PR entraron en `master`, esta
+     página seguía diciendo 506 y era CORRECTO: se comprobó midiendo la KB del commit que sí
+     estaba publicado (jvfitness-dev@93aff38 → 506 fichas · 10.289 claves · 123 baterías, las
+     tres exactas). Retallar entonces habría publicado un número falso.
+     🔧 El despliegue automático NO salió solo: el runner autoalojado tenía la cola parada
+     (run #77 en cola 50 min, nada `in_progress`). Se publicó A MANO ejecutando el mismo
+     `minificar.mjs` y las mismas 4 comprobaciones del robot, todas en verde. Comprobado dentro
+     del minificado: 26 ocurrencias de «longevidad» y 31 de «espondilolistesis».
+     🔍 La VERSIÓN sigue en v0.71.0: es la que pinta la app en su etiqueta («MVP v0.71.0 ·
+     motor v0.7»). El `v0.72.0` del HTML es un comentario sobre trabajo futuro — publicarlo
+     como versión habría sido una afirmación falsa (misma trampa señalada el 03-09).
+     ============================================================================ -->
+<!-- ============================================================================
      CIFRAS TALLADAS A MANO · TODAS CADUCAN · última medición: 03-09-2026 (v0.71.0)
 
      ⚠️ RETALLADO 03-09 (TERCERA vez el mismo día) — «fichas» 505 → 506 y «claves»
@@ -96,8 +112,8 @@
 
        cifra                          valor    dónde vive
        -----------------------------  -------  --------------------------------
-       fichas del asistente             506    odómetro
-       claves del asistente          10.289    ⚠️ YA NO SE PINTA (ver nota abajo)
+       fichas del asistente             519    odómetro
+       claves del asistente          11.072    ⚠️ YA NO SE PINTA (ver nota abajo)
        fichas que citan su Tema         315    ⚠️ YA NO SE PINTA (ver nota abajo)
        ejercicios                     1.502    eyebrow + odómetro
        ejercicios con instrucciones   1.289    entradilla de ejercicios
@@ -107,7 +123,7 @@
        NULL antes / ahora        33,5 / 20,3   tarjeta de perfiles
        Temas del fichero maestro         52    tarjeta de «Auditoría de citas»
        PMID del fichero maestro         160    tarjeta de «Auditoría de citas»
-       baterías de pruebas              123    odómetro (+ comentario CSS del N4)
+       baterías de pruebas              126    odómetro (+ comentario CSS del N4)
        pases del Vigía (33/33)           33    línea honesta del pie
        fusiones en el taller            329    acto 4 (solo SUBE: nunca miente por exceso)
 
@@ -1963,11 +1979,11 @@ html.jvfi-suelta body{margin:0;background:#0A100E;color:#EEF2EC;font-family:syst
         <div class="lbl">ejercicios con guía anatómica</div>
       </div>
       <div class="stat reveal d2">
-        <div class="num" data-count="506">506</div>
+        <div class="num" data-count="519">519</div>
         <div class="lbl">fichas del asistente, escritas a mano</div>
       </div>
       <div class="stat reveal">
-        <div class="num" data-count="123">123</div>
+        <div class="num" data-count="126">126</div>
         <div class="lbl">baterías de pruebas antes de cada publicación</div>
       </div>
       <div class="stat live reveal d1">
