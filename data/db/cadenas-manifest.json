@@ -1,7 +1,7 @@
 {
- "version": "2026-09-05",
+ "version": "2026-09-06",
  "fuente": "Cartas oficiales de cada cadena (URL y fecha de consulta en cada fila) · JV Fitness",
- "total": 1194,
+ "total": 1197,
  "cadenas": [
   {
    "cadena": "Domino's",
@@ -21,11 +21,11 @@
   },
   {
    "cadena": "Popeyes",
-   "count": 127
+   "count": 128
   },
   {
    "cadena": "Subway",
-   "count": 38
+   "count": 40
   },
   {
    "cadena": "Taco Bell",
@@ -39,8 +39,8 @@
  "chunks": [
   {
    "file": "cadenas.jsonl.gz",
-   "count": 1194,
-   "bytes": 28594
+   "count": 1197,
+   "bytes": 29381
   }
  ]
 }
