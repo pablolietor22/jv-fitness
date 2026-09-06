@@ -34,6 +34,26 @@
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <title>JV Fitness · nutrición y entrenamiento con base científica · Pablo Andrés Martínez</title>
 <!-- ============================================================================
+     ⚠️ RETALLADO 06-09-2026 (NOCHE) — «fichas» 527 → 531, «baterías» 129 → 130 y, en la
+     tabla, «claves» 11.409 → 11.596. Entra la SEGUNDA VUELTA del área 5 (PR #304): 4 fichas
+     más del tronco `turnos` — conducir tras el turno, envejecer con turnos, embarazo, y qué
+     intensidad antes de las noches. Total del día: 12 fichas y 524 claves.
+     La batería nueva es `test-markdown-crudo`, que caza markdown sin convertir dentro del
+     campo `r` (encontró una ficha publicada desde hacía meses pintando «OR **0,72**»).
+
+     Medido contra el ARTEFACTO PUBLICADO — jv-fitness@7d05b4b, que viene de
+     jvfitness-dev@3e6643f — EJECUTANDO su `CEREBRO_KB`: 531 fichas · 11.596 claves ·
+     65 troncos · 12 fichas de `turnos`. Cuadra al dígito con `master`.
+
+     ⚠️ Y hubo que esperar para tallarlo, por una razón que conviene no olvidar: durante la
+     tarde la app publicada RETROCEDIÓ dos veces (16:58 publicó un commit anterior al de las
+     16:29; 20:01 uno anterior al de las 17:00), porque el workflow de despliegue hacía
+     `checkout` del commit que disparaba el run en vez de la punta de master. Si se hubieran
+     tallado las cifras «al fusionar» en vez de contra el artefacto, el escaparate habría
+     anunciado fichas que en ese momento NO estaban publicadas. Arreglado en jvfitness-dev
+     con `ref: master` (PR #308). La regla de medir contra el artefacto es justo lo que
+     salvó esto.
+
      ⚠️ RETALLADO 06-09-2026 (tarde) — «fichas» 519 → 527 y «baterías» 126 → 129, tras
      desplegarse el ÁREA 5 (tronco `turnos`, 8 fichas + 337 claves) y la PASADA DE
      VERACIDAD (25 fichas corregidas, PR #303). Medido contra el ARTEFACTO PUBLICADO:
@@ -131,8 +151,8 @@
 
        cifra                          valor    dónde vive
        -----------------------------  -------  --------------------------------
-       fichas del asistente             527    odómetro
-       claves del asistente          11.409    ⚠️ YA NO SE PINTA (ver nota abajo)
+       fichas del asistente             531    odómetro
+       claves del asistente          11.596    ⚠️ YA NO SE PINTA (ver nota abajo)
        fichas que citan su Tema         315    ⚠️ YA NO SE PINTA (ver nota abajo)
        ejercicios                     1.502    eyebrow + odómetro
        ejercicios con instrucciones   1.289    entradilla de ejercicios
@@ -142,7 +162,7 @@
        NULL antes / ahora        33,5 / 20,3   tarjeta de perfiles
        Temas del fichero maestro         52    tarjeta de «Auditoría de citas»
        PMID del fichero maestro         160    tarjeta de «Auditoría de citas»
-       baterías de pruebas              129    odómetro (+ comentario CSS del N4)
+       baterías de pruebas              130    odómetro (+ comentario CSS del N4)
        pases del Vigía (33/33)           33    línea honesta del pie
        fusiones en el taller            329    acto 4 (solo SUBE: nunca miente por exceso)
 
@@ -482,7 +502,7 @@ html.js .vis-off .pulse{animation-name:none}
 }
 @keyframes fxpar{0%,49%{opacity:1}50%,100%{opacity:0}}
 
-/* N4 · rotulador jade sobre el dato de rigor más fuerte («129 baterías de
+/* N4 · rotulador jade sobre el dato de rigor más fuerte («130 baterías de
    pruebas»). Se engancha al .in que ya pone el revelado: sin JS nuevo.
    ⚠️ SIN ESTRENAR (21-08-2026): .fx-mark no aparece ni una vez en el marcado.
    Se señala, no se borra (norma de la casa). Si se estrena, va sobre esa cifra. */
@@ -1998,11 +2018,11 @@ html.jvfi-suelta body{margin:0;background:#0A100E;color:#EEF2EC;font-family:syst
         <div class="lbl">ejercicios con guía anatómica</div>
       </div>
       <div class="stat reveal d2">
-        <div class="num" data-count="527">527</div>
+        <div class="num" data-count="531">531</div>
         <div class="lbl">fichas del asistente, escritas a mano</div>
       </div>
       <div class="stat reveal">
-        <div class="num" data-count="129">129</div>
+        <div class="num" data-count="130">130</div>
         <div class="lbl">baterías de pruebas antes de cada publicación</div>
       </div>
       <div class="stat live reveal d1">
