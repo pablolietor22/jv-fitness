@@ -42,6 +42,17 @@
      Las claves (11.409) siguen sin pintarse. `1.502 ejercicios` se remidió y NO cambia.
      La pasada de veracidad no movió ninguna cifra: corrigió TEXTO de fichas ya contadas.
 
+     ↳ ENMIENDA 06-09-2026 (rutina flywheel, misma tarde). El retallado de arriba movió lo
+     que se PINTA (527 y 129) pero dejó esta TABLA en 519 / 11.072 / 126. La tabla no es
+     decoración: es el mapa que lee la siguiente sesión para saber qué cifra vive dónde, y
+     una tabla que se contradice con la página es exactamente cómo se acumularon las 18
+     afirmaciones falsas del 18-08. Puestas al día las tres filas y el comentario del N4,
+     medido otra vez contra el artefacto publicado ejecutando su KB (no a grep: contar
+     `tronco:"…"` da 525/66, que es FALSO — hay ocurrencias fuera del KB):
+
+         node -e '…extrae CEREBRO_KB de index.html contando corchetes y lo ejecuta…'
+         → PUBLICADO: 527 fichas · 11.409 claves · 65 troncos · turnos 8 fichas
+
      ⚠️ RETALLADO 05-09-2026 — «fichas» 506 → 519, «claves» 10.289 → 11.072 (brutas) y
      «baterías de pruebas» 123 → 126, tras fusionarse el PR #284 (ORDEN 6.4: 6 fichas de
      condiciones médicas) y el PR #287 (ÁREA 4: tronco nuevo `longevidad`, 7 fichas).
@@ -120,8 +131,8 @@
 
        cifra                          valor    dónde vive
        -----------------------------  -------  --------------------------------
-       fichas del asistente             519    odómetro
-       claves del asistente          11.072    ⚠️ YA NO SE PINTA (ver nota abajo)
+       fichas del asistente             527    odómetro
+       claves del asistente          11.409    ⚠️ YA NO SE PINTA (ver nota abajo)
        fichas que citan su Tema         315    ⚠️ YA NO SE PINTA (ver nota abajo)
        ejercicios                     1.502    eyebrow + odómetro
        ejercicios con instrucciones   1.289    entradilla de ejercicios
@@ -131,7 +142,7 @@
        NULL antes / ahora        33,5 / 20,3   tarjeta de perfiles
        Temas del fichero maestro         52    tarjeta de «Auditoría de citas»
        PMID del fichero maestro         160    tarjeta de «Auditoría de citas»
-       baterías de pruebas              126    odómetro (+ comentario CSS del N4)
+       baterías de pruebas              129    odómetro (+ comentario CSS del N4)
        pases del Vigía (33/33)           33    línea honesta del pie
        fusiones en el taller            329    acto 4 (solo SUBE: nunca miente por exceso)
 
@@ -471,7 +482,7 @@ html.js .vis-off .pulse{animation-name:none}
 }
 @keyframes fxpar{0%,49%{opacity:1}50%,100%{opacity:0}}
 
-/* N4 · rotulador jade sobre el dato de rigor más fuerte («123 baterías de
+/* N4 · rotulador jade sobre el dato de rigor más fuerte («129 baterías de
    pruebas»). Se engancha al .in que ya pone el revelado: sin JS nuevo.
    ⚠️ SIN ESTRENAR (21-08-2026): .fx-mark no aparece ni una vez en el marcado.
    Se señala, no se borra (norma de la casa). Si se estrena, va sobre esa cifra. */
