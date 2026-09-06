@@ -1,7 +1,7 @@
 {
- "version": "2026-09-04",
+ "version": "2026-09-06",
  "fuente": "Open Food Facts (ODbL) · filtro España + calidad JV Fitness",
- "total": 235237,
+ "total": 235263,
  "chunks": [
   {
    "file": "es-00.jsonl.gz",
@@ -55,8 +55,8 @@
   },
   {
    "file": "es-inc-2026-09.jsonl.gz",
-   "count": 261,
-   "bytes": 10115
+   "count": 287,
+   "bytes": 11122
   }
  ],
  "saneo": "17-07-2026: sodios imposibles ANULADOS (mejor dato ausente que falso) + cafeína orientativa en energéticas/colas (la etiqueta manda)."
