@@ -1,8 +1,12 @@
 {
- "version": "2026-09-06",
+ "version": "2026-09-07",
  "fuente": "Cartas oficiales de cada cadena (URL y fecha de consulta en cada fila) · JV Fitness",
- "total": 1197,
+ "total": 1338,
  "cadenas": [
+  {
+   "cadena": "Burger King",
+   "count": 141
+  },
   {
    "cadena": "Domino's",
    "count": 237
@@ -39,8 +43,329 @@
  "chunks": [
   {
    "file": "cadenas.jsonl.gz",
-   "count": 1197,
-   "bytes": 29381
+   "count": 1338,
+   "bytes": 34112
   }
- ]
+ ],
+ "componentes": {
+  "Burger King": {
+   "comps": [
+    {
+     "id": "carne_whopper",
+     "et": "Carne de Whopper",
+     "nv": 1,
+     "add": {
+      "g": 75,
+      "kcal": 210,
+      "p": 18.1,
+      "c": 0.1,
+      "f": 15.3,
+      "de": "Carne Whopper® / Whopper® Patty"
+     },
+     "del": {
+      "g": 89,
+      "kcal": 249.8,
+      "p": 21.4,
+      "c": 0.3,
+      "f": 18.7,
+      "de": [
+       "Doble Whopper® − Whopper®",
+       "Triple Whopper® − Doble Whopper®"
+      ]
+     },
+     "banda": null
+    },
+    {
+     "id": "carne_burger",
+     "et": "Carne de hamburguesa",
+     "nv": 1,
+     "add": {
+      "g": 32,
+      "kcal": 91,
+      "p": 7.8,
+      "c": 0.5,
+      "f": 6.6,
+      "de": "Carne Burger / Burger Patty"
+     },
+     "del": {
+      "g": 41,
+      "kcal": 120,
+      "p": 9.4,
+      "c": 0.8,
+      "f": 8.8,
+      "de": [
+       "Doble Cheeseburger − Cheeseburger"
+      ]
+     },
+     "banda": null
+    },
+    {
+     "id": "carne_whopper_vegetal",
+     "et": "Carne vegetal de Whopper",
+     "nv": 1,
+     "add": {
+      "g": 88,
+      "kcal": 208,
+      "p": 13.6,
+      "c": 0.4,
+      "f": 15.5,
+      "de": "Carne Whopper® Vegetal / Whopper® Vegetal Patty"
+     },
+     "del": {
+      "g": 88,
+      "kcal": 208,
+      "p": 13.6,
+      "c": 0.4,
+      "f": 15.5
+     },
+     "banda": null
+    },
+    {
+     "id": "queso",
+     "et": "Loncha de queso",
+     "nv": 1,
+     "add": {
+      "g": 25,
+      "kcal": 82,
+      "p": 4.3,
+      "c": 1.9,
+      "f": 6.4,
+      "de": "Loncha de Queso / Slice of Cheese"
+     },
+     "del": {
+      "g": 11,
+      "kcal": 36,
+      "p": 2,
+      "c": 0.8,
+      "f": 2.8,
+      "de": [
+       "Cheeseburger − Hamburger"
+      ]
+     },
+     "banda": null
+    },
+    {
+     "id": "bacon",
+     "et": "Bacon",
+     "nv": 1,
+     "add": {
+      "g": 12,
+      "kcal": 52,
+      "p": 4.9,
+      "c": 0.5,
+      "f": 3.4,
+      "de": "Bacon"
+     },
+     "del": {
+      "g": 12,
+      "kcal": 52,
+      "p": 4.9,
+      "c": 0.5,
+      "f": 3.4
+     },
+     "banda": null
+    },
+    {
+     "id": "lechuga",
+     "et": "Lechuga",
+     "nv": 1,
+     "add": {
+      "g": 21,
+      "kcal": 3,
+      "p": 0.2,
+      "c": 0.6,
+      "f": 0,
+      "de": "Lechuga / Lettuce"
+     },
+     "del": {
+      "g": 21,
+      "kcal": 3,
+      "p": 0.2,
+      "c": 0.6,
+      "f": 0
+     },
+     "banda": null
+    },
+    {
+     "id": "tomate",
+     "et": "Tomate",
+     "nv": 1,
+     "add": {
+      "g": 28,
+      "kcal": 6,
+      "p": 0.2,
+      "c": 1.3,
+      "f": 0.1,
+      "de": "Tomate / Tomato"
+     },
+     "del": {
+      "g": 28,
+      "kcal": 6,
+      "p": 0.2,
+      "c": 1.3,
+      "f": 0.1
+     },
+     "banda": null
+    },
+    {
+     "id": "cebolla",
+     "et": "Cebolla",
+     "nv": 1,
+     "add": {
+      "g": 14,
+      "kcal": 6,
+      "p": 0.2,
+      "c": 1,
+      "f": 0.1,
+      "de": "Cebolla / Onion"
+     },
+     "del": {
+      "g": 14,
+      "kcal": 6,
+      "p": 0.2,
+      "c": 1,
+      "f": 0.1
+     },
+     "banda": null
+    },
+    {
+     "id": "cebolla_crispy",
+     "et": "Cebolla crispy",
+     "nv": 1,
+     "add": {
+      "g": 14,
+      "kcal": 85,
+      "p": 0.8,
+      "c": 6.2,
+      "f": 6.4,
+      "de": "Cebolla Crispy / Crispy Onion"
+     },
+     "del": {
+      "g": 10,
+      "kcal": 60.9,
+      "p": 0,
+      "c": 4.1,
+      "f": 4,
+      "de": [
+       "King Fries Queso + Bacon + Cebolla Crujiente − King Fries Queso + Bacon",
+       "King Supreme Queso + Bacon + Cebolla Crujiente − King Supreme Queso + Bacon"
+      ]
+     },
+     "banda": null
+    },
+    {
+     "id": "pepinillo",
+     "et": "Pepinillo",
+     "nv": 1,
+     "add": {
+      "g": 15,
+      "kcal": 1,
+      "p": 0.1,
+      "c": 0.2,
+      "f": 0,
+      "de": "Pepinillo / Gherkin"
+     },
+     "del": {
+      "g": 15,
+      "kcal": 1,
+      "p": 0.1,
+      "c": 0.2,
+      "f": 0
+     },
+     "banda": null
+    },
+    {
+     "id": "mayonesa",
+     "et": "Mayonesa",
+     "nv": 1,
+     "add": {
+      "g": 21,
+      "kcal": 125,
+      "p": 0.1,
+      "c": 0.4,
+      "f": 13.7,
+      "de": "Mayonesa / Mayonnaise"
+     },
+     "del": {
+      "g": 21,
+      "kcal": 125,
+      "p": 0.1,
+      "c": 0.4,
+      "f": 13.7
+     },
+     "banda": null
+    },
+    {
+     "id": "ketchup",
+     "et": "Ketchup",
+     "nv": 1,
+     "add": {
+      "g": 10,
+      "kcal": 10,
+      "p": 0.1,
+      "c": 2.4,
+      "f": 0,
+      "de": "Bolsita de Ketchup / Ketchup Sachet"
+     },
+     "del": {
+      "g": 10,
+      "kcal": 10,
+      "p": 0.1,
+      "c": 2.4,
+      "f": 0
+     },
+     "banda": null
+    }
+   ],
+   "platos": {
+    "Whopper®": [
+     "carne_whopper",
+     "lechuga",
+     "tomate",
+     "cebolla",
+     "pepinillo",
+     "mayonesa",
+     "ketchup"
+    ],
+    "Doble Whopper®": [
+     "carne_whopper",
+     "carne_whopper",
+     "lechuga",
+     "tomate",
+     "cebolla",
+     "pepinillo",
+     "mayonesa",
+     "ketchup"
+    ],
+    "Whopper® Vegetal": [
+     "carne_whopper_vegetal",
+     "lechuga",
+     "tomate",
+     "cebolla",
+     "pepinillo",
+     "mayonesa",
+     "ketchup"
+    ],
+    "Cheeseburger": [
+     "carne_burger",
+     "queso",
+     "pepinillo",
+     "ketchup"
+    ],
+    "Hamburger": [
+     "carne_burger",
+     "pepinillo",
+     "ketchup"
+    ],
+    "Doble Cheeseburger": [
+     "carne_burger",
+     "carne_burger",
+     "queso",
+     "queso",
+     "pepinillo",
+     "ketchup"
+    ]
+   }
+  }
+ }
 }
