@@ -60,6 +60,8 @@
       "p": 18.1,
       "c": 0.1,
       "f": 15.3,
+      "az": 0.1,
+      "sat": 6.9,
       "de": "Carne Whopper® / Whopper® Patty"
      },
      "del": {
@@ -68,6 +70,10 @@
       "p": 21.4,
       "c": 0.3,
       "f": 18.7,
+      "az": 0.4,
+      "sat": 8.8,
+      "fib": 0.1,
+      "na": 79,
       "de": [
        "Doble Whopper® − Whopper®",
        "Triple Whopper® − Doble Whopper®"
@@ -85,6 +91,10 @@
       "p": 7.8,
       "c": 0.5,
       "f": 6.6,
+      "az": 0.5,
+      "sat": 3,
+      "fib": 0.5,
+      "na": 30,
       "de": "Carne Burger / Burger Patty"
      },
      "del": {
@@ -93,6 +103,10 @@
       "p": 9.4,
       "c": 0.8,
       "f": 8.8,
+      "az": 0.5,
+      "sat": 4.6,
+      "fib": 0,
+      "na": 222,
       "de": [
        "Doble Cheeseburger − Cheeseburger"
       ]
@@ -109,6 +123,10 @@
       "p": 13.6,
       "c": 0.4,
       "f": 15.5,
+      "az": 0.3,
+      "sat": 6.2,
+      "fib": 6.7,
+      "na": 299,
       "de": "Carne Whopper® Vegetal / Whopper® Vegetal Patty"
      },
      "del": {
@@ -130,6 +148,10 @@
       "p": 4.3,
       "c": 1.9,
       "f": 6.4,
+      "az": 1,
+      "sat": 4.2,
+      "fib": 0.1,
+      "na": 453,
       "de": "Loncha de Queso / Slice of Cheese"
      },
      "del": {
@@ -138,6 +160,10 @@
       "p": 2,
       "c": 0.8,
       "f": 2.8,
+      "az": 0.5,
+      "sat": 1.8,
+      "fib": 0.2,
+      "na": 200,
       "de": [
        "Cheeseburger − Hamburger"
       ]
@@ -154,6 +180,10 @@
       "p": 4.9,
       "c": 0.5,
       "f": 3.4,
+      "az": 0.5,
+      "sat": 1.2,
+      "fib": 0,
+      "na": 199,
       "de": "Bacon"
      },
      "del": {
@@ -175,6 +205,9 @@
       "p": 0.2,
       "c": 0.6,
       "f": 0,
+      "az": 0.4,
+      "sat": 0,
+      "fib": 0.3,
       "de": "Lechuga / Lettuce"
      },
      "del": {
@@ -196,6 +229,9 @@
       "p": 0.2,
       "c": 1.3,
       "f": 0.1,
+      "az": 0.6,
+      "sat": 0,
+      "fib": 0.3,
       "de": "Tomate / Tomato"
      },
      "del": {
@@ -217,6 +253,9 @@
       "p": 0.2,
       "c": 1,
       "f": 0.1,
+      "az": 0.7,
+      "sat": 0,
+      "fib": 0.2,
       "de": "Cebolla / Onion"
      },
      "del": {
@@ -238,6 +277,9 @@
       "p": 0.8,
       "c": 6.2,
       "f": 6.4,
+      "az": 2.1,
+      "sat": 3.1,
+      "fib": 0.6,
       "de": "Cebolla Crispy / Crispy Onion"
      },
      "del": {
@@ -246,6 +288,10 @@
       "p": 0,
       "c": 4.1,
       "f": 4,
+      "az": 1.6,
+      "sat": 2.3,
+      "fib": 0.3,
+      "na": 41,
       "de": [
        "King Fries Queso + Bacon + Cebolla Crujiente − King Fries Queso + Bacon",
        "King Supreme Queso + Bacon + Cebolla Crujiente − King Supreme Queso + Bacon"
@@ -263,6 +309,9 @@
       "p": 0.1,
       "c": 0.2,
       "f": 0,
+      "az": 0.1,
+      "sat": 0,
+      "fib": 0.1,
       "de": "Pepinillo / Gherkin"
      },
      "del": {
@@ -284,6 +333,10 @@
       "p": 0.1,
       "c": 0.4,
       "f": 13.7,
+      "az": 0.3,
+      "sat": 1.1,
+      "fib": 0.1,
+      "na": 147,
       "de": "Mayonesa / Mayonnaise"
      },
      "del": {
@@ -305,6 +358,9 @@
       "p": 0.1,
       "c": 2.4,
       "f": 0,
+      "az": 2.4,
+      "sat": 0,
+      "fib": 0.1,
       "de": "Bolsita de Ketchup / Ketchup Sachet"
      },
      "del": {
@@ -380,6 +436,9 @@
       "p": 0.9,
       "c": 3.2,
       "f": 7.9,
+      "az": 2.2,
+      "sat": 6.1,
+      "na": 192,
       "de": "Salsa de Queso"
      },
      "del": {
@@ -401,6 +460,9 @@
       "p": 0.6,
       "c": 0.5,
       "f": 7.1,
+      "az": 0.2,
+      "sat": 1.8,
+      "na": 101,
       "de": "Guacamole"
      },
      "del": {
@@ -422,6 +484,9 @@
       "p": 1,
       "c": 2.2,
       "f": 5.1,
+      "az": 1.5,
+      "sat": 3.2,
+      "na": 14,
       "de": "Crema Agria"
      },
      "del": {
@@ -443,6 +508,9 @@
       "p": 0.2,
       "c": 0.8,
       "f": 0,
+      "az": 0.6,
+      "sat": 0,
+      "na": 344,
       "de": "Jalapeños"
      },
      "del": {
@@ -464,6 +532,9 @@
       "p": 0.4,
       "c": 2.8,
       "f": 0.1,
+      "az": 1,
+      "sat": 0,
+      "na": 112,
       "de": "Salsa Mexican"
      },
      "del": {
@@ -485,6 +556,9 @@
       "p": 0.2,
       "c": 9,
       "f": 0,
+      "az": 7.3,
+      "sat": 0,
+      "na": 280,
       "de": "Salsa Barbacoa"
      },
      "del": {
