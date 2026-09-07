@@ -156,13 +156,13 @@
        fichas que citan su Tema         315    ⚠️ YA NO SE PINTA (ver nota abajo)
        ejercicios                     1.502    eyebrow + odómetro
        ejercicios con instrucciones   1.289    entradilla de ejercicios
-       alimentos de España          234.976    tarjeta del diario + odómetro
+       alimentos de España          235.267    tarjeta del diario + odómetro
        perfiles del barrido               8    tarjeta de perfiles
        preguntas del barrido          1.032    tarjeta de perfiles
        NULL antes / ahora        33,5 / 20,3   tarjeta de perfiles
        Temas del fichero maestro         52    tarjeta de «Auditoría de citas»
        PMID del fichero maestro         160    tarjeta de «Auditoría de citas»
-       baterías de pruebas              130    odómetro (+ comentario CSS del N4)
+       baterías de pruebas              133    odómetro (+ comentario CSS del N4)
        pases del Vigía (33/33)           33    línea honesta del pie
        fusiones en el taller            329    acto 4 (solo SUBE: nunca miente por exceso)
 
@@ -173,11 +173,15 @@
      midió y porque si algún día vuelven al cuerpo el dato ya está. La tabla avisa de
      tocar aquí al tocar el cuerpo; hace falta también el camino inverso.
 
-     ⚠️ «alimentos de España 234.976» NO SE PUDO VERIFICAR el 30-08: esa cifra no
-     aparece ni en el artefacto publicado ni en el repo del taller (el JSON
-     `data/alimentos-espana-bedca.json` trae 61 alimentos, que es otra cosa). Se deja
-     intacta a propósito — no se toca una cifra que no se ha podido medir. Pendiente
-     de que Pablo diga de dónde sale.
+     ✅ «alimentos de España» — RESUELTA el 07-09-2026 la duda abierta el 30-08. Aquella
+     nota decía que la cifra «no aparece ni en el artefacto publicado ni en el repo del
+     taller» y quedaba pendiente de que Pablo dijera de dónde salía. No estaba en el
+     taller porque NO VIVE en el taller: vive en este mismo repo, en el campo `total` de
+     `data/db/manifest.json`, que es lo que la app descarga. Se cuadra además contra la
+     suma de los `count` de sus 11 chunks — si los dos no coinciden, el manifiesto miente
+     y no vale ninguno de los dos. Medida así el 07-09: 234.976 → 235.267 (+291), que era
+     lo que llevaba acumulado sin tallar desde el 30-08. Ya la mide el verificador, así
+     que deja de ser una cifra a mano.
                                                git rev-list --merges origin/master --count
 
      CÓMO SE VUELVEN A MEDIR TODAS DE UNA VEZ:
@@ -188,12 +192,12 @@
        el texto visible — si tocas una cifra en el cuerpo, tócala también aquí.)
        Actualizado 28-08-2026 (antes decía `python verificador.py`, que no existe).
      ============================================================================ -->
-<meta name="description" content="JV Fitness: app de nutrición y entrenamiento con base científica. Diario con 234.976 alimentos sin cobertura, 1.502 ejercicios con guía anatómica y un asistente que cita su fuente cuando la tiene y dice «no lo sé» cuando no.">
+<meta name="description" content="JV Fitness: app de nutrición y entrenamiento con base científica. Diario con 235.267 alimentos sin cobertura, 1.502 ejercicios con guía anatómica y un asistente que cita su fuente cuando la tiene y dice «no lo sé» cuando no.">
 <meta name="robots" content="index,follow">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://pablolietor22.github.io/jv-fitness/showcase.html">
 <meta property="og:title" content="JV Fitness · nutrición y entrenamiento con base científica">
-<meta property="og:description" content="Nutrición y entrenamiento con base científica: 234.976 alimentos sin cobertura, 1.502 ejercicios con guía anatómica y un asistente que cita sus fuentes. En desarrollo casi a diario.">
+<meta property="og:description" content="Nutrición y entrenamiento con base científica: 235.267 alimentos sin cobertura, 1.502 ejercicios con guía anatómica y un asistente que cita sus fuentes. En desarrollo casi a diario.">
 <!-- og:image ABSOLUTA (LinkedIn/WhatsApp ignoran rutas relativas) + tarjeta 1200×630 dedicada, no la foto de retrato -->
 <meta property="og:image" content="https://pablolietor22.github.io/jv-fitness/assets/og.png">
 <meta property="og:image:width" content="1200">
@@ -502,7 +506,7 @@ html.js .vis-off .pulse{animation-name:none}
 }
 @keyframes fxpar{0%,49%{opacity:1}50%,100%{opacity:0}}
 
-/* N4 · rotulador jade sobre el dato de rigor más fuerte («130 baterías de
+/* N4 · rotulador jade sobre el dato de rigor más fuerte («133 baterías de
    pruebas»). Se engancha al .in que ya pone el revelado: sin JS nuevo.
    ⚠️ SIN ESTRENAR (21-08-2026): .fx-mark no aparece ni una vez en el marcado.
    Se señala, no se borra (norma de la casa). Si se estrena, va sobre esa cifra. */
@@ -1107,7 +1111,7 @@ html.fx-fin .stage__node{animation:none !important}
     <!-- tres funciones más (spec cards) -->
     <div class="spec-grid">
       <div class="spec-card reveal">
-        <span class="feat-eyebrow">234.976 alimentos</span>
+        <span class="feat-eyebrow">235.267 alimentos</span>
         <h3>Diario de comida sin cobertura</h3>
         <p>La base completa de alimentos de España viaja en el móvil y se consulta sin cobertura: en el metro, en el gimnasio, donde sea.</p>
       </div>
@@ -2010,7 +2014,7 @@ html.jvfi-suelta body{margin:0;background:#0A100E;color:#EEF2EC;font-family:syst
          dato bueno, no un «0»); el contador la pone a cero justo al arrancar. -->
     <div class="stat-grid">
       <div class="stat reveal">
-        <div class="num" data-count="234976" data-format="mil">234.976</div>
+        <div class="num" data-count="235267" data-format="mil">235.267</div>
         <div class="lbl">alimentos de España, consultables sin cobertura</div>
       </div>
       <div class="stat reveal d1">
@@ -2022,7 +2026,7 @@ html.jvfi-suelta body{margin:0;background:#0A100E;color:#EEF2EC;font-family:syst
         <div class="lbl">fichas del asistente, escritas a mano</div>
       </div>
       <div class="stat reveal">
-        <div class="num" data-count="130">130</div>
+        <div class="num" data-count="133">133</div>
         <div class="lbl">baterías de pruebas antes de cada publicación</div>
       </div>
       <div class="stat live reveal d1">
@@ -2084,7 +2088,7 @@ html.jvfi-suelta body{margin:0;background:#0A100E;color:#EEF2EC;font-family:syst
           <div class="macro c"><b><span data-g="60">60</span> g</b><span>Carbohidrato</span></div>
           <div class="macro g"><b><span data-g="18">18</span> g</b><span>Grasa</span></div>
         </div>
-        <p class="plate__note">Plato de ejemplo · la app calcula estos números a partir de la base de 234.976 alimentos, también sin cobertura.</p>
+        <p class="plate__note">Plato de ejemplo · la app calcula estos números a partir de la base de 235.267 alimentos, también sin cobertura.</p>
       </div>
     </div>
   </div>
