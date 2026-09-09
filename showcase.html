@@ -34,6 +34,32 @@
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <title>JV Fitness · nutrición y entrenamiento con base científica · Pablo Andrés Martínez</title>
 <!-- ============================================================================
+     ⚠️ RETALLADO 09-09-2026 (NOCHE, rutina de ALIMENTOS) — CINCO cifras, medidas con
+     `node tools/cerebro-bots/verificador-escaparate.js --showcase showcase.html`, que es
+     la única forma de tallarlas que este fichero admite (contra el artefacto, nunca
+     contra `_ESTADO-PROYECTO.md`):
+       · «alimentos de España» 235.267 → 235.716 (+449). Dispara por el umbral de Pablo
+         («crecimiento de las bases»). Sale del campo `total` de `data/db/manifest.json` y
+         se cuadra contra la suma de los `count` de sus 11 chunks: 235.716 = 235.716. Los
+         +449 son Carrefour del 07-09 (+368 ya fusionados y sin tallar), Lidl (+56), las
+         novedades de OFF del 08-09 (+10) y del 09-09 (+15).
+       · «baterías de pruebas» 141 → 142: una batería nueva, `test-refresca-violaciones`
+         (14 casos + prueba de mutación), que es otro de los disparadores de su umbral.
+       · Y TRES que NO son de esta rutina y estaban a medio tallar: «fichas» 531 → 567,
+         «claves» 11.596 → 12.574 y «fichas que citan su Tema» 315 → 330. El retallado de
+         esta misma mañana (justo debajo) las arregló **en el cuerpo y no en la tabla**, y
+         la tabla es lo que lee el verificador: salía en ROJO con cinco cifras. Es el
+         «camino inverso» que esta propia tabla pide a gritos unas líneas más abajo. No se
+         ha tocado nada más de ese trabajo: sólo se ha escrito en la tabla lo que el
+         verificador mide HOY.
+     🖐️ LO QUE NO SE HA TOCADO, PORQUE NO ES UN NÚMERO Y LO DECIDE PABLO: el escaparate
+     no dice nada de las CADENAS DE RESTAURANTE (hoy 1.338 filas de 12 cadenas con fuente
+     y fecha, servidas ya en la app) ni de las PORCIONES (1.213 de 3.313 alimentos con su
+     medida casera, 36,6 %). Las dos son capacidades nuevas y visibles, no cifras de una
+     tarjeta que ya existe, así que **merecen su hueco o no según tú**, y eso no lo decide
+     una sesión. Se pregunta en el PR en vez de esperar a que se te ocurra.
+     ============================================================================ -->
+<!-- ============================================================================
      ⚠️ RETALLADO 09-09-2026 — «fichas» 531 → 567 y «baterías» 135 → 141.
      Entran DOS áreas del temario en el mismo tren, las dos firmadas por Pablo:
        · ÁREA 6 «oposiciones físicas» (PR #324): 4 fichas · 246 claves, con las marcas
@@ -178,18 +204,18 @@
 
        cifra                          valor    dónde vive
        -----------------------------  -------  --------------------------------
-       fichas del asistente             531    odómetro
-       claves del asistente          11.596    ⚠️ YA NO SE PINTA (ver nota abajo)
-       fichas que citan su Tema         315    ⚠️ YA NO SE PINTA (ver nota abajo)
+       fichas del asistente             567    odómetro
+       claves del asistente          12.574    ⚠️ YA NO SE PINTA (ver nota abajo)
+       fichas que citan su Tema         330    ⚠️ YA NO SE PINTA (ver nota abajo)
        ejercicios                     1.502    eyebrow + odómetro
        ejercicios con instrucciones   1.289    entradilla de ejercicios
-       alimentos de España          235.267    tarjeta del diario + odómetro
+       alimentos de España          235.716    tarjeta del diario + odómetro
        perfiles del barrido               8    tarjeta de perfiles
        preguntas del barrido          1.032    tarjeta de perfiles
        NULL antes / ahora        33,5 / 20,3   tarjeta de perfiles
        Temas del fichero maestro         52    tarjeta de «Auditoría de citas»
        PMID del fichero maestro         160    tarjeta de «Auditoría de citas»
-       baterías de pruebas              135    odómetro (+ comentario CSS del N4)
+       baterías de pruebas              142    odómetro (+ comentario CSS del N4)
        pases del Vigía (33/33)           33    línea honesta del pie
        fusiones en el taller            329    acto 4 (solo SUBE: nunca miente por exceso)
 
@@ -219,12 +245,12 @@
        el texto visible — si tocas una cifra en el cuerpo, tócala también aquí.)
        Actualizado 28-08-2026 (antes decía `python verificador.py`, que no existe).
      ============================================================================ -->
-<meta name="description" content="JV Fitness: app de nutrición y entrenamiento con base científica. Diario con 235.267 alimentos sin cobertura, 1.502 ejercicios con guía anatómica y un asistente que cita su fuente cuando la tiene y dice «no lo sé» cuando no.">
+<meta name="description" content="JV Fitness: app de nutrición y entrenamiento con base científica. Diario con 235.716 alimentos sin cobertura, 1.502 ejercicios con guía anatómica y un asistente que cita su fuente cuando la tiene y dice «no lo sé» cuando no.">
 <meta name="robots" content="index,follow">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://pablolietor22.github.io/jv-fitness/showcase.html">
 <meta property="og:title" content="JV Fitness · nutrición y entrenamiento con base científica">
-<meta property="og:description" content="Nutrición y entrenamiento con base científica: 235.267 alimentos sin cobertura, 1.502 ejercicios con guía anatómica y un asistente que cita sus fuentes. En desarrollo casi a diario.">
+<meta property="og:description" content="Nutrición y entrenamiento con base científica: 235.716 alimentos sin cobertura, 1.502 ejercicios con guía anatómica y un asistente que cita sus fuentes. En desarrollo casi a diario.">
 <!-- og:image ABSOLUTA (LinkedIn/WhatsApp ignoran rutas relativas) + tarjeta 1200×630 dedicada, no la foto de retrato -->
 <meta property="og:image" content="https://pablolietor22.github.io/jv-fitness/assets/og.png">
 <meta property="og:image:width" content="1200">
@@ -1138,7 +1164,7 @@ html.fx-fin .stage__node{animation:none !important}
     <!-- tres funciones más (spec cards) -->
     <div class="spec-grid">
       <div class="spec-card reveal">
-        <span class="feat-eyebrow">235.267 alimentos</span>
+        <span class="feat-eyebrow">235.716 alimentos</span>
         <h3>Diario de comida sin cobertura</h3>
         <p>La base completa de alimentos de España viaja en el móvil y se consulta sin cobertura: en el metro, en el gimnasio, donde sea.</p>
       </div>
@@ -2041,7 +2067,7 @@ html.jvfi-suelta body{margin:0;background:#0A100E;color:#EEF2EC;font-family:syst
          dato bueno, no un «0»); el contador la pone a cero justo al arrancar. -->
     <div class="stat-grid">
       <div class="stat reveal">
-        <div class="num" data-count="235267" data-format="mil">235.267</div>
+        <div class="num" data-count="235716" data-format="mil">235.716</div>
         <div class="lbl">alimentos de España, consultables sin cobertura</div>
       </div>
       <div class="stat reveal d1">
@@ -2053,7 +2079,7 @@ html.jvfi-suelta body{margin:0;background:#0A100E;color:#EEF2EC;font-family:syst
         <div class="lbl">fichas del asistente, escritas a mano</div>
       </div>
       <div class="stat reveal">
-        <div class="num" data-count="141">141</div>
+        <div class="num" data-count="142">142</div>
         <div class="lbl">baterías de pruebas antes de cada publicación</div>
       </div>
       <div class="stat live reveal d1">
@@ -2115,7 +2141,7 @@ html.jvfi-suelta body{margin:0;background:#0A100E;color:#EEF2EC;font-family:syst
           <div class="macro c"><b><span data-g="60">60</span> g</b><span>Carbohidrato</span></div>
           <div class="macro g"><b><span data-g="18">18</span> g</b><span>Grasa</span></div>
         </div>
-        <p class="plate__note">Plato de ejemplo · la app calcula estos números a partir de la base de 235.267 alimentos, también sin cobertura.</p>
+        <p class="plate__note">Plato de ejemplo · la app calcula estos números a partir de la base de 235.716 alimentos, también sin cobertura.</p>
       </div>
     </div>
   </div>
