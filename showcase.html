@@ -34,6 +34,15 @@
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <title>JV Fitness · nutrición y entrenamiento con base científica · Pablo Andrés Martínez</title>
 <!-- ============================================================================
+     ⚠️ ARREGLO 14-09-2026 (mismo día, segunda pasada) — dos descuadres del retallado de
+        esta mañana, cazados por el verificador y por la sesión del PR #21:
+        · «baterías» quedó a medias: se cambió el odómetro a 152 y NO la fila de esta tabla,
+          que seguía diciendo 142. El verificador lee la tabla, así que cantó el descuadre.
+        · «alimentos» llevaba desde el 09-09 con `data-count="235716"` y el texto en 235.866.
+          MANDA EL ATRIBUTO: el JS hace parseInt(data-count) y REESCRIBE el texto, así que el
+          visitante veía 235.716. Hallazgo de la sesión del #21, no mío.
+        Revisados los CUATRO odómetros: atributo y texto coinciden en todos.
+
      ⚠️ RETALLADO 14-09-2026 — «fichas» 567 → 578, «claves» 12.574 → 12.884 y «baterías»
         142 → 152. Entraron el ÁREA 8 (deporte + fuerza, 11 fichas firmadas por Pablo el
         10-09) y tres noches de alimentos. MEDIDO ejecutando el CEREBRO_KB del master
@@ -223,7 +232,7 @@
        NULL antes / ahora        33,5 / 20,3   tarjeta de perfiles
        Temas del fichero maestro         52    tarjeta de «Auditoría de citas»
        PMID del fichero maestro         160    tarjeta de «Auditoría de citas»
-       baterías de pruebas              142    odómetro (+ comentario CSS del N4)
+       baterías de pruebas              152    odómetro (+ comentario CSS del N4)
        pases del Vigía (33/33)           33    línea honesta del pie
        fusiones en el taller            329    acto 4 (solo SUBE: nunca miente por exceso)
 
@@ -2075,7 +2084,7 @@ html.jvfi-suelta body{margin:0;background:#0A100E;color:#EEF2EC;font-family:syst
          dato bueno, no un «0»); el contador la pone a cero justo al arrancar. -->
     <div class="stat-grid">
       <div class="stat reveal">
-        <div class="num" data-count="235716" data-format="mil">235.866</div>
+        <div class="num" data-count="235866" data-format="mil">235.866</div>
         <div class="lbl">alimentos de España, consultables sin cobertura</div>
       </div>
       <div class="stat reveal d1">
