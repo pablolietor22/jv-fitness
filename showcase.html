@@ -34,6 +34,41 @@
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <title>JV Fitness · nutrición y entrenamiento con base científica · Pablo Andrés Martínez</title>
 <!-- ============================================================================
+     ⚠️ RETALLADO 14-09-2026 (rutina FLYWHEEL) — «fichas» 567 → 578 y «baterías» 142 → 150,
+     al fusionarse el PR #330 (ÁREA 8 · deporte y fuerza: 11 fichas y 310 claves, FIRMADAS
+     por Pablo el 10-09) junto con el #325 y el #336 de alimentos. Las claves suben
+     12.574 → 12.884 en la tabla de abajo aunque no se pinten.
+
+     🤖 Medido con `node tools/cerebro-bots/verificador-escaparate.js --showcase showcase.html`
+     sobre un árbol de `jvfitness-dev@5b5d021` (master YA fusionado), no sobre una rama:
+     578 fichas · 12.884 claves · 67 troncos · 150 baterías. La primera pasada se hizo por
+     error contra la rama del PR y dio 145 baterías — las suites que faltaban eran las que
+     entraron con alimentos. Un verificador mide el árbol que le pongas delante.
+
+     🔎 Y el método se validó ANTES de tallar, que es lo que hace fiable el número nuevo:
+     re-medido `bc57e7c` (el commit que produjo el 567 / 12.574 / 141 que publicaba esta
+     página) reproduce 567 · 12.574 · 141 EXACTOS. Si el comando no reproduce lo viejo, lo
+     nuevo no vale.
+
+     🔴 PUNTO CIEGO DEL VERIFICADOR, encontrado hoy y ya explotado sin que nadie lo viera.
+     `leerEscaparate()` no lee los odómetros: lee ESTA TABLA de aquí abajo, que está escrita
+     a mano. O sea que compara el motor contra un apunte, no contra lo que la página pinta.
+     Consecuencia medida: «alimentos de España» tenía la tabla y el texto en 235.866 —y el
+     verificador daba ✅— mientras el odómetro llevaba `data-count="235716"` desde el 09-09.
+     El JS pinta el ATRIBUTO, así que el visitante veía 235.716. Corregido aquí, y el
+     verificador endurecido en `jvfitness-dev` para que lea los odómetros de verdad y cruce
+     los tres sitios; con el candado puesto, esta clase de desfase ya no puede salir verde.
+
+     ⚠️ Y UNA CONSECUENCIA DE ESTE MISMO ARREGLO, dicha antes de que muerda: el candado
+     nuevo (`_tests/test-verificador-odometros.node.js`) es una batería más. Aquí se talla
+     **150**, que es lo cierto HOY —lo que hay en `master@5b5d021`, que es lo desplegado—;
+     en cuanto se fusione el PR hermano de `jvfitness-dev` serán **151** y esta cifra habrá
+     que subirla. No se adelanta a 151 porque si ese PR no entra, 151 sería mentira.
+
+     ⏳ Lo que NO se ha tocado, porque no es número y lo decide Pablo: si el ÁREA 8 (fútbol
+     sala, baloncesto, pádel) merece hueco propio en el cuerpo de la página, y si las fotos
+     siguen representando bien la app. Preguntado, no supuesto.
+
      ⚠️ RETALLADO 09-09-2026 (NOCHE, rutina de ALIMENTOS) — CINCO cifras, medidas con
      `node tools/cerebro-bots/verificador-escaparate.js --showcase showcase.html`, que es
      la única forma de tallarlas que este fichero admite (contra el artefacto, nunca
@@ -204,8 +239,8 @@
 
        cifra                          valor    dónde vive
        -----------------------------  -------  --------------------------------
-       fichas del asistente             567    odómetro
-       claves del asistente          12.574    ⚠️ YA NO SE PINTA (ver nota abajo)
+       fichas del asistente             578    odómetro
+       claves del asistente          12.884    ⚠️ YA NO SE PINTA (ver nota abajo)
        fichas que citan su Tema         330    ⚠️ YA NO SE PINTA (ver nota abajo)
        ejercicios                     1.502    eyebrow + odómetro
        ejercicios con instrucciones   1.289    entradilla de ejercicios
@@ -215,7 +250,7 @@
        NULL antes / ahora        33,5 / 20,3   tarjeta de perfiles
        Temas del fichero maestro         52    tarjeta de «Auditoría de citas»
        PMID del fichero maestro         160    tarjeta de «Auditoría de citas»
-       baterías de pruebas              142    odómetro (+ comentario CSS del N4)
+       baterías de pruebas              150    odómetro (+ comentario CSS del N4)
        pases del Vigía (33/33)           33    línea honesta del pie
        fusiones en el taller            329    acto 4 (solo SUBE: nunca miente por exceso)
 
@@ -2067,7 +2102,7 @@ html.jvfi-suelta body{margin:0;background:#0A100E;color:#EEF2EC;font-family:syst
          dato bueno, no un «0»); el contador la pone a cero justo al arrancar. -->
     <div class="stat-grid">
       <div class="stat reveal">
-        <div class="num" data-count="235716" data-format="mil">235.866</div>
+        <div class="num" data-count="235866" data-format="mil">235.866</div>
         <div class="lbl">alimentos de España, consultables sin cobertura</div>
       </div>
       <div class="stat reveal d1">
@@ -2075,11 +2110,11 @@ html.jvfi-suelta body{margin:0;background:#0A100E;color:#EEF2EC;font-family:syst
         <div class="lbl">ejercicios con guía anatómica</div>
       </div>
       <div class="stat reveal d2">
-        <div class="num" data-count="567">567</div>
+        <div class="num" data-count="578">578</div>
         <div class="lbl">fichas del asistente, escritas a mano</div>
       </div>
       <div class="stat reveal">
-        <div class="num" data-count="142">142</div>
+        <div class="num" data-count="150">150</div>
         <div class="lbl">baterías de pruebas antes de cada publicación</div>
       </div>
       <div class="stat live reveal d1">
