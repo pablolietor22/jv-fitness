@@ -34,6 +34,15 @@
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <title>JV Fitness · nutrición y entrenamiento con base científica · Pablo Andrés Martínez</title>
 <!-- ============================================================================
+     ⚠️ ARREGLO 14-09-2026 (mismo día, segunda pasada) — dos descuadres del retallado de
+        esta mañana, cazados por el verificador y por la sesión del PR #21:
+        · «baterías» quedó a medias: se cambió el odómetro a 152 y NO la fila de esta tabla,
+          que seguía diciendo 142. El verificador lee la tabla, así que cantó el descuadre.
+        · «alimentos» llevaba desde el 09-09 con `data-count="235716"` y el texto en 235.866.
+          MANDA EL ATRIBUTO: el JS hace parseInt(data-count) y REESCRIBE el texto, así que el
+          visitante veía 235.716. Hallazgo de la sesión del #21, no mío.
+        Revisados los CUATRO odómetros: atributo y texto coinciden en todos.
+
      ⚠️ RETALLADO 14-09-2026 — «fichas» 567 → 578, «claves» 12.574 → 12.884 y «baterías»
         142 → 152. Entraron el ÁREA 8 (deporte + fuerza, 11 fichas firmadas por Pablo el
         10-09) y tres noches de alimentos. MEDIDO ejecutando el CEREBRO_KB del master
