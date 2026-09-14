@@ -59,11 +59,14 @@
      verificador endurecido en `jvfitness-dev` para que lea los odómetros de verdad y cruce
      los tres sitios; con el candado puesto, esta clase de desfase ya no puede salir verde.
 
-     ⚠️ Y UNA CONSECUENCIA DE ESTE MISMO ARREGLO, dicha antes de que muerda: el candado
-     nuevo (`_tests/test-verificador-odometros.node.js`) es una batería más. Aquí se talla
-     **150**, que es lo cierto HOY —lo que hay en `master@5b5d021`, que es lo desplegado—;
-     en cuanto se fusione el PR hermano de `jvfitness-dev` serán **151** y esta cifra habrá
-     que subirla. No se adelanta a 151 porque si ese PR no entra, 151 sería mentira.
+     ⏱️ «BATERÍAS» ES UNA CIFRA QUE SE MUEVE SOLA, y conviene saberlo antes de tocarla.
+     En las tres horas que van de este retallado se talló **150** (`master@5b5d021`), entró
+     el PR #327 con dos suites más y pasó a **152** (`master@9cd375c`), que es lo que queda
+     tallado aquí. Y subirá a **153** en cuanto entre el PR hermano de `jvfitness-dev`, que
+     añade el candado `_tests/test-verificador-odometros.node.js`.
+     **No se adelanta a 153**: si ese PR no entrara, 153 sería mentira. Se talla lo cierto
+     HOY y se vuelve a medir, que es exactamente para lo que existe el verificador.
+     Fichas y claves NO se han movido con el #327: no toca `app/jv-fitness-mvp.html`.
 
      ⏳ Lo que NO se ha tocado, porque no es número y lo decide Pablo: si el ÁREA 8 (fútbol
      sala, baloncesto, pádel) merece hueco propio en el cuerpo de la página, y si las fotos
@@ -250,7 +253,7 @@
        NULL antes / ahora        33,5 / 20,3   tarjeta de perfiles
        Temas del fichero maestro         52    tarjeta de «Auditoría de citas»
        PMID del fichero maestro         160    tarjeta de «Auditoría de citas»
-       baterías de pruebas              150    odómetro (+ comentario CSS del N4)
+       baterías de pruebas              152    odómetro (+ comentario CSS del N4)
        pases del Vigía (33/33)           33    línea honesta del pie
        fusiones en el taller            329    acto 4 (solo SUBE: nunca miente por exceso)
 
@@ -2114,7 +2117,7 @@ html.jvfi-suelta body{margin:0;background:#0A100E;color:#EEF2EC;font-family:syst
         <div class="lbl">fichas del asistente, escritas a mano</div>
       </div>
       <div class="stat reveal">
-        <div class="num" data-count="150">150</div>
+        <div class="num" data-count="152">152</div>
         <div class="lbl">baterías de pruebas antes de cada publicación</div>
       </div>
       <div class="stat live reveal d1">
