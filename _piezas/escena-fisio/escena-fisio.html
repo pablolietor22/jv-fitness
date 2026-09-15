@@ -116,8 +116,18 @@ html.jvfi-suelta body{margin:0;background:#0A100E;color:#EEF2EC;font-family:syst
   };
 
   var T = { ZONA:52, PICK:520, BLOQUE:420, CUENTA:900, EJ:560, PREHAB:520, BAND:460, CITA:380 };
-  var tempos = [];
-  function cita(ms, fn){ tempos.push(setTimeout(fn, quieto ? Math.min(ms,60) : ms)); }
+  // [15-09] Arranque al VERSE, no al cargar: hasta que la escena entra en pantalla, cita() solo encola.
+  // Antes arrancaba con la pagina y quien bajaba despacio se la encontraba ya terminada.
+  // Cada reloj guarda su fn para poder COMPLETAR la escena en orden si se toca o sale de pantalla.
+  var tempos = [], cola = [], arrancado = false;
+  function cita(ms, fn){
+    if (!arrancado) { cola.push([ms, fn]); return; }
+    var t = { fn: fn, hecho: false };
+    t.id = setTimeout(function(){ t.hecho = true; fn(); }, quieto ? Math.min(ms,60) : ms);
+    tempos.push(t);
+  }
+  function arrancar(){ if (arrancado) return; arrancado = true; var c = cola; cola = []; c.forEach(function(p){ cita(p[0], p[1]); }); }
+  function parar(){ tempos.forEach(function(t){ var id = (t && t.id != null) ? t.id : t; clearTimeout(id); clearInterval(id); }); tempos = []; }
 
   var cZonas = document.getElementById('jvfi-zonas');
   var cSalida = document.getElementById('jvfi-salida');
@@ -210,13 +220,29 @@ html.jvfi-suelta body{margin:0;background:#0A100E;color:#EEF2EC;font-family:syst
   });
 
   // Un toque completa la escena: nadie espera a una animacion si ya sabe lo que busca.
-  raiz.addEventListener('click', function(){
-    tempos.forEach(function(t){ clearTimeout(t); clearInterval(t); });
-    tempos = [];
+  // [15-09] Tambien se completa si sale de pantalla a medias: se ejecuta lo pendiente EN ORDEN
+  // (asi los bloques que aun no existian se crean) y luego se apagan los relojes. Nada queda a medias.
+  function completar(){
+    arrancado = true;
+    var c = cola; cola = []; c.forEach(function(p){ p[1](); });
+    var pend = tempos.filter(function(t){ return t && t.fn && !t.hecho; });
+    parar();
+    pend.forEach(function(t){ t.hecho = true; t.fn(); });
+    parar();
     raiz.querySelectorAll('.jvfi-z,.jvfi-bloque,.jvfi-ej,.jvfi-prehab,.jvfi-band,.jvfi-cita')
         .forEach(function(el){ el.classList.add('in'); });
     var n = document.getElementById('jvfi-n');
     if (n) n.textContent = HOMBRO.n;
-  }, { once:false });
+  }
+  raiz.addEventListener('click', completar, { once:false });
+  if (quieto || !('IntersectionObserver' in window)) { arrancar(); }
+  else {
+    new IntersectionObserver(function(es, io){
+      es.forEach(function(e){
+        if (e.isIntersecting) { arrancar(); }
+        else if (arrancado && tempos.length) { completar(); io.unobserve(raiz); }
+      });
+    }, { threshold: .25 }).observe(raiz);
+  }
 })();
 </script>
