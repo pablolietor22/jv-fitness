@@ -1,7 +1,7 @@
 {
  "version": "2026-09-15",
  "fuente": "Cartas oficiales de cada cadena (URL y fecha de consulta en cada fila) · JV Fitness",
- "total": 1609,
+ "total": 1850,
  "cadenas": [
   {
    "cadena": "Burger King",
@@ -46,13 +46,21 @@
   {
    "cadena": "Telepizza",
    "count": 77
+  },
+  {
+   "cadena": "Tim Hortons",
+   "count": 240
+  },
+  {
+   "cadena": "llaollao",
+   "count": 1
   }
  ],
  "chunks": [
   {
    "file": "cadenas.jsonl.gz",
-   "count": 1609,
-   "bytes": 44539
+   "count": 1850,
+   "bytes": 51686
   }
  ],
  "componentes": {

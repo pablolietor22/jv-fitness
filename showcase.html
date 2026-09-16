@@ -34,6 +34,24 @@
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <title>JV Fitness · nutrición y entrenamiento con base científica · Pablo Andrés Martínez</title>
 <!-- ============================================================================
+     🔢 RETALLADO 15-09-2026 (rutina de alimentos) — «baterías de pruebas» 152 → 154.
+        MEDIDO CON UN COMANDO, no a ojo, y contra el ÁRBOL que se va a desplegar:
+
+            git ls-tree -r --name-only origin/master _tests/ | grep -c 'node\.js$'   ->  153
+            ls _tests/*.node.js | wc -l        (rama encadenada de alimentos)        ->  154
+
+        ⚠️ Dos cosas que conviene saber antes de fiarse de este número:
+        · YA ESTABA DESFASADO ANTES DE ESTA NOCHE. `master` llevaba 153 desde que entró el
+          PR #340 y aquí seguía puesto 152 — la sesión del #330 avisó de que había que
+          subirlo «en un PR de una línea en cuanto entre» y ese PR no llegó a existir. Que
+          una cifra dependa de que alguien se acuerde es exactamente lo que este escaparate
+          lleva un mes intentando quitarse de encima.
+        · La 154.ª es `_tests/test-food-factor.node.js`, que entra con la cadena de
+          alimentos de esta noche. Así que este número es cierto CUANDO se fusione esa
+          cadena, no antes — va en su mismo PR a propósito, para que no puedan separarse.
+        Tocados LOS DOS SITIOS (tabla del verificador Y odómetro con su atributo): el fallo
+        del 14-09 fue tocar uno solo, y manda el atributo, que es lo que el JS reescribe.
+
      ⚠️ ARREGLO 14-09-2026 (mismo día, segunda pasada) — dos descuadres del retallado de
         esta mañana, cazados por el verificador y por la sesión del PR #21:
         · «baterías» quedó a medias: se cambió el odómetro a 152 y NO la fila de esta tabla,
@@ -232,7 +250,7 @@
        NULL antes / ahora        33,5 / 20,3   tarjeta de perfiles
        Temas del fichero maestro         52    tarjeta de «Auditoría de citas»
        PMID del fichero maestro         160    tarjeta de «Auditoría de citas»
-       baterías de pruebas              152    odómetro (+ comentario CSS del N4)
+       baterías de pruebas              154    odómetro (+ comentario CSS del N4)
        pases del Vigía (33/33)           33    línea honesta del pie
        fusiones en el taller            329    acto 4 (solo SUBE: nunca miente por exceso)
 
@@ -2096,7 +2114,7 @@ html.jvfi-suelta body{margin:0;background:#0A100E;color:#EEF2EC;font-family:syst
         <div class="lbl">fichas del asistente, escritas a mano</div>
       </div>
       <div class="stat reveal">
-        <div class="num" data-count="152">152</div>
+        <div class="num" data-count="154">154</div>
         <div class="lbl">baterías de pruebas antes de cada publicación</div>
       </div>
       <div class="stat live reveal d1">
