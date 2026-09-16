@@ -34,6 +34,37 @@
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <title>JV Fitness · nutrición y entrenamiento con base científica · Pablo Andrés Martínez</title>
 <!-- ============================================================================
+     🔢 RETALLADO 16-09-2026 (NOCHE, rutina de ALIMENTOS) — «alimentos de España»
+        235.866 → 235.920 (+54), y SOLO esa cifra. Medido con
+        `node tools/cerebro-bots/verificador-escaparate.js --showcase showcase.html`
+        contra el artefacto, nunca contra `_ESTADO-PROYECTO.md`.
+
+        De dónde salen los +54: +41 de las novedades de OFF del 14 y el 15-09, que ya
+        estaban en `main` sin tallar, y +13 de las de esta noche. Sale del campo `total`
+        de `data/db/manifest.json` (v2026-09-16) y cuadra con la suma de los `count` de
+        sus 11 chunks: 235.920 = 235.920.
+
+        ⚠️ VA EN EL MISMO PR QUE PUBLICA EL MANIFEST, a propósito: si esa cadena no se
+        fusiona, 235.920 sería mentira. Es la misma regla que el 15-09 aplicó a las
+        baterías («cierto CUANDO se fusione, no antes»).
+
+        Tocados los CINCO sitios donde vive esta cifra, porque el verificador exige que
+        atributo, texto y tabla coincidan (la lección del #340, donde dos de tres
+        estaban bien y el visitante veía el tercero): odómetro con su `data-count` Y su
+        texto · fila de la tabla del verificador · `<meta name="description">` ·
+        `<meta property="og:description">` · el eyebrow de la tarjeta de la sección.
+        Los `235.866` que quedan en este comentario son HISTORIAL y no se tocan.
+
+     🖐️ Y LO QUE ESTA SESIÓN NO HA TOCADO, midiéndolo primero: el verificador saca
+        además «fichas» 578 → 649, «claves» 12.884 → 14.385 y «fichas que citan su Tema»
+        330 → 387, que se movieron al fusionar el #346 y el #342 (embarazo). **Ya las
+        está retallando el PR #29**, abierto a las 17:06 de hoy. Comprobado antes de
+        escribir nada (`git diff origin/main...` sobre las 28 ramas del repo: sólo el #29
+        y una rama vieja tocan este fichero, y el #29 NO toca el odómetro de alimentos).
+        Es la lección del 14-09 —dos sesiones retallaron lo mismo y una tiró su trabajo—
+        convertida en una comprobación de diez segundos.
+
+<!-- ============================================================================
      🔢 RETALLADO 15-09-2026 (rutina de alimentos) — «baterías de pruebas» 152 → 154.
         MEDIDO CON UN COMANDO, no a ojo, y contra el ÁRBOL que se va a desplegar:
 
@@ -244,7 +275,7 @@
        fichas que citan su Tema         330    ⚠️ YA NO SE PINTA (ver nota abajo)
        ejercicios                     1.502    eyebrow + odómetro
        ejercicios con instrucciones   1.289    entradilla de ejercicios
-       alimentos de España          235.866    tarjeta del diario + odómetro
+       alimentos de España          235.920    tarjeta del diario + odómetro
        perfiles del barrido               8    tarjeta de perfiles
        preguntas del barrido          1.032    tarjeta de perfiles
        NULL antes / ahora        33,5 / 20,3   tarjeta de perfiles
@@ -280,12 +311,12 @@
        el texto visible — si tocas una cifra en el cuerpo, tócala también aquí.)
        Actualizado 28-08-2026 (antes decía `python verificador.py`, que no existe).
      ============================================================================ -->
-<meta name="description" content="JV Fitness: app de nutrición y entrenamiento con base científica. Diario con 235.866 alimentos sin cobertura, 1.502 ejercicios con guía anatómica y un asistente que cita su fuente cuando la tiene y dice «no lo sé» cuando no.">
+<meta name="description" content="JV Fitness: app de nutrición y entrenamiento con base científica. Diario con 235.920 alimentos sin cobertura, 1.502 ejercicios con guía anatómica y un asistente que cita su fuente cuando la tiene y dice «no lo sé» cuando no.">
 <meta name="robots" content="index,follow">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://pablolietor22.github.io/jv-fitness/showcase.html">
 <meta property="og:title" content="JV Fitness · nutrición y entrenamiento con base científica">
-<meta property="og:description" content="Nutrición y entrenamiento con base científica: 235.866 alimentos sin cobertura, 1.502 ejercicios con guía anatómica y un asistente que cita sus fuentes. En desarrollo casi a diario.">
+<meta property="og:description" content="Nutrición y entrenamiento con base científica: 235.920 alimentos sin cobertura, 1.502 ejercicios con guía anatómica y un asistente que cita sus fuentes. En desarrollo casi a diario.">
 <!-- og:image ABSOLUTA (LinkedIn/WhatsApp ignoran rutas relativas) + tarjeta 1200×630 dedicada, no la foto de retrato -->
 <meta property="og:image" content="https://pablolietor22.github.io/jv-fitness/assets/og.png">
 <meta property="og:image:width" content="1200">
@@ -1199,7 +1230,7 @@ html.fx-fin .stage__node{animation:none !important}
     <!-- tres funciones más (spec cards) -->
     <div class="spec-grid">
       <div class="spec-card reveal">
-        <span class="feat-eyebrow">235.866 alimentos</span>
+        <span class="feat-eyebrow">235.920 alimentos</span>
         <h3>Diario de comida sin cobertura</h3>
         <p>La base completa de alimentos de España viaja en el móvil y se consulta sin cobertura: en el metro, en el gimnasio, donde sea.</p>
       </div>
@@ -2754,7 +2785,7 @@ io.observe(raiz);
          dato bueno, no un «0»); el contador la pone a cero justo al arrancar. -->
     <div class="stat-grid">
       <div class="stat reveal">
-        <div class="num" data-count="235866" data-format="mil">235.866</div>
+        <div class="num" data-count="235920" data-format="mil">235.920</div>
         <div class="lbl">alimentos de España, consultables sin cobertura</div>
       </div>
       <div class="stat reveal d1">
