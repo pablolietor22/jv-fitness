@@ -1,23 +1,17 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <!-- Solo cuentan sueltas (showcase trae las suyas): sin charset, tildes rotas; sin viewport, el movil pinta a 980px. -->
-<!-- ESCENA 3 . LOS ENTRENOS . PIEZA PORTABLE
-     Suelta (doble clic) o pegada en showcase.html: hereda los tokens var(--jade,...) o usa la reserva.
-
-     QUE DEMUESTRA: al cargar una rutina del catalogo la SESION SE MONTA SOLA (ocho ejercicios con su
-     guia reps . RIR . descanso), y apuntar la serie no es rellenar casillas: el RIR se ELIGE en una
-     hoja que la app te explica ahi mismo, y el descanso trae su reloj con mandos.
-
-     LITERAL, medido contra master (d2f3d38) el 16-09-2026: barra "<- Entrenos" / "Guardar" (Jorge,
-     02-sep), titulo fijo "Registrar entreno" y la linea del desplegable de rutinaPorQue; los dos
-     avisos son los toast() de cargarRutina y guardarEntreno; rutina, 8 ejercicios y su nota "objetivo"
-     (RUTINAS.fullbody + _entMeta); la fila de serie con "1ª/2ª/3ª" (en la app, boton que cicla W/F/D), kg . reps . RIR, el chip del RIR y el ✕; la hoja del RIR
-     (rirSheet): titulo, frase, chips y botones; y la barra de descanso (restBarEl) con sus mandos.
-     PUESTA EN ESCENA (y en la nota al pie): las miniaturas son los emoji de iconoDe(m), el plan B de
-     la app, porque el escaparate no puede cargar sus fotos (CSP); el descanso y los avisos se pintan
-     donde esta la vista, no flotando al pie.
-     ATREZO: los kilos y las repes tecleados y el dedo que elige el RIR.
-     FUERA A PROPOSITO: el "Consejo de hoy" (solo en modo ciclo: perfil mujer con ciclo activo) y el
-     glosario EXPLICACIONES.rir (ningun boton lo abre en master). Si cambia master, se re-mide. -->
+<!-- ESCENA 3 . LOS ENTRENOS . PIEZA PORTABLE. Suelta (doble clic) o pegada: hereda var(--jade,...) o reserva.
+     QUE DEMUESTRA: cargar una rutina MONTA SOLA la sesion (8 ejercicios, reps . RIR . descanso); apuntar
+     la serie no es rellenar casillas (RIR se ELIGE en una hoja explicada ahi mismo, descanso con reloj
+     y mandos); y antes de guardar, la nota de la sesion (boton real "Como llegaste hoy" + su campo).
+     LITERAL contra master (d2f3d38, 16-09-2026): barra "<- Entrenos"/"Guardar", titulo, desplegable de
+     rutinaPorQue, los 2 toast (cargarRutina/guardarEntreno), RUTINAS.fullbody + _entMeta, la fila de
+     serie, la hoja del RIR (rirSheet), la barra de descanso (restBarEl) y el boton+campo de la nota
+     (entNotaSesionToggle). PUESTA EN ESCENA: miniaturas = emoji de iconoDe(m) (plan B sin fotos, CSP);
+     descanso y avisos van donde esta la vista, no flotando al pie.
+     ATREZO: kilos/repes tecleados, el dedo que elige RIR, el texto de la nota ("estoy más cansado").
+     FUERA A PROPOSITO: "Consejo de hoy" (solo modo ciclo) y el glosario EXPLICACIONES.rir. Si cambia
+     master, se re-mide. -->
 <style>
 .jven{--en-jade:var(--jade,#3DDC97);--en-bone:var(--bone,#EEF2EC);--en-soft:var(--soft,#CBD8D1);--en-mute:var(--mute,#8CA69B);--en-line:var(--line,#1E3A31);--en-lines:var(--line-soft,#16281F);--en-panel:var(--panel,#101E19);--en-panel2:var(--panel-2,#0D1B16);--en-r:var(--r,16px);--en-display:var(--display,'Space Grotesk',system-ui,sans-serif);--en-mono:var(--mono,ui-monospace,Consolas,monospace);--en-body:var(--body,system-ui,-apple-system,'Segoe UI',Roboto,sans-serif);--en-entra:var(--ease-entra,cubic-bezier(.2,.8,.2,1))}
 html.jven-suelta body{margin:0;background:#0A100E;color:#EEF2EC;font-family:system-ui,sans-serif}
@@ -25,8 +19,8 @@ html.jven-suelta body{margin:0;background:#0A100E;color:#EEF2EC;font-family:syst
 .jven *{box-sizing:border-box}
 .jven-wrap{width:100%;max-width:560px;margin:0 auto;padding:0 18px}
 /* entradas: 340 ms con --ease-entra; solo transform y opacity */
-.jven-cab,.jven-marco,.jven-series,.jven-rest,.jven-cita{opacity:0;transform:translateY(10px);transition:opacity 340ms var(--en-entra),transform 340ms var(--en-entra)}
-.jven-cab.in,.jven-marco.in,.jven-series.in,.jven-rest.in,.jven-cita.in{opacity:1;transform:none}
+.jven-cab,.jven-marco,.jven-series,.jven-rest,.jven-cita,.jven-notabox{opacity:0;transform:translateY(10px);transition:opacity 340ms var(--en-entra),transform 340ms var(--en-entra)}
+.jven-cab.in,.jven-marco.in,.jven-series.in,.jven-rest.in,.jven-cita.in,.jven-notabox.in{opacity:1;transform:none}
 .jven-eyebrow{font-family:var(--en-mono);font-weight:500;font-size:.68rem;margin:0;text-transform:uppercase;letter-spacing:.2em;color:var(--en-jade);display:flex;align-items:center;gap:.6em;width:fit-content}
 .jven-eyebrow::before{content:"";width:16px;height:1px;background:var(--en-jade);opacity:.7}
 .jven-h{font-family:var(--en-display);font-weight:700;letter-spacing:-.02em;line-height:1.1;font-size:clamp(1.45rem,5.4vw,2.05rem);margin:.6rem 0 1.1rem}
@@ -39,9 +33,11 @@ html.jven-suelta body{margin:0;background:#0A100E;color:#EEF2EC;font-family:syst
 .jven-cuerpo{padding:14px 14px 18px}
 /* barra de Jorge (02-sep): volver a la izq., guardar en jade a la dcha. */
 .jven-top{display:flex;align-items:center;justify-content:space-between;margin:0 0 10px}
-.jven-back,.jven-save,.jven-rb,.jven-rf span{font-size:.75rem;padding:6px 10px;border-radius:9px;border:1px solid var(--en-line);background:rgba(12,21,18,.6);color:var(--en-soft);line-height:1.25}
+.jven-back,.jven-save,.jven-rb,.jven-rf span,.jven-nbtn{font-size:.75rem;padding:6px 10px;border-radius:9px;border:1px solid var(--en-line);background:rgba(12,21,18,.6);color:var(--en-soft);line-height:1.25}
 .jven-save{border-color:rgba(61,220,151,.45);color:var(--en-jade);font-weight:600;transition:background 200ms,color 200ms,border-color 200ms}
+.jven-nbtn{display:inline-block;transition:border-color 220ms,color 220ms}
 .jven-save.pick{background:var(--en-jade);border-color:var(--en-jade);color:#0A100E;animation:jven-pulso 240ms var(--en-entra)}
+.jven-nbtn.pick,.jven-num.pick{border-color:var(--en-jade);color:var(--en-jade);animation:jven-pulso 240ms var(--en-entra)}
 @keyframes jven-pulso{0%{transform:scale(1)}50%{transform:scale(1.04)}100%{transform:scale(1)}}
 /* cabecera real: titulo fijo + la linea del desplegable de la rutina */
 .jven-tit{font-family:var(--en-display);font-weight:700;font-size:1.02rem;line-height:1.32;margin:0}
@@ -69,9 +65,13 @@ html.jven-suelta body{margin:0;background:#0A100E;color:#EEF2EC;font-family:syst
 .jven-num,.jven-x{font-size:.8rem}
 .jven-num{font-weight:700}
 .jven-celda,.jven-rir,.jven-rc{min-height:34px;border:1px solid var(--en-line);border-radius:8px;font-family:var(--en-mono);white-space:nowrap}
-.jven-celda{padding:6px 8px;background:rgba(10,16,14,.7);font-size:.9rem;font-variant-numeric:tabular-nums;line-height:1.2}
+.jven-celda{padding:6px 8px;background:rgba(10,16,14,.7);font-size:.9rem;font-variant-numeric:tabular-nums;line-height:1.2;transition:border-color 200ms,background 200ms}
+.jven-celda.jven-activa{border-color:var(--en-jade);background:rgba(61,220,151,.1)}
 .jven-celda.jven-activa::after{content:"▍";color:var(--en-jade);animation:jven-parpadeo 530ms steps(1,end) infinite alternate}
 @keyframes jven-parpadeo{from{opacity:1}to{opacity:0}}
+.jven-notabox{margin-top:10px}
+.jven-notabox .jven-celda{white-space:normal;min-height:44px}
+.jven-nlbl{font-size:.68rem;color:var(--en-mute);margin:0 0 4px}
 /* el chip del RIR: "RIR" vacio y "RIR 2" fijado; se toca, no se teclea */
 .jven-rir{padding:6px 4px;font-size:.72rem;text-align:center;color:var(--en-soft);line-height:1.5;transition:border-color 260ms,color 260ms}
 .jven-rir.foco,.jven-rir.pick,.jven-rc.pick{border-color:var(--en-jade)}
@@ -121,8 +121,9 @@ html.jven-suelta body{margin:0;background:#0A100E;color:#EEF2EC;font-family:syst
     </div>
   </div>
   <p class="jven-nota">Literal de la versión publicada: la rutina y sus ocho ejercicios con su nota,
-  los rótulos del registro, la hoja del RIR, la barra de descanso y los dos avisos («Rutina cargada» y
-  «Entreno guardado»). De ejemplo: los kilos y las repes tecleados y el dedo que elige el RIR. Puesta en
+  los rótulos del registro, la hoja del RIR, la barra de descanso, el botón «🗒️ Cómo llegaste hoy»
+  con su campo, y los dos avisos («Rutina cargada» y «Entreno guardado»). De ejemplo: los kilos y las
+  repes tecleados, el dedo que elige el RIR y el texto de la nota («estoy más cansado»). Puesta en
   escena: las miniaturas son los emoji que la app usa cuando un ejercicio no tiene foto (aquí no puede
   cargarlas), y el descanso y los avisos, que en la app flotan al pie, van donde está la vista.</p>
 </section>
@@ -139,14 +140,14 @@ html.jven-suelta body{margin:0;background:#0A100E;color:#EEF2EC;font-family:syst
 
   // — LA RUTINA, literal de RUTINAS.fullbody; obj = '🎯 objetivo: ' + _entMeta[n].txt —
   var EJ = [
-    { n:'Sentadilla con barra', m:'Cuádriceps', obj:'🎯 objetivo: 6-10 reps · RIR 2-3 · 150 s' },
-    { n:'Press banca', m:'Pecho', obj:'🎯 objetivo: 6-10 reps · RIR 2-3 · 150 s' },
-    { n:'Remo con barra', m:'Espalda', obj:'🎯 objetivo: 8-12 reps · RIR 2-3 · 120 s' },
-    { n:'Press militar mancuernas', m:'Hombros', obj:'🎯 objetivo: 8-12 reps · RIR 2-3 · 120 s' },
-    { n:'Peso muerto rumano', m:'Femoral', obj:'🎯 objetivo: 8-12 reps · RIR 2-3 · 120 s' },
-    { n:'Curl con mancuernas', m:'Bíceps', obj:'🎯 objetivo: 10-15 reps · RIR 1-2 · 75 s' },
-    { n:'Extensión en polea (cuerda)', m:'Tríceps', obj:'🎯 objetivo: 10-15 reps · RIR 1-2 · 75 s' },
-    { n:'Elevación de gemelo de pie', m:'Gemelo', obj:'🎯 objetivo: 10-15 reps · RIR 1-2 · 60 s' }
+    { n:'Sentadilla con barra', m:'Cuádriceps', obj:'🎯 objetivo: 6-10 reps · técnica primero · 150 s' },
+    { n:'Press banca', m:'Pecho', obj:'🎯 objetivo: 6-10 reps · técnica primero · 150 s' },
+    { n:'Remo con barra', m:'Espalda', obj:'🎯 objetivo: 6-10 reps · técnica primero · 120 s' },
+    { n:'Press militar mancuernas', m:'Hombros', obj:'🎯 objetivo: 6-10 reps · técnica primero · 120 s' },
+    { n:'Peso muerto rumano', m:'Femoral', obj:'🎯 objetivo: 6-10 reps · técnica primero · 120 s' },
+    { n:'Curl con mancuernas', m:'Bíceps', obj:'🎯 objetivo: 6-10 reps · al fallo · 75 s' },
+    { n:'Extensión en polea (cuerda)', m:'Tríceps', obj:'🎯 objetivo: 6-10 reps · al fallo · 75 s' },
+    { n:'Elevación de gemelo de pie', m:'Gemelo', obj:'🎯 objetivo: 6-10 reps · al fallo · 60 s' }
   ];
   // iconoDe(m): copiada tal cual (el emoji que pinta si el ejercicio no tiene foto)
   function iconoDe(m){
@@ -172,11 +173,14 @@ html.jven-suelta body{margin:0;background:#0A100E;color:#EEF2EC;font-family:syst
   var GUARDADO = '✓ Entreno guardado';
   var CITA = '— Tema 4, Helms 2016 / Tema 27';
   var SERIES = [['60','8'], ['60','8'], ['62,5','7']];   // ATREZO: los kg y las repes tecleados
+  // El boton y el campo son reales (onclick="entNotaSesionToggle()", label y placeholder literales
+  // del master); NOTA_TXT es ATREZO, un ejemplo de lo que alguien teclearia.
+  var NOTA_BTN = '🗒️ Cómo llegaste hoy', NOTA_LBL = 'Cómo llegaste hoy (opcional)', NOTA_TXT = 'estoy más cansado';
 
   // Los cortes, en ms. El reloj del descanso llena el hueco largo con un tic/segundo.
   var T = { ROTULO:0, MARCO:600, LISTA:1600, FILA:100, AVISO:2400, AVISOX:3800, FOCO:4000,
             TECLEO:4400, CHAR:90, CELDA:140, SERIE:300, HOJA:7000, ELIGE:9200, FIJA:9500,
-            DESCANSO:11000, TICK:1000, TICKS:3, GUARDAR:14400, CITA:16000 };
+            DESCANSO:11000, TICK:1000, TICKS:3, NOTA:11800, GUARDAR:14400, CITA:16000 };
 
   // Arranca al VERSE: hasta entonces cita() solo encola. Cada reloj guarda su fn y su plazo
   // para COMPLETAR en orden (toque, o se va por arriba) o PAUSAR (se va por abajo).
@@ -202,7 +206,7 @@ html.jven-suelta body{margin:0;background:#0A100E;color:#EEF2EC;font-family:syst
   var cab = raiz.querySelector('.jven-cab'), marco = raiz.querySelector('.jven-marco');
   var cLista = document.getElementById('jven-lista'), save = document.getElementById('jven-save');
   var filas = [], celdas = [], chips = [], bloque = null, hoja = null, restT = null;
-  var tCargada = null;
+  var tCargada = null, notaTxt = null;
 
   // crea el bloque, lo cuelga y lo hace entrar (el gesto de todos los cortes)
   function entra(padre, clase, html){
@@ -240,7 +244,8 @@ html.jven-suelta body{margin:0;background:#0A100E;color:#EEF2EC;font-family:syst
     celdas = SERIES.map(function(v, r){ var g = bloque.children[r + 1]; chips.push(g.children[3]); return [g.children[1], g.children[2]]; });
   });
 
-  // Corte 4: se teclean kg y reps, 90 ms/caracter (el RIR no se teclea: se toca)
+  // Corte 4: se teclean kg y reps, 90 ms/caracter (el RIR no se toca); al completar la fila,
+  // su numero (1a/2a/3a) da un golpe de confirmacion (mismo jven-pulso que el boton Guardar)
   var t = T.TECLEO;
   SERIES.forEach(function(vals, r){
     vals.forEach(function(txt, c){
@@ -253,6 +258,7 @@ html.jven-suelta body{margin:0;background:#0A100E;color:#EEF2EC;font-family:syst
       })(t);
       t += txt.length*T.CHAR + T.CELDA;
     });
+    (function(r, tFin){ cita(tFin, function(){ bloque.children[r + 1].children[0].classList.add('pick'); }); })(r, t + 30);
     t += T.SERIE - T.CELDA;
   });
 
@@ -286,6 +292,19 @@ html.jven-suelta body{margin:0;background:#0A100E;color:#EEF2EC;font-family:syst
     }, T.TICK);
     tempos.push(id);
   });
+
+  // Corte 7-bis: antes de guardar, la nota de la sesion (boton y campo reales; el texto que
+  // teclea es atrezo). Un caracter cada T.CHAR, mismo ritmo que los pesos de arriba.
+  cita(T.NOTA, function(){ entra(bloque, 'jven-nbtn', NOTA_BTN); });
+  cita(T.NOTA + 260, function(){ bloque.lastElementChild.classList.add('pick'); });
+  cita(T.NOTA + 520, function(){
+    var caja = entra(bloque, 'jven-notabox', '<p class="jven-nlbl">' + NOTA_LBL + '</p><div class="jven-celda jven-activa"></div>');
+    notaTxt = caja.lastElementChild;
+  });
+  for (var nk = 1; nk <= NOTA_TXT.length; nk++) (function(nk){
+    cita(T.NOTA + 520 + nk*T.CHAR, function(){ if (notaTxt) notaTxt.textContent = NOTA_TXT.slice(0, nk); });
+  })(nk);
+  cita(T.NOTA + 520 + NOTA_TXT.length*T.CHAR + 200, function(){ if (notaTxt) notaTxt.classList.remove('jven-activa'); });
 
   // Corte 8: Guardar pulsa, la sesion vuelve a plena luz y sale el aviso real
   cita(T.GUARDAR, function(){

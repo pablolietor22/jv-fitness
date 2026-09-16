@@ -69,6 +69,9 @@ html.jvce-suelta body{margin:0;background:#0A100E;color:#EEF2EC;font-family:syst
 .jvce-punto{width:26px;height:26px;padding:0;border:0;background:none;cursor:pointer;display:grid;place-items:center}
 .jvce-punto::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--ce-mute2);transition:background .22s var(--ce-casa),transform .22s var(--ce-casa)}
 .jvce-punto[aria-current="true"]::before{background:var(--ce-jade);transform:scale(1.3)}
+/* [17-09] Salto del punto siguiente (ver avanzar() en el script): solo transform, dentro del +-5%. */
+.jvce-punto--salta::before{animation:jvce-salto 420ms var(--ce-entra)}
+@keyframes jvce-salto{0%{transform:scale(1)}50%{transform:scale(1.04)}100%{transform:scale(1)}}
 /* Pausa (WCAG 2.2.2). */
 .jvce-pausa{height:26px;padding:0 8px;border:1px solid var(--ce-lines);border-radius:100px;background:none;color:var(--ce-mute2);cursor:pointer;font-size:.72rem;line-height:1}
 .jvce-pausa[aria-pressed="true"]{color:var(--ce-jade);border-color:var(--ce-jade)}
@@ -95,6 +98,7 @@ html.jvce-suelta body{margin:0;background:#0A100E;color:#EEF2EC;font-family:syst
  .jvce.jvce .jvce-vivo{animation:none;opacity:1}
  .jvce .jvce-b,.jvce .jvce-bl,.jvce .jvce-li,.jvce .jvce-chip{transition:none;opacity:1;transform:none}
  .jvce .jvce-hilo,.jvce .jvce-enviar,.jvce .jvce-punto::before{transition:none}
+ .jvce .jvce-punto--salta::before{animation:none}
  /* Ruta quieta: sin esto la respuesta quedaba CORTADA. */
  .jvce .jvce-hilo{height:auto}
 }</style>
@@ -294,9 +298,12 @@ function jvAvisoMostrar(contenedor, texto, opciones){
 'use strict';
 var T={TECLA:38,AZAR:46,COMA:250,ENVIAR:320,
 PENSAR:850, /* LA PAUSA: sin minimo no llega a verse; ni se quita ni se acorta */
-BLOQUE:340,ITEM:130,FUENTE:380,CHIPS:320,CHIP:70,SELLO:280,
-/* [30-08] Tiempos SUBIDOS por orden de Pablo tras verla: «no da tiempo a leer».
-   Antes: BLOQUE 230, ITEM 95, LEE 2600 + 12/car con tope 6500. */
+/* [17-09] Tiempos SUBIDOS otra vez, orden de Pablo: la respuesta se revelaba casi entera en
+   ~2-3 s y luego quedaba QUIETA el resto de la lectura (hasta 10 s) — «no muestra bien la
+   animacion». Ahora el salto de un bloque a otro se reparte a lo largo de mas tiempo, se ve
+   avanzar «poquito a poco» en vez de un estallido inicial seguido de aire muerto. */
+BLOQUE:700,ITEM:260,FUENTE:500,CHIPS:420,CHIP:140,SELLO:380,
+/* [30-08] Antes: BLOQUE 230, ITEM 95, LEE 2600 + 12/car con tope 6500 (subido esa vez a 340/130). */
 LEE:4200,LEE_CHAR:18,LEE_TOPE:10000,CORTE:500,
 /* [30-08] Escena 1-bis: el respiro entre el corte de montaje y la tarjeta del aviso.
    Es la pausa que hace que el aviso se lea como algo que pasa DESPUES, no como otro
@@ -463,6 +470,11 @@ cursor.classList.remove('jvce-cursor--off');
    cortar entra el aviso; si no, se pasa a la siguiente como siempre.
    Todo por cita(): si la escena sale de pantalla, parar() mata estos relojes tambien. */
 function avanzar(){
+/* [17-09] El punto de la SIGUIENTE pregunta da un salto ya al empezar a irse el hilo: se ve
+   A DONDE vamos antes de que la tarjeta termine de desaparecer, para que el paso a la
+   siguiente lea como un paso y no como un parpadeo. Solo transform (Never Ship). */
+var sig=puntos.children[(idx+1)%GUION.length];
+if(sig){ sig.classList.remove('jvce-punto--salta'); void sig.offsetWidth; sig.classList.add('jvce-punto--salta'); }
 hilo.classList.add('se-va');
 cita(T.CORTE,function(){ idx=(idx+1)%GUION.length; ciclo(); });
 }
