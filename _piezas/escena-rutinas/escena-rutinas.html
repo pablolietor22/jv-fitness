@@ -1,0 +1,294 @@
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<!-- Solo cuentan sueltas (showcase trae las suyas): sin charset, tildes rotas; sin viewport, el movil pinta a 980px. -->
+<!-- ESCENA 5 . LAS RUTINAS . PIEZA PORTABLE
+     Suelta o pegada en showcase.html: hereda var(--jade,...) o usa la reserva.
+     QUE DEMUESTRA (guion 21-08): que el catalogo se organiza por nivel, que cada rutina explica su
+     porque citando el master, que cada ejercicio lleva su guia y su nota, y que cualquiera se abre.
+     REHECHA el 16-09 tras la verificacion adversarial: la 1a version enseñaba el explorador y le
+     colgaba dentro cosas de OTRAS pantallas (el porque con el nombre de la rutina y la nota de
+     novato son del registro; y en el explorador los ejercicios no se tocan). Ahora RECORRE las
+     pantallas reales -se reconocen por su boton de volver, tambien literal- y cada una enseña SOLO
+     lo suyo: 1 explorador (expNivRender) · 2 y 3 la vista previa, arriba y abajo (expNivPreview) ·
+     4 el registro al empezarla (cargarRutina) · 5 la ficha del ejercicio (bibVer).
+     TODO LITERAL, medido contra master (origin/master d2f3d38) el 16-09-2026: RUTINAS (18 = 7+6+5;
+     las 6 de intermedio no se enseñan), expNivChips('fullbody'), la guia de expNivPreview (s×reps ·
+     RIR · descanso s) y el "🎯 objetivo:" de _entMeta (reps · RIR · s) -distintos a proposito: la
+     app los escribe distinto en cada pantalla-, y los 7 pasos de ejercicios-instr.json (d:"0025").
+     1.502 = EJERCICIOS.length y 1.287 = los que traen pasos (1.289 tienen d; dos no estan en el
+     JSON). Si cambia el catalogo, se re-mide.
+     ATREZO, y lo dice la nota al pie: el dedo, los chips de nivel y el emoji de la miniatura (ahi
+     la app pone la FOTO del ejercicio, que no viaja al showcase).
+     COMO SE MUEVE: arranca al verse (un cuarto, una vez) y si sale a medias se COMPLETA. Las cinco
+     pantallas se turnan en el MISMO hueco: cabe en el movil y no crece mientras corre; un toque las
+     desapila. Una tarjeta cada vez: lo anterior baja a .45. -->
+<style>
+.jvru{--ru-jade:var(--jade,#3DDC97);--ru-bone:var(--bone,#EEF2EC);--ru-soft:var(--soft,#CBD8D1);--ru-mute:var(--mute,#8CA69B);--ru-line:var(--line,#1E3A31);--ru-lines:var(--line-soft,#16281F);--ru-panel:var(--panel,#101E19);--ru-panel2:var(--panel-2,#0D1B16);--ru-display:var(--display,'Space Grotesk',system-ui,sans-serif);--ru-mono:var(--mono,ui-monospace,Consolas,monospace);--ru-body:var(--body,system-ui,-apple-system,'Segoe UI',Roboto,sans-serif);--ru-entra:var(--ease-entra,cubic-bezier(.2,.8,.2,1))}
+/* el gris es --mute: --mute-2, pegada, se queda en 3,5:1 e ilegible */
+.jvru-suelta body{margin:0;background:#0A100E;color:#EEF2EC}
+.jvru{padding:clamp(26px,6vw,72px) 0;color:var(--ru-bone);font-family:var(--ru-body);line-height:1.62}
+.jvru *{box-sizing:border-box}
+.jvru-wrap,.jvru-pie{width:100%;max-width:560px;margin:0 auto;padding:0 18px}
+.jvru-eyebrow{font:500 .68rem var(--ru-mono);margin:0;text-transform:uppercase;letter-spacing:.2em;color:var(--ru-jade)}
+.jvru-h{font:700 clamp(1.45rem,5.4vw,2.05rem)/1.1 var(--ru-display);letter-spacing:-.02em;margin:.6rem 0 1.1rem}
+.jvru-h b,.jvru-sum,.jvru-cur,.jvru-enlace,.jvru-obj,.jvru-btn,.jvru-volver b{color:var(--ru-jade)}
+/* entra en 300 ms y sin pasar del 2 % (techo de mareo: 5 %); lo APAGADO cuelga de .jvru-js, que
+   pone el script: sin JS se lee todo (convencion del showcase, html.js .reveal) */
+.jvru-e,.jvru-pasos li{transition:opacity 300ms var(--ru-entra),transform 300ms var(--ru-entra),background 260ms,border-color 260ms,color 260ms}
+.jvru-js .jvru-e,.jvru-js .jvru-pasos li{opacity:0;transform:translateY(10px) scale(.98)}
+.jvru-js .jvru-pant{transform:translateX(10px)}
+.jvru-js .in{opacity:1;transform:none}
+.jvru-js .jvru-off{display:none}
+.jvru-js .se-va{opacity:0;transform:translateX(-8px);transition-duration:180ms}
+.jvru-marco{border:1px solid var(--ru-line);border-radius:var(--r,16px);overflow:hidden;background:var(--ru-panel);box-shadow:0 24px 60px rgba(0,0,0,.5)}
+.jvru-barra{display:flex;align-items:center;gap:.6em;padding:11px 14px;font:.7rem var(--ru-mono);border-bottom:1px solid var(--ru-lines);letter-spacing:.04em;color:var(--ru-soft)}
+.jvru-vivo{width:7px;height:7px;border-radius:50%;background:var(--ru-jade);flex:none;box-shadow:0 0 8px var(--ru-jade)}
+/* hueco FIJO de 620 px: lo que pide la pantalla mas alta (los 8 ejercicios) a 360 px de ancho.
+   Las cinco se turnan dentro y ninguna hace crecer el marco */
+/* [16-09] La reserva de altura evita que la pagina salte al cambiar de pantalla, pero en pixeles
+   fijos dejaba medio marco negro en escritorio (el contenido encoge al ensancharse). Se reserva
+   lo que de verdad hace falta y solo donde hace falta: en movil, que es donde el salto se nota. */
+.jvru-cuerpo{padding:12px 14px 16px;min-height:340px}
+@media (max-width:520px){.jvru-cuerpo{min-height:620px}}
+.jvru-volver{display:flex;border:1px solid var(--ru-lines);border-radius:8px;padding:4px 9px;margin:0 0 9px}
+.jvru-volver,.jvru-lbl,.jvru-cita,.jvru-barra i{font:.68rem var(--ru-mono);color:var(--ru-mute);font-style:normal}
+.jvru-barra i{margin-left:auto;font-size:.64rem}
+.jvru-volver b{margin-left:auto;font-weight:600}
+.jvru-tit{font:700 1.02rem/1.3 var(--ru-display);letter-spacing:-.02em;margin:0 0 6px;color:var(--ru-bone)}
+.jvru-lbl{letter-spacing:.16em;font-size:.64rem;text-transform:uppercase;margin:8px 0 4px}
+.jvru-chip,.jvru-cchip,.jvru-fila,.jvru-tarj{border:1px solid var(--ru-lines);border-radius:10px;background:rgba(12,21,18,.6);color:var(--ru-soft)}
+.jvru-chip.pick,.jvru-fila.foco,.jvru-tarj.pick{background:rgba(61,220,151,.12);border-color:rgba(61,220,151,.5);color:var(--ru-bone)}
+.jvru-chip{display:inline-block;font-size:.8rem;padding:5px 11px;margin:0 6px 6px 0;border-radius:999px}
+.jvru-lista{display:grid}
+.jvru-lista ul,.jvru-ejs,.jvru-tarjs{grid-area:1/1;list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:5px}
+.jvru-oculta{visibility:hidden}
+.jvru-fila{display:flex;align-items:center;gap:8px;padding:6px 10px;font-size:.84rem}
+.jvru-fila i{margin-left:auto}
+.jvru-fila i,.jvru-enota,.jvru-hint{margin:0;font-style:normal;color:var(--ru-mute);font-size:.72rem}
+.jvru-cchip{display:inline-block;border-radius:999px;font-size:.72rem;padding:3px 10px;margin:0 5px 5px 0}
+.jvru-cur{border-color:var(--ru-jade);font-weight:600}
+.jvru-sum{font-weight:600;font-size:.86rem}
+.jvru-porque{font-size:.8rem;color:var(--ru-soft);max-width:52ch;margin:4px 0 0}
+.jvru-ejs li{font-size:.78rem;color:var(--ru-soft);padding:4px 0;border-bottom:1px solid var(--ru-lines);line-height:1.35}
+.jvru-ejs b,.jvru-novato b,.jvru-tarj b{color:var(--ru-bone)}
+.jvru-btn{margin:8px 0 0;text-align:center;border:1px solid rgba(61,220,151,.5);border-radius:10px;padding:7px;font-weight:600;font-size:.84rem}
+.jvru-novato{border-left:3px solid var(--ru-jade);padding:7px 10px;background:rgba(255,255,255,.02);font-size:.78rem;color:var(--ru-soft);margin:8px 0 0}
+.jvru-fallo{color:#F4C04E}
+.jvru-tarjs{margin-top:9px}
+.jvru-tarj{display:flex;gap:9px;align-items:center;padding:7px 9px;font-size:.82rem}
+.jvru-thumb{width:44px;height:44px;flex:none;font-size:22px;text-align:center;line-height:44px;border-radius:8px;background:var(--ru-panel2)}
+.jvru-obj{display:block;font-style:normal;font-size:.7rem}
+.jvru-pasos{list-style:none;margin:0;padding:0;counter-reset:jvru}
+.jvru-pasos li{position:relative;padding:2px 0 2px 24px;font-size:.78rem;color:var(--ru-soft);line-height:1.4}
+.jvru-pasos li::before{counter-increment:jvru;content:counter(jvru);position:absolute;left:0;top:2px;font:.66rem/1.7 var(--ru-mono);color:var(--ru-jade)}
+.jvru-pasos li.foco{color:var(--ru-bone)}
+.jvru-biblio{font-size:.84rem;color:var(--ru-soft);margin:14px 0 0}
+/* 5ch reservados: con el separador de miles el parrafo no gana linea ni empuja el pie */
+.jvru-biblio b{display:inline-block;min-width:5ch;text-align:right;color:var(--ru-jade);font:700 1.2rem var(--ru-display);letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.jvru-cita{margin:8px 0 0;font-size:.72rem}
+.jvru-nota{font-size:.78rem;color:var(--ru-mute);margin:12px 0 0;line-height:1.55}
+.jvru .jvru-tap{transform:scale(1.03)}   /* el golpe del dedo: un 3 % */
+.jvru .jvru-dim{opacity:.45}             /* lo que ya paso */
+@media (prefers-reduced-motion:reduce){.jvru *{transition:none!important;opacity:1!important;transform:none!important}}
+</style>
+
+<section class="jvru" id="jvru" aria-label="Las rutinas, por nivel">
+<div class="jvru-wrap">
+<div class="jvru-e" id="jvru-rotulo">
+<p class="jvru-eyebrow">Escena 5 · Las rutinas</p>
+<h2 class="jvru-h"><b>Dime tu nivel.</b><br>Te organiza el plan y te explica cada ejercicio.</h2>
+</div>
+<div class="jvru-marco jvru-e" id="jvru-marco">
+<div class="jvru-barra"><span class="jvru-vivo" aria-hidden="true"></span> JV Fitness · Entrenos <i>🗂️ Explorar (18)</i></div>
+<div class="jvru-cuerpo">
+<div class="jvru-pant" id="jvru-p1">
+<div class="jvru-volver">← Entrenos</div>
+<h3 class="jvru-tit jvru-e">🗂️ Rutinas por nivel</h3>
+<div class="jvru-chips" id="jvru-chips"><span class="jvru-chip jvru-e">principiante</span><span class="jvru-chip jvru-e">intermedio</span><span class="jvru-chip jvru-e">avanzado</span></div>
+<div class="jvru-e">
+<div class="jvru-lbl" id="jvru-niv">🌱 Principiante (7)</div>
+<div class="jvru-lista"><ul id="jvru-ul-p"></ul><ul class="jvru-oculta" id="jvru-ul-a"></ul></div>
+</div>
+</div>
+<div class="jvru-pant jvru-off" id="jvru-p2">
+<div class="jvru-volver">← Por nivel</div>
+<h3 class="jvru-tit jvru-e">Full-body 3 días (gimnasio)</h3>
+<div class="jvru-e"><span class="jvru-cchip">🎯 Cuádriceps · Pecho · Espalda · Hombros · Femoral · Bíceps · Tríceps · Gemelo</span><span class="jvru-cchip">⏱ ≈50 min</span><span class="jvru-cchip">📅 3 días/sem</span><span class="jvru-cchip">🧰 Barra · Mancuerna · Cable · Máquina</span></div>
+<div class="jvru-e">
+<div class="jvru-sum">🎓 ¿Por qué esta rutina?</div>
+<p class="jvru-porque"><span class="jvru-e">La opción con más evidencia de adherencia para novato: 3 sesiones idénticas (tipo lun/mié/vie), frecuencia 3×/músculo — cada músculo recibe 3 'primeras series frescas' (T24). </span><span class="jvru-e">Con 3 series/sesión el volumen semanal cae en ~9-12/músculo, banda de principiante dentro de 10-20 (T19/T25). </span><span class="jvru-e">RIR 2-3 en libres, técnica sobre carga (T13/T23).</span></p>
+</div>
+</div>
+<div class="jvru-pant jvru-off" id="jvru-p3">
+<div class="jvru-volver">← Por nivel</div>
+<div class="jvru-lbl jvru-e">Ejercicios (8)</div>
+<ul class="jvru-ejs" id="jvru-ejs"></ul>
+<div class="jvru-btn jvru-e" id="jvru-empezar">▶ Empezar rutina</div>
+</div>
+<div class="jvru-pant jvru-off" id="jvru-p4">
+<div class="jvru-volver">← Entrenos <b>✓ Guardar</b></div>
+<div class="jvru-sum jvru-e">📋 Full-body 3 días (gimnasio) · ¿por qué esta rutina?</div>
+<div class="jvru-novato jvru-e">🔰 <b>Empiezas: no te pases de volumen.</b> Céntrate en hacer bien estos básicos y mejorar semana a semana. Como aún no conoces tu límite, en máquinas conviene <b class="jvru-fallo">tocar el fallo</b> (que una rep se quede a medias) para aprender dónde está — así calibras tu RIR. <span class="jvru-enlace">¿Qué es el RIR? →</span></div>
+<ul class="jvru-tarjs" id="jvru-tarjs">
+<li class="jvru-tarj jvru-e"><span class="jvru-thumb" aria-hidden="true">🦵</span><span><b>Sentadilla con barra</b><i class="jvru-obj">🎯 objetivo: 6-10 reps · RIR 2-3 · 150 s</i></span></li>
+<li class="jvru-tarj jvru-e"><span class="jvru-thumb" aria-hidden="true">🏋️</span><span><b>Press banca</b><i class="jvru-obj">🎯 objetivo: 6-10 reps · RIR 2-3 · 150 s</i></span></li>
+</ul>
+</div>
+<div class="jvru-pant jvru-off" id="jvru-p5">
+<div class="jvru-volver">← Volver</div>
+<div class="jvru-e">
+<h3 class="jvru-tit">Press banca</h3>
+<p class="jvru-hint">Barra</p>
+<div class="jvru-lbl">Músculos que trabaja</div>
+<div><span class="jvru-cchip jvru-cur">Pecho</span><span class="jvru-cchip">Hombros</span><span class="jvru-cchip">Tríceps</span></div>
+</div>
+<div class="jvru-e">
+<div class="jvru-lbl">📋 Cómo se hace</div>
+<ol class="jvru-pasos" id="jvru-pasos">
+<li>Túmbate sobre un banco con los pies apoyados en el suelo y la espalda presionada contra el banco.</li>
+<li>Agarra la barra con un agarre pronado un poco más ancho que la separación de los hombros.</li>
+<li>Levanta la barra del soporte y sostenla directamente sobre el pecho con los brazos completamente extendidos.</li>
+<li>Baja la barra lentamente hacia el pecho, manteniendo los codos pegados al cuerpo.</li>
+<li>Haz una pausa breve cuando la barra toque el pecho.</li>
+<li>Empuja la barra de vuelta a la posición inicial extendiendo los brazos.</li>
+<li>Repite el número de repeticiones deseado.</li>
+</ol>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jvru-pie">
+<p class="jvru-biblio jvru-e">Biblioteca: <b id="jvru-n">1.502</b> ejercicios · 1.287 se abren así. De los demás, la app avisa en vez de inventarse la técnica.</p>
+<p class="jvru-cita jvru-e">— T24 · T19/T25 · T13/T23 (master-file)</p>
+<p class="jvru-nota jvru-e">Todo lo del marco es literal de la app publicada, y cada cosa en su pantalla: el explorador, la vista previa de la rutina (arriba su porqué, abajo sus ejercicios), el registro que se monta al empezarla (se ven 2 de sus 8 ejercicios) y la ficha. Cuatro pantallas, no una. De ejemplo: el dedo, los tres chips de nivel (en la app el nivel sale del cuestionario) y el emoji de la miniatura, donde la app pone la foto del ejercicio, que no viaja fuera de ella. De los 1.502 ejercicios, 1.287 traen sus pasos; del resto la app dice «Todavía no tenemos los pasos de este ejercicio. Preferimos decírtelo a inventarnos la técnica.»</p>
+</div>
+</section>
+
+<script>
+(function(){
+const raiz=document.getElementById('jvru');
+if(!raiz||raiz.dataset.listo) return;
+raiz.dataset.listo='1';
+raiz.classList.add('jvru-js');   // sin ella no se apaga nada: sin JS se lee entera
+if(!document.querySelector('.jvce')) document.documentElement.classList.add('jvru-suelta');
+const quieto=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const $=id=>document.getElementById(id);
+const cada=(l,c,on)=>Array.from(l).forEach(e=>e.classList[on?'add':'remove'](c));
+const pie=raiz.lastElementChild.children,chips=$('jvru-chips'),pasos=$('jvru-pasos').children,tarjs=$('jvru-tarjs').children;
+const ul={principiante:$('jvru-ul-p'),avanzado:$('jvru-ul-a')};
+const ROTULO={principiante:'🌱 Principiante (7)',avanzado:'🏆 Avanzado (5)'};  // expNivRender: icono+titulo+(cuantas)
+const TOTAL=1502,RUTINA=0,FICHA=1;   // EJERCICIOS.length · lo que toca el dedo
+// RUTINAS en su orden. De expNivCard queda el nombre y su «Ver ›»; sus 4 chips y la 1a frase del
+// porQue se ven en la pantalla siguiente.
+const RUT={principiante:['Full-body 3 días (gimnasio)','Full-body 2 días (gimnasio)','Full-body en casa (mancuernas)','Full-body peso corporal','Push · empuje (principiante)','Pull · tirón (principiante)','Legs · pierna (principiante)'],
+           avanzado:['Torso (torso-pierna 4 días · avanzado)','Pierna (torso-pierna 4 días · avanzado)','Push · empuje (avanzado)','Pull · tirón (avanzado)','Legs · pierna (avanzado)']};
+// RUTINAS.fullbody.ej: nombre · guia COMO la escribe expNivPreview · nota del catalogo
+const EJ=[['Sentadilla con barra','3×6-10 · RIR 2-3 · descanso 150 s','Prioridad de pierna al inicio (T24).'],
+          ['Press banca','3×6-10 · RIR 2-3 · descanso 150 s','Empuje horizontal principal (T8).'],
+          ['Remo con barra','3×8-12 · RIR 2-3 · descanso 120 s','Tirón que equilibra el empuje.'],
+          ['Press militar mancuernas','2×8-12 · RIR 2-3 · descanso 120 s','Hombro directo.'],
+          ['Peso muerto rumano','3×8-12 · RIR 2-3 · descanso 120 s','Femoral/glúteo.'],
+          ['Curl con mancuernas','2×10-15 · RIR 1-2 · descanso 75 s','Bíceps directo.'],
+          ['Extensión en polea (cuerda)','2×10-15 · RIR 1-2 · descanso 75 s','Tríceps directo.'],
+          ['Elevación de gemelo de pie','2×10-15 · RIR 1-2 · descanso 60 s','Gemelo.']];
+Object.keys(RUT).forEach(n=>ul[n].innerHTML=RUT[n].map(r=>'<li class="jvru-fila jvru-e">'+r+'<i>Ver ›</i></li>').join(''));
+$('jvru-ejs').innerHTML=EJ.map(e=>'<li class="jvru-e"><b>'+e[0]+'</b> — '+e[1]+'<br><i class="jvru-enota">'+e[2]+'</i></li>').join('');
+const filaP=ul.principiante.children;
+// El guion, en ms desde que la escena se ve: los cortes del pliego C.3, repartidos por pantallas
+const T={ROTULO:0,MARCO:200,TIT:300,BLOQUE:1300,CHIP:600,PICK:1150,FILA:80,
+         NIVEL2:3300,SALE:40,VUELVE:5000,VER:6100,
+         P2:6400,B2:600,FRASE:280,
+         P3:9300,EJS:9600,EJ:80,B3:1000,EMPEZAR:11100,
+         P4:11450,B4:600,TARJ:12900,TOCA:13700,
+         P5:14050,B5:300,PASO:210,BIBLIO:16400,CITA:17100};
+let tempos=[],viva=$('jvru-p1'),enfocado=null,arrancado=false;
+const cita=(ms,fn)=>tempos.push(setTimeout(fn,quieto?Math.min(ms,60):ms));
+const parar=()=>{tempos.forEach(t=>{clearTimeout(t);clearInterval(t);});tempos=[];cada(raiz.querySelectorAll('.jvru-tap'),'jvru-tap',false);};
+const entra=el=>{el.classList.remove('jvru-off');void el.offsetWidth;el.classList.add('in');};
+const enfoca=el=>{if(enfocado) enfocado.classList.add('jvru-dim');enfocado=el;entra(el);};  // una tarjeta cada vez
+const cascada=(l,t0,paso,karaoke)=>Array.from(l).forEach((el,i)=>cita(t0+i*paso,()=>{if(karaoke&&i) l[i-1].classList.remove('foco');el.classList.add('in');if(karaoke) el.classList.add('foco');}));
+const nivel=n=>Array.from(chips.children).forEach(c=>c.classList.toggle('pick',c.textContent===n));
+const toca=(el,cls)=>{el.classList.add('jvru-tap');if(cls) el.classList.add(cls);cita(160,()=>el.classList.remove('jvru-tap'));};  // el dedo: golpe del 3 %
+const fmt=v=>String(v).replace(/\B(?=(\d{3})+$)/g,'.');
+const bloques=(pant,t0,paso)=>Array.from(pant.querySelectorAll(':scope>.jvru-e')).forEach((b,i)=>cita(t0+i*paso,()=>enfoca(b)));
+// Cambio de PANTALLA: la vieja se va a la izquierda (180 ms) y la nueva entra por la derecha con
+// sus bloques en cascada. Nunca conviven, y el hueco es fijo: ni crece ni empuja lo de abajo.
+const pantalla=(t0,id,paso)=>{
+  cita(t0,()=>viva.classList.add('se-va'));
+  cita(t0+180,()=>{viva.classList.add('jvru-off');viva.classList.remove('se-va','in');
+    cada(raiz.querySelectorAll('.jvru-dim'),'jvru-dim',false);enfocado=null;viva=$(id);entra(viva);bloques(viva,0,paso);});
+};
+// El morph: salen las filas, se cambia de lista y entran las nuevas.
+const muta=(t0,de,a,paso)=>{
+  const salen=ul[de].children,t1=t0+salen.length*T.SALE+180;
+  Array.from(salen).forEach((f,i)=>cita(t0+i*T.SALE,()=>f.classList.add('se-va')));
+  cita(t1,()=>{ul[de].classList.add('jvru-oculta');cada(salen,'in',false);cada(salen,'se-va',false);ul[a].classList.remove('jvru-oculta');$('jvru-niv').textContent=ROTULO[a];});
+  cascada(ul[a].children,t1+40,paso);
+};
+// El contador 0 → 1.502; su hueco de 5 cifras esta reservado en CSS: no salta nada.
+const cuenta=()=>{const n=$('jvru-n'),inc=Math.ceil(TOTAL/38);let v=0;
+  const t=setInterval(()=>{v=Math.min(TOTAL,v+inc);n.textContent=fmt(v);if(v>=TOTAL) clearInterval(t);},16);tempos.push(t);};
+// Estado final. El TOQUE (y "menos movimiento") DESAPILA las cinco pantallas: quien toca quiere
+// leerlo, no verlo pasar. Salir a medias NO: la deja en la ficha, donde habria acabado sola, para
+// no meter metro y medio de golpe en una pagina que se esta leyendo por abajo.
+const final=todo=>{
+  parar();
+  ['jvru-dim','se-va','foco'].forEach(c=>cada(raiz.querySelectorAll('.'+c),c,false));
+  const pant=raiz.querySelectorAll('.jvru-pant');
+  if(todo) cada(pant,'jvru-off',false); else{cada(pant,'jvru-off',true);entra(viva=$('jvru-p5'));}
+  ul.avanzado.classList.add('jvru-oculta');ul.principiante.classList.remove('jvru-oculta');
+  cada(raiz.querySelectorAll('.jvru-e,.jvru-pant,.jvru-pasos li'),'in',true);
+  nivel('principiante');$('jvru-niv').textContent=ROTULO.principiante;
+  filaP[RUTINA].classList.add('foco');tarjs[FICHA].classList.add('pick');$('jvru-n').textContent=fmt(TOTAL);
+};
+const arranque=()=>{
+  if(arrancado) return; arrancado=true;
+  if(quieto) return final(1);   // menos movimiento: todo de golpe, cero relojes
+  $('jvru-n').textContent='0';
+  cita(T.ROTULO,()=>entra($('jvru-rotulo')));
+  cita(T.MARCO,()=>{entra($('jvru-marco'));entra(pie[2]);entra(viva);});
+  // PANTALLA 1 · explorador: los 3 niveles, el dedo elige principiante y entran sus 7 rutinas
+  bloques(viva,T.TIT,T.BLOQUE);
+  cascada(chips.children,T.CHIP,90);
+  cita(T.PICK,()=>{toca(chips.children[0],'pick');nivel('principiante');});
+  cascada(filaP,T.TIT+T.BLOQUE+100,T.FILA);
+  cita(T.NIVEL2,()=>{toca(chips.children[2],'pick');nivel('avanzado');});
+  muta(T.NIVEL2,'principiante','avanzado',T.FILA);
+  cita(T.VUELVE,()=>{toca(chips.children[0],'pick');nivel('principiante');});
+  muta(T.VUELVE,'avanzado','principiante',55);
+  // el dedo pulsa el «Ver ›» de Full-body 3 dias: esa fila en foco, el resto a .45
+  cita(T.VER,()=>{toca(filaP[RUTINA],'foco');cada(filaP,'jvru-dim',true);filaP[RUTINA].classList.remove('jvru-dim');chips.classList.add('jvru-dim');});
+  // PANTALLA 2 · vista previa arriba: nombre, chips y el porque frase a frase
+  pantalla(T.P2,'jvru-p2',T.B2);
+  cascada(raiz.querySelectorAll('.jvru-porque .jvru-e'),T.P2+180+2*T.B2+120,T.FRASE);
+  // PANTALLA 3 · la misma, abajo: los 8 ejercicios con su guia y su nota
+  pantalla(T.P3,'jvru-p3',T.B3);
+  cascada($('jvru-ejs').children,T.EJS,T.EJ);
+  cita(T.EMPEZAR,()=>toca($('jvru-empezar')));
+  // PANTALLA 4 · el registro: porque colapsado, nota de novato y las miniaturas
+  pantalla(T.P4,'jvru-p4',T.B4);
+  cita(T.TARJ,()=>{if(enfocado) enfocado.classList.add('jvru-dim');enfocado=null;});
+  cascada(tarjs,T.TARJ,140);
+  cita(T.TOCA,()=>{toca(tarjs[FICHA],'pick');tarjs[0].classList.add('jvru-dim');});
+  // PANTALLA 5 · la ficha: musculos y los 7 pasos, como karaoke
+  pantalla(T.P5,'jvru-p5',T.B5);
+  cascada(pasos,T.P5+180+T.B5+270,T.PASO,true);
+  // el pie, fuera del marco; y todo vuelve a leerse a plena luz
+  cita(T.BIBLIO,()=>{entra(pie[0]);cuenta();});
+  cita(T.CITA,()=>{entra(pie[1]);cada(raiz.querySelectorAll('.jvru-dim'),'jvru-dim',false);cada(pasos,'foco',false);});
+};
+// Arranca al VERSE (un cuarto, una vez). Un parar() a secas la dejaba truncada para siempre.
+let tocado=false;
+raiz.addEventListener('click',()=>{tocado=true;arrancado=true;final(1);});
+// [16-09] quieto o sin observador: se pinta YA. Antes el estado final vivia dentro de arranque(),
+// que solo llamaba el observador: con "menos movimiento" la escena estaba vacia hasta cruzar el
+// 25 % y entonces metia de golpe el mayor salto de maqueta de la pagina.
+if(quieto||!('IntersectionObserver' in window)) return arranque();
+const io=new IntersectionObserver(es=>es.forEach(e=>{
+  if(e.isIntersecting&&e.intersectionRatio>=.25) arranque();
+  // [16-09] al salir NO se deshace lo que el visitante ya vio: si tocó, la escena se queda como está.
+  else if(!e.isIntersecting&&arrancado){if(!tocado)final();io.disconnect();}
+}),{threshold:[0,.25]});
+io.observe(raiz);
+})();
+</script>
