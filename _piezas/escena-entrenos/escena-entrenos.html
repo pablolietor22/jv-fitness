@@ -3,93 +3,103 @@
 <!-- ESCENA 3 . LOS ENTRENOS . PIEZA PORTABLE
      Suelta (doble clic) o pegada en showcase.html: hereda los tokens var(--jade,...) o usa la reserva.
 
-     QUE DEMUESTRA: que al cargar una rutina del catalogo la SESION SE MONTA SOLA (cada ejercicio con su
-     guia reps . RIR . descanso) y que el "RPE 8" no es adorno: la app define RIR 2 = RPE 8 y te lo
-     recuerda al apuntar la serie.
+     QUE DEMUESTRA: al cargar una rutina del catalogo la SESION SE MONTA SOLA (ocho ejercicios con su
+     guia reps . RIR . descanso), y apuntar la serie no es rellenar casillas: el RIR se ELIGE en una
+     hoja que la app te explica ahi mismo, y el descanso trae su reloj con mandos.
 
-     TODO EL CONTENIDO ES LITERAL, medido contra master (1c0aaec) el 15-09-2026:
-       . barra "<- Entrenos" / "Guardar" y micro-etiquetas kg . reps . RIR del registro (Jorge, 02-sep)
-       . rutina, 8 ejercicios y nota "objetivo" de cada uno: RUTINAS.fullbody + _entMeta, tal como se pintan
-       . el emoji lo da iconoDe(m), copiada tal cual, sobre el m del catalogo EJERCICIOS
-       . glosario del RIR: EXPLICACIONES.rir . consejo: modulador diario (tope_rpe) . "Descanso" y m:ss: restFmt()
-       . "Entreno guardado" es el toast real al guardar
-     ATREZO (la nota al pie lo dice): los kilos y repes tecleados y el recuento del cierre.
-     Si cambia master, esta escena queda desfasada: se re-mide, no se retoca a ojo. -->
+     LITERAL, medido contra master (d2f3d38) el 16-09-2026: barra "<- Entrenos" / "Guardar" (Jorge,
+     02-sep), titulo fijo "Registrar entreno" y la linea del desplegable de rutinaPorQue; los dos
+     avisos son los toast() de cargarRutina y guardarEntreno; rutina, 8 ejercicios y su nota "objetivo"
+     (RUTINAS.fullbody + _entMeta); la fila de serie con "1ª/2ª/3ª" (en la app, boton que cicla W/F/D), kg . reps . RIR, el chip del RIR y el ✕; la hoja del RIR
+     (rirSheet): titulo, frase, chips y botones; y la barra de descanso (restBarEl) con sus mandos.
+     PUESTA EN ESCENA (y en la nota al pie): las miniaturas son los emoji de iconoDe(m), el plan B de
+     la app, porque el escaparate no puede cargar sus fotos (CSP); el descanso y los avisos se pintan
+     donde esta la vista, no flotando al pie.
+     ATREZO: los kilos y las repes tecleados y el dedo que elige el RIR.
+     FUERA A PROPOSITO: el "Consejo de hoy" (solo en modo ciclo: perfil mujer con ciclo activo) y el
+     glosario EXPLICACIONES.rir (ningun boton lo abre en master). Si cambia master, se re-mide. -->
 <style>
-.jven{--en-jade:var(--jade,#3DDC97);--en-bone:var(--bone,#EEF2EC);--en-soft:var(--soft,#CBD8D1);--en-mute2:var(--mute-2,#7E968B);--en-line:var(--line,#1E3A31);--en-lines:var(--line-soft,#16281F);--en-panel:var(--panel,#101E19);--en-panel2:var(--panel-2,#0D1B16);--en-r:var(--r,16px);--en-display:var(--display,'Space Grotesk',system-ui,sans-serif);--en-mono:var(--mono,ui-monospace,Consolas,monospace);--en-body:var(--body,system-ui,-apple-system,'Segoe UI',Roboto,sans-serif);--en-casa:var(--ease-casa,cubic-bezier(.32,.72,0,1));--en-entra:var(--ease-entra,cubic-bezier(.2,.8,.2,1));--en-amb:#F4C04E}
-html.jven-suelta body{margin:0;background:#0A100E;color:#EEF2EC;font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+.jven{--en-jade:var(--jade,#3DDC97);--en-bone:var(--bone,#EEF2EC);--en-soft:var(--soft,#CBD8D1);--en-mute:var(--mute,#8CA69B);--en-line:var(--line,#1E3A31);--en-lines:var(--line-soft,#16281F);--en-panel:var(--panel,#101E19);--en-panel2:var(--panel-2,#0D1B16);--en-r:var(--r,16px);--en-display:var(--display,'Space Grotesk',system-ui,sans-serif);--en-mono:var(--mono,ui-monospace,Consolas,monospace);--en-body:var(--body,system-ui,-apple-system,'Segoe UI',Roboto,sans-serif);--en-entra:var(--ease-entra,cubic-bezier(.2,.8,.2,1))}
+html.jven-suelta body{margin:0;background:#0A100E;color:#EEF2EC;font-family:system-ui,sans-serif}
 .jven{position:relative;padding:clamp(26px,6vw,72px) 0;color:var(--en-bone);font-family:var(--en-body);line-height:1.62}
 .jven *{box-sizing:border-box}
 .jven-wrap{width:100%;max-width:560px;margin:0 auto;padding:0 18px}
-/* entradas de la casa: de abajo arriba, 340 ms, --ease-entra; solo transform y opacity */
-.jven-cab,.jven-marco,.jven-series,.jven-consejo,.jven-rest,.jven-fin{opacity:0;transform:translateY(10px);transition:opacity 340ms var(--en-entra),transform 340ms var(--en-entra)}
-.jven-cab.in,.jven-marco.in,.jven-series.in,.jven-consejo.in,.jven-rest.in,.jven-fin.in{opacity:1;transform:none}
+/* entradas: 340 ms con --ease-entra; solo transform y opacity */
+.jven-cab,.jven-marco,.jven-series,.jven-rest,.jven-cita{opacity:0;transform:translateY(10px);transition:opacity 340ms var(--en-entra),transform 340ms var(--en-entra)}
+.jven-cab.in,.jven-marco.in,.jven-series.in,.jven-rest.in,.jven-cita.in{opacity:1;transform:none}
 .jven-eyebrow{font-family:var(--en-mono);font-weight:500;font-size:.68rem;margin:0;text-transform:uppercase;letter-spacing:.2em;color:var(--en-jade);display:flex;align-items:center;gap:.6em;width:fit-content}
 .jven-eyebrow::before{content:"";width:16px;height:1px;background:var(--en-jade);opacity:.7}
 .jven-h{font-family:var(--en-display);font-weight:700;letter-spacing:-.02em;line-height:1.1;font-size:clamp(1.45rem,5.4vw,2.05rem);margin:.6rem 0 1.1rem}
 .jven-h b{color:var(--en-jade)}
-/* el marco de la app (mismo marco que la fisio) */
+/* el marco de la app, el mismo de la fisio */
 .jven-marco{border:1px solid var(--en-line);border-radius:var(--en-r);overflow:hidden;background:linear-gradient(180deg,var(--en-panel),var(--en-panel2));box-shadow:0 24px 60px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.03);transform:translateY(10px) scale(.98)}
 .jven-barra{display:flex;align-items:center;gap:.6em;padding:11px 14px;font-size:.7rem;border-bottom:1px solid var(--en-lines);font-family:var(--en-mono);letter-spacing:.04em;color:var(--en-soft)}
 .jven-vivo{width:7px;height:7px;border-radius:50%;background:var(--en-jade);flex:none;box-shadow:0 0 8px var(--en-jade)}
-.jven-barra i{margin-left:auto;color:var(--en-mute2);font-size:.64rem;font-style:normal}
-.jven-cuerpo{padding:14px 14px 18px;min-height:clamp(380px,50vh,520px)}
-/* la barra de Jorge (02-sep): volver a la izquierda, guardar pequeno en jade a la derecha */
+.jven-barra i{margin-left:auto;color:var(--en-mute);font-size:.64rem;font-style:normal}
+.jven-cuerpo{padding:14px 14px 18px}
+/* barra de Jorge (02-sep): volver a la izq., guardar en jade a la dcha. */
 .jven-top{display:flex;align-items:center;justify-content:space-between;margin:0 0 10px}
-.jven-back,.jven-save{font-size:.78rem;padding:6px 10px;border-radius:9px;border:1px solid var(--en-line);background:rgba(12,21,18,.6);color:var(--en-soft);line-height:1.2}
+.jven-back,.jven-save,.jven-rb,.jven-rf span{font-size:.75rem;padding:6px 10px;border-radius:9px;border:1px solid var(--en-line);background:rgba(12,21,18,.6);color:var(--en-soft);line-height:1.25}
 .jven-save{border-color:rgba(61,220,151,.45);color:var(--en-jade);font-weight:600;transition:background 200ms,color 200ms,border-color 200ms}
 .jven-save.pick{background:var(--en-jade);border-color:var(--en-jade);color:#0A100E;animation:jven-pulso 240ms var(--en-entra)}
 @keyframes jven-pulso{0%{transform:scale(1)}50%{transform:scale(1.04)}100%{transform:scale(1)}}
-.jven-tit{font-family:var(--en-display);font-weight:700;font-size:1.02rem;line-height:1.32;color:var(--en-bone);margin:0 0 12px;display:flex;flex-wrap:wrap;align-items:center;gap:8px}
-.jven-chip{font-family:var(--en-mono);font-weight:500;font-size:.62rem;letter-spacing:.06em;padding:3px 8px;border-radius:999px;border:1px solid rgba(61,220,151,.45);color:var(--en-jade);line-height:1.5}
-/* la lista: una tarjeta por ejercicio; en foco, las demas bajan a .45 */
+/* cabecera real: titulo fijo + la linea del desplegable de la rutina */
+.jven-tit{font-family:var(--en-display);font-weight:700;font-size:1.02rem;line-height:1.32;margin:0}
+.jven-porque{color:var(--en-jade);font-weight:600;font-size:.84rem;line-height:1.4;margin:4px 0 12px}
+/* la lista: una tarjeta por ejercicio; en foco, las demas a .45 */
+.jven-lista{position:relative}
 .jven-ej{display:grid;grid-template-columns:34px 1fr;gap:1px 8px;align-items:start;padding:8px 10px;margin:0 0 6px;border:1px solid var(--en-lines);border-radius:12px;background:rgba(12,21,18,.6);opacity:0;transform:translateY(10px) scale(.97);transition:opacity 300ms var(--en-entra),transform 300ms var(--en-entra),border-color 260ms}
 .jven-ej.in{opacity:1;transform:none}
 .jven-ej.foco{border-color:rgba(61,220,151,.4)}
 .jven-lista.jven-dim .jven-ej.in:not(.foco){opacity:.45}
 .jven-ico{grid-row:1/3;font-size:22px;line-height:34px;text-align:center}
-.jven-nom{font-weight:600;font-size:.9rem;color:var(--en-bone);line-height:1.35;padding-top:5px}
+.jven-nom{font-weight:600;font-size:.9rem;line-height:1.35;padding-top:5px}
 .jven-obj{font-size:.78rem;color:var(--en-jade);line-height:1.4}
-/* las series: mismo grid que la app (26px 1fr 1fr minmax(56px,.9fr) 28px) y sus micro-etiquetas */
-.jven-series{grid-column:1/-1;margin-top:8px}
+/* avisos (toast): pastilla jade; en la app flotan al pie de la pantalla */
+.jven-toast{position:absolute;left:0;right:0;width:fit-content;margin:0 auto;z-index:9;padding:9px 16px;border-radius:100px;background:var(--en-jade);color:#0A100E;font-family:var(--en-display);font-weight:700;font-size:.8rem;box-shadow:0 8px 24px rgba(0,0,0,.45);opacity:0;transform:translateY(8px);transition:opacity 300ms var(--en-entra),transform 300ms var(--en-entra)}
+.jven-toast.in{opacity:1;transform:none}
+.jven-toast.se-va{opacity:0;transform:translateY(-6px)}
+.jven-t1{top:10px}
+.jven-t2{position:static;margin:14px auto 0}
+/* las series: el grid de la app (26px 1fr 1fr minmax(56px,.9fr) 28px) */
+.jven-series{grid-column:1/-1;margin-top:8px;position:relative}
 .jven-sg{display:grid;grid-template-columns:26px 1fr 1fr minmax(56px,.9fr) 28px;gap:4px;align-items:center;margin-top:6px}
-.jven-shd span{font-size:.62rem;opacity:.65;font-family:var(--en-mono);letter-spacing:.04em;text-align:center;color:var(--en-mute2)}
-.jven-num{font-family:var(--en-mono);font-weight:700;font-size:.8rem;text-align:center;color:var(--en-soft)}
-.jven-celda{min-height:34px;padding:6px 8px;border:1px solid var(--en-line);border-radius:8px;background:rgba(10,16,14,.7);font-family:var(--en-mono);font-size:.9rem;color:var(--en-bone);font-variant-numeric:tabular-nums;white-space:nowrap;line-height:1.2}
+.jven-shd span,.jven-num,.jven-x{font-size:.62rem;font-family:var(--en-mono);letter-spacing:.04em;text-align:center;color:var(--en-mute)}
+.jven-shd span{opacity:.8}
+.jven-num,.jven-x{font-size:.8rem}
+.jven-num{font-weight:700}
+.jven-celda,.jven-rir,.jven-rc{min-height:34px;border:1px solid var(--en-line);border-radius:8px;font-family:var(--en-mono);white-space:nowrap}
+.jven-celda{padding:6px 8px;background:rgba(10,16,14,.7);font-size:.9rem;font-variant-numeric:tabular-nums;line-height:1.2}
 .jven-celda.jven-activa::after{content:"▍";color:var(--en-jade);animation:jven-parpadeo 530ms steps(1,end) infinite alternate}
 @keyframes jven-parpadeo{from{opacity:1}to{opacity:0}}
-.jven-rir{min-height:34px;padding:6px 4px;border:1px solid var(--en-line);border-radius:8px;font-family:var(--en-mono);font-size:.72rem;letter-spacing:.02em;text-align:center;color:var(--en-soft);white-space:nowrap;line-height:1.5;transition:background 260ms,border-color 260ms,color 260ms}
-.jven-rir.pick{background:rgba(61,220,151,.15);border-color:rgba(61,220,151,.5);color:var(--en-bone)}
-.jven-x{text-align:center;color:var(--en-mute2);font-size:.8rem}
-/* el golpe: la etiqueta salta (.97 -> 1.04 -> 1, techo 5 %) y el subrayado se dibuja */
-.jven-rpe{margin-top:10px;opacity:0;transform:scale(.97)}
-.jven-rpe.in{opacity:1;transform:none;animation:jven-golpe 320ms var(--en-entra)}
-@keyframes jven-golpe{0%{opacity:0;transform:scale(.97)}60%{opacity:1;transform:scale(1.04)}100%{opacity:1;transform:scale(1)}}
-.jven-rpe-b{display:inline-block;font-family:var(--en-display);font-weight:700;font-size:1.05rem;letter-spacing:-.01em;padding:6px 12px;border-radius:10px;border:1px solid rgba(61,220,151,.5);background:rgba(61,220,151,.1);color:var(--en-bone)}
-.jven-sub{position:relative;color:var(--en-jade)}
-.jven-sub::after{content:"";position:absolute;left:0;right:0;bottom:-2px;height:2px;background:var(--en-jade);transform:scaleX(0);transform-origin:left;transition:transform 300ms var(--en-casa) 320ms}
-.jven-rpe.in .jven-sub::after{transform:scaleX(1)}
-.jven-glos{margin:8px 0 0;font-size:.78rem;color:var(--en-soft);line-height:1.5;opacity:0;transform:translateY(6px);transition:opacity 320ms var(--en-entra) 300ms,transform 320ms var(--en-entra) 300ms}
-.jven-rpe.in .jven-glos{opacity:1;transform:none}
-.jven-glos b{display:block;font-weight:600;color:var(--en-jade);margin:0 0 1px}
-/* el consejo del dia: ambar suave (aviso, no bandera) */
-.jven-consejo{margin-top:10px;padding:9px 11px;border-radius:10px;background:rgba(244,192,78,.09);border:1px solid rgba(244,192,78,.28);font-size:.83rem;color:var(--en-soft)}
-/* el reloj de descanso: tabular para que no baile */
-.jven-rest{display:inline-flex;align-items:baseline;gap:9px;margin-top:10px;padding:6px 12px;border-radius:999px;border:1px solid var(--en-line);background:rgba(10,16,14,.7)}
-.jven-rest b{font-family:var(--en-mono);font-weight:700;font-size:1.1rem;color:var(--en-jade);font-variant-numeric:tabular-nums;line-height:1}
-.jven-rest-i{font-size:.85rem;margin-right:2px}
-.jven-rest-l{font-size:.6rem;color:var(--en-mute2);text-transform:uppercase;letter-spacing:.12em}
-/* cierre: el toast real de la app y el recuento que sube */
-.jven-fin{font-family:var(--en-mono);font-size:.8rem;color:var(--en-soft);margin:12px 0 0;letter-spacing:.02em}
-.jven-fin b{color:var(--en-jade);font-size:1.25rem;font-weight:700;font-family:var(--en-display);letter-spacing:-.02em;font-variant-numeric:tabular-nums}
-.jven-cita{font-family:var(--en-mono);font-size:.72rem;color:var(--en-mute2);margin:10px 0 0;opacity:0;transition:opacity 340ms var(--en-entra)}
-.jven-cita.in{opacity:1}
-.jven-nota{font-size:.78rem;color:var(--en-mute2);margin:14px auto 0;max-width:560px;padding:0 18px;line-height:1.55}
-/* con el toque, todo instantaneo */
-.jven.jven-ya *,.jven.jven-ya .jven-sub::after{transition:none!important;animation:none!important}
+/* el chip del RIR: "RIR" vacio y "RIR 2" fijado; se toca, no se teclea */
+.jven-rir{padding:6px 4px;font-size:.72rem;text-align:center;color:var(--en-soft);line-height:1.5;transition:border-color 260ms,color 260ms}
+.jven-rir.foco,.jven-rir.pick,.jven-rc.pick{border-color:var(--en-jade)}
+.jven-rir.pick,.jven-rc.pick{color:var(--en-jade)}
+/* la hoja del RIR: en la app es un modal; aqui tapa la tabla, no la empuja */
+.jven-hoja{position:absolute;left:-6px;right:-6px;top:-6px;z-index:8;padding:12px;border-radius:14px;border:1px solid var(--en-line);background:var(--en-panel);box-shadow:0 18px 44px rgba(0,0,0,.6);opacity:0;transform:translateY(8px);transition:opacity 260ms var(--en-entra),transform 260ms var(--en-entra)}
+.jven-hoja.in{opacity:1;transform:none}
+.jven-hoja.se-va{opacity:0;transform:translateY(-6px);transition:opacity 180ms var(--en-entra),transform 180ms var(--en-entra)}
+.jven-hoja h3{font-family:var(--en-display);font-weight:700;font-size:.92rem;line-height:1.3;margin:0 0 4px}
+.jven-hoja p{font-size:.74rem;color:var(--en-mute);line-height:1.45;margin:0 0 8px}
+.jven-hoja p b{color:var(--en-soft);font-weight:600}
+.jven-rg{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.jven-rc{display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.9rem;color:var(--en-soft);transition:border-color 200ms,color 200ms,background 200ms}
+.jven-rc.pick{background:rgba(61,220,151,.15)}
+.jven-rf{display:flex;gap:8px;margin-top:10px}
+.jven-rf span{flex:1;text-align:center}
+/* la barra de descanso y sus mandos; tabular para que el reloj no baile */
+.jven-rest{display:flex;align-items:center;justify-content:center;gap:10px;width:fit-content;margin:10px auto 0;padding:10px 12px;border-radius:14px;border:1px solid var(--en-line);background:var(--en-panel);box-shadow:0 8px 30px rgba(0,0,0,.45)}
+.jven-rt{text-align:center;min-width:88px}
+.jven-rt b{display:block;font-family:var(--en-mono);font-weight:700;font-size:1.3rem;color:var(--en-jade);line-height:1;font-variant-numeric:tabular-nums}
+.jven-rt span{display:block;font-size:.6rem;color:var(--en-mute);text-transform:uppercase;letter-spacing:.06em}
+.jven-cita{grid-column:1/-1;font-family:var(--en-mono);font-size:.72rem;color:var(--en-mute);margin:12px 0 0}
+.jven-nota{font-size:.78rem;color:var(--en-mute);margin:14px auto 0;max-width:560px;padding:0 18px;line-height:1.55}
+/* toque: todo instantaneo. reduced-motion: todo pintado y sin relojes */
+.jven.jven-ya *{transition:none!important;animation:none!important}
 @media (prefers-reduced-motion:reduce){
-  .jven-cab,.jven-marco,.jven-ej,.jven-series,.jven-rpe,.jven-glos,.jven-consejo,.jven-rest,.jven-fin,.jven-cita,.jven-save,.jven-sub::after,.jven-celda.jven-activa::after{transition:none!important;animation:none!important;opacity:1!important;transform:none!important}
-  .jven-lista.jven-dim .jven-ej.in:not(.foco){opacity:1!important}
+  .jven *,.jven-celda.jven-activa::after{transition:none!important;animation:none!important;opacity:1!important;transform:none!important}
+  .jven-toast.se-va,.jven-hoja.se-va{opacity:0!important}
 }
 </style>
 
@@ -104,16 +114,17 @@ html.jven-suelta body{margin:0;background:#0A100E;color:#EEF2EC;font-family:syst
       <div class="jven-barra"><span class="jven-vivo" aria-hidden="true"></span> JV Fitness · Entrenos <i>hoy</i></div>
       <div class="jven-cuerpo">
         <div class="jven-top"><span class="jven-back">← Entrenos</span><span class="jven-save" id="jven-save">✓ Guardar</span></div>
-        <div class="jven-tit">Full-body 3 días (gimnasio) <span class="jven-chip">principiante</span></div>
+        <div class="jven-tit">Registrar entreno</div>
+        <div class="jven-porque">📋 Full-body 3 días (gimnasio) · ¿por qué esta rutina?</div>
         <div class="jven-lista" id="jven-lista"></div>
-        <div id="jven-salida"></div>
       </div>
     </div>
   </div>
-  <p class="jven-nota">Todo lo que dice la app es literal de la versión publicada (rutina, notas de cada
-  ejercicio, el glosario del RIR y el consejo de hoy, que la app dispara cuando el día viene cargado).
-  Los kilos y las repes son de ejemplo; el «✓ Entreno guardado» del cierre es el aviso real de la app y
-  el recuento de ejercicios y series lo pone la escena.</p>
+  <p class="jven-nota">Literal de la versión publicada: la rutina y sus ocho ejercicios con su nota,
+  los rótulos del registro, la hoja del RIR, la barra de descanso y los dos avisos («Rutina cargada» y
+  «Entreno guardado»). De ejemplo: los kilos y las repes tecleados y el dedo que elige el RIR. Puesta en
+  escena: las miniaturas son los emoji que la app usa cuando un ejercicio no tiene foto (aquí no puede
+  cargarlas), y el descanso y los avisos, que en la app flotan al pie, van donde está la vista.</p>
 </section>
 
 <script>
@@ -121,23 +132,23 @@ html.jven-suelta body{margin:0;background:#0A100E;color:#EEF2EC;font-family:syst
   var raiz = document.getElementById('jven');
   if (!raiz || raiz.dataset.listo) return;
   raiz.dataset.listo = '1';
-  if (!document.querySelector('.jvce')) document.documentElement.classList.add('jven-suelta');
+  // suelta o pegada: se pregunta por los TOKENS de la casa, no por otra pieza
+  if (!getComputedStyle(document.documentElement).getPropertyValue('--jade').trim()) document.documentElement.classList.add('jven-suelta');
 
   var quieto = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  // — LA RUTINA, literal de RUTINAS.fullbody. obj = lo que la app pinta bajo cada ejercicio
-  //   ('🎯 objetivo: ' + _entMeta[n].txt); m sale del catalogo EJERCICIOS —
+  // — LA RUTINA, literal de RUTINAS.fullbody; obj = '🎯 objetivo: ' + _entMeta[n].txt —
   var EJ = [
-    { n:'Sentadilla con barra', s:3, m:'Cuádriceps', obj:'🎯 objetivo: 6-10 reps · RIR 2-3 · 150 s' },
-    { n:'Press banca', s:3, m:'Pecho', obj:'🎯 objetivo: 6-10 reps · RIR 2-3 · 150 s' },
-    { n:'Remo con barra', s:3, m:'Espalda', obj:'🎯 objetivo: 8-12 reps · RIR 2-3 · 120 s' },
-    { n:'Press militar mancuernas', s:2, m:'Hombros', obj:'🎯 objetivo: 8-12 reps · RIR 2-3 · 120 s' },
-    { n:'Peso muerto rumano', s:3, m:'Femoral', obj:'🎯 objetivo: 8-12 reps · RIR 2-3 · 120 s' },
-    { n:'Curl con mancuernas', s:2, m:'Bíceps', obj:'🎯 objetivo: 10-15 reps · RIR 1-2 · 75 s' },
-    { n:'Extensión en polea (cuerda)', s:2, m:'Tríceps', obj:'🎯 objetivo: 10-15 reps · RIR 1-2 · 75 s' },
-    { n:'Elevación de gemelo de pie', s:2, m:'Gemelo', obj:'🎯 objetivo: 10-15 reps · RIR 1-2 · 60 s' }
+    { n:'Sentadilla con barra', m:'Cuádriceps', obj:'🎯 objetivo: 6-10 reps · RIR 2-3 · 150 s' },
+    { n:'Press banca', m:'Pecho', obj:'🎯 objetivo: 6-10 reps · RIR 2-3 · 150 s' },
+    { n:'Remo con barra', m:'Espalda', obj:'🎯 objetivo: 8-12 reps · RIR 2-3 · 120 s' },
+    { n:'Press militar mancuernas', m:'Hombros', obj:'🎯 objetivo: 8-12 reps · RIR 2-3 · 120 s' },
+    { n:'Peso muerto rumano', m:'Femoral', obj:'🎯 objetivo: 8-12 reps · RIR 2-3 · 120 s' },
+    { n:'Curl con mancuernas', m:'Bíceps', obj:'🎯 objetivo: 10-15 reps · RIR 1-2 · 75 s' },
+    { n:'Extensión en polea (cuerda)', m:'Tríceps', obj:'🎯 objetivo: 10-15 reps · RIR 1-2 · 75 s' },
+    { n:'Elevación de gemelo de pie', m:'Gemelo', obj:'🎯 objetivo: 10-15 reps · RIR 1-2 · 60 s' }
   ];
-  // iconoDe(m): copiada tal cual de la app (el emoji que pinta cuando el ejercicio no tiene foto)
+  // iconoDe(m): copiada tal cual (el emoji que pinta si el ejercicio no tiene foto)
   function iconoDe(m){
     switch(m){
       case "Pecho": return "🏋️";
@@ -150,77 +161,86 @@ html.jven-suelta body{margin:0;background:#0A100E;color:#EEF2EC;font-family:syst
   }
 
   // — LO QUE DICE LA APP AL APUNTAR (literal) —
-  var CAB = ['', 'kg', 'reps', 'RIR', ''];   // micro-etiquetas de la fila: la app deja vacias la del nº y la del ✕
-  var RPE = 'RIR 2 ≈ RPE 8';
-  var GLOS_T = 'RIR — Repeticiones en reserva';
-  var GLOS_D = 'Cuántas repeticiones te quedaban al acabar la serie. RIR 0 = fallo total; RIR 2 = podrías haber hecho 2 más. Es el RPE al revés (RIR 2 ≈ RPE 8).';
-  var CONSEJO = 'Consejo de hoy: para cada serie en RPE 8 y quita 1 serie(s) accesoria(s); las compuestas pesadas se quedan.';
-  var REST = { lbl:'Descanso', ini:'2:30', fin:'2:27' };
+  var CAB = ['', 'kg', 'reps', 'RIR', ''];   // la app deja vacias la micro-etiqueta del nº y la del ✕
+  var NUM = ['1ª', '2ª', '3ª'];              // en la app es el boton que cicla W / F / D
+  var RIR0 = 'RIR', RIR2 = 'RIR 2';          // el chip vacio y el chip ya fijado (_rirLbl)
+  var HOJA_T = 'RIR — ¿cuántas repes te quedaban?';
+  var HOJA_D = 'Las repeticiones que <b>todavía habrías podido hacer</b> al acabar la serie.';
+  var HOJA_B = ['Borrar', '¿Qué es RIR? ⓘ'];
+  var REST = { lbl:'Descanso', ini:'2:30', fin:'2:27', menos:'−15s', mas:'+15s', x:'✕' };
+  var CARGADA = '✓ Rutina cargada — ajusta pesos y va';
   var GUARDADO = '✓ Entreno guardado';
   var CITA = '— Tema 4, Helms 2016 / Tema 27';
-  // — ATREZO: lo que "teclea" el usuario en cada serie (kg · reps · RIR) —
-  var SERIES = [['60','8','2'], ['60','8','2'], ['62,5','7','1']];
-  var TOTAL = EJ.reduce(function(a, e){ return a + e.s; }, 0);   // 20 series, sumadas del catalogo
+  var SERIES = [['60','8'], ['60','8'], ['62,5','7']];   // ATREZO: los kg y las repes tecleados
 
-  // Los cortes del storyboard, en ms. Ritmo: algo cambia cada 2,5-4 s, nunca mas de 5,5 s quieto.
-  var T = { ROTULO:0, MARCO:600, LISTA:1600, FILA:100, FOCO:3400, TECLEO:4200, CHAR:90, CELDA:140, SERIE:300,
-            RPE:7400, CONSEJO:8400, DESCANSO:9600, TICK:1000, TICKS:3, GUARDAR:11200, CUENTA:700, CITA:12600 };
+  // Los cortes, en ms. El reloj del descanso llena el hueco largo con un tic/segundo.
+  var T = { ROTULO:0, MARCO:600, LISTA:1600, FILA:100, AVISO:2400, AVISOX:3800, FOCO:4000,
+            TECLEO:4400, CHAR:90, CELDA:140, SERIE:300, HOJA:7000, ELIGE:9200, FIJA:9500,
+            DESCANSO:11000, TICK:1000, TICKS:3, GUARDAR:14400, CITA:16000 };
 
-  // Arranque al VERSE, no al cargar: hasta entonces cita() solo encola. Cada reloj guarda su fn
-  // para poder COMPLETAR la escena en orden si se toca o sale de pantalla.
+  // Arranca al VERSE: hasta entonces cita() solo encola. Cada reloj guarda su fn y su plazo
+  // para COMPLETAR en orden (toque, o se va por arriba) o PAUSAR (se va por abajo).
   var tempos = [], cola = [], arrancado = false, io = null;
   function cita(ms, fn){
     if (!arrancado) { cola.push([ms, fn]); return; }
-    var t = { fn: fn, hecho: false };
+    var t = { fn: fn, ms: ms, t0: Date.now(), hecho: false };
     t.id = setTimeout(function(){ t.hecho = true; fn(); }, quieto ? Math.min(ms, 60) : ms);
     tempos.push(t);
   }
   function arrancar(){ if (arrancado) return; arrancado = true; var c = cola; cola = []; c.forEach(function(p){ cita(p[0], p[1]); }); }
   function parar(){ tempos.forEach(function(t){ var id = (t && t.id != null) ? t.id : t; clearTimeout(id); clearInterval(id); }); tempos = []; }
+  function pend(){ return tempos.filter(function(t){ return t && t.fn && !t.hecho; }); }
+  // Tiron hacia arriba nada mas arrancar: NO se quema. Se congela con el plazo que le
+  // quedaba a cada corte y sigue donde iba al volver a verse.
+  function pausar(){
+    var ahora = Date.now();
+    var resto = pend().map(function(t){ return [Math.max(0, t.ms - (ahora - t.t0)), t.fn]; });
+    parar(); cola = resto.concat(cola); arrancado = false;
+  }
   function mmss(s){ return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); }   // el restFmt de la app
-  function aSeg(txt){ var p = txt.split(':'); return (+p[0]) * 60 + (+p[1]); }
 
   var cab = raiz.querySelector('.jven-cab'), marco = raiz.querySelector('.jven-marco');
-  var cLista = document.getElementById('jven-lista'), cSalida = document.getElementById('jven-salida');
-  var save = document.getElementById('jven-save');
-  var filas = [], celdas = [], bloque = null, restT = null, nFin = null;
+  var cLista = document.getElementById('jven-lista'), save = document.getElementById('jven-save');
+  var filas = [], celdas = [], chips = [], bloque = null, hoja = null, restT = null;
+  var tCargada = null;
 
-  // Corte 0 y 1: el rotulo y, medio segundo despues, el marco con la rutina ya cargada
+  // crea el bloque, lo cuelga y lo hace entrar (el gesto de todos los cortes)
+  function entra(padre, clase, html){
+    var d = document.createElement('div');
+    d.className = clase; d.innerHTML = html;
+    padre.appendChild(d); void d.offsetWidth; d.classList.add('in');
+    return d;
+  }
+
+  // Cortes 0 y 1: el rotulo y, medio segundo despues, el marco con la rutina cargada
   cita(T.ROTULO, function(){ cab.classList.add('in'); });
   cita(T.MARCO, function(){ marco.classList.add('in'); });
 
-  // Corte 2: los 8 ejercicios entran en cascada (100 ms), cada uno con su emoji y su nota "objetivo"
+  // Corte 2: los 8 ejercicios en cascada (100 ms) y el aviso de la app, que se va solo
   EJ.forEach(function(e, i){
-    var d = document.createElement('div');
-    d.className = 'jven-ej';
-    d.innerHTML = '<span class="jven-ico" aria-hidden="true">' + iconoDe(e.m) + '</span>'
-                + '<div class="jven-nom">' + e.n + '</div>'
-                + '<div class="jven-obj">' + e.obj + '</div>';
-    cLista.appendChild(d); filas.push(d);
+    var d = entra(cLista, 'jven-ej', '<span class="jven-ico" aria-hidden="true">' + iconoDe(e.m) + '</span>'
+              + '<div class="jven-nom">' + e.n + '</div><div class="jven-obj">' + e.obj + '</div>');
+    d.classList.remove('in'); filas.push(d);
     cita(T.LISTA + i*T.FILA, function(){ d.classList.add('in'); });
   });
+  cita(T.AVISO, function(){ tCargada = entra(cLista, 'jven-toast jven-t1', CARGADA); });
+  cita(T.AVISOX, function(){ if (tCargada) tCargada.classList.add('se-va'); });
 
-  // Corte 3: foco en la sentadilla (el resto a .45); aparecen las micro-etiquetas y sus 3 filas vacias
+  // Corte 3: foco en la sentadilla; micro-etiquetas y sus 3 filas, con el chip "RIR"
   cita(T.FOCO, function(){
     cLista.classList.add('jven-dim');
     filas[0].classList.add('foco');
-    var s = document.createElement('div');
-    s.className = 'jven-series';
     var h = '<div class="jven-sg jven-shd">' + CAB.map(function(c){ return '<span>' + c + '</span>'; }).join('') + '</div>';
     SERIES.forEach(function(v, r){
-      h += '<div class="jven-sg"><span class="jven-num">' + (r + 1) + '</span>'
-         + '<span class="jven-celda"></span><span class="jven-celda"></span><span class="jven-rir"></span>'
+      h += '<div class="jven-sg"><span class="jven-num">' + NUM[r] + '</span>'
+         + '<span class="jven-celda"></span><span class="jven-celda"></span><span class="jven-rir">' + RIR0 + '</span>'
          + '<span class="jven-x" aria-hidden="true">✕</span></div>';
     });
-    s.innerHTML = h;
-    filas[0].appendChild(s);
-    bloque = s;
-    celdas = SERIES.map(function(v, r){ var g = s.children[r + 1]; return [g.children[1], g.children[2], g.children[3]]; });
-    void s.offsetWidth;
-    s.classList.add('in');
+    bloque = entra(filas[0], 'jven-series', h);
+    celdas = SERIES.map(function(v, r){ var g = bloque.children[r + 1]; chips.push(g.children[3]); return [g.children[1], g.children[2]]; });
   });
 
-  // Corte 4: se teclean las celdas, 90 ms por caracter, cursor solo en la activa
+  // Corte 4: se teclean kg y reps, 90 ms/caracter (el RIR no se teclea: se toca)
   var t = T.TECLEO;
   SERIES.forEach(function(vals, r){
     vals.forEach(function(txt, c){
@@ -236,101 +256,72 @@ html.jven-suelta body{margin:0;background:#0A100E;color:#EEF2EC;font-family:syst
     t += T.SERIE - T.CELDA;
   });
 
-  // Corte 5: el chip RIR 2 de la fila 1 se enciende y salta la etiqueta, con su glosario
-  cita(T.RPE, function(){
-    celdas[0][2].classList.add('pick');
-    var d = document.createElement('div');
-    d.className = 'jven-rpe';
-    d.innerHTML = '<span class="jven-rpe-b">' + RPE.replace('RPE 8', '<b class="jven-sub">RPE 8</b>') + '</span>'
-                + '<div class="jven-glos"><b>' + GLOS_T + '</b>' + GLOS_D + '</div>';
-    bloque.appendChild(d);
-    void d.offsetWidth;
-    d.classList.add('in');
+  // Corte 5: el dedo toca el chip RIR y sube la hoja de la app, con su explicacion
+  cita(T.HOJA, function(){
+    chips[0].classList.add('foco');
+    var g = function(n){ return '<span class="jven-rc">' + n + '</span>'; };
+    hoja = entra(bloque, 'jven-hoja', '<h3>' + HOJA_T + '</h3><p>' + HOJA_D + '</p>'
+        + '<div class="jven-rg">' + [0,1,2,3,4,5,6,7,8,9,10].map(g).join('') + '</div>'
+        + '<div class="jven-rf"><span>' + HOJA_B[0] + '</span><span>' + HOJA_B[1] + '</span></div>');
   });
 
-  // Corte 6: el consejo del dia, en ambar suave
-  cita(T.CONSEJO, function(){
-    var d = document.createElement('div');
-    d.className = 'jven-consejo';
-    d.textContent = CONSEJO;
-    bloque.appendChild(d);
-    void d.offsetWidth;
-    d.classList.add('in');
+  // Corte 6: elige el 2; la hoja se va y el chip queda en "RIR 2", en jade
+  cita(T.ELIGE, function(){ if (hoja) hoja.querySelectorAll('.jven-rc')[2].classList.add('pick'); });
+  cita(T.FIJA, function(){
+    if (hoja) hoja.classList.add('se-va');
+    chips[0].classList.remove('foco'); chips[0].classList.add('pick'); chips[0].textContent = RIR2;
   });
 
-  // Corte 7: el descanso cuenta hacia abajo 3 s (2:30 -> 2:27), un tic por segundo
+  // Corte 7: la barra de descanso contando 3 s hacia abajo (2:30 -> 2:27)
   cita(T.DESCANSO, function(){
-    var d = document.createElement('div');
-    d.className = 'jven-rest';
-    d.innerHTML = '<b><span class="jven-rest-i" aria-hidden="true">⏱</span>' + REST.ini + '</b><span class="jven-rest-l">' + REST.lbl + '</span>';
-    bloque.appendChild(d);
+    var d = entra(bloque, 'jven-rest', '<span class="jven-rb">' + REST.menos + '</span>'
+        + '<div class="jven-rt"><b>' + REST.ini + '</b><span>' + REST.lbl + '</span></div>'
+        + '<span class="jven-rb">' + REST.mas + '</span><span class="jven-rb">' + REST.x + '</span>');
     restT = d.querySelector('b');
-    void d.offsetWidth;
-    d.classList.add('in');
-    if (quieto) { restT.lastChild.textContent = REST.fin; return; }
-    var seg = aSeg(REST.ini), n = 0;
+    if (quieto) { restT.textContent = REST.fin; return; }
+    var seg = 150, n = 0;   // 150 s = el 2:30 de arriba, en segundos
     var id = setInterval(function(){
-      n++; seg--; restT.lastChild.textContent = mmss(seg);
+      n++; seg--; restT.textContent = mmss(seg);
       if (n >= T.TICKS) clearInterval(id);
     }, T.TICK);
     tempos.push(id);
   });
 
-  // Corte 8: Guardar pulsa, la sesion vuelve a plena luz y entra el cierre con el recuento que sube
+  // Corte 8: Guardar pulsa, la sesion vuelve a plena luz y sale el aviso real
   cita(T.GUARDAR, function(){
     save.classList.add('pick');
     cLista.classList.remove('jven-dim');
-    var d = document.createElement('p');
-    d.className = 'jven-fin';
-    d.innerHTML = GUARDADO + ' · ' + EJ.length + ' ejercicios · <b>0</b> series';
-    cSalida.appendChild(d);
-    nFin = d.querySelector('b');
-    void d.offsetWidth;
-    d.classList.add('in');
-    if (quieto) { nFin.textContent = TOTAL; return; }
-    var v = 0, paso = Math.max(16, Math.floor(T.CUENTA / TOTAL));
-    var id = setInterval(function(){ v++; nFin.textContent = v; if (v >= TOTAL) clearInterval(id); }, paso);
-    tempos.push(id);
+    entra(bloque, 'jven-toast jven-t2', GUARDADO);
   });
 
-  // Corte 9: la cita al pie y el respiro; el observador se retira
-  cita(T.CITA, function(){
-    var d = document.createElement('p');
-    d.className = 'jven-cita';
-    d.textContent = CITA;
-    cSalida.appendChild(d);
-    void d.offsetWidth;
-    d.classList.add('in');
-    if (io) io.disconnect();
-  });
+  // Corte 9: la cita, al pie del bloque que mirabas; el observador se retira
+  cita(T.CITA, function(){ entra(filas[0], 'jven-cita', CITA); if (io) io.disconnect(); });
 
-  // Un toque completa la escena, y tambien salir de pantalla a medias: lo pendiente se ejecuta EN ORDEN
-  // (se crean los bloques que faltaban), se apagan los relojes y se fija el estado final. Nada queda a medias.
+  // Toque o pasar de largo: lo pendiente se ejecuta EN ORDEN (se crean los bloques que
+  // faltaban), se apagan los relojes y queda el estado final. Nada a medias.
   function completar(){
     raiz.classList.add('jven-ya');
     arrancado = true;
     var c = cola; cola = []; c.forEach(function(p){ p[1](); });
-    var pend = tempos.filter(function(t){ return t && t.fn && !t.hecho; });
+    var p = pend(); parar();
+    p.forEach(function(x){ x.hecho = true; x.fn(); });   // cada corte deja su estado final
     parar();
-    pend.forEach(function(t){ t.hecho = true; t.fn(); });
-    parar();
-    raiz.querySelectorAll('.jven-cab,.jven-marco,.jven-ej,.jven-series,.jven-rpe,.jven-consejo,.jven-rest,.jven-fin,.jven-cita')
-        .forEach(function(el){ el.classList.add('in'); });
-    cLista.classList.remove('jven-dim');
     celdas.forEach(function(f, r){ f.forEach(function(cel, c){ cel.textContent = SERIES[r][c]; cel.classList.remove('jven-activa'); }); });
-    if (celdas[0]) celdas[0][2].classList.add('pick');
-    save.classList.add('pick');
-    if (restT) restT.lastChild.textContent = REST.fin;
-    if (nFin) nFin.textContent = TOTAL;
+    if (restT) restT.textContent = REST.fin;   // el unico reloj que se queda a medias al matarlo
     if (io) io.disconnect();
   }
-  raiz.addEventListener('click', completar, { once:false });
+  raiz.addEventListener('click', completar);
   if (quieto || !('IntersectionObserver' in window)) { arrancar(); }
   else {
     io = new IntersectionObserver(function(es){
       es.forEach(function(e){
         if (e.isIntersecting && e.intersectionRatio >= .25) { arrancar(); }
-        else if (!e.isIntersecting && arrancado) { completar(); }
+        else if (!e.isIntersecting && arrancado) {
+          // por ARRIBA (paso de largo) se completa, para que no quede truncada; por ABAJO
+          // (ha vuelto atras y aun no la ha visto) se pausa, o se la pierde entera.
+          var rb = e.rootBounds;
+          if (!rb || e.boundingClientRect.bottom <= rb.top) completar(); else pausar();
+        }
       });
     }, { threshold: .25 });
     io.observe(raiz);
