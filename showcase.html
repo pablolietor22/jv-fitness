@@ -34,17 +34,24 @@
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <title>JV Fitness · nutrición y entrenamiento con base científica · Pablo Andrés Martínez</title>
 <!-- ============================================================================
-     🔴 RETALLADO 16-09-2026 (rutina de alimentos) — «fichas» 578 → 633 y
-        «claves» 12.884 → 14.104. Y esto NO era un redondeo: era una AFIRMACIÓN FALSA
-        publicada. La página decía 578 fichas mientras la app que enlaza servía 633.
+     🔴 RETALLADO 16-09-2026 (rutina de alimentos) — «fichas» 578 → 649 y
+        «claves» 12.884 → 14.385. Y esto NO era un redondeo: era una AFIRMACIÓN FALSA
+        publicada. La página decía 578 fichas mientras la app que enlaza servía 649:
+        71 fichas y 1.501 claves de MENOS.
 
-        ⚠️ Y LA CIFRA SE ME QUEDÓ VIEJA MIENTRAS LA ESCRIBÍA, lo cual es la mejor
-        prueba de lo que se propone abajo. A las 03:5x medí 619 y tallé 619. A las
-        04:5x, antes de que este PR se fusionara, había entrado el #338 (ÁREA 12, frío
-        y sauna, 14 fichas) y ya eran 633. Corregido a 633 midiendo otra vez, no
-        sumando 14 a mano.
-        👉 **Si entra el #342 (16 fichas de embarazo) antes que esto, hay que volver a
-        medirlo.** No lo doy por bueno: lo digo por delante.
+        ⚠️ Y LA CIFRA SE ME HA QUEDADO VIEJA TRES VECES MIENTRAS ESTE PR ESPERABA,
+        lo cual es la mejor prueba de lo que se propone abajo:
+
+            03:5x  medí 619 · tallé 619
+            04:5x  entró el #338 (frío y sauna, 14 fichas)      → 633. Remedido.
+            17:0x  entraron el #346 y el #342 (embarazo, 16)    → 649. Remedido.
+
+        Las tres veces se REMIDIÓ ejecutando el motor, nunca sumando a mano: sumar
+        acierta en las fichas por casualidad y falla en las claves, que no vienen en
+        lotes redondos.
+        👉 Un escaparate con cifras talladas a mano NO puede perseguir un árbol que se
+        mueve cada hora. Esto no es un fallo de nadie: es el método. Por eso la
+        propuesta de abajo no es cosmética.
 
         MEDIDO EJECUTANDO EL MOTOR, y contra el ARTEFACTO PUBLICADO, nunca contra el
         `_ESTADO-PROYECTO.md` (la trampa que costó 18 afirmaciones falsas el 18-08):
@@ -273,8 +280,8 @@
 
        cifra                          valor    dónde vive
        -----------------------------  -------  --------------------------------
-       fichas del asistente             633    odómetro
-       claves del asistente          14.104    ⚠️ YA NO SE PINTA (ver nota abajo)
+       fichas del asistente             649    odómetro
+       claves del asistente          14.385    ⚠️ YA NO SE PINTA (ver nota abajo)
        fichas que citan su Tema         330    ⚠️ YA NO SE PINTA (ver nota abajo)
        ejercicios                     1.502    eyebrow + odómetro
        ejercicios con instrucciones   1.289    entradilla de ejercicios
@@ -2796,7 +2803,7 @@ io.observe(raiz);
         <div class="lbl">ejercicios con guía anatómica</div>
       </div>
       <div class="stat reveal d2">
-        <div class="num" data-count="633">633</div>
+        <div class="num" data-count="649">649</div>
         <div class="lbl">fichas del asistente, escritas a mano</div>
       </div>
       <div class="stat reveal">
