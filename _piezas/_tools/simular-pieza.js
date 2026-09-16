@@ -12,7 +12,7 @@ const script = [...html.matchAll(/<script>([\s\S]*?)<\/script>/g)].map(m => m[1]
 const ids = [...html.matchAll(/id="([^"]+)"/g)].map(m => m[1]);
 const clasesHtml = [...html.matchAll(/class="([^"]+)"/g)].flatMap(m => m[1].split(/\s+/));
 
-function mundo() {
+function mundo(quietoOn, anfitrion) {
   // --- DOM de juguete ---
   const todos = [];
   function El(tag) {
@@ -21,6 +21,9 @@ function mundo() {
     Object.defineProperty(el, 'className', { get: () => [...el._cls].join(' '), set: v => { el._cls = new Set(String(v).split(/\s+/).filter(Boolean)); } });
     Object.defineProperty(el, 'innerHTML', { get: () => el._html, set: v => { el._html = String(v); el.children = []; parse(el, el._html); } });
     Object.defineProperty(el, 'offsetWidth', { get: () => 100 });
+    Object.defineProperty(el, 'lastElementChild', { get: () => el.children[el.children.length - 1] || null });
+    Object.defineProperty(el, 'firstElementChild', { get: () => el.children[0] || null });
+    Object.defineProperty(el, 'nextElementSibling', { get: () => { if (!el.parent) return null; const i = el.parent.children.indexOf(el); return el.parent.children[i + 1] || null; } });
     el.appendChild = c => { c.parent = el; el.children.push(c); return c; };
     el.setAttribute = (k, v) => { el.attrs[k] = v; if (k === 'class') el.className = v; if (k === 'id') el.attrs.id = v; };
     el.getAttribute = k => el.attrs[k];
@@ -80,11 +83,14 @@ function mundo() {
   // --- observador controlable ---
   const ios = [];
   function IO(cb, opts) { this.cb = cb; this.opts = opts; this.observe = el => { ios.push({ io: this, el }); }; this.unobserve = () => { this.unobserved = true; }; this.disconnect = () => {}; }
-  const ventana = { matchMedia: () => ({ matches: false }), IntersectionObserver: IO, setTimeout: setTimeoutF, setInterval: setIntervalF, clearTimeout: clearF, clearInterval: clearF, document: documento };
+  // getComputedStyle de juguete: las piezas preguntan por los tokens de la casa para saber si van
+  // sueltas. anfitrion=false -> vacio (suelta); true -> un valor (pegada en el showcase).
+  const getComputedStyleF = () => ({ getPropertyValue: k => (anfitrion && /^--/.test(k)) ? '#3DDC97' : '' });
+  const ventana = { matchMedia: () => ({ matches: !!quietoOn }), getComputedStyle: getComputedStyleF, IntersectionObserver: IO, setTimeout: setTimeoutF, setInterval: setIntervalF, clearTimeout: clearF, clearInterval: clearF, document: documento };
   ventana.window = ventana;
-  const fn = new Function('window', 'document', 'setTimeout', 'setInterval', 'clearTimeout', 'clearInterval', 'IntersectionObserver', script);
-  fn(ventana, documento, setTimeoutF, setIntervalF, clearF, clearF, IO);
-  return { documento, avanzar, relojes, ios, ver: () => ios.forEach(o => o.io.cb([{ isIntersecting: true, intersectionRatio: 1, target: o.el }], o.io)), salir: () => ios.forEach(o => o.io.cb([{ isIntersecting: false, intersectionRatio: 0, target: o.el }], o.io)) };
+  const fn = new Function('window', 'document', 'setTimeout', 'setInterval', 'clearTimeout', 'clearInterval', 'IntersectionObserver', 'getComputedStyle', script);
+  fn(ventana, documento, setTimeoutF, setIntervalF, clearF, clearF, IO, getComputedStyleF);
+  return { documento, avanzar, relojes, ios, ver: (r) => ios.forEach(o => o.io.cb([{ isIntersecting: (r === undefined ? 1 : r) > 0, intersectionRatio: (r === undefined ? 1 : r), target: o.el }], o.io)), salir: () => ios.forEach(o => o.io.cb([{ isIntersecting: false, intersectionRatio: 0, target: o.el }], o.io)) };
 }
 
 const raizSel = '#' + idRaiz;
@@ -99,6 +105,25 @@ console.log(`\n${ruta} · raíz ${raizSel}`);
 // C · toque antes de verse -> completo; verse después no reinicia
 { const m = mundo(); const raiz = m.documento.getElementById(idRaiz); console.log(`  · diagnóstico C: raíz encontrada=${!!raiz} · zonas bajo la raíz=${raiz?raiz.querySelectorAll('.jvfi-z,.jven-z,.jvru-z').length:'-'} · zonas en el documento=${m.documento.querySelectorAll('.jvfi-z,.jven-z,.jvru-z').length} · padre de la raíz=${raiz&&raiz.parent?raiz.parent.tag:'-'}`); raiz.dispatch('click'); const n1 = cuenta(m); const totalC = (function(){ const k = mundo(); k.ver(); k.avanzar(60000); return cuenta(k); })(); ok(n1 >= totalC, `C · toque antes de verse: ${n1} elementos 'in' (el recorrido natural deja ${totalC}; el toque puede marcar tambien lo que acaba oculto)`); ok(m.relojes.size === 0, 'C · tras el toque 0 relojes'); m.ver(); m.avanzar(60000); ok(cuenta(m) === n1 && m.relojes.size === 0, `C · verse después del toque no reinicia (${cuenta(m)} in, ${m.relojes.size} relojes)`); }
 // D · sale de pantalla a medias -> se completa
-{ const m = mundo(); m.ver(); m.avanzar(1500); const parcial = cuenta(m); m.salir(); const tras = cuenta(m); const total = (function(){ const k = mundo(); k.ver(); k.avanzar(60000); return cuenta(k); })(); ok(tras === total && m.relojes.size === 0, `D · sale a medias (${parcial} in) -> completa del todo (${tras} de ${total} in, ${m.relojes.size} relojes)`); }
+{ const m = mundo(); m.ver(); m.avanzar(1500); const parcial = cuenta(m); m.salir(); const tras = cuenta(m); const total = (function(){ const k = mundo(); k.ver(); k.avanzar(60000); return cuenta(k); })(); ok(tras >= total && m.relojes.size === 0, `D · sale a medias (${parcial} in) -> completa del todo (${tras} de ${total} in, ${m.relojes.size} relojes)`); }
+
+// E · reduced-motion: debe quedar pintada SIN esperar al observador (lo hace el molde de la fisio).
+//     Si no, la escena esta vacia hasta cruzar el umbral y ahi mete el mayor salto de maqueta.
+{ const m = mundo(true); m.avanzar(2000); const n = cuenta(m);
+  const total = (function(){ const k = mundo(true); k.ver(); k.avanzar(60000); return cuenta(k); })();
+  ok(n === total && n > 0, `E - quieto: pintada sin verse (${n} de ${total} in)`);
+  ok(m.relojes.size === 0, `E - quieto: 0 relojes (hay ${m.relojes.size})`); }
+
+// F · el toque NO se deshace: tocar y luego salir de pantalla no puede revertir lo ya mostrado
+{ const m = mundo(); const raiz = m.documento.getElementById(idRaiz); raiz.dispatch('click');
+  const n1 = cuenta(m); m.salir(); m.avanzar(60000); const n2 = cuenta(m);
+  ok(n2 >= n1, `F - tocar y luego salir no deshace (${n1} -> ${n2} in)`);
+  ok(m.relojes.size === 0, 'F - sin relojes tras salir'); }
+
+// G · asomando por debajo del umbral: ni arranca a medias ni se da por terminada delante del visitante
+{ const m = mundo(); m.ver(.10); m.avanzar(3000); const n = cuenta(m);
+  const total = (function(){ const k = mundo(); k.ver(); k.avanzar(60000); return cuenta(k); })();
+  ok(n === 0 || n === total, `G - asomando al 10 %: ni a medias ni terminada en la cara (${n} in; debe ser 0 o ${total})`); }
+
 console.log(fallos ? `\n═══ ROJOS: ${fallos} ═══` : '\n═══ TODO VERDE ═══');
 process.exit(fallos ? 1 : 0);

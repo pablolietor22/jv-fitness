@@ -73,7 +73,7 @@ html.jvfi-suelta body{margin:0;background:#0A100E;color:#EEF2EC;font-family:syst
     <h2 class="jvfi-h">Le dices <b>dónde te duele</b>.<br>Te cambia la rutina.</h2>
 
     <div class="jvfi-marco">
-      <div class="jvfi-barra"><span class="jvfi-vivo"></span> 🩺 FISIO EN TU BOLSILLO <i>catálogo: 1.502 ejercicios</i></div>
+      <div class="jvfi-barra"><span class="jvfi-vivo" aria-hidden="true"></span> 🩺 FISIO EN TU BOLSILLO <i>catálogo: 1.502 ejercicios</i></div>
       <div class="jvfi-cuerpo">
         <p class="jvfi-lead">¿Qué te molesta? Elige la zona.</p>
         <div class="jvfi-zonas" id="jvfi-zonas"></div>
@@ -83,7 +83,8 @@ html.jvfi-suelta body{margin:0;background:#0A100E;color:#EEF2EC;font-family:syst
   </div>
   <p class="jvfi-nota">Los 36 ejercicios, sus motivos y sus alternativas salen del motor real de la
   app corriendo sobre su catálogo de 1.502. No es una maqueta: es lo que contesta si abres la app
-  y declaras esa lesión.</p>
+  y declaras esa lesión. Lo único de ejemplo es la zona elegida: aquí la escoge la escena, en la
+  app la eliges tú.</p>
 </section>
 
 <script>
@@ -239,10 +240,12 @@ html.jvfi-suelta body{margin:0;background:#0A100E;color:#EEF2EC;font-family:syst
   else {
     new IntersectionObserver(function(es, io){
       es.forEach(function(e){
-        if (e.isIntersecting) { arrancar(); }
+        // [16-09] con un cuarto en pantalla, no con asomar el borde: si no, la escena arranca
+        // cuando aun no se ve y el visitante llega tarde a su propia demostracion.
+        if (e.isIntersecting && e.intersectionRatio >= .25) { arrancar(); }
         else if (arrancado && tempos.length) { completar(); io.unobserve(raiz); }
       });
-    }, { threshold: .25 }).observe(raiz);
+    }, { threshold: [0, .25] }).observe(raiz);
   }
 })();
 </script>

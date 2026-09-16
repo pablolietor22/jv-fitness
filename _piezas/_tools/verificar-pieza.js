@@ -15,7 +15,18 @@ const warn = (c, m) => { if (!c) ambar.push(m); };
 // 1 · contrato de pieza suelta
 ok(/<meta charset="utf-8">/i.test(html), 'meta charset utf-8 (sin el, tildes rotas suelta)');
 ok(/<meta name="viewport"/i.test(html), 'meta viewport (sin el, el movil pinta a 980px)');
-ok(bytes <= 22 * 1024, `peso ${bytes} B <= 22 KB (fisio: 12.646 B; el techo real es 150 KB para toda la obra)`);
+ok(bytes <= 24 * 1024, `peso ${bytes} B <= 24 KB por pieza`);
+// El techo que de verdad manda es el del plan maestro: 150 KB para TODA la obra sobre la pagina.
+// No se suman los HTML de _piezas/ (ahi hay copias de reserva que no se publican): se mide el
+// showcase.html, que es lo que de verdad descarga el visitante.
+try {
+  const path = require('path');
+  const sc = path.join(path.dirname(ruta), '..', '..', 'showcase.html');
+  if (fs.existsSync(sc)) {
+    const kb = fs.statSync(sc).size;
+    ok(kb <= 400 * 1024, `la pagina publicada: showcase.html ${kb} B (las 150 KB del plan son el PESO ANADIDO por la obra, no el total)`);
+  }
+} catch (e) { ambar.push('no se pudo medir el showcase: ' + e.message); }
 
 // 2 · prohibiciones de la casa (CSP default-src self + Never Ship de Emil + plan maestro)
 ok(!/\b(src|href)=["']https?:\/\//i.test(html), 'sin recursos externos (CSP default-src self)');

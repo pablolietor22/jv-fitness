@@ -44,7 +44,11 @@
 .jvru-vivo{width:7px;height:7px;border-radius:50%;background:var(--ru-jade);flex:none;box-shadow:0 0 8px var(--ru-jade)}
 /* hueco FIJO de 620 px: lo que pide la pantalla mas alta (los 8 ejercicios) a 360 px de ancho.
    Las cinco se turnan dentro y ninguna hace crecer el marco */
-.jvru-cuerpo{padding:12px 14px 16px;min-height:620px}
+/* [16-09] La reserva de altura evita que la pagina salte al cambiar de pantalla, pero en pixeles
+   fijos dejaba medio marco negro en escritorio (el contenido encoge al ensancharse). Se reserva
+   lo que de verdad hace falta y solo donde hace falta: en movil, que es donde el salto se nota. */
+.jvru-cuerpo{padding:12px 14px 16px;min-height:340px}
+@media (max-width:520px){.jvru-cuerpo{min-height:620px}}
 .jvru-volver{display:flex;border:1px solid var(--ru-lines);border-radius:8px;padding:4px 9px;margin:0 0 9px}
 .jvru-volver,.jvru-lbl,.jvru-cita,.jvru-barra i{font:.68rem var(--ru-mono);color:var(--ru-mute);font-style:normal}
 .jvru-barra i{margin-left:auto;font-size:.64rem}
@@ -274,11 +278,16 @@ const arranque=()=>{
   cita(T.CITA,()=>{entra(pie[1]);cada(raiz.querySelectorAll('.jvru-dim'),'jvru-dim',false);cada(pasos,'foco',false);});
 };
 // Arranca al VERSE (un cuarto, una vez). Un parar() a secas la dejaba truncada para siempre.
-raiz.addEventListener('click',()=>{arrancado=true;final(1);});
-if(!('IntersectionObserver' in window)) return arranque();
+let tocado=false;
+raiz.addEventListener('click',()=>{tocado=true;arrancado=true;final(1);});
+// [16-09] quieto o sin observador: se pinta YA. Antes el estado final vivia dentro de arranque(),
+// que solo llamaba el observador: con "menos movimiento" la escena estaba vacia hasta cruzar el
+// 25 % y entonces metia de golpe el mayor salto de maqueta de la pagina.
+if(quieto||!('IntersectionObserver' in window)) return arranque();
 const io=new IntersectionObserver(es=>es.forEach(e=>{
   if(e.isIntersecting&&e.intersectionRatio>=.25) arranque();
-  else if(!e.isIntersecting&&arrancado){final();io.disconnect();}
+  // [16-09] al salir NO se deshace lo que el visitante ya vio: si tocó, la escena se queda como está.
+  else if(!e.isIntersecting&&arrancado){if(!tocado)final();io.disconnect();}
 }),{threshold:[0,.25]});
 io.observe(raiz);
 })();
