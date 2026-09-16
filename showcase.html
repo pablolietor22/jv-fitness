@@ -34,6 +34,32 @@
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <title>JV Fitness · nutrición y entrenamiento con base científica · Pablo Andrés Martínez</title>
 <!-- ============================================================================
+     🔴 RETALLADO 16-09-2026 (rutina de alimentos, 03:5x) — «fichas» 578 → 619 y
+        «claves» 12.884 → 13.804. Y esto NO era un redondeo: era una AFIRMACIÓN FALSA
+        publicada. La página decía 578 fichas mientras la app que enlaza servía 619.
+
+        MEDIDO EJECUTANDO EL MOTOR, y contra el ARTEFACTO PUBLICADO, nunca contra el
+        `_ESTADO-PROYECTO.md` (la trampa que costó 18 afirmaciones falsas el 18-08):
+
+            node tools/cerebro-bots/_kb-inspect.js   (sobre master 7a0f212)
+               → TRONCOS 69 · FICHAS 619 · CLAVES 13804
+            git show origin/main:showcase.html
+               → fichas 578 · claves 12.884          ← 41 fichas y 920 claves de menos
+
+        ⚠️ POR QUÉ SE DESFASÓ, que es lo que conviene que no se repita: entraron los
+        PR #335 (SARMs, 12 fichas) y #337 (testosterona, 15 fichas) de madrugada, y los
+        dos PR DECÍAN, con razón, «escaparate NO tocado: tallar hoy sería publicar una
+        cifra que aún no es verdad. Lo retallo en cuanto se fusione». Correcto — pero
+        al fusionarse, esas sesiones ya no estaban. **El acuerdo del 14-09 dice que lo
+        retalla quien fusiona o cierra el lote; cuando fusiona Pablo, no hay sesión a la
+        que le toque.** Ese es el agujero, y lo tapa quien esté despierta. Hoy, ésta.
+
+        «Baterías» NO se toca: sigue en 154, medido (`ls _tests/*.node.js` en master).
+        «Claves» está huérfana (sólo vive en la tabla, no se pinta) pero la propia nota
+        del 30-08 manda dejarla con su valor MEDIDO, así que se actualiza igual.
+        Tocados LOS DOS SITIOS de «fichas»: tabla del verificador Y odómetro con su
+        atributo — manda el atributo, que es lo que el JS reescribe.
+
      🔢 RETALLADO 15-09-2026 (rutina de alimentos) — «baterías de pruebas» 152 → 154.
         MEDIDO CON UN COMANDO, no a ojo, y contra el ÁRBOL que se va a desplegar:
 
@@ -239,8 +265,8 @@
 
        cifra                          valor    dónde vive
        -----------------------------  -------  --------------------------------
-       fichas del asistente             578    odómetro
-       claves del asistente          12.884    ⚠️ YA NO SE PINTA (ver nota abajo)
+       fichas del asistente             619    odómetro
+       claves del asistente          13.804    ⚠️ YA NO SE PINTA (ver nota abajo)
        fichas que citan su Tema         330    ⚠️ YA NO SE PINTA (ver nota abajo)
        ejercicios                     1.502    eyebrow + odómetro
        ejercicios con instrucciones   1.289    entradilla de ejercicios
@@ -2110,7 +2136,7 @@ html.jvfi-suelta body{margin:0;background:#0A100E;color:#EEF2EC;font-family:syst
         <div class="lbl">ejercicios con guía anatómica</div>
       </div>
       <div class="stat reveal d2">
-        <div class="num" data-count="578">578</div>
+        <div class="num" data-count="619">619</div>
         <div class="lbl">fichas del asistente, escritas a mano</div>
       </div>
       <div class="stat reveal">
