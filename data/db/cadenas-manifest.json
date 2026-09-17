@@ -1,7 +1,7 @@
 {
  "version": "2026-09-17",
  "fuente": "Cartas oficiales de cada cadena (URL y fecha de consulta en cada fila) · JV Fitness",
- "total": 1934,
+ "total": 1968,
  "cadenas": [
   {
    "cadena": "Burger King",
@@ -14,6 +14,14 @@
   {
    "cadena": "KFC",
    "count": 148
+  },
+  {
+   "cadena": "Krispy Kreme",
+   "count": 12
+  },
+  {
+   "cadena": "Panishop",
+   "count": 22
   },
   {
    "cadena": "Pans & Company",
@@ -67,8 +75,8 @@
  "chunks": [
   {
    "file": "cadenas.jsonl.gz",
-   "count": 1934,
-   "bytes": 54107
+   "count": 1968,
+   "bytes": 55290
   }
  ],
  "componentes": {
