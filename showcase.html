@@ -34,21 +34,29 @@
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <title>JV Fitness · nutrición y entrenamiento con base científica · Pablo Andrés Martínez</title>
 <!-- ============================================================================
-     🔴 RETALLADO 16-09-2026 (rutina de alimentos) — «fichas» 578 → 649 y
-        «claves» 12.884 → 14.385. Y esto NO era un redondeo: era una AFIRMACIÓN FALSA
+     🔴 RETALLADO 16/17-09-2026 (rutina de alimentos) — «fichas» 578 → 658 y
+        «claves» 12.884 → 14.652. Y esto NO era un redondeo: era una AFIRMACIÓN FALSA
         publicada. La página decía 578 fichas mientras la app que enlaza servía 649:
         71 fichas y 1.501 claves de MENOS.
 
-        ⚠️ Y LA CIFRA SE ME HA QUEDADO VIEJA TRES VECES MIENTRAS ESTE PR ESPERABA,
+        ⚠️ Y LA CIFRA SE ME HA QUEDADO VIEJA CUATRO VECES MIENTRAS ESTE PR ESPERABA,
         lo cual es la mejor prueba de lo que se propone abajo:
 
-            03:5x  medí 619 · tallé 619
-            04:5x  entró el #338 (frío y sauna, 14 fichas)      → 633. Remedido.
-            17:0x  entraron el #346 y el #342 (embarazo, 16)    → 649. Remedido.
+            16-09 03:5x  medí 619 · tallé 619
+            16-09 04:5x  entró el #338 (frío y sauna, 14 fichas)      → 633. Remedido.
+            16-09 17:0x  entraron el #346 y el #342 (embarazo, 16)    → 649. Remedido.
+            17-09 17:0x  entró el #353 (ÁREA 14, resaca, 9 fichas)    → 658. Remedido.
 
-        Las tres veces se REMIDIÓ ejecutando el motor, nunca sumando a mano: sumar
+        Las cuatro veces se REMIDIÓ ejecutando el motor, nunca sumando a mano: sumar
         acierta en las fichas por casualidad y falla en las claves, que no vienen en
         lotes redondos.
+
+        📏 Y en la cuarta hay un dato que justifica solo la regla de remedir. El propio
+        commit del #353 anota «14.367 → 14.634» y `_kb-inspect.js` mide 14.385 → 14.652:
+        un desfase CONSTANTE de 18 claves en las dos puntas. O sea que el delta de esa
+        sesión era correcto y lo que difiere es el INSTRUMENTO de conteo. Aquí se talla
+        lo que mide `_kb-inspect.js` porque es lo que mide el verificador de esta página
+        — copiar la cifra del commit ajeno habría dejado el verificador en rojo por 18.
         👉 Un escaparate con cifras talladas a mano NO puede perseguir un árbol que se
         mueve cada hora. Esto no es un fallo de nadie: es el método. Por eso la
         propuesta de abajo no es cosmética.
@@ -280,9 +288,9 @@
 
        cifra                          valor    dónde vive
        -----------------------------  -------  --------------------------------
-       fichas del asistente             649    odómetro
-       claves del asistente          14.385    ⚠️ YA NO SE PINTA (ver nota abajo)
-       fichas que citan su Tema         330    ⚠️ YA NO SE PINTA (ver nota abajo)
+       fichas del asistente             658    odómetro
+       claves del asistente          14.652    ⚠️ YA NO SE PINTA (ver nota abajo)
+       fichas que citan su Tema         387    ⚠️ YA NO SE PINTA (ver nota abajo)
        ejercicios                     1.502    eyebrow + odómetro
        ejercicios con instrucciones   1.289    entradilla de ejercicios
        alimentos de España          235.866    tarjeta del diario + odómetro
@@ -2818,7 +2826,7 @@ html.jvfi-suelta body{margin:0;background:#0A100E;color:#EEF2EC;font-family:syst
         <div class="lbl">ejercicios con guía anatómica</div>
       </div>
       <div class="stat reveal d2">
-        <div class="num" data-count="649">649</div>
+        <div class="num" data-count="658">658</div>
         <div class="lbl">fichas del asistente, escritas a mano</div>
       </div>
       <div class="stat reveal">
