@@ -1,7 +1,7 @@
 {
- "version": "2026-09-15",
+ "version": "2026-09-17",
  "fuente": "Cartas oficiales de cada cadena (URL y fecha de consulta en cada fila) · JV Fitness",
- "total": 1850,
+ "total": 1934,
  "cadenas": [
   {
    "cadena": "Burger King",
@@ -48,8 +48,16 @@
    "count": 77
   },
   {
+   "cadena": "Tierra Burritos",
+   "count": 17
+  },
+  {
    "cadena": "Tim Hortons",
    "count": 240
+  },
+  {
+   "cadena": "Udon",
+   "count": 67
   },
   {
    "cadena": "llaollao",
@@ -59,8 +67,8 @@
  "chunks": [
   {
    "file": "cadenas.jsonl.gz",
-   "count": 1850,
-   "bytes": 51686
+   "count": 1934,
+   "bytes": 54107
   }
  ],
  "componentes": {

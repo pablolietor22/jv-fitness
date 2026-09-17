@@ -34,6 +34,46 @@
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <title>JV Fitness · nutrición y entrenamiento con base científica · Pablo Andrés Martínez</title>
 <!-- ============================================================================
+     🔢 RETALLADO 17-09-2026 (NOCHE, rutina de ALIMENTOS) — dos cosas, y sólo dos
+
+     1 · «alimentos de España» 235.920 → 235.930 (+10). Medido con
+        `node tools/cerebro-bots/verificador-escaparate.js --showcase showcase.html`
+        contra el ARTEFACTO, nunca contra `_ESTADO-PROYECTO.md`. Sale del campo `total`
+        de `data/db/manifest.json` (v2026-09-17) y cuadra con la suma de los `count` de
+        sus 11 chunks: 235.930 = 235.930. Los +10 son las novedades de OFF de esta noche,
+        leídas por dos caminos (export delta + API de producto), 10 de 10 coincidentes.
+        Tocados los CINCO sitios donde vive la cifra, porque el verificador exige que
+        atributo, texto y tabla coincidan (la lección del #340).
+
+     2 · 🖐️➡️✅ LA MENCIÓN DE LAS CADENAS DE RESTAURANTE, que era una DECISIÓN YA TOMADA
+        y llevaba un día sin aplicarse. Pablo, 16-09, literal: «No merecen un hueco
+        localizado por ellas, pero sí merecen mención dentro de los alimentos,
+        mencionando "más de X cadenas con sus alimentos e información nutricional para
+        que no tengas que preocuparte si comes fuera"». Está archivada en
+        `_cola/DECISIONES-PABLO.md`, y la regla de ese fichero es que lo que está escrito
+        **se aplica y se sigue**, no se vuelve a preguntar.
+        · **Sin hueco propio**, como pidió: va DENTRO de la tarjeta de alimentos.
+        · **La X es un número MEDIDO y se re-mide en cada retallado**, como él mismo puso
+          por condición: **15**, del `total`/`cadenas` de `data/db/cadenas-manifest.json`
+          v2026-09-17 (1.934 filas). Eran 13 hasta esta noche; suben a 15 con Tierra
+          Burritos y Udon, que entran en este mismo PR.
+        ⚠️ Por eso esto VA EN EL MISMO PR que publica el manifest de cadenas: si esa parte
+        no se fusiona, el «15» sería mentira. Misma regla que aplicó el 15-09 a las
+        baterías y el 16-09 a los alimentos.
+
+     3 · «baterías de pruebas» 154 → 155, y la mueve ESTE MISMO PR. La batería nueva es
+        `_tests/test-norte-nombres-cadena.node.js`, el candado del emparejamiento de
+        nombres de cadena del velocímetro (la mayúscula de «Llaollao» que dejaba una
+        cadena CERRADA fuera del marcador cinco días). Se talla aquí porque **si este PR
+        no se fusiona, 155 sería mentira** — que es exactamente lo que el retallado del
+        14-09 escribió al tallar 152 a propósito.
+
+     🖐️ LO QUE SIGUE SIN TOCARSE, porque no es número y no está decidido: las PORCIONES
+        (1.215 de 3.314 alimentos con su medida casera, 36,7 %). Se preguntó el 16-09 en
+        el mismo sitio que las cadenas y él contestó SOLO lo de las cadenas. No se
+        interpreta su silencio como un sí ni como un no: se vuelve a preguntar en el PR.
+     ============================================================================ -->
+<!-- ============================================================================
      🔢 RETALLADO 16-09-2026 (NOCHE, rutina de ALIMENTOS) — «alimentos de España»
         235.866 → 235.920 (+54), y SOLO esa cifra. Medido con
         `node tools/cerebro-bots/verificador-escaparate.js --showcase showcase.html`
@@ -275,13 +315,13 @@
        fichas que citan su Tema         330    ⚠️ YA NO SE PINTA (ver nota abajo)
        ejercicios                     1.502    eyebrow + odómetro
        ejercicios con instrucciones   1.289    entradilla de ejercicios
-       alimentos de España          235.920    tarjeta del diario + odómetro
+       alimentos de España          235.930    tarjeta del diario + odómetro
        perfiles del barrido               8    tarjeta de perfiles
        preguntas del barrido          1.032    tarjeta de perfiles
        NULL antes / ahora        33,5 / 20,3   tarjeta de perfiles
        Temas del fichero maestro         52    tarjeta de «Auditoría de citas»
        PMID del fichero maestro         160    tarjeta de «Auditoría de citas»
-       baterías de pruebas              154    odómetro (+ comentario CSS del N4)
+       baterías de pruebas              155    odómetro (+ comentario CSS del N4)
        pases del Vigía (33/33)           33    línea honesta del pie
        fusiones en el taller            329    acto 4 (solo SUBE: nunca miente por exceso)
 
@@ -311,12 +351,12 @@
        el texto visible — si tocas una cifra en el cuerpo, tócala también aquí.)
        Actualizado 28-08-2026 (antes decía `python verificador.py`, que no existe).
      ============================================================================ -->
-<meta name="description" content="JV Fitness: app de nutrición y entrenamiento con base científica. Diario con 235.920 alimentos sin cobertura, 1.502 ejercicios con guía anatómica y un asistente que cita su fuente cuando la tiene y dice «no lo sé» cuando no.">
+<meta name="description" content="JV Fitness: app de nutrición y entrenamiento con base científica. Diario con 235.930 alimentos sin cobertura, 1.502 ejercicios con guía anatómica y un asistente que cita su fuente cuando la tiene y dice «no lo sé» cuando no.">
 <meta name="robots" content="index,follow">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://pablolietor22.github.io/jv-fitness/showcase.html">
 <meta property="og:title" content="JV Fitness · nutrición y entrenamiento con base científica">
-<meta property="og:description" content="Nutrición y entrenamiento con base científica: 235.920 alimentos sin cobertura, 1.502 ejercicios con guía anatómica y un asistente que cita sus fuentes. En desarrollo casi a diario.">
+<meta property="og:description" content="Nutrición y entrenamiento con base científica: 235.930 alimentos sin cobertura, 1.502 ejercicios con guía anatómica y un asistente que cita sus fuentes. En desarrollo casi a diario.">
 <!-- og:image ABSOLUTA (LinkedIn/WhatsApp ignoran rutas relativas) + tarjeta 1200×630 dedicada, no la foto de retrato -->
 <meta property="og:image" content="https://pablolietor22.github.io/jv-fitness/assets/og.png">
 <meta property="og:image:width" content="1200">
@@ -1230,9 +1270,9 @@ html.fx-fin .stage__node{animation:none !important}
     <!-- tres funciones más (spec cards) -->
     <div class="spec-grid">
       <div class="spec-card reveal">
-        <span class="feat-eyebrow">235.920 alimentos</span>
+        <span class="feat-eyebrow">235.930 alimentos</span>
         <h3>Diario de comida sin cobertura</h3>
-        <p>La base completa de alimentos de España viaja en el móvil y se consulta sin cobertura: en el metro, en el gimnasio, donde sea.</p>
+        <p>La base completa de alimentos de España viaja en el móvil y se consulta sin cobertura: en el metro, en el gimnasio, donde sea. Y más de <strong>15 cadenas de restaurante</strong> con sus platos y su información nutricional, para que no tengas que preocuparte si comes fuera.</p>
       </div>
       <div class="spec-card reveal d1">
         <span class="feat-eyebrow">Agua y cafeína</span>
@@ -2800,7 +2840,7 @@ html.jvfi-suelta body{margin:0;background:#0A100E;color:#EEF2EC;font-family:syst
          dato bueno, no un «0»); el contador la pone a cero justo al arrancar. -->
     <div class="stat-grid">
       <div class="stat reveal">
-        <div class="num" data-count="235920" data-format="mil">235.920</div>
+        <div class="num" data-count="235930" data-format="mil">235.930</div>
         <div class="lbl">alimentos de España, consultables sin cobertura</div>
       </div>
       <div class="stat reveal d1">
@@ -2812,7 +2852,7 @@ html.jvfi-suelta body{margin:0;background:#0A100E;color:#EEF2EC;font-family:syst
         <div class="lbl">fichas del asistente, escritas a mano</div>
       </div>
       <div class="stat reveal">
-        <div class="num" data-count="154">154</div>
+        <div class="num" data-count="155">155</div>
         <div class="lbl">baterías de pruebas antes de cada publicación</div>
       </div>
       <div class="stat live reveal d1">
