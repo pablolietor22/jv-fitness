@@ -61,6 +61,37 @@
           visitante veía 235.716. Hallazgo de la sesión del #21, no mío.
         Revisados los CUATRO odómetros: atributo y texto coinciden en todos.
 
+     🔢 RETALLADO 17-09-2026 (rutina flywheel) — «fichas» 578 → 658 y «claves» 12.884 → 14.652.
+       MEDIDO ejecutando el motor contra `master` (1d42318), nunca copiando del _ESTADO:
+
+            node tools/cerebro-bots/_kb-inspect.js
+            ->  TRONCOS: 71  FICHAS: 658  CLAVES: 14652
+
+       Las 80 fichas nuevas son cuatro noches: embarazo y posparto (16), frío y sauna (14),
+       testosterona, SARMS, deporte, y resaca y entrenar (9). «baterías» se remidió y sigue
+       en 154 (`ls _tests/*.node.js | wc -l`), así que NO se toca: retallar una cifra que no
+       ha cambiado es ruido que hace dudar del resto.
+       · Se cambian el ATRIBUTO y el texto a la vez. Manda el atributo (ver nota del 14-09).
+
+     🍽️ Y una MENCIÓN NUEVA, no una cifra — decisión de Pablo del 16-09, literal:
+       «No merecen un hueco localizado por ellas, pero sí merecen mención dentro de los
+       alimentos, mencionando "más de X cadenas con sus alimentos e información nutricional
+       para que no tengas que preocuparte si comes fuera"».
+       Va en la tarjeta del diario, NO en una tarjeta propia, que es lo que él descartó.
+       La X se MIDIÓ, no se estimó — y la medida corrige la tentación fácil:
+
+            ls tools/alimentos/cadenas/*.json   -> 50   ← ficheros, NO cadenas servidas
+            cadenas con filas .jsonl reales     -> 13   ← goiko, rodilla y tonyromas están a 0
+            filas totales servidas              -> 1.858
+
+       Publicar «50 cadenas» habría sido falso: 37 de esos ficheros no sirven ni una fila.
+
+     🚫 Y lo que NO se menciona, también por decisión suya del 16-09: EMBARAZO Y POSPARTO.
+       Literal: «no metemos nada de mala fe postparto, no me gusta eso en la showcase».
+       ⚠️ Ojo al leer esto dentro de un mes: las 16 fichas SÍ están en la app (PR #342,
+       firmadas por él tras verificar los 14 estudios). Lo que decide es que el escaparate
+       público no lo anuncia. Las cifras las incluyen; el TEXTO se calla.
+
      ⚠️ RETALLADO 14-09-2026 — «fichas» 567 → 578, «claves» 12.574 → 12.884 y «baterías»
         142 → 152. Entraron el ÁREA 8 (deporte + fuerza, 11 fichas firmadas por Pablo el
         10-09) y tres noches de alimentos. MEDIDO ejecutando el CEREBRO_KB del master
@@ -239,8 +270,8 @@
 
        cifra                          valor    dónde vive
        -----------------------------  -------  --------------------------------
-       fichas del asistente             578    odómetro
-       claves del asistente          12.884    ⚠️ YA NO SE PINTA (ver nota abajo)
+       fichas del asistente             658    odómetro
+       claves del asistente          14.652    ⚠️ YA NO SE PINTA (ver nota abajo)
        fichas que citan su Tema         330    ⚠️ YA NO SE PINTA (ver nota abajo)
        ejercicios                     1.502    eyebrow + odómetro
        ejercicios con instrucciones   1.289    entradilla de ejercicios
@@ -1202,6 +1233,7 @@ html.fx-fin .stage__node{animation:none !important}
         <span class="feat-eyebrow">235.866 alimentos</span>
         <h3>Diario de comida sin cobertura</h3>
         <p>La base completa de alimentos de España viaja en el móvil y se consulta sin cobertura: en el metro, en el gimnasio, donde sea.</p>
+        <p>Y más de <strong>1.800 platos de 13 cadenas de restaurante</strong> con su información nutricional, para que no tengas que preocuparte si comes fuera.</p>
       </div>
       <div class="spec-card reveal d1">
         <span class="feat-eyebrow">Agua y cafeína</span>
@@ -2777,7 +2809,7 @@ html.jvfi-suelta body{margin:0;background:#0A100E;color:#EEF2EC;font-family:syst
         <div class="lbl">ejercicios con guía anatómica</div>
       </div>
       <div class="stat reveal d2">
-        <div class="num" data-count="578">578</div>
+        <div class="num" data-count="658">658</div>
         <div class="lbl">fichas del asistente, escritas a mano</div>
       </div>
       <div class="stat reveal">
