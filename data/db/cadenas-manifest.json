@@ -1,7 +1,7 @@
 {
- "version": "2026-09-17",
+ "version": "2026-09-19",
  "fuente": "Cartas oficiales de cada cadena (URL y fecha de consulta en cada fila) · JV Fitness",
- "total": 1968,
+ "total": 2075,
  "cadenas": [
   {
    "cadena": "Burger King",
@@ -30,6 +30,10 @@
   {
    "cadena": "Papa John's",
    "count": 61
+  },
+  {
+   "cadena": "Pastelería Mallorca",
+   "count": 107
   },
   {
    "cadena": "Pizza Hut",
@@ -75,8 +79,8 @@
  "chunks": [
   {
    "file": "cadenas.jsonl.gz",
-   "count": 1968,
-   "bytes": 55290
+   "count": 2075,
+   "bytes": 60602
   }
  ],
  "componentes": {
