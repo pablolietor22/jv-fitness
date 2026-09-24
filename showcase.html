@@ -34,6 +34,36 @@
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <title>JV Fitness · nutrición y entrenamiento con base científica · Pablo Andrés Martínez</title>
 <!-- ============================================================================
+     🔢 RETALLADO 24-09-2026 (NOCHE, rutina flywheel) — «claves» 15.489 → 15.513 y
+        «baterías de pruebas» 158 → 160.
+
+        CAUSA: a las 16:40 el deploy-bot publicó `index.html` desde jvfitness-dev@fef0131
+        (la fusión del PR #350, el barrido del 16-09: 24 claves nuevas). El artefacto
+        subió; la cifra tallada a mano, no. Es el MISMO patrón que la nota de esta mañana
+        describe, doce horas después — por eso se apunta aparte en vez de tocar aquélla.
+
+        MEDIDO CON EL COMANDO, contra el ARTEFACTO PUBLICADO (`origin/master` de
+        jvfitness-dev, que es de donde salió el despliegue vivo), nunca contra
+        `_ESTADO-PROYECTO.md`:
+
+            node tools/cerebro-bots/verificador-escaparate.js \
+                 --app <master:app/jv-fitness-mvp.html> --showcase showcase.html
+               → app v0.72.0 · fichas 702 · claves 15.513 · citan Tema 430 · baterías 160
+               → publicaba: 702 ✓ · 15.489 ✗ · 430 ✓ · 158 ✗
+               → odómetro de baterías: atributo 158 ✗ (la trampa del 18-08 otra vez:
+                 el atributo es lo que el visitante ve, y es lo que estaba viejo)
+
+        🖐️ NO se toca «fichas» (702): el lote del viaje (28 fichas) está en el PR #369,
+        SIN FUSIONAR y esperando la firma sanitaria de Pablo. Publicar 800 hoy sería
+        exactamente la afirmación falsa que esta página lleva un mes cazando.
+
+        🖐️ Y una inconsistencia que se SEÑALA y no se toca (norma de la casa): el
+        comentario CSS del N4 sigue diciendo «135 baterías de pruebas». Es la descripción
+        de un efecto SIN ESTRENAR desde el 21-08, no una cifra que se publique al
+        visitante, y el verificador no la compara. Queda dicho para que no se descubra
+        como si fuera un hallazgo.
+     ============================================================================ -->
+<!-- ============================================================================
      🔴 RETALLADO 24-09-2026 (rutina flywheel) — «fichas» 658 → 702 · «claves»
         14.652 → 15.489 · «fichas que citan su Tema» 387 → 430 · «baterías» 156 → 158.
 
@@ -389,7 +419,7 @@
        cifra                          valor    dónde vive
        -----------------------------  -------  --------------------------------
        fichas del asistente             702    odómetro
-       claves del asistente          15.489    ⚠️ YA NO SE PINTA (ver nota abajo)
+       claves del asistente          15.513    ⚠️ YA NO SE PINTA (ver nota abajo)
        fichas que citan su Tema         430    ⚠️ YA NO SE PINTA (ver nota abajo)
        ejercicios                     1.502    eyebrow + odómetro
        ejercicios con instrucciones   1.289    entradilla de ejercicios
@@ -399,7 +429,7 @@
        NULL antes / ahora        33,5 / 20,3   tarjeta de perfiles
        Temas del fichero maestro         52    tarjeta de «Auditoría de citas»
        PMID del fichero maestro         160    tarjeta de «Auditoría de citas»
-       baterías de pruebas              158    odómetro (+ comentario CSS del N4)
+       baterías de pruebas              160    odómetro (+ comentario CSS del N4)
        pases del Vigía (33/33)           33    línea honesta del pie
        fusiones en el taller            329    acto 4 (solo SUBE: nunca miente por exceso)
 
@@ -2930,7 +2960,7 @@ html.jvfi-suelta body{margin:0;background:#0A100E;color:#EEF2EC;font-family:syst
         <div class="lbl">fichas del asistente, escritas a mano</div>
       </div>
       <div class="stat reveal">
-        <div class="num" data-count="158">158</div>
+        <div class="num" data-count="160">160</div>
         <div class="lbl">baterías de pruebas antes de cada publicación</div>
       </div>
       <div class="stat live reveal d1">
