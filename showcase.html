@@ -34,6 +34,35 @@
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <title>JV Fitness · nutrición y entrenamiento con base científica · Pablo Andrés Martínez</title>
 <!-- ============================================================================
+     🔴 RETALLADO 24-09-2026 (rutina flywheel) — «fichas» 658 → 702 · «claves»
+        14.652 → 15.489 · «fichas que citan su Tema» 387 → 430 · «baterías» 156 → 158.
+
+        LA CAUSA, dicha sin adornos: el 24-09 a las 07:5x se fusionó el PR #358 del
+        taller (14 fichas hijas de la descompensación, 323 claves) y el despliegue
+        `ab27d71` subió la APP desde ese master — pero las cifras de esta página se
+        tallan A MANO y nadie las retalló. Durante ~1 h esta página publicó 658 fichas
+        mientras la app que enlaza servía 702. Cuatro cifras desfasadas, y DOS de ellas
+        en odómetros que el visitante ve.
+
+        👉 No es un fallo del despliegue: es exactamente el método que la nota de abajo
+        (16/17-09) ya señalaba. El deploy automatiza el artefacto; la cifra tallada no.
+
+        MEDIDO CON EL COMANDO, contra el ARTEFACTO PUBLICADO, nunca contra
+        `_ESTADO-PROYECTO.md`:
+
+            node tools/cerebro-bots/verificador-escaparate.js --showcase <publicado>
+               → app v0.72.0 · fichas 702 · claves 15.489 · citan Tema 430 · baterías 158
+               → publicado: 658 · 14.652 · 387 · 156     ✗ las cuatro
+               → odómetros publicados: fichas 658 · baterías 156   ✗ las dos
+            (ejercicios 1.502 · instr. 1.289 · Temas 52 · PMID 160 · alimentos 235.956
+             cuadraban y NO se tocan)
+
+        🖐️ LO QUE NO DECIDE LA SESIÓN, y sigue sin respuesta: ¿merece el escaparate
+        MENCIONAR la familia nueva —por qué te descompensas, qué hacer si sólo entrenas
+        empuje—, o basta con que suba el odómetro? Se preguntó en el PR #358 y en el
+        panel; se vuelve a preguntar aquí porque la fusión no la contestó.
+     ============================================================================ -->
+<!-- ============================================================================
      🔴 RETALLADO 16/17-09-2026 (rutina de alimentos) — «fichas» 578 → 658 y
         «claves» 12.884 → 14.652. Y esto NO era un redondeo: era una AFIRMACIÓN FALSA
         publicada. La página decía 578 fichas mientras la app que enlaza servía 649:
@@ -359,9 +388,9 @@
 
        cifra                          valor    dónde vive
        -----------------------------  -------  --------------------------------
-       fichas del asistente             658    odómetro
-       claves del asistente          14.660    ⚠️ YA NO SE PINTA (ver nota abajo)
-       fichas que citan su Tema         387    ⚠️ YA NO SE PINTA (ver nota abajo)
+       fichas del asistente             702    odómetro
+       claves del asistente          15.489    ⚠️ YA NO SE PINTA (ver nota abajo)
+       fichas que citan su Tema         430    ⚠️ YA NO SE PINTA (ver nota abajo)
        ejercicios                     1.502    eyebrow + odómetro
        ejercicios con instrucciones   1.289    entradilla de ejercicios
        alimentos de España          236.014    tarjeta del diario + odómetro
@@ -2897,7 +2926,7 @@ html.jvfi-suelta body{margin:0;background:#0A100E;color:#EEF2EC;font-family:syst
         <div class="lbl">ejercicios con guía anatómica</div>
       </div>
       <div class="stat reveal d2">
-        <div class="num" data-count="658">658</div>
+        <div class="num" data-count="702">702</div>
         <div class="lbl">fichas del asistente, escritas a mano</div>
       </div>
       <div class="stat reveal">
