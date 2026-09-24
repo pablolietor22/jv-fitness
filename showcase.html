@@ -34,6 +34,35 @@
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <title>JV Fitness · nutrición y entrenamiento con base científica · Pablo Andrés Martínez</title>
 <!-- ============================================================================
+     🆕 MENCIÓN NUEVA 24-09-2026 — Pablo decidió que SÍ, y esto no es una cifra.
+        Preguntado el 19-09 en el PR #358 y otra vez hoy: «¿merece el escaparate
+        MENCIONAR la familia nueva de la descompensación, o basta con que suba el
+        odómetro?». Su respuesta literal, 24-09: «Si que lo mencione».
+
+        Va como TERCERA spec-card del bloque de funciones —que decía «tres funciones
+        más» y llevaba dos desde hacía tiempo—, con la cifra del LOTE, no de la suma
+        del día: son las 14 fichas de `LOTE_DESCOMPENSACION_19_09`, contadas en
+        `_tests/test-formato-r.node.js`. (El día trajo 44 entre tres lotes, pero la
+        tarjeta sólo habla de uno y publicar 44 habría sido inflarla.)
+
+        🤖 Y lo que afirma la tarjeta está MEDIDO con el motor, no supuesto:
+            node tools/cerebro-bots/runner.js --app app/jv-fitness-mvp.html …
+               «siempre hago pecho»          -> musculo/siempre-hago-pecho
+               «estoy descompensado»         -> musculo/estoy-descompensado
+               «nunca entreno pierna»        -> musculo/nunca-hago-pierna
+               «cuanto tiron por cada empuje»-> musculo/ratio-empuje-tiron
+               «como arreglo la descompensacion» -> musculo/como-arreglo-…
+               «hombros adelantados de tanto pecho» -> pecho/hombros-adelantados-…
+            8 de 8 caen en SU ficha, ninguna en la genérica. Antes de este lote,
+            «siempre hago pecho» y «hago pecho» caían las dos en la MISMA ficha.
+
+        ⚠️ Y la frase que parece un adorno y es lo contrario: la tarjeta dice que el
+        desequilibrio NO es buen predictor de lesión. Va a propósito. Las fichas se
+        escribieron quitando el «te vas a lesionar» porque la evidencia prospectiva no
+        lo sostiene (Kellis 2023 PMID 35065297 · Guan 2022 PMID 35054054), y un
+        escaparate que prometa lo que la app ya no promete es una afirmación falsa más.
+     ============================================================================ -->
+<!-- ============================================================================
      🔴 RETALLADO 24-09-2026 (rutina flywheel) — «fichas» 658 → 702 · «claves»
         14.652 → 15.489 · «fichas que citan su Tema» 387 → 430 · «baterías» 156 → 158.
 
@@ -1356,6 +1385,11 @@ html.fx-fin .stage__node{animation:none !important}
         <span class="feat-eyebrow">Agua y cafeína</span>
         <h3>Lo que bebes, en un sitio</h3>
         <p>Los vasos de agua y los miligramos de cafeína del día, en la misma pestaña.</p>
+      </div>
+      <div class="spec-card reveal d2">
+        <span class="feat-eyebrow">14 fichas nuevas</span>
+        <h3>Te dice por qué te has descompensado</h3>
+        <p>«Siempre hago pecho», «nunca entreno pierna» o «estoy descompensado» ya no caen en una ficha genérica: cada una tiene la suya, con cuánto tirón toca por cada empuje y cómo se arregla el patrón. Y hasta dónde llega la prueba, que es la parte que casi nadie dice: el desequilibrio <strong>no</strong> es buen predictor de lesión —la evidencia prospectiva no lo sostiene—, así que el asistente te explica el porqué real en vez de asustarte.</p>
       </div>
     </div>
   </div>
