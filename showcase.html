@@ -54,8 +54,15 @@
                → app v0.72.0 · fichas 672 · claves 14.983 · citan Tema 400 · baterías 158
                → publicado: 658 · 14.652 · 387 · 156     ✗ las cuatro
                → odómetros publicados: fichas 658 · baterías 156   ✗ las dos
-            (ejercicios 1.502 · instr. 1.289 · Temas 52 · PMID 160 · alimentos 235.956
-             cuadraban y NO se tocan)
+            (ejercicios 1.502 · instr. 1.289 · Temas 52 · PMID 160 cuadraban y NO se tocan)
+
+        🔀 ADENDA del mismo día, tras fusionar `main`: el PR #36 de la rutina de ALIMENTOS
+        tocó estas mismas líneas y hubo conflicto real en las tres filas de la tabla. Se
+        resolvió MIDIENDO, no eligiendo bando: ese PR subió «alimentos» a 236.014 y
+        «baterías» a 158 —correcto, es su dominio y su medición— pero dejaba «claves» en
+        14.660 y «fichas» en 658 porque midió ANTES de que entrara el #358. Se queda la
+        medición POSTERIOR a la fusión (672 · 14.983 · 400) y la suya de alimentos
+        (236.014), y el verificador se volvió a pasar sobre el resultado: todo en verde.
 
         🖐️ LO QUE NO DECIDE LA SESIÓN, y sigue sin respuesta: ¿merece el escaparate
         MENCIONAR la familia nueva —por qué te descompensas, qué hacer si sólo entrenas
@@ -393,7 +400,7 @@
        fichas que citan su Tema         400    ⚠️ YA NO SE PINTA (ver nota abajo)
        ejercicios                     1.502    eyebrow + odómetro
        ejercicios con instrucciones   1.289    entradilla de ejercicios
-       alimentos de España          235.956    tarjeta del diario + odómetro
+       alimentos de España          236.014    tarjeta del diario + odómetro
        perfiles del barrido               8    tarjeta de perfiles
        preguntas del barrido          1.032    tarjeta de perfiles
        NULL antes / ahora        33,5 / 20,3   tarjeta de perfiles
@@ -429,12 +436,12 @@
        el texto visible — si tocas una cifra en el cuerpo, tócala también aquí.)
        Actualizado 28-08-2026 (antes decía `python verificador.py`, que no existe).
      ============================================================================ -->
-<meta name="description" content="JV Fitness: app de nutrición y entrenamiento con base científica. Diario con 235.956 alimentos sin cobertura, 1.502 ejercicios con guía anatómica y un asistente que cita su fuente cuando la tiene y dice «no lo sé» cuando no.">
+<meta name="description" content="JV Fitness: app de nutrición y entrenamiento con base científica. Diario con 236.014 alimentos sin cobertura, 1.502 ejercicios con guía anatómica y un asistente que cita su fuente cuando la tiene y dice «no lo sé» cuando no.">
 <meta name="robots" content="index,follow">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://pablolietor22.github.io/jv-fitness/showcase.html">
 <meta property="og:title" content="JV Fitness · nutrición y entrenamiento con base científica">
-<meta property="og:description" content="Nutrición y entrenamiento con base científica: 235.956 alimentos sin cobertura, 1.502 ejercicios con guía anatómica y un asistente que cita sus fuentes. En desarrollo casi a diario.">
+<meta property="og:description" content="Nutrición y entrenamiento con base científica: 236.014 alimentos sin cobertura, 1.502 ejercicios con guía anatómica y un asistente que cita sus fuentes. En desarrollo casi a diario.">
 <!-- og:image ABSOLUTA (LinkedIn/WhatsApp ignoran rutas relativas) + tarjeta 1200×630 dedicada, no la foto de retrato -->
 <meta property="og:image" content="https://pablolietor22.github.io/jv-fitness/assets/og.png">
 <meta property="og:image:width" content="1200">
@@ -1348,7 +1355,7 @@ html.fx-fin .stage__node{animation:none !important}
     <!-- tres funciones más (spec cards) -->
     <div class="spec-grid">
       <div class="spec-card reveal">
-        <span class="feat-eyebrow">235.956 alimentos</span>
+        <span class="feat-eyebrow">236.014 alimentos</span>
         <h3>Diario de comida sin cobertura</h3>
         <p>La base completa de alimentos de España viaja en el móvil y se consulta sin cobertura: en el metro, en el gimnasio, donde sea. Y más de <strong>18 cadenas de restaurante</strong> con sus platos y su información nutricional, para que no tengas que preocuparte si comes fuera.</p>
       </div>
@@ -2918,7 +2925,7 @@ html.jvfi-suelta body{margin:0;background:#0A100E;color:#EEF2EC;font-family:syst
          dato bueno, no un «0»); el contador la pone a cero justo al arrancar. -->
     <div class="stat-grid">
       <div class="stat reveal">
-        <div class="num" data-count="235956" data-format="mil">235.956</div>
+        <div class="num" data-count="236014" data-format="mil">236.014</div>
         <div class="lbl">alimentos de España, consultables sin cobertura</div>
       </div>
       <div class="stat reveal d1">

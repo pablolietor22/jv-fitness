@@ -1,7 +1,7 @@
 {
- "version": "2026-09-19",
+ "version": "2026-09-22",
  "fuente": "Cartas oficiales de cada cadena (URL y fecha de consulta en cada fila) · JV Fitness",
- "total": 2075,
+ "total": 2100,
  "cadenas": [
   {
    "cadena": "Burger King",
@@ -52,6 +52,10 @@
    "count": 40
   },
   {
+   "cadena": "TGB (The Good Burger)",
+   "count": 25
+  },
+  {
    "cadena": "Taco Bell",
    "count": 199
   },
@@ -79,8 +83,8 @@
  "chunks": [
   {
    "file": "cadenas.jsonl.gz",
-   "count": 2075,
-   "bytes": 60602
+   "count": 2100,
+   "bytes": 61392
   }
  ],
  "componentes": {
