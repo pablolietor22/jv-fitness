@@ -34,6 +34,39 @@
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <title>JV Fitness · nutrición y entrenamiento con base científica · Pablo Andrés Martínez</title>
 <!-- ============================================================================
+     🔴 RETALLADO 25-09-2026 (06:0x, rutina flywheel del 24-09 al cerrar) — «fichas»
+        702 → 819 · «claves» 15.513 → 17.468 · «citan su Tema» 430 → 457.
+
+        ESTA ES LA MÁS GRANDE DEL MES Y HAY QUE DECIR POR QUÉ: a las 04:5x se fusionó el
+        PR #369 (la cadena del 24-09: tronco `viaje`, 18 padres + 10 hijas, y dentro
+        #352 #355 #363 #364 #366 #367) y acto seguido el **#373** (el tren del 25-09, 8 PR
+        de rutinas). El deploy-bot publicó `index.html` desde jvfitness-dev@e98c4ca.
+
+        👉 Durante ~1 h esta página publicó **702 fichas mientras la app que enlaza servía
+        819**. Ciento diecisiete de diferencia, y en el ODÓMETRO, que es lo que ve el
+        visitante. Es el mismo fallo del 18-08 y del 24-09 por la mañana: **el despliegue
+        se automatizó y la cifra tallada a mano NO.**
+
+        MEDIDO CON EL COMANDO, contra el ARTEFACTO PUBLICADO, nunca contra
+        `_ESTADO-PROYECTO.md`:
+
+            node tools/cerebro-bots/verificador-escaparate.js \
+                 --app <origin/master:app/jv-fitness-mvp.html> --showcase showcase.html
+               → app v0.72.0 · fichas 819 · claves 17.468 · citan Tema 457 · baterías 160
+               → publicaba: 702 ✗ · 15.513 ✗ · 430 ✗ · 160 ✓
+               → odómetro de fichas: atributo 702 ✗
+
+        🖐️ **«alimentos de España» NO se toca aquí, a propósito.** Esa cifra la mueven los
+        PR #40 y #41 de la rutina de alimentos, que traen el chunk que la hace verdad
+        (236.021 y luego 236.020). Publicar un número de alimentos sin su chunk es
+        exactamente lo que el #40 evita al viajar los dos en el mismo commit.
+
+        ⚠️ **ORDEN DE FUSIÓN, y no es capricho:** #41 → #40 → **este**. Los tres tocan
+        `showcase.html` y el #40 también escribe la línea de «claves» (la puso en 15.513,
+        que era verdad cuando la midió y dejó de serlo al entrar el #373). El último en
+        entrar **rederiva**: vuelve a pasar el verificador y tallar lo que salga.
+     ============================================================================ -->
+<!-- ============================================================================
      🔢 RETALLADO 24-09-2026 (NOCHE, rutina flywheel) — «claves» 15.489 → 15.513 y
         «baterías de pruebas» 158 → 160.
 
@@ -455,9 +488,9 @@
 
        cifra                          valor    dónde vive
        -----------------------------  -------  --------------------------------
-       fichas del asistente             702    odómetro
-       claves del asistente          15.513    ⚠️ YA NO SE PINTA (ver nota abajo)
-       fichas que citan su Tema         430    ⚠️ YA NO SE PINTA (ver nota abajo)
+       fichas del asistente             819    odómetro
+       claves del asistente          17.468    ⚠️ YA NO SE PINTA (ver nota abajo)
+       fichas que citan su Tema         457    ⚠️ YA NO SE PINTA (ver nota abajo)
        ejercicios                     1.502    eyebrow + odómetro
        ejercicios con instrucciones   1.289    entradilla de ejercicios
        alimentos de España          236.014    tarjeta del diario + odómetro
@@ -2998,7 +3031,7 @@ html.jvfi-suelta body{margin:0;background:#0A100E;color:#EEF2EC;font-family:syst
         <div class="lbl">ejercicios con guía anatómica</div>
       </div>
       <div class="stat reveal d2">
-        <div class="num" data-count="702">702</div>
+        <div class="num" data-count="819">819</div>
         <div class="lbl">fichas del asistente, escritas a mano</div>
       </div>
       <div class="stat reveal">
