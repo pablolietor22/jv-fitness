@@ -65,6 +65,14 @@
         `showcase.html` y el #40 también escribe la línea de «claves» (la puso en 15.513,
         que era verdad cuando la midió y dejó de serlo al entrar el #373). El último en
         entrar **rederiva**: vuelve a pasar el verificador y tallar lo que salga.
+
+        ✅ **Y SE CUMPLIÓ, que es la parte que normalmente no se escribe.** El #41 y el #40
+        entraron primero, este PR fusionó `main`, y el choque fue exactamente el previsto: la
+        misma tabla de tres cifras, su 702/15.513/430 contra mi 819/17.468/457. Se resolvió
+        **remidiendo, no eligiendo lado** — el verificador contra `origin/master` volvió a dar
+        819/17.468/457, así que gana lo medido. Y la cifra de alimentos entró **de su chunk**
+        (236.021 → 236.020 con el #41) sin que yo la tocara: cuadra sola porque cada uno talló
+        lo suyo.
      ============================================================================ -->
 <!-- ============================================================================
      🔢 RETALLADO 24-09-2026 (NOCHE, rutina flywheel) — «claves» 15.489 → 15.513 y
@@ -135,7 +143,7 @@
      ============================================================================ -->
 <!-- ============================================================================
      🔴 RETALLADO 24-09-2026 (rutina flywheel) — «fichas» 658 → 702 · «claves»
-        14.652 → 15.489 · «fichas que citan su Tema» 387 → 430 · «baterías» 156 → 158.
+        14.652 → 15.513 · «fichas que citan su Tema» 387 → 430 · «baterías» 156 → 158.
 
         LA CAUSA, dicha sin adornos: el 24-09 a las 07:5x se fusionó el PR #358 del
         taller (14 fichas hijas de la descompensación, 323 claves) y el despliegue
@@ -151,7 +159,7 @@
         `_ESTADO-PROYECTO.md`:
 
             node tools/cerebro-bots/verificador-escaparate.js --showcase <publicado>
-               → app v0.72.0 · fichas 702 · claves 15.489 · citan Tema 430 · baterías 158
+               → app v0.72.0 · fichas 702 · claves 15.513 · citan Tema 430 · baterías 158
                → publicado: 658 · 14.652 · 387 · 156     ✗ las cuatro
                → odómetros publicados: fichas 658 · baterías 156   ✗ las dos
             (ejercicios 1.502 · instr. 1.289 · Temas 52 · PMID 160 · alimentos 235.956
@@ -493,7 +501,7 @@
        fichas que citan su Tema         457    ⚠️ YA NO SE PINTA (ver nota abajo)
        ejercicios                     1.502    eyebrow + odómetro
        ejercicios con instrucciones   1.289    entradilla de ejercicios
-       alimentos de España          236.014    tarjeta del diario + odómetro
+       alimentos de España          236.020    tarjeta del diario + odómetro
        perfiles del barrido               8    tarjeta de perfiles
        preguntas del barrido          1.032    tarjeta de perfiles
        NULL antes / ahora        33,5 / 20,3   tarjeta de perfiles
@@ -529,12 +537,12 @@
        el texto visible — si tocas una cifra en el cuerpo, tócala también aquí.)
        Actualizado 28-08-2026 (antes decía `python verificador.py`, que no existe).
      ============================================================================ -->
-<meta name="description" content="JV Fitness: app de nutrición y entrenamiento con base científica. Diario con 236.014 alimentos sin cobertura, 1.502 ejercicios con guía anatómica y un asistente que cita su fuente cuando la tiene y dice «no lo sé» cuando no.">
+<meta name="description" content="JV Fitness: app de nutrición y entrenamiento con base científica. Diario con 236.020 alimentos sin cobertura, 1.502 ejercicios con guía anatómica y un asistente que cita su fuente cuando la tiene y dice «no lo sé» cuando no.">
 <meta name="robots" content="index,follow">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://pablolietor22.github.io/jv-fitness/showcase.html">
 <meta property="og:title" content="JV Fitness · nutrición y entrenamiento con base científica">
-<meta property="og:description" content="Nutrición y entrenamiento con base científica: 236.014 alimentos sin cobertura, 1.502 ejercicios con guía anatómica y un asistente que cita sus fuentes. En desarrollo casi a diario.">
+<meta property="og:description" content="Nutrición y entrenamiento con base científica: 236.020 alimentos sin cobertura, 1.502 ejercicios con guía anatómica y un asistente que cita sus fuentes. En desarrollo casi a diario.">
 <!-- og:image ABSOLUTA (LinkedIn/WhatsApp ignoran rutas relativas) + tarjeta 1200×630 dedicada, no la foto de retrato -->
 <meta property="og:image" content="https://pablolietor22.github.io/jv-fitness/assets/og.png">
 <meta property="og:image:width" content="1200">
@@ -1448,7 +1456,7 @@ html.fx-fin .stage__node{animation:none !important}
     <!-- tres funciones más (spec cards) -->
     <div class="spec-grid">
       <div class="spec-card reveal">
-        <span class="feat-eyebrow">236.014 alimentos</span>
+        <span class="feat-eyebrow">236.020 alimentos</span>
         <h3>Diario de comida sin cobertura</h3>
         <p>La base completa de alimentos de España viaja en el móvil y se consulta sin cobertura: en el metro, en el gimnasio, donde sea. Y más de <strong>18 cadenas de restaurante</strong> con sus platos y su información nutricional, para que no tengas que preocuparte si comes fuera.</p>
       </div>
@@ -3023,7 +3031,7 @@ html.jvfi-suelta body{margin:0;background:#0A100E;color:#EEF2EC;font-family:syst
          dato bueno, no un «0»); el contador la pone a cero justo al arrancar. -->
     <div class="stat-grid">
       <div class="stat reveal">
-        <div class="num" data-count="236014" data-format="mil">236.014</div>
+        <div class="num" data-count="236020" data-format="mil">236.020</div>
         <div class="lbl">alimentos de España, consultables sin cobertura</div>
       </div>
       <div class="stat reveal d1">
