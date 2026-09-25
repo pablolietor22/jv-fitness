@@ -63,6 +63,46 @@
         escaparate que prometa lo que la app ya no promete es una afirmación falsa más.
      ============================================================================ -->
 <!-- ============================================================================
+     🔴 RETALLADO 25-09-2026 (rutina flywheel del 23-09, al fusionarse su lote)
+        «fichas» 702 → 819 · «claves» 15.489 → 17.468 · «citan su Tema» 430 → 457 ·
+        «baterías» 158 → 161.
+
+        LA CAUSA, y es la MISMA del 24-09 con un día de diferencia: el 25-09 entró el
+        «tren» (PR #373 de `jvfitness-dev`, ocho PR de rutinas dentro) y el despliegue
+        `6260100` subió la APP desde ese master — pero las cifras de esta página se
+        tallan A MANO y nadie las retalló. Esta página publicaba 702 fichas mientras la
+        app que enlaza servía 819. Cuatro cifras, y DOS en odómetros que el visitante ve.
+
+        👉 Dos veces en dos días, por la misma junta: el deploy automatiza el artefacto;
+        la cifra tallada, no. **Y ahora hay un dato para decidirlo**: el retallado del
+        24-09 tardó ~1 h en detectarse; este ~21 h. La deuda no es el retallado, es que
+        nada lo dispare.
+
+        MEDIDO CON EL COMANDO, contra el ARTEFACTO PUBLICADO, nunca contra
+        `_ESTADO-PROYECTO.md`:
+
+            node tools/cerebro-bots/verificador-escaparate.js --showcase <publicado>
+               → mide: fichas 819 · claves 17.468 · citan Tema 457 · baterías 161
+               → publicaba: 702 · 15.489 · 430 · 158     ✗ las cuatro
+               → odómetros publicados: fichas 702 · baterías 158   ✗ los dos
+            (ejercicios 1.502 · instr. 1.289 · Temas 52 · PMID 160 · alimentos 236.014
+             cuadraban y NO se tocan)
+
+        🖐️ LO QUE ESTA SESIÓN NO DECIDE, y está PREGUNTADO (no esperando que se le
+        ocurra): Pablo ordenó el 24-09 que el escaparate se retallara «una vez cuando
+        entren todos, de manera perfecta con hijas padres». La primera mitad está hecha
+        aquí. La segunda **necesita su OK sobre la FORMA**, porque la cifra ya está
+        medida y lo que falta es dónde ponerla:
+
+            819 fichas  =  739  (padres y fichas sin hijas)  +  80 HIJAS
+            49 padres tienen hijas · el manifiesto cuadra con el motor, 0 fantasmas
+            medido con tools/cerebro-bots/hijas-manifiesto.json + CEREBRO_KB ejecutado
+
+        Un odómetro nuevo, un paréntesis en la etiqueta del que ya hay, o una frase en
+        el acto que explica la familia: eso es producto, y lo elige él. La cifra no se
+        inventa el día que se decida — ya está aquí y se re-mide por comando.
+     ============================================================================ -->
+<!-- ============================================================================
      🔴 RETALLADO 24-09-2026 (rutina flywheel) — «fichas» 658 → 702 · «claves»
         14.652 → 15.489 · «fichas que citan su Tema» 387 → 430 · «baterías» 156 → 158.
 
@@ -417,9 +457,9 @@
 
        cifra                          valor    dónde vive
        -----------------------------  -------  --------------------------------
-       fichas del asistente             702    odómetro
-       claves del asistente          15.489    ⚠️ YA NO SE PINTA (ver nota abajo)
-       fichas que citan su Tema         430    ⚠️ YA NO SE PINTA (ver nota abajo)
+       fichas del asistente             819    odómetro
+       claves del asistente          17.468    ⚠️ YA NO SE PINTA (ver nota abajo)
+       fichas que citan su Tema         457    ⚠️ YA NO SE PINTA (ver nota abajo)
        ejercicios                     1.502    eyebrow + odómetro
        ejercicios con instrucciones   1.289    entradilla de ejercicios
        alimentos de España          236.014    tarjeta del diario + odómetro
@@ -428,7 +468,7 @@
        NULL antes / ahora        33,5 / 20,3   tarjeta de perfiles
        Temas del fichero maestro         52    tarjeta de «Auditoría de citas»
        PMID del fichero maestro         160    tarjeta de «Auditoría de citas»
-       baterías de pruebas              158    odómetro (+ comentario CSS del N4)
+       baterías de pruebas              161    odómetro (+ comentario CSS del N4)
        pases del Vigía (33/33)           33    línea honesta del pie
        fusiones en el taller            329    acto 4 (solo SUBE: nunca miente por exceso)
 
@@ -2960,11 +3000,11 @@ html.jvfi-suelta body{margin:0;background:#0A100E;color:#EEF2EC;font-family:syst
         <div class="lbl">ejercicios con guía anatómica</div>
       </div>
       <div class="stat reveal d2">
-        <div class="num" data-count="702">702</div>
+        <div class="num" data-count="819">819</div>
         <div class="lbl">fichas del asistente, escritas a mano</div>
       </div>
       <div class="stat reveal">
-        <div class="num" data-count="158">158</div>
+        <div class="num" data-count="161">161</div>
         <div class="lbl">baterías de pruebas antes de cada publicación</div>
       </div>
       <div class="stat live reveal d1">
