@@ -1,5 +1,5 @@
 {
- "version": "2026-10-01",
+ "version": "2026-10-02",
  "fuente": "Open Food Facts (ODbL) · mundial (unique_scans_n>=3) + calidad JV Fitness",
  "total": 245672,
  "chunks": [
@@ -19,7 +19,7 @@
    "file": "world-02.jsonl.gz",
    "count": 24998,
    "bytes": 877346,
-   "plano": 4144067
+   "plano": 4144068
   },
   {
    "file": "world-03.jsonl.gz",

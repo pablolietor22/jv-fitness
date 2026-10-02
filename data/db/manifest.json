@@ -6,17 +6,17 @@
   {
    "file": "es-00.jsonl.gz",
    "count": 24990,
-   "bytes": 582952
+   "bytes": 582944
   },
   {
    "file": "es-01.jsonl.gz",
    "count": 24996,
-   "bytes": 677489
+   "bytes": 677494
   },
   {
    "file": "es-02.jsonl.gz",
    "count": 24998,
-   "bytes": 651513
+   "bytes": 651500
   },
   {
    "file": "es-03.jsonl.gz",
@@ -26,17 +26,17 @@
   {
    "file": "es-04.jsonl.gz",
    "count": 24997,
-   "bytes": 612788
+   "bytes": 612787
   },
   {
    "file": "es-05.jsonl.gz",
    "count": 24998,
-   "bytes": 660536
+   "bytes": 660538
   },
   {
    "file": "es-06.jsonl.gz",
    "count": 24998,
-   "bytes": 603972
+   "bytes": 603960
   },
   {
    "file": "es-07.jsonl.gz",
@@ -56,7 +56,7 @@
   {
    "file": "es-inc-2026-09.jsonl.gz",
    "count": 1051,
-   "bytes": 37567
+   "bytes": 37599
   }
  ],
  "saneo": "17-07-2026: sodios imposibles ANULADOS (mejor dato ausente que falso) + cafeína orientativa en energéticas/colas (la etiqueta manda)."
