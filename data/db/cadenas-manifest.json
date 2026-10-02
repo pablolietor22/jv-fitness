@@ -1,7 +1,7 @@
 {
- "version": "2026-09-22",
+ "version": "2026-10-01",
  "fuente": "Cartas oficiales de cada cadena (URL y fecha de consulta en cada fila) · JV Fitness",
- "total": 2100,
+ "total": 2805,
  "cadenas": [
   {
    "cadena": "Burger King",
@@ -10,6 +10,14 @@
   {
    "cadena": "Domino's",
    "count": 237
+  },
+  {
+   "cadena": "Faborit",
+   "count": 536
+  },
+  {
+   "cadena": "Jijonenca",
+   "count": 169
   },
   {
    "cadena": "KFC",
@@ -83,8 +91,8 @@
  "chunks": [
   {
    "file": "cadenas.jsonl.gz",
-   "count": 2100,
-   "bytes": 61392
+   "count": 2805,
+   "bytes": 93099
   }
  ],
  "componentes": {
