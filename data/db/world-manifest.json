@@ -12,8 +12,8 @@
   {
    "file": "world-01.jsonl.gz",
    "count": 24998,
-   "bytes": 891358,
-   "plano": 4151103
+   "bytes": 891357,
+   "plano": 4151101
   },
   {
    "file": "world-02.jsonl.gz",
@@ -24,8 +24,8 @@
   {
    "file": "world-03.jsonl.gz",
    "count": 25000,
-   "bytes": 885151,
-   "plano": 4146624
+   "bytes": 885150,
+   "plano": 4146614
   },
   {
    "file": "world-04.jsonl.gz",
@@ -36,8 +36,8 @@
   {
    "file": "world-05.jsonl.gz",
    "count": 25000,
-   "bytes": 893200,
-   "plano": 4117329
+   "bytes": 893207,
+   "plano": 4117343
   },
   {
    "file": "world-06.jsonl.gz",
@@ -48,8 +48,8 @@
   {
    "file": "world-07.jsonl.gz",
    "count": 25000,
-   "bytes": 886972,
-   "plano": 4175776
+   "bytes": 886976,
+   "plano": 4175787
   },
   {
    "file": "world-08.jsonl.gz",
