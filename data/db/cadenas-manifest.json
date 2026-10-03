@@ -1,7 +1,7 @@
 {
- "version": "2026-10-01",
+ "version": "2026-10-02",
  "fuente": "Cartas oficiales de cada cadena (URL y fecha de consulta en cada fila) · JV Fitness",
- "total": 2805,
+ "total": 3218,
  "cadenas": [
   {
    "cadena": "Burger King",
@@ -14,6 +14,14 @@
   {
    "cadena": "Faborit",
    "count": 536
+  },
+  {
+   "cadena": "Gelateria La Romana",
+   "count": 308
+  },
+  {
+   "cadena": "IKEA (restaurante)",
+   "count": 105
   },
   {
    "cadena": "Jijonenca",
@@ -91,8 +99,8 @@
  "chunks": [
   {
    "file": "cadenas.jsonl.gz",
-   "count": 2805,
-   "bytes": 93099
+   "count": 3218,
+   "bytes": 121379
   }
  ],
  "componentes": {
