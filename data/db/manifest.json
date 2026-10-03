@@ -6,7 +6,7 @@
   {
    "file": "es-00.jsonl.gz",
    "count": 24990,
-   "bytes": 582937
+   "bytes": 582925
   },
   {
    "file": "es-01.jsonl.gz",
@@ -21,7 +21,7 @@
   {
    "file": "es-03.jsonl.gz",
    "count": 24998,
-   "bytes": 648028
+   "bytes": 648022
   },
   {
    "file": "es-04.jsonl.gz",
@@ -31,27 +31,27 @@
   {
    "file": "es-05.jsonl.gz",
    "count": 24998,
-   "bytes": 660548
+   "bytes": 660553
   },
   {
    "file": "es-06.jsonl.gz",
    "count": 24998,
-   "bytes": 603982
+   "bytes": 603978
   },
   {
    "file": "es-07.jsonl.gz",
    "count": 25000,
-   "bytes": 575546
+   "bytes": 575541
   },
   {
    "file": "es-08.jsonl.gz",
    "count": 24998,
-   "bytes": 675935
+   "bytes": 675945
   },
   {
    "file": "es-09.jsonl.gz",
    "count": 9976,
-   "bytes": 267814
+   "bytes": 267819
   },
   {
    "file": "es-inc-2026-09.jsonl.gz",
