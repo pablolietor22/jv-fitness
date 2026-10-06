@@ -1,7 +1,7 @@
 {
- "version": "2026-10-01",
+ "version": "2026-10-06",
  "fuente": "Cartas oficiales de cada cadena (URL y fecha de consulta en cada fila) · JV Fitness",
- "total": 2805,
+ "total": 2867,
  "cadenas": [
   {
    "cadena": "Burger King",
@@ -10,6 +10,10 @@
   {
    "cadena": "Domino's",
    "count": 237
+  },
+  {
+   "cadena": "Enrique Tomás",
+   "count": 17
   },
   {
    "cadena": "Faborit",
@@ -26,6 +30,10 @@
   {
    "cadena": "Krispy Kreme",
    "count": 12
+  },
+  {
+   "cadena": "Loco Polo",
+   "count": 45
   },
   {
    "cadena": "Panishop",
@@ -91,8 +99,8 @@
  "chunks": [
   {
    "file": "cadenas.jsonl.gz",
-   "count": 2805,
-   "bytes": 93099
+   "count": 2867,
+   "bytes": 96204
   }
  ],
  "componentes": {
