@@ -1,7 +1,7 @@
 {
  "version": "2026-10-06",
  "fuente": "Cartas oficiales de cada cadena (URL y fecha de consulta en cada fila) · JV Fitness",
- "total": 2867,
+ "total": 2898,
  "cadenas": [
   {
    "cadena": "Burger King",
@@ -60,6 +60,10 @@
    "count": 128
   },
   {
+   "cadena": "Pure Cuisine",
+   "count": 30
+  },
+  {
    "cadena": "Starbucks",
    "count": 159
   },
@@ -78,6 +82,10 @@
   {
    "cadena": "Telepizza",
    "count": 77
+  },
+  {
+   "cadena": "The Cookie Lab",
+   "count": 1
   },
   {
    "cadena": "Tierra Burritos",
@@ -99,8 +107,8 @@
  "chunks": [
   {
    "file": "cadenas.jsonl.gz",
-   "count": 2867,
-   "bytes": 96204
+   "count": 2898,
+   "bytes": 98554
   }
  ],
  "componentes": {
