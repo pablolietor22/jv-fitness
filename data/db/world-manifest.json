@@ -1,18 +1,18 @@
 {
- "version": "2026-10-01",
+ "version": "2026-10-06",
  "fuente": "Open Food Facts (ODbL) · mundial (unique_scans_n>=3) + calidad JV Fitness",
  "total": 245672,
  "chunks": [
   {
    "file": "world-00.jsonl.gz",
    "count": 24998,
-   "bytes": 910484,
-   "plano": 4153950
+   "bytes": 910485,
+   "plano": 4153951
   },
   {
    "file": "world-01.jsonl.gz",
    "count": 24998,
-   "bytes": 891350,
+   "bytes": 891347,
    "plano": 4151089
   },
   {
@@ -24,7 +24,7 @@
   {
    "file": "world-03.jsonl.gz",
    "count": 25000,
-   "bytes": 895294,
+   "bytes": 885158,
    "plano": 4146624
   },
   {
@@ -48,13 +48,13 @@
   {
    "file": "world-07.jsonl.gz",
    "count": 25000,
-   "bytes": 897269,
-   "plano": 4175765
+   "bytes": 886965,
+   "plano": 4175774
   },
   {
    "file": "world-08.jsonl.gz",
    "count": 25000,
-   "bytes": 903315,
+   "bytes": 892765,
    "plano": 4143422
   },
   {
