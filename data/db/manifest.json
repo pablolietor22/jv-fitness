@@ -1,32 +1,32 @@
 {
- "version": "2026-10-06",
+ "version": "2026-10-07",
  "fuente": "Open Food Facts (ODbL) · filtro España + calidad JV Fitness",
  "total": 236011,
  "chunks": [
   {
    "file": "es-00.jsonl.gz",
    "count": 24990,
-   "bytes": 583042
+   "bytes": 583044
   },
   {
    "file": "es-01.jsonl.gz",
    "count": 24996,
-   "bytes": 678335
+   "bytes": 678337
   },
   {
    "file": "es-02.jsonl.gz",
    "count": 24998,
-   "bytes": 651764
+   "bytes": 651763
   },
   {
    "file": "es-03.jsonl.gz",
    "count": 24998,
-   "bytes": 648247
+   "bytes": 648255
   },
   {
    "file": "es-04.jsonl.gz",
    "count": 24997,
-   "bytes": 612933
+   "bytes": 612929
   },
   {
    "file": "es-05.jsonl.gz",
@@ -46,7 +46,7 @@
   {
    "file": "es-08.jsonl.gz",
    "count": 24998,
-   "bytes": 676183
+   "bytes": 676177
   },
   {
    "file": "es-09.jsonl.gz",
