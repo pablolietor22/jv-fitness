@@ -26,7 +26,7 @@
   {
    "file": "es-04.jsonl.gz",
    "count": 24997,
-   "bytes": 612919
+   "bytes": 612923
   },
   {
    "file": "es-05.jsonl.gz",
@@ -36,12 +36,12 @@
   {
    "file": "es-06.jsonl.gz",
    "count": 24998,
-   "bytes": 604089
+   "bytes": 604083
   },
   {
    "file": "es-07.jsonl.gz",
    "count": 25000,
-   "bytes": 575493
+   "bytes": 575494
   },
   {
    "file": "es-08.jsonl.gz",
