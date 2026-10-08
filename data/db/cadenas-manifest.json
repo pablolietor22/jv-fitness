@@ -1,8 +1,12 @@
 {
  "version": "2026-10-07",
  "fuente": "Cartas oficiales de cada cadena (URL y fecha de consulta en cada fila) · JV Fitness",
- "total": 3366,
+ "total": 3368,
  "cadenas": [
+  {
+   "cadena": "Bico de Xeado",
+   "count": 2
+  },
   {
    "cadena": "Burger King",
    "count": 141
@@ -127,8 +131,8 @@
  "chunks": [
   {
    "file": "cadenas.jsonl.gz",
-   "count": 3366,
-   "bytes": 130621
+   "count": 3368,
+   "bytes": 131263
   }
  ],
  "componentes": {
