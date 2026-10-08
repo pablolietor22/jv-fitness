@@ -12,7 +12,7 @@
   {
    "file": "world-01.jsonl.gz",
    "count": 24998,
-   "bytes": 891352,
+   "bytes": 891353,
    "plano": 4151230
   },
   {
@@ -31,7 +31,7 @@
    "file": "world-04.jsonl.gz",
    "count": 24999,
    "bytes": 848707,
-   "plano": 4107222
+   "plano": 4107225
   },
   {
    "file": "world-05.jsonl.gz",
@@ -48,8 +48,8 @@
   {
    "file": "world-07.jsonl.gz",
    "count": 25000,
-   "bytes": 886991,
-   "plano": 4175821
+   "bytes": 886987,
+   "plano": 4175822
   },
   {
    "file": "world-08.jsonl.gz",
