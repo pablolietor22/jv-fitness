@@ -1,8 +1,12 @@
 {
- "version": "2026-10-06",
+ "version": "2026-10-08",
  "fuente": "Cartas oficiales de cada cadena (URL y fecha de consulta en cada fila) · JV Fitness",
- "total": 3311,
+ "total": 3370,
  "cadenas": [
+  {
+   "cadena": "Bonilla a la vista",
+   "count": 4
+  },
   {
    "cadena": "Burger King",
    "count": 141
@@ -72,6 +76,10 @@
    "count": 30
   },
   {
+   "cadena": "Santa Teresa Gourmet",
+   "count": 55
+  },
+  {
    "cadena": "Starbucks",
    "count": 159
   },
@@ -115,8 +123,8 @@
  "chunks": [
   {
    "file": "cadenas.jsonl.gz",
-   "count": 3311,
-   "bytes": 126845
+   "count": 3370,
+   "bytes": 130701
   }
  ],
  "componentes": {
