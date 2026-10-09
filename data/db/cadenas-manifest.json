@@ -1,11 +1,19 @@
 {
- "version": "2026-10-06",
+ "version": "2026-10-07",
  "fuente": "Cartas oficiales de cada cadena (URL y fecha de consulta en cada fila) · JV Fitness",
- "total": 3311,
+ "total": 3368,
  "cadenas": [
+  {
+   "cadena": "Bico de Xeado",
+   "count": 2
+  },
   {
    "cadena": "Burger King",
    "count": 141
+  },
+  {
+   "cadena": "Confitería Rialto",
+   "count": 8
   },
   {
    "cadena": "Domino's",
@@ -38,6 +46,10 @@
   {
    "cadena": "Krispy Kreme",
    "count": 12
+  },
+  {
+   "cadena": "La Colegiala",
+   "count": 45
   },
   {
    "cadena": "Loco Polo",
@@ -104,6 +116,10 @@
    "count": 240
   },
   {
+   "cadena": "Torrons Vicens",
+   "count": 2
+  },
+  {
    "cadena": "Udon",
    "count": 67
   },
@@ -115,8 +131,8 @@
  "chunks": [
   {
    "file": "cadenas.jsonl.gz",
-   "count": 3311,
-   "bytes": 126845
+   "count": 3368,
+   "bytes": 131263
   }
  ],
  "componentes": {
