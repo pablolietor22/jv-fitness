@@ -1,8 +1,12 @@
 {
- "version": "2026-10-06",
+ "version": "2026-10-09",
  "fuente": "Cartas oficiales de cada cadena (URL y fecha de consulta en cada fila) · JV Fitness",
- "total": 3311,
+ "total": 3349,
  "cadenas": [
+  {
+   "cadena": "Amazonia Açaí",
+   "count": 38
+  },
   {
    "cadena": "Burger King",
    "count": 141
@@ -115,8 +119,8 @@
  "chunks": [
   {
    "file": "cadenas.jsonl.gz",
-   "count": 3311,
-   "bytes": 126845
+   "count": 3349,
+   "bytes": 128463
   }
  ],
  "componentes": {
