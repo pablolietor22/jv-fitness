@@ -1,7 +1,7 @@
 {
- "version": "2026-10-13",
+ "version": "2026-10-15",
  "fuente": "Cartas oficiales de cada cadena (URL y fecha de consulta en cada fila) · JV Fitness",
- "total": 3406,
+ "total": 3413,
  "cadenas": [
   {
    "cadena": "Amazonia Açaí",
@@ -128,6 +128,10 @@
    "count": 67
   },
   {
+   "cadena": "Wowble!",
+   "count": 7
+  },
+  {
    "cadena": "llaollao",
    "count": 1
   }
@@ -135,8 +139,8 @@
  "chunks": [
   {
    "file": "cadenas.jsonl.gz",
-   "count": 3406,
-   "bytes": 132791
+   "count": 3413,
+   "bytes": 134293
   }
  ],
  "componentes": {
