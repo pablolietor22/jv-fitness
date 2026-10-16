@@ -1,7 +1,7 @@
 {
- "version": "2026-10-15",
+ "version": "2026-10-16",
  "fuente": "Cartas oficiales de cada cadena (URL y fecha de consulta en cada fila) · JV Fitness",
- "total": 3413,
+ "total": 3510,
  "cadenas": [
   {
    "cadena": "Amazonia Açaí",
@@ -80,6 +80,10 @@
    "count": 309
   },
   {
+   "cadena": "Pizzerías Carlos",
+   "count": 97
+  },
+  {
    "cadena": "Popeyes",
    "count": 128
   },
@@ -139,8 +143,8 @@
  "chunks": [
   {
    "file": "cadenas.jsonl.gz",
-   "count": 3413,
-   "bytes": 134293
+   "count": 3510,
+   "bytes": 141568
   }
  ],
  "componentes": {
