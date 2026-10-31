@@ -1,7 +1,7 @@
 {
- "version": "2026-10-15",
+ "version": "2026-10-31",
  "fuente": "Cartas oficiales de cada cadena (URL y fecha de consulta en cada fila) · JV Fitness",
- "total": 3413,
+ "total": 3640,
  "cadenas": [
   {
    "cadena": "Amazonia Açaí",
@@ -24,6 +24,14 @@
    "count": 237
   },
   {
+   "cadena": "Dunkin'",
+   "count": 6
+  },
+  {
+   "cadena": "El Pibe",
+   "count": 2
+  },
+  {
    "cadena": "Enrique Tomás",
    "count": 17
   },
@@ -32,12 +40,20 @@
    "count": 536
   },
   {
+   "cadena": "Five Guys",
+   "count": 82
+  },
+  {
+   "cadena": "Forn de Cabrianes",
+   "count": 2
+  },
+  {
    "cadena": "Gelateria La Romana",
    "count": 308
   },
   {
    "cadena": "IKEA (restaurante)",
-   "count": 105
+   "count": 103
   },
   {
    "cadena": "Jijonenca",
@@ -45,7 +61,7 @@
   },
   {
    "cadena": "KFC",
-   "count": 148
+   "count": 146
   },
   {
    "cadena": "Krispy Kreme",
@@ -57,7 +73,7 @@
   },
   {
    "cadena": "Loco Polo",
-   "count": 45
+   "count": 50
   },
   {
    "cadena": "Panishop",
@@ -69,23 +85,35 @@
   },
   {
    "cadena": "Papa John's",
-   "count": 61
+   "count": 77
   },
   {
    "cadena": "Pastelería Mallorca",
-   "count": 107
+   "count": 134
   },
   {
    "cadena": "Pizza Hut",
    "count": 309
   },
   {
+   "cadena": "Pizza Royer's",
+   "count": 18
+  },
+  {
    "cadena": "Popeyes",
-   "count": 128
+   "count": 109
   },
   {
    "cadena": "Pure Cuisine",
    "count": 30
+  },
+  {
+   "cadena": "Rocambolesc",
+   "count": 18
+  },
+  {
+   "cadena": "Smöoy",
+   "count": 69
   },
   {
    "cadena": "Starbucks",
@@ -105,7 +133,7 @@
   },
   {
    "cadena": "Telepizza",
-   "count": 77
+   "count": 63
   },
   {
    "cadena": "The Cookie Lab",
@@ -117,7 +145,7 @@
   },
   {
    "cadena": "Tim Hortons",
-   "count": 240
+   "count": 247
   },
   {
    "cadena": "Torrons Vicens",
@@ -125,7 +153,7 @@
   },
   {
    "cadena": "Udon",
-   "count": 67
+   "count": 79
   },
   {
    "cadena": "Wowble!",
@@ -139,8 +167,8 @@
  "chunks": [
   {
    "file": "cadenas.jsonl.gz",
-   "count": 3413,
-   "bytes": 134293
+   "count": 3640,
+   "bytes": 150067
   }
  ],
  "componentes": {
@@ -520,6 +548,611 @@
    },
    "solo_add": []
   },
+  "Five Guys": {
+   "comps": [
+    {
+     "id": "patty",
+     "et": "Una carne de hamburguesa (100 % vacuno)",
+     "nv": 1,
+     "add": {
+      "g": null,
+      "kcal": 195,
+      "p": 18,
+      "c": 0,
+      "f": 14,
+      "az": 0,
+      "sat": 5.6,
+      "fib": 0,
+      "na": 52,
+      "de": "Carne: Hamburguesa de vacuno"
+     },
+     "del": {
+      "g": null,
+      "kcal": 209,
+      "p": 18,
+      "c": 0,
+      "f": 15,
+      "az": 0.6,
+      "sat": 6.6,
+      "fib": 1.4,
+      "na": 60,
+      "de": [
+       "Hamburguesa − Hamburguesa pequeña"
+      ]
+     },
+     "banda": null
+    },
+    {
+     "id": "queso_2",
+     "et": "Queso de la hamburguesa grande (2 lonchas)",
+     "nv": 1,
+     "add": {
+      "kcal": 135,
+      "p": 8,
+      "c": 4,
+      "f": 10
+     },
+     "del": {
+      "g": null,
+      "kcal": 135,
+      "p": 8,
+      "c": 4,
+      "f": 10,
+      "az": 1.8,
+      "sat": 6,
+      "fib": -0.6,
+      "na": 748,
+      "de": [
+       "Hamburguesa con queso − Hamburguesa",
+       "Hamburguesa con beicon y queso − Hamburguesa con beicon"
+      ]
+     },
+     "banda": null
+    },
+    {
+     "id": "queso_1",
+     "et": "Queso de la hamburguesa pequeña",
+     "nv": 1,
+     "add": {
+      "g": null,
+      "kcal": 70,
+      "p": 3.7,
+      "c": 0.6,
+      "f": 5.7,
+      "az": 0.6,
+      "sat": 3.7,
+      "fib": 0,
+      "na": 280,
+      "de": "Topping: Queso (pasteurizado)"
+     },
+     "del": {
+      "g": null,
+      "kcal": 49,
+      "p": 3,
+      "c": 4,
+      "f": 3,
+      "az": 0.8,
+      "sat": 2.6,
+      "fib": 0.7,
+      "na": 292,
+      "de": [
+       "Hamburguesa pequeña con queso − Hamburguesa pequeña"
+      ]
+     },
+     "banda": null
+    },
+    {
+     "id": "beicon_2",
+     "et": "Beicon de la hamburguesa grande",
+     "nv": 1,
+     "add": {
+      "g": null,
+      "kcal": 78,
+      "p": 6.4,
+      "c": 0.7,
+      "f": 5.5,
+      "az": 0,
+      "sat": 2.2,
+      "fib": 0,
+      "na": 368,
+      "de": "Carne: Beicon"
+     },
+     "del": {
+      "g": null,
+      "kcal": 68,
+      "p": 7,
+      "c": 1,
+      "f": 4,
+      "az": 0.4,
+      "sat": 1,
+      "fib": -0.2,
+      "na": 436,
+      "de": [
+       "Hamburguesa con beicon − Hamburguesa",
+       "Hamburguesa con beicon y queso − Hamburguesa con queso"
+      ]
+     },
+     "banda": null
+    },
+    {
+     "id": "beicon_1",
+     "et": "Beicon de la hamburguesa pequeña",
+     "nv": 1,
+     "add": {
+      "kcal": 60,
+      "p": 5,
+      "c": -3,
+      "f": 5
+     },
+     "del": {
+      "g": null,
+      "kcal": 60,
+      "p": 5,
+      "c": -3,
+      "f": 5,
+      "az": 0.3,
+      "sat": 1,
+      "fib": -0.3,
+      "na": 288,
+      "de": [
+       "Hamburguesa pequeña con beicon y queso − Hamburguesa pequeña con queso"
+      ]
+     },
+     "banda": null
+    },
+    {
+     "id": "queso_hd",
+     "et": "Queso del perrito",
+     "nv": 1,
+     "add": {
+      "kcal": 72,
+      "p": 4,
+      "c": 4,
+      "f": 5
+     },
+     "del": {
+      "g": null,
+      "kcal": 72,
+      "p": 4,
+      "c": 4,
+      "f": 5,
+      "az": 1,
+      "sat": 3,
+      "fib": -0.5,
+      "na": 304,
+      "de": [
+       "Perrito de vacuno con queso − Perrito de vacuno"
+      ]
+     },
+     "banda": null
+    },
+    {
+     "id": "beicon_hd",
+     "et": "Beicon del perrito",
+     "nv": 1,
+     "add": {
+      "kcal": 82,
+      "p": 5,
+      "c": 3,
+      "f": 6
+     },
+     "del": {
+      "g": null,
+      "kcal": 82,
+      "p": 5,
+      "c": 3,
+      "f": 6,
+      "az": 0.5,
+      "sat": 2,
+      "fib": -0.2,
+      "na": 360,
+      "de": [
+       "Perrito de vacuno con beicon − Perrito de vacuno"
+      ]
+     },
+     "banda": null
+    },
+    {
+     "id": "salchicha",
+     "et": "La salchicha del perrito",
+     "nv": 1,
+     "add": {
+      "g": null,
+      "kcal": 192,
+      "p": 11,
+      "c": 2.1,
+      "f": 15,
+      "az": 0,
+      "sat": 6.4,
+      "fib": 0,
+      "na": 760,
+      "de": "Carne: Perrito de vacuno"
+     },
+     "del": {
+      "kcal": 192,
+      "p": 11,
+      "c": 2.1,
+      "f": 15
+     },
+     "banda": null
+    },
+    {
+     "id": "mayonesa",
+     "et": "Mayonesa",
+     "nv": 1,
+     "add": {
+      "g": null,
+      "kcal": 113,
+      "p": 0,
+      "c": 0,
+      "f": 12,
+      "az": 0,
+      "sat": 2,
+      "fib": 0,
+      "na": 80,
+      "de": "Topping: Mayonesa"
+     },
+     "del": {
+      "kcal": 113,
+      "p": 0,
+      "c": 0,
+      "f": 12
+     },
+     "banda": null
+    },
+    {
+     "id": "ketchup",
+     "et": "Kétchup",
+     "nv": 1,
+     "add": {
+      "g": null,
+      "kcal": 14,
+      "p": 0,
+      "c": 3.2,
+      "f": 0,
+      "az": 3.2,
+      "sat": 0,
+      "fib": 0,
+      "na": 100,
+      "de": "Topping: Kétchup"
+     },
+     "del": {
+      "kcal": 14,
+      "p": 0,
+      "c": 3.2,
+      "f": 0
+     },
+     "banda": null
+    },
+    {
+     "id": "mostaza",
+     "et": "Mostaza",
+     "nv": 1,
+     "add": {
+      "g": null,
+      "kcal": 5,
+      "p": 0,
+      "c": 0,
+      "f": 0,
+      "az": 0,
+      "sat": 0,
+      "fib": 0,
+      "na": 68,
+      "de": "Topping: Mostaza"
+     },
+     "del": {
+      "kcal": 5,
+      "p": 0,
+      "c": 0,
+      "f": 0
+     },
+     "banda": null
+    },
+    {
+     "id": "tomates",
+     "et": "Tomates",
+     "nv": 1,
+     "add": {
+      "g": null,
+      "kcal": 6,
+      "p": 0,
+      "c": 1.3,
+      "f": 0,
+      "az": 1.3,
+      "sat": 0,
+      "fib": 0,
+      "na": 0,
+      "de": "Topping: Tomates"
+     },
+     "del": {
+      "kcal": 6,
+      "p": 0,
+      "c": 1.3,
+      "f": 0
+     },
+     "banda": null
+    },
+    {
+     "id": "cebolla",
+     "et": "Cebolla",
+     "nv": 1,
+     "add": {
+      "g": null,
+      "kcal": 8,
+      "p": 0,
+      "c": 1.8,
+      "f": 0,
+      "az": 1,
+      "sat": 0,
+      "fib": 0,
+      "na": 0,
+      "de": "Topping: Cebolla"
+     },
+     "del": {
+      "kcal": 8,
+      "p": 0,
+      "c": 1.8,
+      "f": 0
+     },
+     "banda": null
+    },
+    {
+     "id": "cebolla_a_la_plancha",
+     "et": "Cebolla a la plancha",
+     "nv": 1,
+     "add": {
+      "g": null,
+      "kcal": 12,
+      "p": 0,
+      "c": 2.8,
+      "f": 0,
+      "az": 1.8,
+      "sat": 0,
+      "fib": 0,
+      "na": 0,
+      "de": "Topping: Cebolla a la plancha"
+     },
+     "del": {
+      "kcal": 12,
+      "p": 0,
+      "c": 2.8,
+      "f": 0
+     },
+     "banda": null
+    },
+    {
+     "id": "pepinillos",
+     "et": "Pepinillos",
+     "nv": 1,
+     "add": {
+      "g": null,
+      "kcal": 3,
+      "p": 0,
+      "c": 0,
+      "f": 0,
+      "az": 0,
+      "sat": 0,
+      "fib": 0,
+      "na": 184,
+      "de": "Topping: Pepinillos"
+     },
+     "del": {
+      "kcal": 3,
+      "p": 0,
+      "c": 0,
+      "f": 0
+     },
+     "banda": null
+    },
+    {
+     "id": "relish",
+     "et": "Relish",
+     "nv": 1,
+     "add": {
+      "g": null,
+      "kcal": 20,
+      "p": 0,
+      "c": 4.6,
+      "f": 0,
+      "az": 3.8,
+      "sat": 0,
+      "fib": 0,
+      "na": 72,
+      "de": "Topping: Relish"
+     },
+     "del": {
+      "kcal": 20,
+      "p": 0,
+      "c": 4.6,
+      "f": 0
+     },
+     "banda": null
+    },
+    {
+     "id": "jalapenos",
+     "et": "Jalapeños",
+     "nv": 1,
+     "add": {
+      "g": null,
+      "kcal": 1,
+      "p": 0,
+      "c": 0,
+      "f": 0,
+      "az": 0,
+      "sat": 0,
+      "fib": 0,
+      "na": 8,
+      "de": "Topping: Jalapeños"
+     },
+     "del": {
+      "kcal": 1,
+      "p": 0,
+      "c": 0,
+      "f": 0
+     },
+     "banda": null
+    },
+    {
+     "id": "pimiento_verde",
+     "et": "Pimiento verde",
+     "nv": 1,
+     "add": {
+      "g": null,
+      "kcal": 2,
+      "p": 0,
+      "c": 0,
+      "f": 0,
+      "az": 0,
+      "sat": 0,
+      "fib": 0,
+      "na": 0,
+      "de": "Topping: Pimiento verde"
+     },
+     "del": {
+      "kcal": 2,
+      "p": 0,
+      "c": 0,
+      "f": 0
+     },
+     "banda": null
+    },
+    {
+     "id": "champinones_a_la_plancha",
+     "et": "Champiñones a la plancha",
+     "nv": 1,
+     "add": {
+      "g": null,
+      "kcal": 12,
+      "p": 1,
+      "c": 2,
+      "f": 0,
+      "az": 0,
+      "sat": 0,
+      "fib": 0.7,
+      "na": 92,
+      "de": "Topping: Champiñones a la plancha"
+     },
+     "del": {
+      "kcal": 12,
+      "p": 1,
+      "c": 2,
+      "f": 0
+     },
+     "banda": null
+    },
+    {
+     "id": "salsa_barbacoa",
+     "et": "Salsa barbacoa",
+     "nv": 1,
+     "add": {
+      "g": null,
+      "kcal": 16,
+      "p": 0,
+      "c": 3.3,
+      "f": 0,
+      "az": 3.2,
+      "sat": 0,
+      "fib": 0,
+      "na": 112,
+      "de": "Topping: Salsa barbacoa"
+     },
+     "del": {
+      "kcal": 16,
+      "p": 0,
+      "c": 3.3,
+      "f": 0
+     },
+     "banda": null
+    },
+    {
+     "id": "salsa_picante",
+     "et": "Salsa picante",
+     "nv": 1,
+     "add": {
+      "g": null,
+      "kcal": 2,
+      "p": 0,
+      "c": 0,
+      "f": 0,
+      "az": 0,
+      "sat": 0,
+      "fib": 0,
+      "na": 268,
+      "de": "Topping: Salsa picante"
+     },
+     "del": {
+      "kcal": 2,
+      "p": 0,
+      "c": 0,
+      "f": 0
+     },
+     "banda": null
+    },
+    {
+     "id": "cebolla_crujiente",
+     "et": "Cebolla crujiente",
+     "nv": 1,
+     "add": {
+      "g": null,
+      "kcal": 47,
+      "p": 0.5,
+      "c": 3.2,
+      "f": 3.5,
+      "az": 0.7,
+      "sat": 1.7,
+      "fib": 0.4,
+      "na": 40,
+      "de": "Topping: Cebolla crujiente"
+     },
+     "del": {
+      "kcal": 47,
+      "p": 0.5,
+      "c": 3.2,
+      "f": 3.5
+     },
+     "banda": null
+    }
+   ],
+   "platos": {
+    "Hamburguesa": [
+     "patty",
+     "patty"
+    ],
+    "Hamburguesa pequeña": [
+     "patty"
+    ],
+    "Hamburguesa con queso": [
+     "patty",
+     "patty",
+     "queso_2"
+    ],
+    "Hamburguesa pequeña con queso": [
+     "patty",
+     "queso_1"
+    ],
+    "Hamburguesa con beicon": [
+     "patty",
+     "patty",
+     "beicon_2"
+    ],
+    "Hamburguesa con beicon y queso": [
+     "patty",
+     "patty",
+     "queso_2",
+     "beicon_2"
+    ],
+    "Hamburguesa pequeña con beicon y queso": [
+     "patty",
+     "queso_1",
+     "beicon_1"
+    ]
+   },
+   "solo_add": [
+    "Perrito de vacuno",
+    "Perrito de vacuno con queso",
+    "Perrito de vacuno con beicon"
+   ]
+  },
   "KFC": {
    "comps": [
     {
@@ -611,7 +1244,6 @@
     "4 Emmental bites",
     "5 Aros de cebolla",
     "5 alitas picantes",
-    "5 chilibites",
     "5 tiras de pechuga OR",
     "8 alitas picantes",
     "Actimel",
@@ -639,7 +1271,6 @@
     "Chick&Share cruji (6 piezas de pollo)",
     "Chick&Share mixto (3cruji+ 3 original)",
     "Chick&Share original (6 piezas de pollo)",
-    "Classic Burger/Classic Zinger",
     "Coronel Doble/Coronel Doble Zinger",
     "Coronel Simple/Coronel simple Zinger",
     "Cubo 4 tiras glaseadas",
@@ -659,7 +1290,6 @@
     "Ensalada Emmental",
     "Ensalada Original",
     "Ensalada Side",
-    "Ensalada Veggie",
     "Ensalada col",
     "Fresisuis",
     "Gofre con Nocilla, Oreo y helado",
@@ -671,9 +1301,7 @@
     "Kids Mayo Wrap",
     "Kids burger",
     "La Clásica",
-    "La Clásica Veggie",
     "Mazorca",
-    "Menú 5 tiras Veggie",
     "Menú 5 tiras de pechuga Mixtas",
     "Menú 5 tiras de pechuga OR",
     "Menú Bucket para 2 6 tiras CR y 4 alitas",
@@ -693,9 +1321,7 @@
     "Patatas fritas 11x11 medianas",
     "Patatas fritas 11x11 pequeñas",
     "Puré con Gravy",
-    "Rosquiburger",
     "Sandwich Coronel Club",
-    "Sandwich York'eso",
     "Sobrada Double Burger",
     "Sobrada Simple burger",
     "Tarrina Arroz",
@@ -704,8 +1330,7 @@
     "Wrap Clásico",
     "Wrap Coronel",
     "Wrap Sobrada BBQ",
-    "Wrap Sobrado",
-    "Wrap Veggie"
+    "Wrap Sobrado"
    ]
   },
   "Popeyes": {
@@ -894,8 +1519,6 @@
     "12 alitas crujientes",
     "12 alitas picantes",
     "12 piezas de pollo clásicas",
-    "12 tiras con salsa Candy BBQ",
-    "12 tiras con salsa Mayo Lima y Sweet Chilli",
     "12 tiras crujientes",
     "12 tiras picantes",
     "15 tiras crujientes",
@@ -905,23 +1528,15 @@
     "2 tiras picantes",
     "20 tiras crujientes",
     "20 tiras picantes",
-    "3 alitas con salsa Candy BBQ",
-    "3 alitas con salsa Mayo Lima y Sweet Chilli",
     "3 alitas crujientes",
     "3 alitas picantes",
     "3 nuggets crujientes",
     "3 piezas de pollo clásicas",
-    "3 tiras con salsa Candy BBQ",
-    "3 tiras con salsa Mayo Lima y Sweet Chilli",
     "3 tiras crujientes",
     "3 tiras picantes",
     "5 alitas crujientes",
-    "5 tiras con salsa Candy BBQ",
-    "5 tiras con salsa Mayo Lima y Sweet Chilli",
     "5 tiras crujientes",
     "5 tiras picantes",
-    "6 alitas con salsa Candy BBQ",
-    "6 alitas con salsa Mayo Lima y Sweet Chilli",
     "6 alitas crujientes",
     "6 alitas picantes",
     "6 nuggets crujientes",
@@ -936,19 +1551,19 @@
     "Bacon Cheese Fries",
     "Bacon Chicken Sandwich",
     "Bolsita de ketchup",
-    "Box mixta 3 alitas y 3 tiras con salsa Candy BBQ",
-    "Box mixta 3 alitas y 3 tiras con salsa Mayo Lima y Sweet Chilli",
     "Cajun Fries grandes",
     "Cajun Fries medianas",
     "Cajun Fries pequeñas",
-    "Cheesecake",
     "Chicken Classic",
     "Cono helado",
+    "Creamy Chicken Sandwich",
     "Dipper BBQ",
+    "Dipper Creamy Chicken",
     "Dipper Honey Mustard",
+    "Dipper Mojo Picón",
     "Dipper Spicy Chicken",
-    "Dipper Sweet Bacon",
     "Dipper Sweet Chili",
+    "Dipper Sweet Smoke",
     "Dipper mayo-bacon",
     "Dipper queso",
     "Ensalada crujiente",
@@ -956,38 +1571,21 @@
     "Gouda Rings x4",
     "Gouda Rings x8",
     "Hot Fries",
-    "Ice Brioche",
     "Limonada 375 ml",
     "Louisiana Chicken Sandwich",
     "Mazorca de maíz",
-    "Mini Pop Cream Conguitos caramelo",
-    "Mini Pop Cream Conguitos chocolate",
-    "Mini Pop Cream Conguitos chocolate blanco",
-    "Mini Pop Cream KitKat caramelo",
-    "Mini Pop Cream KitKat chocolate",
-    "Mini Pop Cream KitKat chocolate blanco",
-    "Mini Pop Cream Oreo caramelo",
-    "Mini Pop Cream Oreo chocolate",
-    "Mini Pop Cream Oreo chocolate blanco",
-    "Mini Pop Sundae caramelo",
-    "Mini Pop Sundae chocolate",
-    "Mini Pop Sundae chocolate blanco",
-    "Oreo Chocolate Pop Shake",
-    "Oreo Pop Shake",
-    "Super Dipper BBQ",
-    "Super Dipper Honey Mustard",
-    "Super Dipper Spicy Chicken",
-    "Super Dipper Sweet Chili",
-    "Super Dipper mayo-bacon",
-    "Super Dipper queso",
-    "Sweet Bacon Chicken Sandwich",
+    "Mini Sandwich BBQ",
+    "Mini Sandwich Classic",
+    "Mini Wrap",
+    "Sweet Smoke Chicken Sandwich",
     "The BBQ Wrap",
     "The Bacon Lover Wrap",
     "The Cheesy Chicken Sandwich",
     "The Chicken Sandwich",
     "The Chicken Sandwich Spicy",
     "The Classic Wrap",
-    "The Sweet Bacon Wrap"
+    "The Creamy Chicken Wrap",
+    "The Sweet Smoke Wrap"
    ]
   },
   "Taco Bell": {
