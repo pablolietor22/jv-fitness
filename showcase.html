@@ -553,12 +553,12 @@
        el texto visible — si tocas una cifra en el cuerpo, tócala también aquí.)
        Actualizado 28-08-2026 (antes decía `python verificador.py`, que no existe).
      ============================================================================ -->
-<meta name="description" content="JV Fitness: app de nutrición y entrenamiento con base científica. Diario con más de 236.000 alimentos consultables sin conexión, más de 1.500 ejercicios con mapa muscular y un asistente con más de 1.000 fichas que te dice en qué se basa y dice «no lo sé» cuando no lo sabe.">
+<meta name="description" content="JV Fitness: app de nutrición y entrenamiento con base científica. Diario con más de 236.000 productos consultables sin conexión, más de 1.500 ejercicios con mapa muscular y un asistente con más de 1.000 fichas que te dice en qué se basa y dice «no lo sé» cuando no lo sabe.">
 <meta name="robots" content="index,follow">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://pablolietor22.github.io/jv-fitness/showcase.html">
 <meta property="og:title" content="JV Fitness · nutrición y entrenamiento con base científica">
-<meta property="og:description" content="Nutrición y entrenamiento con base científica: más de 236.000 alimentos consultables sin conexión, más de 1.500 ejercicios con mapa muscular y un asistente con más de 1.000 fichas que te dice en qué se basa.">
+<meta property="og:description" content="Nutrición y entrenamiento con base científica: más de 236.000 productos consultables sin conexión, más de 1.500 ejercicios con mapa muscular y un asistente con más de 1.000 fichas que te dice en qué se basa.">
 <!-- og:image ABSOLUTA (LinkedIn/WhatsApp ignoran rutas relativas) + tarjeta 1200×630 dedicada, no la foto de retrato -->
 <meta property="og:image" content="https://pablolietor22.github.io/jv-fitness/assets/og.png">
 <meta property="og:image:width" content="1200">
@@ -1234,10 +1234,10 @@ html.fx-fin .byline .ph img{opacity:1!important;transform:none!important;animati
    scroll normal), centrado en su frontera. Si el contenido cambia de
    reparto, VOLVER A MEDIR con ofs.mjs y retallar estos números: son el
    equivalente del bloque de cifras talladas de la cabecera. */
-@keyframes cieloAzul{0%,3%{opacity:0} 9%,47.5%{opacity:1} 52.5%,100%{opacity:0}}
-@keyframes cieloJade{0%,47.5%{opacity:0} 52.5%,57%{opacity:1} 62.5%,100%{opacity:0}}
-@keyframes cieloCalido{0%,57%{opacity:0} 62.5%,80%{opacity:1} 85.5%,100%{opacity:0}}
-@keyframes cieloAlba{0%,80%{opacity:0} 85.5%,100%{opacity:1}}
+@keyframes cieloAzul{0%,3.4%{opacity:0} 10.2%,53.7%{opacity:1} 59.4%,100%{opacity:0}}
+@keyframes cieloJade{0%,53.7%{opacity:0} 59.4%,64.5%{opacity:1} 70.7%,100%{opacity:0}}
+@keyframes cieloCalido{0%,64.5%{opacity:0} 70.7%,90.5%{opacity:1} 96.7%,100%{opacity:0}}
+@keyframes cieloAlba{0%,90.5%{opacity:0} 96.7%,100%{opacity:1}}
 @supports (animation-timeline: scroll()){
   @media (prefers-reduced-motion: no-preference){
     .cielo__velo--azul{
@@ -1362,8 +1362,8 @@ html.fx-fin .stage__node{animation:none !important}
   color:rgba(238,242,236,.055);user-select:none}
 /* Las cuatro secciones con estación anclan su deriva; su .wrap sube a z1
    para que el contenido siempre lea por encima de la marca de agua. */
-.features,.stats,.plate,.roadmap{position:relative}
-.features>.wrap,.stats>.wrap,.plate>.wrap,.roadmap>.wrap{position:relative;z-index:1}
+.features,.stats,.plate{position:relative}
+.features>.wrap,.stats>.wrap,.plate>.wrap{position:relative;z-index:1}
 /* Degradación de la marca de agua: estática por construcción (sin animación
    no hay nada que degradar en reduce ni en fx-fin); en impresión no existe
    (papel limpio). */
@@ -1471,9 +1471,9 @@ html.fx-fin .stage__node{animation:none !important}
     <!-- tres funciones más (spec cards) -->
     <div class="spec-grid">
       <div class="spec-card reveal">
-        <span class="feat-eyebrow">Más de 236.000 alimentos</span>
+        <span class="feat-eyebrow">Más de 236.000 productos</span>
         <h3>Diario de comida sin conexión</h3>
-        <p>Una base de más de 236.000 alimentos viaja en el móvil y se consulta sin conexión: en el metro, en el gimnasio, donde sea. Y más de <strong>30 cadenas de restauración</strong> con sus platos y su información nutricional, para que no tengas que preocuparte si comes fuera.</p>
+        <p>Una base de más de 236.000 productos viaja en el móvil y se consulta sin conexión: en el metro, en el gimnasio, donde sea. Y más de <strong>30 cadenas de restauración</strong> con sus platos y su información nutricional, para que no tengas que preocuparte si comes fuera.</p>
       </div>
       <div class="spec-card reveal d1">
         <span class="feat-eyebrow">Agua y cafeína</span>
@@ -3036,7 +3036,7 @@ html.jvfi-suelta body{margin:0;background:#0A100E;color:#EEF2EC;font-family:syst
     <div class="stat-grid">
       <div class="stat reveal">
         <div class="num" data-count="236000" data-format="mil" data-suffix="+">236.000+</div>
-        <div class="lbl">alimentos de España, consultables sin conexión</div>
+        <div class="lbl">productos de España, consultables sin conexión</div>
       </div>
       <div class="stat reveal d1">
         <div class="num" data-count="1500" data-format="mil" data-suffix="+">1.500+</div>
@@ -3101,52 +3101,7 @@ html.jvfi-suelta body{margin:0;background:#0A100E;color:#EEF2EC;font-family:syst
           <div class="macro c"><b><span data-g="60">60</span> g</b><span>Carbohidrato</span></div>
           <div class="macro g"><b><span data-g="18">18</span> g</b><span>Grasa</span></div>
         </div>
-        <p class="plate__note">Plato de ejemplo · la app calcula estos números a partir de una base de más de 236.000 alimentos, también sin conexión.</p>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ================= HACIA DÓNDE VA (visión / roadmap) ================= -->
-<section class="roadmap">
-  <div class="deriva" aria-hidden="true"><span>El destino</span></div>
-  <div class="wrap">
-    <p class="rotulo reveal">El destino</p>
-    <div class="sec-head reveal">
-      <p class="eyebrow">Próximamente · hoja de ruta</p>
-      <h2>Hacia dónde va</h2>
-      <svg class="ul" viewBox="0 0 200 9" preserveAspectRatio="none" aria-hidden="true" focusable="false"><path pathLength="1" d="M2 6 C46 2, 104 8.4, 198 3.4"/></svg>
-      <p>Lo que ya funciona es la base y no se mueve: cada respuesta seguirá diciendo en qué se basa. Todo esto se construye <strong>encima</strong>, no en su lugar.</p>
-    </div>
-    <!-- ACTO 5 · la hoja de ruta, partida en DOS estados. Lo construido manda sobre lo
-         prometido, y por eso va a ancho completo: sin grid-template-columns:1fr, a partir
-         de 760 px la única tarjeta construida ocuparía un tercio y quedaría huérfana.
-         .eyebrow y .dim ya existen: cero CSS nuevo. -->
-    <p class="eyebrow" style="margin-top:clamp(24px,4vw,36px)">Construido, esperando prueba en móvil real</p>
-    <div class="spec-grid" style="grid-template-columns:1fr">
-      <div class="spec-card reveal">
-        <span class="feat-eyebrow">Health Connect</span>
-        <h3>Pasos y actividad, solos</h3>
-        <p>Ya está cableado con Health Connect: el móvil cuenta los pasos y entran en el plan sin que apuntes nada. Queda probarlo en un teléfono de verdad. Menos fricción, más constancia, que es lo que de verdad mueve la aguja.</p>
-      </div>
-    </div>
-
-    <p class="eyebrow dim" style="margin-top:clamp(24px,4vw,36px)">Sin empezar</p>
-    <div class="spec-grid">
-      <div class="spec-card reveal">
-        <span class="feat-eyebrow">Voz · IA local</span>
-        <h3>Habla con el coach en el momento</h3>
-        <p>Preguntar en voz alta y que responda al instante, con un modelo de IA <strong>abierto, gratuito y corriendo en tu propio móvil</strong>: privado por diseño, sin suscripción, y con el motor de confianza citando la fuente debajo de cada respuesta.</p>
-      </div>
-      <div class="spec-card reveal d1">
-        <span class="feat-eyebrow">IA viva</span>
-        <h3>Un plan que se adapta solo</h3>
-        <p>La IA cruza lo que <strong>comes</strong> y lo que <strong>entrenas</strong>, aprende de cómo responde tu cuerpo de verdad y ajusta el plan. La parte creativa la pone la IA; el cómputo y la cita del artículo siguen siendo deterministas.</p>
-      </div>
-      <div class="spec-card reveal d2">
-        <span class="feat-eyebrow">El destino</span>
-        <h3>Un sistema que lo entrelaza todo</h3>
-        <p>Un CRM que conecta todos tus ámbitos (comida, entreno, descanso, hábitos), encuentra las relaciones entre ellos y las usa para hacerte mejorar en <strong>todos a la vez</strong>. Ahí es donde va JV Fitness: IA y datos propios, trabajando juntos.</p>
+        <p class="plate__note">Plato de ejemplo · la app calcula estos números a partir de una base de más de 236.000 productos, también sin conexión.</p>
       </div>
     </div>
   </div>
@@ -3167,7 +3122,7 @@ html.jvfi-suelta body{margin:0;background:#0A100E;color:#EEF2EC;font-family:syst
     </div>
 
     <div class="foot__meta reveal">
-      <div class="honest">Proyecto en desarrollo · uso personal y pruebas con testers externos.</div>
+      <div class="honest">Proyecto en desarrollo · uso personal.</div>
       <div>Contacto: <a class="mail jv-email" href="#">correo</a> · <a href="privacidad.html">Privacidad</a></div>
       <div class="foot__sig">JV Fitness · Pablo Andrés Martínez · 2026</div>
     </div>
