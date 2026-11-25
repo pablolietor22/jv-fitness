@@ -2,564 +2,23 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<!-- ============================================================================
-     showcase-ultra.html · VERSIÓN ULTRA-ANIMADA (experimento para comparar con
-     showcase-flow.html). MISMO contenido, cifras y CSP; cambia solo la CAPA DE
-     ANIMACIÓN. Se construyó sobre una copia byte-idéntica de showcase-flow.html.
-
-     TÉCNICAS APLICADAS (recetas de Pablo · _PIPELINES-DISENO-WEB.md + Bandeja de
-     Ideas de Instagram):
-       · P1 capa-apple  (skill apple-design · reel @migue.baena 7669078788562488598):
-         muelles de Apple — crítico damping 1.0 = cubic-bezier(.32,.72,0,1); entrada
-         con vida = cubic-bezier(.2,.8,.2,1); SOLO transform/opacity; display -0.02em;
-         materiales translúcidos; INTERRUMPIBILIDAD (el intro se salta con un gesto).
-       · P2 reveal-scroll (reel @codevibes_1 7651983085638094102): fondo oscuro,
-         revelado encadenado por scroll, sin gradientes de relleno.
-       · P3 capa-cine (_ADDENDUM-CAPA-CINE-MUNDO): gramática de plano — intro
-         cinematográfico que presenta la marca «JV Fitness» y se retira.
-       · Web «Alethia» (Bandeja 29-07): escena que MUTA con el progreso del scroll
-         → scroll-driven 3D («que rote como los reels»): las tarjetas basculan en
-         rotateX según su posición en el viewport (IntersectionObserver + un único
-         manejador de scroll con rAF-throttle; sin rAF perpetuo; sin librerías).
-       · HyperFrames (_HYPERFRAMES-PROMPTS, «contador Apple»): odómetro de cifras y
-         count-up de macros del plato.
-
-     REGLAS DURAS: self-contained (sin CDN; fuentes self-hosted en assets/fonts);
-     prefers-reduced-motion degrada TODO a estático; failsafe para bots/prerender;
-     impresión limpia. CSP idéntica a la del flow (línea siguiente).
-     ============================================================================ -->
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; form-action 'none'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; font-src 'self'; script-src 'self' 'unsafe-inline'; connect-src 'self'">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#0A100E">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <title>JV Fitness · nutrición y entrenamiento con base científica · Pablo Andrés Martínez</title>
-<!-- ============================================================================
-     🧹 LIMPIEZA 30-10-2026 — DECISIÓN DE PABLO (29-10). LÉELO ANTES DE RETALLAR NADA.
-     El público de esta página son despachos de abogados y usuarios no técnicos: manda el
-     marketing, no las métricas de ingeniería. Por orden de Pablo se QUITÓ de lo visible:
-     «baterías de pruebas», «en desarrollo casi a diario», el número de versión, el vigía
-     y «escritas a mano» (las fichas). Las cifras pasaron a SUELOS redondos:
-     «más de 236.000 alimentos», «más de 1.500 ejercicios», «más de 1.000 fichas».
-     🔴 NO las vuelvas a tallar a números exactos ni repongas lo que se quitó. Un suelo sube
-     solo cuando la medida real lo supera con margen y Pablo lo quiere.
-     ⚠️ `tools/cerebro-bots/verificador-escaparate.js` espera números exactos y dará rojo con
-     estos suelos hasta que se adapte (pendiente de decisión de Pablo): rojo ≠ página mal.
-     ============================================================================ -->
-<!-- ============================================================================
-     🔴 RETALLADO 25-09-2026 (06:0x, rutina flywheel del 24-09 al cerrar) — «fichas»
-        702 → 819 · «claves» 15.513 → 17.468 · «citan su Tema» 430 → 457.
-
-        ESTA ES LA MÁS GRANDE DEL MES Y HAY QUE DECIR POR QUÉ: a las 04:5x se fusionó el
-        PR #369 (la cadena del 24-09: tronco `viaje`, 18 padres + 10 hijas, y dentro
-        #352 #355 #363 #364 #366 #367) y acto seguido el **#373** (el tren del 25-09, 8 PR
-        de rutinas). El deploy-bot publicó `index.html` desde jvfitness-dev@e98c4ca.
-
-        👉 Durante ~1 h esta página publicó **702 fichas mientras la app que enlaza servía
-        819**. Ciento diecisiete de diferencia, y en el ODÓMETRO, que es lo que ve el
-        visitante. Es el mismo fallo del 18-08 y del 24-09 por la mañana: **el despliegue
-        se automatizó y la cifra tallada a mano NO.**
-
-        MEDIDO CON EL COMANDO, contra el ARTEFACTO PUBLICADO, nunca contra
-        `_ESTADO-PROYECTO.md`:
-
-            node tools/cerebro-bots/verificador-escaparate.js \
-                 --app <origin/master:app/jv-fitness-mvp.html> --showcase showcase.html
-               → app v0.72.0 · fichas 819 · claves 17.468 · citan Tema 457 · baterías 160
-               → publicaba: 702 ✗ · 15.513 ✗ · 430 ✗ · 160 ✓
-               → odómetro de fichas: atributo 702 ✗
-
-        🖐️ **«alimentos de España» NO se toca aquí, a propósito.** Esa cifra la mueven los
-        PR #40 y #41 de la rutina de alimentos, que traen el chunk que la hace verdad
-        (236.021 y luego 236.020). Publicar un número de alimentos sin su chunk es
-        exactamente lo que el #40 evita al viajar los dos en el mismo commit.
-
-        ⚠️ **ORDEN DE FUSIÓN, y no es capricho:** #41 → #40 → **este**. Los tres tocan
-        `showcase.html` y el #40 también escribe la línea de «claves» (la puso en 15.513,
-        que era verdad cuando la midió y dejó de serlo al entrar el #373). El último en
-        entrar **rederiva**: vuelve a pasar el verificador y tallar lo que salga.
-
-        ✅ **Y SE CUMPLIÓ, que es la parte que normalmente no se escribe.** El #41 y el #40
-        entraron primero, este PR fusionó `main`, y el choque fue exactamente el previsto: la
-        misma tabla de tres cifras, su 702/15.513/430 contra mi 819/17.468/457. Se resolvió
-        **remidiendo, no eligiendo lado** — el verificador contra `origin/master` volvió a dar
-        819/17.468/457, así que gana lo medido. Y la cifra de alimentos entró **de su chunk**
-        (236.021 → 236.020 con el #41) sin que yo la tocara: cuadra sola porque cada uno talló
-        lo suyo.
-     ============================================================================ -->
-<!-- ============================================================================
-     🔢 RETALLADO 24-09-2026 (NOCHE, rutina flywheel) — «claves» 15.489 → 15.513 y
-        «baterías de pruebas» 158 → 160.
-
-        CAUSA: a las 16:40 el deploy-bot publicó `index.html` desde jvfitness-dev@fef0131
-        (la fusión del PR #350, el barrido del 16-09: 24 claves nuevas). El artefacto
-        subió; la cifra tallada a mano, no. Es el MISMO patrón que la nota de esta mañana
-        describe, doce horas después — por eso se apunta aparte en vez de tocar aquélla.
-
-        MEDIDO CON EL COMANDO, contra el ARTEFACTO PUBLICADO (`origin/master` de
-        jvfitness-dev, que es de donde salió el despliegue vivo), nunca contra
-        `_ESTADO-PROYECTO.md`:
-
-            node tools/cerebro-bots/verificador-escaparate.js \
-                 --app <master:app/jv-fitness-mvp.html> --showcase showcase.html
-               → app v0.72.0 · fichas 702 · claves 15.513 · citan Tema 430 · baterías 160
-               → publicaba: 702 ✓ · 15.489 ✗ · 430 ✓ · 158 ✗
-               → odómetro de baterías: atributo 158 ✗ (la trampa del 18-08 otra vez:
-                 el atributo es lo que el visitante ve, y es lo que estaba viejo)
-
-        🖐️ NO se toca «fichas» (702): el lote del viaje (28 fichas) está en el PR #369,
-        SIN FUSIONAR y esperando la firma sanitaria de Pablo. Publicar 800 hoy sería
-        exactamente la afirmación falsa que esta página lleva un mes cazando.
-
-        🖐️ Y una inconsistencia que se SEÑALA y no se toca (norma de la casa): el
-        comentario CSS del N4 sigue diciendo «135 baterías de pruebas». Es la descripción
-        de un efecto SIN ESTRENAR desde el 21-08, no una cifra que se publique al
-        visitante, y el verificador no la compara. Queda dicho para que no se descubra
-        como si fuera un hallazgo.
-     🆕 MENCIÓN NUEVA 24-09-2026 — Pablo decidió que SÍ, y esto no es una cifra.
-        Preguntado el 19-09 en el PR #358 y otra vez hoy: «¿merece el escaparate
-        MENCIONAR la familia nueva de la descompensación, o basta con que suba el
-        odómetro?». Su respuesta literal, 24-09: «Si que lo mencione».
-
-        Va como TERCERA spec-card del bloque de funciones —que decía «tres funciones
-        más» y llevaba dos desde hacía tiempo—, con la cifra del LOTE, no de la suma
-        del día: son las 14 fichas de `LOTE_DESCOMPENSACION_19_09`, contadas en
-        `_tests/test-formato-r.node.js`. (El día trajo 44 entre tres lotes, pero la
-        tarjeta sólo habla de uno y publicar 44 habría sido inflarla.)
-
-        🤖 Y lo que afirma la tarjeta está MEDIDO con el motor, no supuesto:
-            node tools/cerebro-bots/runner.js --app app/jv-fitness-mvp.html …
-               «siempre hago pecho»          -> musculo/siempre-hago-pecho
-               «estoy descompensado»         -> musculo/estoy-descompensado
-               «nunca entreno pierna»        -> musculo/nunca-hago-pierna
-               «cuanto tiron por cada empuje»-> musculo/ratio-empuje-tiron
-               «como arreglo la descompensacion» -> musculo/como-arreglo-…
-               «hombros adelantados de tanto pecho» -> pecho/hombros-adelantados-…
-            7 de 8 caen en SU ficha, ninguna en la genérica. Antes de este lote,
-            «siempre hago pecho» y «hago pecho» caían las dos en la MISMA ficha.
-
-        🔴 CORREGIDO AL FUSIONAR (24-09, noche): este comentario decía «8 de 8» y
-           remedido contra el master PUBLICADO de hoy (jvfitness-dev@fef0131) son
-           **7 de 8**. La que falla es «hombros adelantados de tanto pecho», que cae
-           en `pecho/entrenar-pecho-regiones` en vez de en su propia ficha: la ficha
-           EXISTE, pero entre sus claves está «TENGO LOS hombros adelantados de tanto
-           pecho» y no la frase pelada, así que sin ese «tengo los» pierde contra la
-           genérica. No es un fallo de la tarjeta —su texto visible no afirma eso— sino
-           de la medición del comentario. El arreglo de la clave va en jvfitness-dev,
-           que es donde vive el motor; aquí sólo se deja de publicar un número falso.
-
-        ⚠️ Y la frase que parece un adorno y es lo contrario: la tarjeta dice que el
-        desequilibrio NO es buen predictor de lesión. Va a propósito. Las fichas se
-        escribieron quitando el «te vas a lesionar» porque la evidencia prospectiva no
-        lo sostiene (Kellis 2023 PMID 35065297 · Guan 2022 PMID 35054054), y un
-        escaparate que prometa lo que la app ya no promete es una afirmación falsa más.
-     ============================================================================ -->
-<!-- ============================================================================
-     🔴 RETALLADO 24-09-2026 (rutina flywheel) — «fichas» 658 → 702 · «claves»
-        14.652 → 15.513 · «fichas que citan su Tema» 387 → 430 · «baterías» 156 → 158.
-
-        LA CAUSA, dicha sin adornos: el 24-09 a las 07:5x se fusionó el PR #358 del
-        taller (14 fichas hijas de la descompensación, 323 claves) y el despliegue
-        `ab27d71` subió la APP desde ese master — pero las cifras de esta página se
-        tallan A MANO y nadie las retalló. Durante ~1 h esta página publicó 658 fichas
-        mientras la app que enlaza servía 702. Cuatro cifras desfasadas, y DOS de ellas
-        en odómetros que el visitante ve.
-
-        👉 No es un fallo del despliegue: es exactamente el método que la nota de abajo
-        (16/17-09) ya señalaba. El deploy automatiza el artefacto; la cifra tallada no.
-
-        MEDIDO CON EL COMANDO, contra el ARTEFACTO PUBLICADO, nunca contra
-        `_ESTADO-PROYECTO.md`:
-
-            node tools/cerebro-bots/verificador-escaparate.js --showcase <publicado>
-               → app v0.72.0 · fichas 702 · claves 15.513 · citan Tema 430 · baterías 158
-               → publicado: 658 · 14.652 · 387 · 156     ✗ las cuatro
-               → odómetros publicados: fichas 658 · baterías 156   ✗ las dos
-            (ejercicios 1.502 · instr. 1.289 · Temas 52 · PMID 160 · alimentos 235.956
-             cuadraban y NO se tocan)
-
-        🖐️ LO QUE NO DECIDE LA SESIÓN, y sigue sin respuesta: ¿merece el escaparate
-        MENCIONAR la familia nueva —por qué te descompensas, qué hacer si sólo entrenas
-        empuje—, o basta con que suba el odómetro? Se preguntó en el PR #358 y en el
-        panel; se vuelve a preguntar aquí porque la fusión no la contestó.
-     ============================================================================ -->
-<!-- ============================================================================
-     🔴 RETALLADO 16/17-09-2026 (rutina de alimentos) — «fichas» 578 → 658 y
-        «claves» 12.884 → 14.652. Y esto NO era un redondeo: era una AFIRMACIÓN FALSA
-        publicada. La página decía 578 fichas mientras la app que enlaza servía 649:
-        71 fichas y 1.501 claves de MENOS.
-
-        ⚠️ Y LA CIFRA SE ME HA QUEDADO VIEJA CUATRO VECES MIENTRAS ESTE PR ESPERABA,
-        lo cual es la mejor prueba de lo que se propone abajo:
-
-            16-09 03:5x  medí 619 · tallé 619
-            16-09 04:5x  entró el #338 (frío y sauna, 14 fichas)      → 633. Remedido.
-            16-09 17:0x  entraron el #346 y el #342 (embarazo, 16)    → 649. Remedido.
-            17-09 17:0x  entró el #353 (ÁREA 14, resaca, 9 fichas)    → 658. Remedido.
-
-        Las cuatro veces se REMIDIÓ ejecutando el motor, nunca sumando a mano: sumar
-        acierta en las fichas por casualidad y falla en las claves, que no vienen en
-        lotes redondos.
-
-        📏 Y en la cuarta hay un dato que justifica solo la regla de remedir. El propio
-        commit del #353 anota «14.367 → 14.634» y `_kb-inspect.js` mide 14.385 → 14.652:
-        un desfase CONSTANTE de 18 claves en las dos puntas. O sea que el delta de esa
-        sesión era correcto y lo que difiere es el INSTRUMENTO de conteo. Aquí se talla
-        lo que mide `_kb-inspect.js` porque es lo que mide el verificador de esta página
-        — copiar la cifra del commit ajeno habría dejado el verificador en rojo por 18.
-        👉 Un escaparate con cifras talladas a mano NO puede perseguir un árbol que se
-        mueve cada hora. Esto no es un fallo de nadie: es el método. Por eso la
-        propuesta de abajo no es cosmética.
-
-        MEDIDO EJECUTANDO EL MOTOR, y contra el ARTEFACTO PUBLICADO, nunca contra el
-        `_ESTADO-PROYECTO.md` (la trampa que costó 18 afirmaciones falsas el 18-08):
-
-            node tools/cerebro-bots/_kb-inspect.js   (sobre master 7a0f212)
-               → TRONCOS 69 · FICHAS 619 · CLAVES 13804
-            git show origin/main:showcase.html
-               → fichas 578 · claves 12.884          ← 41 fichas y 920 claves de menos
-
-        ⚠️ POR QUÉ SE DESFASÓ, que es lo que conviene que no se repita: entraron los
-        PR #335 (SARMs, 12 fichas) y #337 (testosterona, 15 fichas) de madrugada, y los
-        dos PR DECÍAN, con razón, «escaparate NO tocado: tallar hoy sería publicar una
-        cifra que aún no es verdad. Lo retallo en cuanto se fusione». Correcto — pero
-        al fusionarse, esas sesiones ya no estaban. **El acuerdo del 14-09 dice que lo
-        retalla quien fusiona o cierra el lote; cuando fusiona Pablo, no hay sesión a la
-        que le toque.** Ese es el agujero, y lo tapa quien esté despierta. Hoy, ésta.
-
-        «Baterías» NO se toca: sigue en 154, medido (`ls _tests/*.node.js` en master).
-        «Claves» está huérfana (sólo vive en la tabla, no se pinta) pero la propia nota
-        del 30-08 manda dejarla con su valor MEDIDO, así que se actualiza igual.
-        Tocados LOS DOS SITIOS de «fichas»: tabla del verificador Y odómetro con su
-        atributo — manda el atributo, que es lo que el JS reescribe.
-
-     🔢 RETALLADO 17-09-2026 (NOCHE, rutina de ALIMENTOS) — dos cosas, y sólo dos
-
-     1 · «alimentos de España» 235.920 → 235.930 (+10). Medido con
-        `node tools/cerebro-bots/verificador-escaparate.js --showcase showcase.html`
-        contra el ARTEFACTO, nunca contra `_ESTADO-PROYECTO.md`. Sale del campo `total`
-        de `data/db/manifest.json` (v2026-09-17) y cuadra con la suma de los `count` de
-        sus 11 chunks: 235.930 = 235.930. Los +10 son las novedades de OFF de esta noche,
-        leídas por dos caminos (export delta + API de producto), 10 de 10 coincidentes.
-        Tocados los CINCO sitios donde vive la cifra, porque el verificador exige que
-        atributo, texto y tabla coincidan (la lección del #340).
-
-     2 · 🖐️➡️✅ LA MENCIÓN DE LAS CADENAS DE RESTAURANTE, que era una DECISIÓN YA TOMADA
-        y llevaba un día sin aplicarse. Pablo, 16-09, literal: «No merecen un hueco
-        localizado por ellas, pero sí merecen mención dentro de los alimentos,
-        mencionando "más de X cadenas con sus alimentos e información nutricional para
-        que no tengas que preocuparte si comes fuera"». Está archivada en
-        `_cola/DECISIONES-PABLO.md`, y la regla de ese fichero es que lo que está escrito
-        **se aplica y se sigue**, no se vuelve a preguntar.
-        · **Sin hueco propio**, como pidió: va DENTRO de la tarjeta de alimentos.
-        · **La X es un número MEDIDO y se re-mide en cada retallado**, como él mismo puso
-          por condición: **15**, del `total`/`cadenas` de `data/db/cadenas-manifest.json`
-          v2026-09-17 (1.968 filas). Eran 13 hasta esta noche; suben a 17 con Tierra
-          Burritos, Udon, Panishop y Krispy Kreme, que entran en este mismo PR.
-        ⚠️ Por eso esto VA EN EL MISMO PR que publica el manifest de cadenas: si esa parte
-        no se fusiona, el «15» sería mentira. Misma regla que aplicó el 15-09 a las
-        baterías y el 16-09 a los alimentos.
-
-     3 · «baterías de pruebas» 154 → 155, y la mueve ESTE MISMO PR. La batería nueva es
-        `_tests/test-norte-nombres-cadena.node.js`, el candado del emparejamiento de
-        nombres de cadena del velocímetro (la mayúscula de «Llaollao» que dejaba una
-        cadena CERRADA fuera del marcador cinco días). Se talla aquí porque **si este PR
-        no se fusiona, 155 sería mentira** — que es exactamente lo que el retallado del
-        14-09 escribió al tallar 152 a propósito.
-
-     🖐️ LO QUE SIGUE SIN TOCARSE, porque no es número y no está decidido: las PORCIONES
-        (1.215 de 3.314 alimentos con su medida casera, 36,7 %). Se preguntó el 16-09 en
-        el mismo sitio que las cadenas y él contestó SOLO lo de las cadenas. No se
-        interpreta su silencio como un sí ni como un no: se vuelve a preguntar en el PR.
-     ============================================================================ -->
-<!-- ============================================================================
-     🔢 RETALLADO 16-09-2026 (NOCHE, rutina de ALIMENTOS) — «alimentos de España»
-        235.866 → 235.920 (+54), y SOLO esa cifra. Medido con
-        `node tools/cerebro-bots/verificador-escaparate.js --showcase showcase.html`
-        contra el artefacto, nunca contra `_ESTADO-PROYECTO.md`.
-
-        De dónde salen los +54: +41 de las novedades de OFF del 14 y el 15-09, que ya
-        estaban en `main` sin tallar, y +13 de las de esta noche. Sale del campo `total`
-        de `data/db/manifest.json` (v2026-09-16) y cuadra con la suma de los `count` de
-        sus 11 chunks: 235.920 = 235.920.
-
-        ⚠️ VA EN EL MISMO PR QUE PUBLICA EL MANIFEST, a propósito: si esa cadena no se
-        fusiona, 235.920 sería mentira. Es la misma regla que el 15-09 aplicó a las
-        baterías («cierto CUANDO se fusione, no antes»).
-
-        Tocados los CINCO sitios donde vive esta cifra, porque el verificador exige que
-        atributo, texto y tabla coincidan (la lección del #340, donde dos de tres
-        estaban bien y el visitante veía el tercero): odómetro con su `data-count` Y su
-        texto · fila de la tabla del verificador · `<meta name="description">` ·
-        `<meta property="og:description">` · el eyebrow de la tarjeta de la sección.
-        Los `235.866` que quedan en este comentario son HISTORIAL y no se tocan.
-
-     🖐️ Y LO QUE ESTA SESIÓN NO HA TOCADO, midiéndolo primero: el verificador saca
-        además «fichas» 578 → 649, «claves» 12.884 → 14.385 y «fichas que citan su Tema»
-        330 → 387, que se movieron al fusionar el #346 y el #342 (embarazo). **Ya las
-        está retallando el PR #29**, abierto a las 17:06 de hoy. Comprobado antes de
-        escribir nada (`git diff origin/main...` sobre las 28 ramas del repo: sólo el #29
-        y una rama vieja tocan este fichero, y el #29 NO toca el odómetro de alimentos).
-        Es la lección del 14-09 —dos sesiones retallaron lo mismo y una tiró su trabajo—
-        convertida en una comprobación de diez segundos.
-
-<!-- ============================================================================
-     🔢 RETALLADO 15-09-2026 (rutina de alimentos) — «baterías de pruebas» 152 → 154.
-        MEDIDO CON UN COMANDO, no a ojo, y contra el ÁRBOL que se va a desplegar:
-
-            git ls-tree -r --name-only origin/master _tests/ | grep -c 'node\.js$'   ->  153
-            ls _tests/*.node.js | wc -l        (rama encadenada de alimentos)        ->  154
-
-        ⚠️ Dos cosas que conviene saber antes de fiarse de este número:
-        · YA ESTABA DESFASADO ANTES DE ESTA NOCHE. `master` llevaba 153 desde que entró el
-          PR #340 y aquí seguía puesto 152 — la sesión del #330 avisó de que había que
-          subirlo «en un PR de una línea en cuanto entre» y ese PR no llegó a existir. Que
-          una cifra dependa de que alguien se acuerde es exactamente lo que este escaparate
-          lleva un mes intentando quitarse de encima.
-        · La 154.ª es `_tests/test-food-factor.node.js`, que entra con la cadena de
-          alimentos de esta noche. Así que este número es cierto CUANDO se fusione esa
-          cadena, no antes — va en su mismo PR a propósito, para que no puedan separarse.
-        Tocados LOS DOS SITIOS (tabla del verificador Y odómetro con su atributo): el fallo
-        del 14-09 fue tocar uno solo, y manda el atributo, que es lo que el JS reescribe.
-
-     ⚠️ ARREGLO 14-09-2026 (mismo día, segunda pasada) — dos descuadres del retallado de
-        esta mañana, cazados por el verificador y por la sesión del PR #21:
-        · «baterías» quedó a medias: se cambió el odómetro a 152 y NO la fila de esta tabla,
-          que seguía diciendo 142. El verificador lee la tabla, así que cantó el descuadre.
-        · «alimentos» llevaba desde el 09-09 con `data-count="235716"` y el texto en 235.866.
-          MANDA EL ATRIBUTO: el JS hace parseInt(data-count) y REESCRIBE el texto, así que el
-          visitante veía 235.716. Hallazgo de la sesión del #21, no mío.
-        Revisados los CUATRO odómetros: atributo y texto coinciden en todos.
-
-     ⚠️ RETALLADO 14-09-2026 — «fichas» 567 → 578, «claves» 12.574 → 12.884 y «baterías»
-        142 → 152. Entraron el ÁREA 8 (deporte + fuerza, 11 fichas firmadas por Pablo el
-        10-09) y tres noches de alimentos. MEDIDO ejecutando el CEREBRO_KB del master
-        jvfitness-dev@9cd375c, y las baterías contando `_tests/*.node.js` — nunca contra
-        _ESTADO-PROYECTO.md. NO se toca «fichas que citan su Tema» (330): no se ha medido.
-        NO se menciona la capacidad de oposiciones: decisión de Pablo del 09-09 («cada año
-        cambian pruebas y es meterse en un berenjenal»).
-
-     ⚠️ RETALLADO 09-09-2026 (NOCHE, rutina de ALIMENTOS) — CINCO cifras, medidas con
-     `node tools/cerebro-bots/verificador-escaparate.js --showcase showcase.html`, que es
-     la única forma de tallarlas que este fichero admite (contra el artefacto, nunca
-     contra `_ESTADO-PROYECTO.md`):
-       · «alimentos de España» 235.267 → 235.866 (+449). Dispara por el umbral de Pablo
-         («crecimiento de las bases»). Sale del campo `total` de `data/db/manifest.json` y
-         se cuadra contra la suma de los `count` de sus 11 chunks: 235.866 = 235.866. Los
-         +449 son Carrefour del 07-09 (+368 ya fusionados y sin tallar), Lidl (+56), las
-         novedades de OFF del 08-09 (+10) y del 09-09 (+15).
-       · «baterías de pruebas» 141 → 142: una batería nueva, `test-refresca-violaciones`
-         (14 casos + prueba de mutación), que es otro de los disparadores de su umbral.
-       · Y TRES que NO son de esta rutina y estaban a medio tallar: «fichas» 531 → 567,
-         «claves» 11.596 → 12.574 y «fichas que citan su Tema» 315 → 330. El retallado de
-         esta misma mañana (justo debajo) las arregló **en el cuerpo y no en la tabla**, y
-         la tabla es lo que lee el verificador: salía en ROJO con cinco cifras. Es el
-         «camino inverso» que esta propia tabla pide a gritos unas líneas más abajo. No se
-         ha tocado nada más de ese trabajo: sólo se ha escrito en la tabla lo que el
-         verificador mide HOY.
-     🖐️ LO QUE NO SE HA TOCADO, PORQUE NO ES UN NÚMERO Y LO DECIDE PABLO: el escaparate
-     no dice nada de las CADENAS DE RESTAURANTE (hoy 1.338 filas de 12 cadenas con fuente
-     y fecha, servidas ya en la app) ni de las PORCIONES (1.213 de 3.313 alimentos con su
-     medida casera, 36,6 %). Las dos son capacidades nuevas y visibles, no cifras de una
-     tarjeta que ya existe, así que **merecen su hueco o no según tú**, y eso no lo decide
-     una sesión. Se pregunta en el PR en vez de esperar a que se te ocurra.
-     ============================================================================ -->
-<!-- ============================================================================
-     ⚠️ RETALLADO 09-09-2026 — «fichas» 531 → 567 y «baterías» 135 → 141.
-     Entran DOS áreas del temario en el mismo tren, las dos firmadas por Pablo:
-       · ÁREA 6 «oposiciones físicas» (PR #324): 4 fichas · 246 claves, con las marcas
-         REALES del BOE (Policía Nacional BOE-A-2026-15055, Guardia Civil BOE-A-2026-9982).
-         Trae además el P2 del carril del LLM propio: el guardián v2, que sabe medir la
-         RAMA MODULADA — si una respuesta sanitaria se rompe en el 2º turno de una
-         conversación, cosa que en frío sale verde y no se ve.
-       · ÁREA 7 «Ramadán y ayuno prolongado» (PR #326): 11 fichas · 279 claves. «Ramadán»
-         daba CERO apariciones en toda la app. Seis de las once son sanitarias.
-         Lo que arregla no es sólo un hueco: la ficha «el desayuno no es magia adelgazante»
-         se tragaba 78 de 270 preguntas de ayuno —incluidas «puedo ayunar si tomo
-         metformina» y «tengo antecedentes de trastorno alimentario»— por culpa de una
-         clave de UNA sola palabra.
-
-     🤖 Medido contra el ARTEFACTO PUBLICADO, no contra `_ESTADO-PROYECTO.md`:
-     jvfitness-dev@bc57e7c EJECUTANDO su `CEREBRO_KB` → 567 fichas · 12.574 claves ·
-     66 troncos. Las 11 fichas del área 7 y la del área 6 se buscaron UNA A UNA dentro del
-     `index.html` servido por pablolietor22.github.io (2.602.027 bytes): 11 de 11 presentes,
-     control negativo a 0, mojibake a 0.
-
-     ⚠️ Y la lección de hoy, que casi cuesta un parte falso: el workflow dijo «success» en
-     32 s y el artefacto que descargué NO llevaba el área 7 — era caché del CDN. Con
-     `Cache-Control: no-cache` y un parámetro anti-caché aparecieron las once. El «success»
-     dice que el robot corrió; sólo encontrar la ficha dentro del fichero servido dice que
-     la gente la tiene delante.
-     ============================================================================ -->
-<!-- ============================================================================
-     ⚠️ RETALLADO 06-09-2026 (NOCHE) — «fichas» 527 → 531, «baterías» 129 → 130 y, en la
-     tabla, «claves» 11.409 → 11.596. Entra la SEGUNDA VUELTA del área 5 (PR #304): 4 fichas
-     más del tronco `turnos` — conducir tras el turno, envejecer con turnos, embarazo, y qué
-     intensidad antes de las noches. Total del día: 12 fichas y 524 claves.
-     La batería nueva es `test-markdown-crudo`, que caza markdown sin convertir dentro del
-     campo `r` (encontró una ficha publicada desde hacía meses pintando «OR **0,72**»).
-
-     Medido contra el ARTEFACTO PUBLICADO — jv-fitness@7d05b4b, que viene de
-     jvfitness-dev@3e6643f — EJECUTANDO su `CEREBRO_KB`: 531 fichas · 11.596 claves ·
-     65 troncos · 12 fichas de `turnos`. Cuadra al dígito con `master`.
-
-     ⚠️ Y hubo que esperar para tallarlo, por una razón que conviene no olvidar: durante la
-     tarde la app publicada RETROCEDIÓ dos veces (16:58 publicó un commit anterior al de las
-     16:29; 20:01 uno anterior al de las 17:00), porque el workflow de despliegue hacía
-     `checkout` del commit que disparaba el run en vez de la punta de master. Si se hubieran
-     tallado las cifras «al fusionar» en vez de contra el artefacto, el escaparate habría
-     anunciado fichas que en ese momento NO estaban publicadas. Arreglado en jvfitness-dev
-     con `ref: master` (PR #308). La regla de medir contra el artefacto es justo lo que
-     salvó esto.
-
-     ⚠️ RETALLADO 06-09-2026 (tarde) — «fichas» 519 → 527 y «baterías» 126 → 129, tras
-     desplegarse el ÁREA 5 (tronco `turnos`, 8 fichas + 337 claves) y la PASADA DE
-     VERACIDAD (25 fichas corregidas, PR #303). Medido contra el ARTEFACTO PUBLICADO:
-     jv-fitness@9dfe5e5 viene de jvfitness-dev@5b3798e, que es master, así que medir
-     master ES medir lo publicado — comprobada la equivalencia por sha, no supuesta.
-     Las claves (11.409) siguen sin pintarse. `1.502 ejercicios` se remidió y NO cambia.
-     La pasada de veracidad no movió ninguna cifra: corrigió TEXTO de fichas ya contadas.
-
-     ↳ ENMIENDA 06-09-2026 (rutina flywheel, misma tarde). El retallado de arriba movió lo
-     que se PINTA (527 y 129) pero dejó esta TABLA en 519 / 11.072 / 126. La tabla no es
-     decoración: es el mapa que lee la siguiente sesión para saber qué cifra vive dónde, y
-     una tabla que se contradice con la página es exactamente cómo se acumularon las 18
-     afirmaciones falsas del 18-08. Puestas al día las tres filas y el comentario del N4,
-     medido otra vez contra el artefacto publicado ejecutando su KB (no a grep: contar
-     `tronco:"…"` da 525/66, que es FALSO — hay ocurrencias fuera del KB):
-
-         node -e '…extrae CEREBRO_KB de index.html contando corchetes y lo ejecuta…'
-         → PUBLICADO: 527 fichas · 11.409 claves · 65 troncos · turnos 8 fichas
-
-     ⚠️ RETALLADO 05-09-2026 — «fichas» 506 → 519, «claves» 10.289 → 11.072 (brutas) y
-     «baterías de pruebas» 123 → 126, tras fusionarse el PR #284 (ORDEN 6.4: 6 fichas de
-     condiciones médicas) y el PR #287 (ÁREA 4: tronco nuevo `longevidad`, 7 fichas).
-     🕐 SE ESPERÓ AL DESPLIEGUE, como el 03-09. Cuando los dos PR entraron en `master`, esta
-     página seguía diciendo 506 y era CORRECTO: se comprobó midiendo la KB del commit que sí
-     estaba publicado (jvfitness-dev@93aff38 → 506 fichas · 10.289 claves · 123 baterías, las
-     tres exactas). Retallar entonces habría publicado un número falso.
-     🔧 El despliegue automático NO salió solo: el runner autoalojado tenía la cola parada
-     (run #77 en cola 50 min, nada `in_progress`). Se publicó A MANO ejecutando el mismo
-     `minificar.mjs` y las mismas 4 comprobaciones del robot, todas en verde. Comprobado dentro
-     del minificado: 26 ocurrencias de «longevidad» y 31 de «espondilolistesis».
-     🔍 La VERSIÓN sigue en v0.71.0: es la que pinta la app en su etiqueta («MVP v0.71.0 ·
-     motor v0.7»). El `v0.72.0` del HTML es un comentario sobre trabajo futuro — publicarlo
-     como versión habría sido una afirmación falsa (misma trampa señalada el 03-09).
-     ============================================================================ -->
-<!-- ============================================================================
-     CIFRAS TALLADAS A MANO · TODAS CADUCAN · última medición: 03-09-2026 (v0.71.0)
-
-     ⚠️ RETALLADO 03-09 (TERCERA vez el mismo día) — «fichas» 505 → 506 y «claves»
-     10.271 → 10.289, tras fusionarse el PR #265 (barrido de Jorge: la ficha braquial) y
-     desplegarse el artefacto desde jvfitness-dev@9a6971b.
-     🕐 SE ESPERÓ A PROPÓSITO a que el despliegue saliera de la cola. Cuando el #265 entró en
-     `master`, esta página seguía diciendo 505 y era CORRECTO: el artefacto publicado tampoco
-     llevaba aún la ficha. Retallar en ese momento habría publicado un número que todavía no era
-     verdad. La regla no es «seguir a master», es «seguir a lo PUBLICADO», y hoy hubo casi dos
-     horas de diferencia entre las dos cosas por el atasco del runner.
-     🔧 Y un límite que conviene saber: `verificador-escaparate.js --app <artefacto publicado>`
-     NO funciona — el minificador se come los centinelas `[OTRO-PURE]`/`[CEREBRO-PURE]` y sin
-     ellos no puede leer la KB (medido: 0 ocurrencias). Para saber si el despliegue ya salió se
-     busca una ficha nueva conocida dentro del `index.html` publicado (aquí, «braquial»).
-
-     ⚠️ RETALLADO 03-09 (SEGUNDA vez el mismo día) — «fichas» 495 → 505 y «claves»
-     9.986 → 10.271, tras fusionarse el PR #275 (ÁREA 3 · ADOLESCENTES Y PESAS: tronco
-     NUEVO `menores`, 10 fichas y 285 claves) y desplegarse el artefacto desde
-     jvfitness-dev@bf4704a. Los troncos pasan de 61 a 62 — es el primer tronco nuevo
-     desde `glp1`. Medido con el verificador contra el motor REAL: de las 8 cifras
-     comparables sólo descuadraban estas dos; las otras 6 salieron CUADRADAS y NO se
-     tocan (315 fichas con Tema · 1.502 ejercicios · 1.289 con instrucciones · 52 Temas
-     · 160 PMID · 123 baterías).
-     🔢 OJO A LA UNIDAD, que casi cuesta un error: esta tabla publica las claves EN
-     BRUTO (10.271). El medidor del suelo diario cuenta las NORMALIZADAS con
-     `cerebroNormQ` y da 10.261 — diez menos, porque deduplica variantes. Las dos son
-     correctas y miden cosas distintas; la de esta página es la bruta, como en los
-     retallados anteriores. La cifra 10.261 que aparece en el acta y el PR del 03-09 es
-     la normalizada, y NO es la que va aquí.
-     🔍 La VERSIÓN sigue en v0.71.0 por lo dicho abajo: sin cambios de versión hoy.
-
-     ⚠️ RETALLADO 03-09 — «fichas» 487 → 495 y «claves» 9.681 → 9.986, tras fusionarse
-     el PR #270 (ÁREA 2 · BLOQUE 2: se rompe el imán de `menopausia-composicion` con 8
-     fichas nuevas y 305 claves) y desplegarse el artefacto desde jvfitness-dev@972fb79.
-     Medido con `node tools/cerebro-bots/verificador-escaparate.js --showcase <este fichero>`
-     contra el motor REAL, no a ojo: las otras 6 cifras comparables salieron CUADRADAS
-     (315 fichas con Tema · 1.502 ejercicios · 1.289 con instrucciones · 52 Temas ·
-     160 PMID · 123 baterías), así que sólo se tocan las dos que descuadraban.
-     🔍 La VERSIÓN se dejó en v0.71.0 a propósito: es la que pinta la app en su etiqueta
-     («MVP v0.71.0 · motor v0.7»). En el HTML hay un `v0.72.0` suelto, pero es un COMENTARIO
-     sobre trabajo futuro — contarlo como versión publicada habría sido una afirmación falsa,
-     que es justo lo que este bloque existe para evitar.
-
-     ⚠️ RETALLADO 01-09 (segunda vez el mismo día) — «fichas» 482 → 487 y «claves»
-     9.474 → 9.681, tras fusionarse el ÁREA 2 (menopausia) y desplegarse el artefacto.
-     Es la MISMA causa del retallado de esta mañana, y por eso se escribe otra vez:
-     esta página envejece con cada DESPLIEGUE, no con cada retallado. Hoy ha hecho
-     falta corregirla dos veces en un día. Medido EJECUTANDO el motor sobre el
-     ARTEFACTO PUBLICADO (git show origin/main:index.html, minificado, commit 53a320c
-     = jvfitness-dev@e461058), nunca contra _ESTADO-PROYECTO.md.
-     Comprobado (03-09, primer retallado del día): 495 fichas · 9.986 claves · 61 troncos.
-     ----------------------------------------------------------------------------
-     Esta página no puede leer estas cifras sola: contarlas en caliente obligaría a
-     descargar 1,84 MB para pintar un número. Así que están escritas a mano, y por
-     eso envejecen. Las DOS que sí se leen solas (la píldora EN VIVO y el cuadro de
-     versión, que hacen un fetch del index) NO están en esta lista: esas no mienten.
-
-     Antes de tocar cualquiera de estas, VOLVER A MEDIR. Nunca contra
-     _ESTADO-PROYECTO.md, que va desfasado; siempre contra el artefacto publicado.
-
-       cifra                          valor    dónde vive
-       -----------------------------  -------  --------------------------------
-       ⚠️ 30-10-2026 · LIMPIEZA DE PABLO (decisión del 29-10): lo que sigue a la derecha de
-       «SUELO» se pinta como «más de N» (el valor de la tabla es el SUELO publicado, no la
-       medida). Lo marcado «YA NO SE PINTA» se retiró de la página; su valor es la medida del 30-10.
-
-       fichas del asistente           1.000    odómetro «1.000+» · SUELO (medido 1.026)
-       claves del asistente          19.851    ⚠️ YA NO SE PINTA (ver nota abajo)
-       fichas que citan su Tema         453    ⚠️ YA NO SE PINTA (ver nota abajo)
-       ejercicios                     1.500    eyebrow + odómetro «1.500+» · SUELO (medido 1.502)
-       ejercicios con instrucciones   1.250    entradilla de ejercicios · SUELO (publicado 1.287)
-       alimentos de España          236.000    tarjeta del diario + odómetro «236.000+» · SUELO (medido 236.014)
-       perfiles del barrido               8    ⚠️ YA NO SE PINTA el barrido; la tarjeta dice «ocho perfiles»
-       preguntas del barrido          1.032    ⚠️ YA NO SE PINTA
-       NULL antes / ahora        33,5 / 20,3   ⚠️ YA NO SE PINTA
-       Temas del fichero maestro         52    ⚠️ YA NO SE PINTA
-       PMID del fichero maestro         161    ⚠️ YA NO SE PINTA
-       baterías de pruebas              184    ⚠️ YA NO SE PINTA (odómetro retirado)
-       pases del Vigía (96/96)           96    ⚠️ YA NO SE PINTA (línea del pie retirada)
-       fusiones en el taller            329    acto 4 (solo SUBE: nunca miente por exceso)
-
-     ⚠️ DOS CIFRAS HUÉRFANAS (detectado 30-08-2026). «claves del asistente» y
-     «fichas que citan su Tema» siguen en esta tabla pero YA NO APARECEN en ninguna
-     parte visible de la página: se quitaron del cuerpo y nadie limpió la tabla. Se
-     dejan con su valor MEDIDO y esta marca, no se borran, porque documentan qué se
-     midió y porque si algún día vuelven al cuerpo el dato ya está. La tabla avisa de
-     tocar aquí al tocar el cuerpo; hace falta también el camino inverso.
-
-     ✅ «alimentos de España» — RESUELTA el 07-09-2026 la duda abierta el 30-08. Aquella
-     nota decía que la cifra «no aparece ni en el artefacto publicado ni en el repo del
-     taller» y quedaba pendiente de que Pablo dijera de dónde salía. No estaba en el
-     taller porque NO VIVE en el taller: vive en este mismo repo, en el campo `total` de
-     `data/db/manifest.json`, que es lo que la app descarga. Se cuadra además contra la
-     suma de los `count` de sus 11 chunks — si los dos no coinciden, el manifiesto miente
-     y no vale ninguno de los dos. Medida así el 07-09: 234.976 → 235.267 (+291), que era
-     lo que llevaba acumulado sin tallar desde el 30-08. Ya la mide el verificador, así
-     que deja de ser una cifra a mano.
-                                               git rev-list --merges origin/master --count
-
-     CÓMO SE VUELVEN A MEDIR TODAS DE UNA VEZ:
-       Desde el repo del TALLER (jvfitness-dev), con este fichero a mano:
-         node tools/cerebro-bots/verificador-escaparate.js --showcase <ruta a showcase.html>
-       Mide EJECUTANDO el motor del taller y lo compara con la tabla de arriba.
-       Sale en rojo con la lista de las que no cuadran. (Ojo: lee ESTA tabla, no
-       el texto visible — si tocas una cifra en el cuerpo, tócala también aquí.)
-       Actualizado 28-08-2026 (antes decía `python verificador.py`, que no existe).
-     ============================================================================ -->
-<meta name="description" content="JV Fitness: app de nutrición y entrenamiento con base científica. Diario con más de 236.000 alimentos consultables sin conexión, más de 1.500 ejercicios con mapa muscular y un asistente con más de 1.000 fichas que te dice en qué se basa y dice «no lo sé» cuando no lo sabe.">
+<!-- cifras publicadas: suelos («más de N»), no recuentos exactos; volver a medir antes de cambiarlas
+       fichas del asistente           1.000    odómetro · SUELO
+       ejercicios                     1.500    eyebrow + odómetro · SUELO
+       ejercicios con instrucciones   1.250    entradilla · SUELO
+       alimentos de España          236.000    tarjeta + odómetro · SUELO
+-->
+<meta name="description" content="JV Fitness: app de nutrición y entrenamiento con base científica. Diario con más de 236.000 productos consultables sin conexión, más de 1.500 ejercicios con mapa muscular y un asistente con más de 1.000 fichas que te dice en qué se basa y dice «no lo sé» cuando no lo sabe.">
 <meta name="robots" content="index,follow">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://pablolietor22.github.io/jv-fitness/showcase.html">
 <meta property="og:title" content="JV Fitness · nutrición y entrenamiento con base científica">
-<meta property="og:description" content="Nutrición y entrenamiento con base científica: más de 236.000 alimentos consultables sin conexión, más de 1.500 ejercicios con mapa muscular y un asistente con más de 1.000 fichas que te dice en qué se basa.">
-<!-- og:image ABSOLUTA (LinkedIn/WhatsApp ignoran rutas relativas) + tarjeta 1200×630 dedicada, no la foto de retrato -->
+<meta property="og:description" content="Nutrición y entrenamiento con base científica: más de 236.000 productos consultables sin conexión, más de 1.500 ejercicios con mapa muscular y un asistente con más de 1.000 fichas que te dice en qué se basa.">
 <meta property="og:image" content="https://pablolietor22.github.io/jv-fitness/assets/og.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
@@ -567,7 +26,6 @@
 <meta name="twitter:image" content="https://pablolietor22.github.io/jv-fitness/assets/og.png">
 
 <style>
-/* ============ FUENTES (self-hosted · sin CDN) ============ */
 @font-face{
   font-family:'Space Grotesk';font-style:normal;font-weight:400 700;font-display:swap;
   src:url('assets/fonts/space-grotesk.woff2') format('woff2');
@@ -581,7 +39,6 @@
   src:url('assets/fonts/ibm-plex-mono-500.woff2') format('woff2');
 }
 
-/* ============ TOKENS ============ */
 :root{
   --bg:#0A100E; --bg-2:#0C1512; --panel:#101E19; --panel-2:#0D1B16;
   --line:#1E3A31; --line-soft:#16281F;
@@ -594,37 +51,24 @@
   --maxw:1080px;
   --r:16px;
 
-  /* ============ SISTEMA DE MOVIMIENTO (E.4) ============
-     Cuatro curvas y cinco duraciones con nombre. Todo lo que se anime a partir
-     de aquí las usa: sin esto, cada escena nueva inventa su tempo y el viaje
-     suena desafinado.
-     Las curvas NO son valores nuevos: son las cuatro que el fichero ya usaba
-     (9, 6, 5 y 1 veces). Se promocionan por uso, no se importan de fuera. */
-  --ease-casa:cubic-bezier(.32,.72,0,1);   /* manda. 9 usos. Es la curva del cajón de iOS (Emil Kowalski la publica como --ease-drawer) */
-  --ease-entra:cubic-bezier(.2,.8,.2,1);   /* algo aparece. 6 usos. Muelle apple-design del propio fichero */
-  --ease-traza:cubic-bezier(.3,.7,.2,1);   /* algo se dibuja: trazos, recortes, rotulador. 5 usos */
-  --ease-sale:cubic-bezier(.7,0,.25,1);    /* algo se va. 1 uso: el telón del intro, el único gesto de salida de la página */
+  --ease-casa:cubic-bezier(.32,.72,0,1);
+  --ease-entra:cubic-bezier(.2,.8,.2,1);
+  --ease-traza:cubic-bezier(.3,.7,.2,1);
+  --ease-sale:cubic-bezier(.7,0,.25,1);
 
-  --t-1:110ms;    /* micro respuesta: pulsar */
-  --t-2:150ms;    /* borde, sombra, color */
-  --t-3:240ms;    /* gesto de interfaz. Techo NN/g: 300 ms */
-  --t-4:400ms;    /* aparición por scroll. Techo NN/g */
-  --t-5:700ms;    /* momento ilustrativo, y solo con motivo: cuenta algo */
-  --stagger:38ms; /* escalonado entre hermanos; el total nunca pasa de 300 ms */
+  --t-1:110ms;
+  --t-2:150ms;
+  --t-3:240ms;
+  --t-4:400ms;
+  --t-5:700ms;
+  --stagger:38ms;
 
-  /* VIAJE (21-08) · velos de sección: la banda deja ver el cielo de detrás.
-     Mismos colores de la casa (bg-2 / panel-2) con alfa; un solo dueño aquí.
-     El pie va más opaco a propósito: protege el contraste de --mute-2 (deuda
-     conocida de E.8) contra la luz del amanecer. */
   --velo-banda:rgba(12,21,18,.66);
   --velo-panel:rgba(13,27,22,.72);
   --velo-suelo:rgba(12,21,18,.78);
-  /* VIAJE · serifa editorial de las derivas (gramática pear.no, anexo b.2):
-     pila del SISTEMA, cero bytes de fuente nueva. */
   --serif:Georgia,'Times New Roman',serif;
 }
 
-/* ============ RESET / BASE ============ */
 *{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
 body{
@@ -636,7 +80,6 @@ img{max-width:100%;display:block}
 a{color:inherit;text-decoration:none}
 :focus-visible{outline:2px solid var(--jade);outline-offset:3px;border-radius:4px}
 
-/* ============ LAYOUT HELPERS ============ */
 .wrap{width:100%;max-width:var(--maxw);margin:0 auto;padding:0 22px}
 .eyebrow{
   font-family:var(--mono);font-weight:500;font-size:.7rem;text-transform:uppercase;
@@ -650,10 +93,8 @@ h1,h2,h3{font-family:var(--display);font-weight:700;letter-spacing:-.02em;line-h
 .jade{color:var(--jade)}
 .ember{color:var(--ember)}
 
-/* ============ HERO ============ */
 .hero{position:relative;overflow:hidden;padding:clamp(28px,7vw,60px) 0 clamp(40px,8vw,80px);
   border-bottom:1px solid var(--line-soft)}
-/* fondo tipo blueprint (CSS puro) */
 .hero::before{
   content:"";position:absolute;inset:0;z-index:0;pointer-events:none;
   background:
@@ -668,14 +109,12 @@ h1,h2,h3{font-family:var(--display);font-weight:700;letter-spacing:-.02em;line-h
 }
 .hero__inner{position:relative;z-index:1;display:grid;gap:clamp(22px,4vw,34px);
   grid-template-columns:1fr;align-items:center}
-/* FLOW · campo de energía vivo. z-index 0 = por encima del blueprint (::before), debajo del contenido. */
 .hero__field{position:absolute;inset:0;z-index:0;pointer-events:none;
   -webkit-mask-image:linear-gradient(180deg,#000 0 55%,transparent 92%);
           mask-image:linear-gradient(180deg,#000 0 55%,transparent 92%)}
 .livebar{
   display:inline-flex;align-items:center;gap:.7em;font-family:var(--mono);font-size:.72rem;
   letter-spacing:.06em;color:var(--soft);border:1px solid var(--line);
-  /* capa-apple §12: material translúcido real (el contenido se ve a través, no una barra opaca). */
   background:rgba(16,30,25,.55);backdrop-filter:blur(14px) saturate(160%);
   -webkit-backdrop-filter:blur(14px) saturate(160%);border-radius:100px;padding:8px 15px;
 }
@@ -693,17 +132,12 @@ h1.title .brand b{color:var(--jade);font-weight:700}
 .btn{
   display:inline-flex;align-items:center;gap:.55em;font-family:var(--display);font-weight:700;
   font-size:.98rem;padding:13px 20px;border-radius:12px;cursor:pointer;border:1px solid transparent;
-  /* capa-apple §1: la respuesta vive en el gesto. Muelle crítico (sin rebote) — response ~.34s. */
   transition:transform var(--t-3) var(--ease-casa), box-shadow var(--t-2) var(--ease-casa), background var(--t-2) var(--ease-casa), border-color var(--t-2) var(--ease-casa);
 }
 .btn--primary{background:var(--jade);color:#05221a;box-shadow:0 8px 26px rgba(61,220,151,.24)}
 .btn--ghost{background:transparent;color:var(--soft);border-color:var(--line)}
-/* capa-apple §1: feedback INSTANTÁNEO al pulsar (pointer-down), no al soltar.
-   .btn:active se queda FUERA de la puerta táctil a propósito: pulsar sí existe con el dedo. */
 .btn:active{transform:scale(.97);transition-duration:var(--t-1)}
-.btn .arw{transition:transform var(--t-3) var(--ease-casa)}   /* ⚠️ SIN ESTRENAR: 0 elementos .arw en el marcado. Se señala, no se borra */
-/* P7: el hover SIEMPRE con puerta táctil. Sin ella, en el móvil el estado se
-   queda pegado después de tocar (no hay «salir» de un dedo). */
+.btn .arw{transition:transform var(--t-3) var(--ease-casa)}
 @media (hover:hover) and (pointer:fine){
   .btn--primary:hover{box-shadow:0 12px 34px rgba(61,220,151,.36);transform:translateY(-1px)}
   .btn--ghost:hover{border-color:var(--jade);color:var(--bone)}
@@ -717,14 +151,11 @@ h1.title .brand b{color:var(--jade);font-weight:700}
 .byline .who b{font-family:var(--display);color:var(--bone);font-weight:700}
 .byline .who span{color:var(--mute);font-family:var(--mono);font-size:.72rem;letter-spacing:.03em}
 
-/* ============ SECCIÓN GENÉRICA ============ */
 section{padding:clamp(48px,9vw,88px) 0}
 .sec-head{max-width:52ch}
 .sec-head h2{font-size:clamp(1.7rem,4.5vw,2.7rem);margin:.7rem 0 0}
 .sec-head p{color:var(--mute);margin-top:1rem;font-size:1.04rem}
 
-/* subrayado SVG que se DIBUJA bajo el titular al revelarse.
-   Sin JS nuevo: se engancha a la clase .in que ya pone el revelado (y el failsafe). */
 .ul{display:block;width:min(230px,64%);height:9px;margin-top:.55rem;overflow:visible}
 .ul path{fill:none;stroke:var(--jade);stroke-width:2.4;stroke-linecap:round;
   vector-effect:non-scaling-stroke;stroke-dasharray:1;stroke-dashoffset:0}
@@ -732,7 +163,6 @@ html.js .sec-head .ul path{stroke-dashoffset:1;
   transition:stroke-dashoffset var(--t-5) var(--ease-traza) calc(var(--stagger) * 4)}
 html.js .sec-head.in .ul path{stroke-dashoffset:0}
 
-/* ============ FEATURES ============ */
 .features{border-bottom:1px solid var(--line-soft)}
 .frow{display:grid;grid-template-columns:1fr;gap:clamp(22px,4vw,52px);align-items:center;
   padding:clamp(30px,5vw,52px) 0;border-top:1px solid var(--line-soft)}
@@ -741,10 +171,6 @@ html.js .sec-head.in .ul path{stroke-dashoffset:0}
 .shot{border:1px solid var(--line);border-radius:20px;overflow:hidden;background:var(--panel-2);
   box-shadow:0 24px 60px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.03);max-width:340px;margin:0 auto}
 .shot img{width:100%;height:auto}
-/* La captura de anatomía es 720x1649: a 360px se pinta a 824px de alto y se come la sección.
-   Se estrecha SOLO ella. Nada de recortar: la parte de abajo es la que prueba lo que promete.
-   Dos clases a propósito (.shot.shot--tall): así gana a .shot{max-width:360px} del
-   @media (min-width:760px) sin depender del orden en el fichero. */
 .shot.shot--tall{max-width:270px}
 .feat-eyebrow{font-family:var(--mono);font-weight:500;font-size:.68rem;text-transform:uppercase;
   letter-spacing:.19em;color:var(--jade)}
@@ -753,11 +179,9 @@ html.js .sec-head.in .ul path{stroke-dashoffset:0}
 details.under .body code{font-family:var(--mono);color:var(--soft);background:rgba(61,220,151,.08);
   padding:.05em .35em;border-radius:5px;font-size:.9em}
 
-/* "spec cards" (funciones sin captura) */
 .spec-grid{display:grid;grid-template-columns:1fr;gap:16px;margin-top:clamp(24px,4vw,40px)}
 .spec-card{border:1px solid var(--line-soft);border-radius:var(--r);padding:22px;
   background:linear-gradient(180deg,var(--panel),var(--panel-2));
-  /* capa-apple §16: lo que parece una tarjeta responde al puntero. Muelle crítico, sin rebote. */
   transition:transform var(--t-3) var(--ease-casa), border-color var(--t-3) var(--ease-casa), box-shadow var(--t-3) var(--ease-casa)}
 @media (hover:hover) and (pointer:fine){
   .spec-card:hover{transform:translateY(-3px);border-color:var(--line);
@@ -767,10 +191,7 @@ details.under .body code{font-family:var(--mono);color:var(--soft);background:rg
 .spec-card h3{font-size:1.2rem;margin:0 0 .5rem}
 .spec-card p{color:var(--mute);font-size:.96rem}
 
-/* ============ STATS / CONTADORES ============ */
 .stats{background:var(--velo-banda);border-top:1px solid var(--line-soft);border-bottom:1px solid var(--line-soft)}
-/* ACTO 2 · banda propia del tramo de rigor. Tokens existentes, cero valores nuevos.
-   El color definitivo del tramo lo pone la fase E (velos por sección); esto solo abre el hueco. */
 .rigor{background:var(--velo-panel);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
 .stat-grid{display:grid;grid-template-columns:1fr;gap:14px}
 .stat{border:1px solid var(--line-soft);border-radius:var(--r);padding:24px 22px;
@@ -783,11 +204,6 @@ details.under .body code{font-family:var(--mono);color:var(--soft);background:rg
 .stat.live .pulse{width:10px;height:10px;border-radius:50%;background:var(--jade);flex:none;
   box-shadow:0 0 10px var(--jade)}
 
-/* ============ EN CONSTRUCCIÓN ============ */
-/* ACTO 4 · velo propio. Medido en la captura entera: .stats + .plate + .wip compartían
-   --bg-2 (2,88 pantallas de un solo color) y los actos 3 y 4 se leían como una sola banda.
-   Mismo tratamiento que .rigor (los dos actos de confianza comparten material): tokens
-   existentes, cero valores nuevos. Stats + plato quedan cosidos a propósito (son un acto). */
 .wip{background:var(--velo-panel);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
 .wip ul{list-style:none;margin-top:clamp(22px,3.5vw,34px);display:grid;gap:12px}
 .wip li{display:flex;gap:.85em;align-items:flex-start;border:1px solid var(--line-soft);
@@ -797,15 +213,12 @@ details.under .body code{font-family:var(--mono);color:var(--soft);background:rg
   flex:none;margin-top:.55em;box-shadow:0 0 9px rgba(255,106,61,.5)}
 .wip li b{color:var(--bone);font-family:var(--display);font-weight:700}
 
-/* ============ FOOTER ============ */
 .foot{background:var(--velo-suelo);border-top:1px solid var(--line);padding:clamp(44px,7vw,72px) 0}
 .foot__cta{display:flex;flex-wrap:wrap;gap:14px;align-items:center}
 .foot__cta .btn--code{background:var(--jade);color:#05221a;font-size:1.02rem;padding:15px 24px;
   box-shadow:0 8px 26px rgba(61,220,151,.22)}
 .foot__try{font-family:var(--mono);font-size:.82rem;color:var(--mute);border-bottom:1px dashed var(--mute-2);
   padding-bottom:1px}
-/* P7: puerta táctil también en el pie. .btn--code se estrena en esta obra, así que su
-   :hover pasa de ser CSS muerto a alcanzable: sin puerta se quedaría pegado en el móvil. */
 @media (hover:hover) and (pointer:fine){
   .foot__cta .btn--code:hover{transform:translateY(-1px);box-shadow:0 12px 34px rgba(61,220,151,.34)}
   .foot__try:hover{color:var(--jade);border-color:var(--jade)}
@@ -817,15 +230,12 @@ details.under .body code{font-family:var(--mono);color:var(--soft);background:rg
 .foot__meta .honest a{color:var(--jade);border-bottom:1px solid var(--jade-dim)}
 .foot__sig{color:var(--mute-2);font-size:.78rem;margin-top:.6rem}
 
-/* ============ REVEAL (guardado tras .js) ============ */
-/* capa-apple §4/§11: muelle crítico (damping 1.0, sin overshoot), response ~.5s, solo transform+opacity. */
 html.js .reveal{opacity:0;transform:translateY(14px);will-change:transform,opacity;
   transition:opacity var(--t-4) var(--ease-casa), transform var(--t-4) var(--ease-casa)}
 html.js .reveal.in{opacity:1;transform:none}
 html.js .reveal.d1{transition-delay:calc(var(--stagger) * 2)}
 html.js .reveal.d2{transition-delay:calc(var(--stagger) * 4)}
 
-/* ============ ANIMACIONES AMBIENTALES (solo si el usuario las permite) ============ */
 @media (prefers-reduced-motion: no-preference){
   .livebar .dot::after{content:"";position:absolute;inset:-5px;border-radius:50%;
     border:1px solid var(--jade);opacity:.5;animation:ring 2.6s ease-out infinite}
@@ -833,44 +243,23 @@ html.js .reveal.d2{transition-delay:calc(var(--stagger) * 4)}
   html.js .stage__node{opacity:.35;transform:scale(.92);transition:opacity var(--t-4) var(--ease-entra), transform var(--t-4) var(--ease-entra)}
   html.js .stage.in .stage__node{opacity:1;transform:scale(1)}
 }
-/* Puerta de visibilidad para lo que late en bucle. Fuera de pantalla no late:
-   ring y beat valen ~11 puntos de CPU medidos, y beat latía a 5.000 px del hero
-   para nadie. Se quita el NOMBRE de la animación, no se pausa: una animación
-   pausada sigue contando en getAnimations() y ahí es donde mira la compuerta. */
 html.js .vis-off .dot::after,
 html.js .vis-off .pulse{animation-name:none}
 @keyframes ring{0%{transform:scale(.6);opacity:.6}100%{transform:scale(2);opacity:0}}
 @keyframes beat{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.35);opacity:.65}}
 
-/* ============ MOTION NARRATIVO ============
-   Cada efecto cuenta algo cierto del producto; ninguno es decoración.
-   Solo se animan transform / opacity / clip-path / background-size: nada que
-   provoque reflow, para que el móvil lo componga en la GPU. */
 
-/* N1 (descifrado) + N2 (máquina de escribir) · capa fantasma.
-   El texto REAL nunca sale del DOM: solo se vuelve transparente mientras una
-   capa aria-hidden pinta encima. Así el árbol de accesibilidad y el innerText
-   siguen siendo los de siempre, y el hueco lo sigue reservando el texto real
-   → cero salto de maqueta mientras el efecto corre. */
 .fx-host{position:relative}
 .fx-real{color:transparent}
-/* height:100% + overflow:hidden: el ruido usa mayúsculas (más anchas que el texto
-   real) y puede envolver a una línea más; recortado a la caja del anfitrión no
-   puede pisar jamás el párrafo de debajo. */
 .fx-ghost{position:absolute;left:0;top:0;width:100%;height:100%;overflow:hidden;
   color:var(--bone);pointer-events:none}
 .fx-cur{display:inline-block;width:.46em;height:.8em;background:var(--jade);
   vertical-align:-.02em;margin-left:.05em}
 @media (prefers-reduced-motion: no-preference){
-  /* repeticiones FINITAS: aunque el cierre fallara, el parpadeo muere solo */
   .fx-cur{animation:fxpar 1.05s steps(1) 8}
 }
 @keyframes fxpar{0%,49%{opacity:1}50%,100%{opacity:0}}
 
-/* N4 · rotulador jade sobre el dato de rigor más fuerte («135 baterías de
-   pruebas»). Se engancha al .in que ya pone el revelado: sin JS nuevo.
-   ⚠️ SIN ESTRENAR (21-08-2026): .fx-mark no aparece ni una vez en el marcado.
-   Se señala, no se borra (norma de la casa). Si se estrena, va sobre esa cifra. */
 html.js .fx-mark{
   background-image:linear-gradient(rgba(61,220,151,.3),rgba(61,220,151,.3));
   background-repeat:no-repeat;background-position:0 88%;background-size:0% 60%;
@@ -879,21 +268,10 @@ html.js .fx-mark{
 }
 html.js .reveal.in .fx-mark{background-size:100% 60%}
 
-/* N5 · revelado por recorte de las capturas: la pantalla del móvil se rellena
-   de abajo arriba, como cuando carga de verdad. Cuelga de .shot--vis, que pone
-   un observador PROPIO (umbral .35, sin rootMargin): el del revelado se adelanta
-   un 18% bajo el pliegue a propósito y dispararía el recorte sin nadie mirando.
-   OJO: el recorte va en el IMG y el observador vigila la FIGURE — Chrome aplica
-   el clip-path del propio elemento al calcular su intersección, y un elemento
-   recortado al 100% tiene área 0: observarlo a él sería un cerrojo sin llave. */
 html.js .shot img{clip-path:inset(100% 0 0 0);
   transition:clip-path var(--t-5) var(--ease-traza) var(--t-1)}
 html.js .shot.shot--vis img{clip-path:inset(0 0 0 0)}
 
-/* N6 · interferencia SOLO en «Lo que aún no está»: lo que todavía no existe se
-   ve mal. Las capas duplicadas son <span aria-hidden> reales que crea y destruye
-   el JS — nunca ::before con content:attr(), que Chrome expone en el árbol de
-   accesibilidad y haría que el lector de pantalla leyera el titular 3 veces. */
 .fx-gl{position:relative;isolation:isolate}
 .fx-gl__l{position:absolute;left:0;top:0;width:100%;pointer-events:none;opacity:.92}
 .fx-gl__a{color:var(--jade);animation:fxgl1 .3s steps(1,end) 1 both}
@@ -911,36 +289,28 @@ html.js .shot.shot--vis img{clip-path:inset(0 0 0 0)}
   100%{clip-path:inset(0 0 100% 0);transform:none}
 }
 
-/* N8 · foco jade siguiendo al cursor sobre la rejilla blueprint del hero.
-   Lo crea el JS solo si hay ratón fino: en móvil no existe ni en el DOM. */
 .hero__halo{position:absolute;left:0;top:0;width:560px;height:560px;
   margin:-280px 0 0 -280px;border-radius:50%;pointer-events:none;z-index:0;opacity:0;
   background:radial-gradient(circle closest-side,var(--jade) 0%,transparent 72%);
   mix-blend-mode:screen;transition:opacity var(--t-3) var(--ease-casa)}
 .hero__halo.on{opacity:.07}
 
-/* N10 · ola en el enlace del pie: una sola pasada al pasar el ratón. */
 .fx-w{display:inline-block}
 .fx-ola .fx-w{animation:fxola var(--t-5) var(--ease-casa) both;
   animation-delay:calc(var(--i) * var(--stagger))}
 @keyframes fxola{0%{transform:none}45%{transform:translate3d(0,-6px,0)}100%{transform:none}}
 
-/* garantía dura: si el usuario pide menos movimiento, nada se oculta ni se transforma */
 @media (prefers-reduced-motion: reduce){
   html{scroll-behavior:auto}
   html.js .reveal{opacity:1 !important;transform:none !important;transition:none !important}
   html.js .sec-head .ul path{stroke-dashoffset:0 !important;transition:none !important}
   *{animation:none !important}
-  /* ni recorte, ni halo, ni capas fantasma: todo en su estado final y legible */
   html.js .shot,html.js .shot img{clip-path:none !important;transform:none !important;transition:none !important}
   html.js .fx-mark{background-size:100% 60% !important;transition:none !important}
   .hero__halo,.fx-ghost,.fx-gl__l{display:none !important}
   .fx-real{color:inherit !important}
 }
 
-/* impresión: mismo criterio que el failsafe — todo compuesto, quieto y sin capas.
-   El transition:none es imprescindible: sin él, poner el valor final solo ARRANCA
-   una transición nueva y el papel sale con la página a medio revelar. */
 @media print{
   html.js .reveal{opacity:1 !important;transform:none !important;transition:none !important}
   html.js .shot,html.js .shot img{clip-path:none !important;transform:none !important;transition:none !important}
@@ -950,22 +320,17 @@ html.js .shot.shot--vis img{clip-path:inset(0 0 0 0)}
   .fx-real{color:inherit !important}
 }
 
-/* Failsafe ESTÁTICO: cuando salta (nadie ha interactuado en 6 s → bot de vista
-   previa o prerender), todo pasa a su estado FINAL al instante, sin animar nada
-   a ciegas — mismo criterio que @media print. */
 html.fx-fin .reveal{opacity:1 !important;transform:none !important;transition:none !important}
 html.fx-fin .shot,html.fx-fin .shot img{clip-path:none !important;transform:none !important;transition:none !important}
 html.fx-fin .sec-head .ul path{stroke-dashoffset:0 !important;transition:none !important}
 html.fx-fin .fx-mark{background-size:100% 60% !important;transition:none !important}
 html.fx-fin .stage__node{opacity:1 !important;transform:none !important;transition:none !important}
 
-/* ============ RESPONSIVE ============ */
 @media (min-width:560px) and (max-width:759px){
   .stat-grid{grid-template-columns:1fr 1fr}
   .stat:last-child{grid-column:1 / -1}
 }
 @media (min-width:760px){
-  /* 6 columnas virtuales: 3 tarjetas arriba (span 2) + 2 abajo (span 3) = filas siempre llenas */
   .stat-grid{grid-template-columns:repeat(6,1fr)}
   .stat{grid-column:span 2}
   .stat:nth-child(4),.stat:nth-child(5){grid-column:span 3}
@@ -980,61 +345,24 @@ html.fx-fin .stage__node{opacity:1 !important;transform:none !important;transiti
   .shot{max-width:400px}
 }
 
-/* ══════════════════════════════════════════════════════════════════════
-   CAPA ULTRA · animación a tope, ENCIMA del showcase-flow (sin tocarlo).
-   Solo transform/opacity (compositor). Muelles Apple: crítico
-   cubic-bezier(.32,.72,0,1); entrada con vida cubic-bezier(.2,.8,.2,1).
-   Estados «ocultos» SIEMPRE bajo html.js (sin JS → todo visible), igual
-   que el flow. Degradación total en el bloque reduced-motion del final.
-   ══════════════════════════════════════════════════════════════════════ */
 
-/* — Barra de progreso de lectura — */
 .uprog{position:fixed;left:0;top:0;height:3px;width:100%;z-index:120;
   transform:scaleX(0);transform-origin:0 50%;will-change:transform;
   background:linear-gradient(90deg,var(--jade),var(--ember));
   box-shadow:0 0 14px rgba(61,220,151,.5)}
 
-/* La barra de lectura, al motor nativo del navegador (E.3, «deriva decorativa»).
-   Corre en el compositor: sigue fluida aunque el hilo principal esté ocupado, y
-   cuesta cero JavaScript. Detrás de @supports porque Firefox estable todavía no
-   lo trae (cobertura ~89,8 % en España); quien no lo tenga ve la barra pilotada
-   por el JS de siempre, que sigue ahí para él. NINGUNA de las dos rutas escribe
-   a la vez: el JS se desconecta solo si el navegador soporta esto.
-   Las tres trampas: el atajo va PRIMERO (reinicia el timeline a auto en
-   silencio), la duración de 1 ms es obligatoria (Firefox no admite cero), y la
-   tercera (fotograma 50/80 %) es de view() y aquí se usa scroll(), donde el
-   100 % es de verdad el final del documento. */
 @keyframes uprogLee{ from{transform:scaleX(0)} to{transform:scaleX(1)} }
 @supports (animation-timeline: scroll()){
   @media (prefers-reduced-motion: no-preference){
     .uprog{
-      animation:uprogLee linear both;       /* 1º el atajo */
-      animation-duration:1ms;               /* 2º la duración distinta de cero */
-      animation-timeline:scroll(root block);/* 3º el reloj, SIEMPRE el último */
+      animation:uprogLee linear both;
+      animation-duration:1ms;
+      animation-timeline:scroll(root block);
     }
   }
 }
 
-/* ═══ CADENCIA COMPUESTA · EXCEPCIÓN DECLARADA AL SISTEMA DE TOKENS ═══
-   De aquí hasta el final del intro y del plato NO hay «duraciones de interfaz»:
-   hay tres secuencias compuestas (el telón del intro, el ensamblaje del título,
-   el montaje del plato) más dos latidos ambientales (ring y beat). Sus números
-   valen unos RESPECTO DE OTROS, no por su valor absoluto.
-   No se tokenizan, y no es pereza. Tres motivos, los tres medidos:
-     1. Tokenizarlas no es sustituir un valor: es RE-COREOGRAFIARLAS.
-     2. Hay un contrato duro con el JavaScript. El 750 del setTimeout del intro
-        es exactamente el .15s + 10 x .06s del retardo por letra (cuándo cae la
-        última letra), y la red dura de 3.200 ms cubre los 2.550 ms (1,75 + 0,8)
-        del telón. Cambiar el CSS sin cambiar el JS desincroniza el salto del
-        intro SIN dar ningún error.
-     3. ring (2,6 s) y beat (2,2 s) son ritmo ambiental, no un gesto de interfaz.
-        Su presupuesto lo vigila la puerta de visibilidad, no el token.
-   REGLA PARA QUIEN VENGA: aquí dentro no se añade nada nuevo. Todo lo nuevo
-   usa los tokens de :root. Si algún día hay que retocar esta coreografía, se
-   retoca ENTERA y se revisan las tres constantes del JS citadas arriba.
-   ═════════════════════════════════════════════════════════════════════ */
 
-/* — Intro cinematográfico (presenta «JV Fitness» y se retira) — */
 .intro{position:fixed;inset:0;z-index:200;display:grid;place-items:center;overflow:hidden;
   background:radial-gradient(1200px 620px at 50% 42%,#0e1a15,var(--bg) 72%);
   animation:introOut .8s var(--ease-sale) 1.75s forwards;will-change:opacity,transform}
@@ -1062,26 +390,24 @@ html.fx-fin .stage__node{opacity:1 !important;transform:none !important;transiti
   .intro__tag{animation:fadeIn .6s ease 1.2s forwards}
 }
 
-/* — Título del hero: ensamblaje 3D letra a letra + barrido de luz — */
 h1.title .ttl{position:relative;display:inline-flex;flex-wrap:wrap}
 h1.title .ch{display:inline-block;transform-origin:50% 90%;color:var(--bone)}
 h1.title .ch.j{color:var(--jade);font-weight:700}
 h1.title .ch.sp{width:.26em}
 h1.title .ttl::after{content:"";position:absolute;inset:-2px;pointer-events:none;
   background:linear-gradient(105deg,transparent 44%,rgba(61,220,151,.3) 50%,transparent 56%);transform:translateX(-150%)}
-html.js h1.title .ch{opacity:0}   /* oculto hasta que el intro se retira: el JS añade .lettersgo */
+html.js h1.title .ch{opacity:0}
 @media (prefers-reduced-motion:no-preference){
   html.js.lettersgo h1.title .ch{animation:cDrop .7s var(--ease-entra) both;animation-delay:calc(var(--i,0)*.055s)}
   html.js.lettersgo h1.title .ttl::after{animation:sheenX 1.3s var(--ease-traza) .55s both}
 }
 
-/* — Foto de Pablo: anillo jade que se traza + entrada con muelle — */
 .byline .ph{position:relative;width:52px;height:52px;flex:none}
 .byline .ph img{width:52px;height:52px;border-radius:50%;object-fit:cover;object-position:center top;
   border:1.5px solid var(--jade);background:var(--panel);display:block}
 .byline .ph .ring{position:absolute;inset:-5px;width:62px;height:62px;transform:rotate(-90deg);pointer-events:none}
 .byline .ph .ring circle{fill:none;stroke:var(--jade);stroke-width:2;stroke-linecap:round;stroke-dasharray:1;stroke-dashoffset:0;opacity:.9}
-html.js .byline .ph .ring circle{stroke-dashoffset:1}   /* oculto hasta .lettersgo */
+html.js .byline .ph .ring circle{stroke-dashoffset:1}
 @media (prefers-reduced-motion:no-preference){
   html.js.lettersgo .byline .ph .ring circle{animation:ringDraw 1s var(--ease-traza) .5s both}
   html.js.lettersgo .byline .ph img{animation:phPop .7s var(--ease-entra) .35s both}
@@ -1089,18 +415,11 @@ html.js .byline .ph .ring circle{stroke-dashoffset:1}   /* oculto hasta .letters
 @keyframes ringDraw{to{stroke-dashoffset:0}}
 @keyframes phPop{from{opacity:.001;transform:scale(.7)}to{opacity:1;transform:none}}
 
-/* — Scroll-3D «reel»: el transform lo compone el JS (perspective+rotateX+scale) — */
 html.js .r3d{backface-visibility:hidden}
 html.js .r3d.r3d--on{will-change:transform}
-html.js .reveal.r3d{transform:none}   /* el reveal aporta el fundido; el 3D lo pone el JS */
-/* Ley del dueño único: mientras una tarjeta bascula, su transform lo escribe el
-   JS en cada cuadro (place). La transición de .reveal era su segunda dueña y
-   hacía que la basculación PERSIGUIERA al scroll con 400 ms de retraso,
-   re-apuntando una transición viva en cada cuadro. El fundido (opacity) sigue
-   siendo del reveal, con su duración y su curva intactas. */
+html.js .reveal.r3d{transform:none}
 html.js .reveal.r3d--on{transition-property:opacity}
 
-/* — Franja «un plato, sus macros» (SVG temático de nutrición) — */
 .plate{background:var(--velo-banda);border-top:1px solid var(--line-soft);border-bottom:1px solid var(--line-soft)}
 .plate__grid{display:grid;grid-template-columns:1fr;gap:clamp(24px,5vw,52px);align-items:center;margin-top:clamp(24px,4vw,40px)}
 .plate__art{position:relative;max-width:360px;width:100%;margin:0 auto}
@@ -1130,7 +449,6 @@ html.js .plate .seg{stroke-dashoffset:var(--l)}
 .plate__note{font-family:var(--mono);font-size:.72rem;color:var(--mute-2);margin-top:1rem;line-height:1.5}
 @media (min-width:760px){ .plate__grid{grid-template-columns:1fr 1fr} }
 
-/* — Stats: chispa jade al revelarse (el nodo lo crea el JS) — */
 .stat{position:relative;overflow:hidden}
 .stat .spark{position:absolute;left:0;right:0;top:0;height:2px;transform:scaleX(0);transform-origin:0 50%;
   background:linear-gradient(90deg,var(--jade),transparent);pointer-events:none}
@@ -1139,7 +457,6 @@ html.js .plate .seg{stroke-dashoffset:var(--l)}
 }
 @keyframes sparkIn{0%{transform:scaleX(0);opacity:1}60%{transform:scaleX(1);opacity:1}100%{transform:scaleX(1);opacity:.35}}
 
-/* ——— Garantía dura: sin intro, sin 3D, todo estático y legible ——— */
 @media (prefers-reduced-motion:reduce){
   .intro{display:none!important}
   .uprog{display:none!important}
@@ -1159,43 +476,18 @@ html.js .plate .seg{stroke-dashoffset:var(--l)}
   html.js .plate .seg{stroke-dashoffset:0!important}
   html.js .byline .ph .ring circle{stroke-dashoffset:0!important}
 }
-/* Failsafe estático (bots/prerender), en la misma línea que el flow */
 html.fx-fin .r3d{transform:none!important;will-change:auto!important}
 html.fx-fin .plate .food{opacity:1!important;transform:none!important}
 html.fx-fin .plate .seg{stroke-dashoffset:0!important}
 html.fx-fin .byline .ph .ring circle{stroke-dashoffset:0!important}
-/* Los dos huecos que cazó la captura de bot real (Chrome headless, reloj virtual congelado):
-   las letras del H1 (ocultas por html.js h1.title .ch) y la foto (oculta por el relleno hacia
-   atrás de phPop) solo tenían rescate en el bloque reduced-motion. Clones de esas reglas:
-   con las animaciones congeladas, la marca y la cara se ven igual. */
 html.fx-fin h1.title .ch{opacity:1!important;transform:none!important;animation:none!important}
 html.fx-fin .byline .ph img{opacity:1!important;transform:none!important;animation:none!important}
 
-/* ══════════════════════════════════════════════════════════════════════
-   CAPA VIAJE · el cielo del recorrido (obra 21-08-2026 · fase E del plan
-   maestro + anexo 19-08). El mundo deja de acabarse en el píxel 588: un
-   solo elemento fijo detrás de todo, con la noche del hero de base y un
-   velo de color por tramo (noche → azul → jade → cálido → amanecer, la
-   gramática de «un color de mundo por acto»).
-   Reglas de la casa que esta capa cumple entera:
-     · ELEMENTO position:fixed, jamás background-attachment:fixed (Safari
-       iOS histórico, plan «LO QUE NO SABEMOS» nº7);
-     · cero JS, cero canvas, cero animación perpetua: la base es estática
-       y los velos van en opacity pilotados por el scroll en el COMPOSITOR
-       (animation-timeline), o sea solo cuestan mientras te mueves;
-     · las tres trampas E.7: el atajo animation: primero, duración 1ms,
-       timeline SIEMPRE el último; todo detrás de @supports — sin soporte
-       (Firefox estable) queda la noche del primer tramo, completa y legible;
-     · `linear` no es una curva nueva: es el mapeo neutro de un timeline de
-       scroll (precedente en esta casa: .uprog).
-   ══════════════════════════════════════════════════════════════════════ */
 .cielo{position:fixed;inset:0;z-index:-1;pointer-events:none;
   background:
     radial-gradient(1100px 620px at 74% -10%, var(--jade-glow), transparent 60%),
     radial-gradient(820px 520px at 10% 4%, rgba(255,106,61,.05), transparent 58%),
     linear-gradient(180deg, var(--bg) 0%, var(--bg-2) 55%, var(--bg) 100%)}
-/* estrellas: dos densidades de puntos diminutos, ESTÁTICAS a propósito
-   (las estrellas DOM animadas están prohibidas: 15 fps en móvil x4, E.6 nº7) */
 .cielo::before,.cielo::after{content:"";position:absolute;inset:0}
 .cielo::before{opacity:.5;background-image:
   radial-gradient(1px 1px at 22px 34px, rgba(238,242,236,.5), transparent 1.5px),
@@ -1208,11 +500,7 @@ html.fx-fin .byline .ph img{opacity:1!important;transform:none!important;animati
   radial-gradient(2px 2px at 300px 220px, rgba(238,242,236,.5), transparent 2.5px),
   radial-gradient(1px 1px at 180px 310px, rgba(203,216,209,.36), transparent 1.5px);
   background-size:420px 390px}
-/* Los cuatro velos de mundo. Apagados de base: sin @supports (o con
-   movimiento reducido) el cielo se queda en la noche del primer tramo. */
 .cielo__velo{position:absolute;inset:0;opacity:0}
-/* Cada velo = un TINTE uniforme de pantalla completa (lo que hace que el
-   mundo entero cambie, no solo una esquina) + un glow direccional encima. */
 .cielo__velo--azul{background:
   radial-gradient(130% 90% at 70% -5%, rgba(64,124,205,.5), transparent 62%),
   linear-gradient(180deg, rgba(18,44,86,.62), rgba(16,34,66,.34))}
@@ -1225,25 +513,16 @@ html.fx-fin .byline .ph img{opacity:1!important;transform:none!important;animati
 .cielo__velo--alba{background:
   radial-gradient(130% 75% at 50% 112%, rgba(255,166,102,.5), rgba(255,116,66,.18) 42%, transparent 68%),
   linear-gradient(0deg, rgba(110,56,26,.4), rgba(30,52,84,.3))}
-/* ── FOTOGRAMAS TALLADOS · CADUCAN ────────────────────────────────────
-   Los % salen de la página MEDIDA (21-08-2026, obra completa con rótulos:
-   8085 px de alto, ventana 771, recorrido 7314) con la sonda ofs.mjs del
-   banco del viaje: fracción = (top de la sección - 55% de ventana) /
-   recorrido. Fronteras: features 2,2 · stats 50,0 · plate 59,9 ·
-   roadmap 82,8. Cada fundido dura ~5,5% del recorrido (~400 px ≈ 1 s de
-   scroll normal), centrado en su frontera. Si el contenido cambia de
-   reparto, VOLVER A MEDIR con ofs.mjs y retallar estos números: son el
-   equivalente del bloque de cifras talladas de la cabecera. */
-@keyframes cieloAzul{0%,3%{opacity:0} 9%,47.5%{opacity:1} 52.5%,100%{opacity:0}}
-@keyframes cieloJade{0%,47.5%{opacity:0} 52.5%,57%{opacity:1} 62.5%,100%{opacity:0}}
-@keyframes cieloCalido{0%,57%{opacity:0} 62.5%,80%{opacity:1} 85.5%,100%{opacity:0}}
-@keyframes cieloAlba{0%,80%{opacity:0} 85.5%,100%{opacity:1}}
+@keyframes cieloAzul{0%,3.4%{opacity:0} 10.2%,53.7%{opacity:1} 59.4%,100%{opacity:0}}
+@keyframes cieloJade{0%,53.7%{opacity:0} 59.4%,64.5%{opacity:1} 70.7%,100%{opacity:0}}
+@keyframes cieloCalido{0%,64.5%{opacity:0} 70.7%,90.5%{opacity:1} 96.7%,100%{opacity:0}}
+@keyframes cieloAlba{0%,90.5%{opacity:0} 96.7%,100%{opacity:1}}
 @supports (animation-timeline: scroll()){
   @media (prefers-reduced-motion: no-preference){
     .cielo__velo--azul{
-      animation:cieloAzul linear both;      /* 1º el atajo */
-      animation-duration:1ms;               /* 2º la duración distinta de cero */
-      animation-timeline:scroll(root block);/* 3º el reloj, SIEMPRE el último */
+      animation:cieloAzul linear both;
+      animation-duration:1ms;
+      animation-timeline:scroll(root block);
     }
     .cielo__velo--jade{
       animation:cieloJade linear both;
@@ -1262,11 +541,6 @@ html.fx-fin .byline .ph img{opacity:1!important;transform:none!important;animati
     }
   }
 }
-/* Degradación triple del cielo (contrato E.8). Movimiento reducido: la
-   noche del primer tramo, quieta (el *{animation:none} de arriba ya mata
-   los velos; esto deja el estado escrito). Impresión: papel limpio, sin
-   cielo. fx-fin (bots): nada que congelar — no hay animación por tiempo,
-   y en lo alto de la página los velos están a 0 igual que sin JS. */
 @media (prefers-reduced-motion: reduce){
   .cielo__velo{opacity:0 !important;animation:none !important}
 }
@@ -1275,16 +549,6 @@ html.fx-fin .byline .ph img{opacity:1!important;transform:none!important;animati
 }
 html.fx-fin .cielo__velo{animation:none !important;opacity:0 !important}
 
-/* — Rótulos de estación (obra 21-08, paso 2): cada tramo anuncia dónde estás.
-     position:sticky (Mozilla lo recomienda frente a reposicionar desde el
-     evento de scroll: no escribe en el DOM mientras te mueves — cero trabajo
-     por cuadro). Tipografía de la casa (el eyebrow mono), ningún estilo
-     inventado. NO son pulsables: el rail con enlaces es del paso 3 de E.9,
-     que es otra obra. Estaciones del plan: el Cielo es el hero (se anuncia
-     solo con su título); Instrumentos, Lo medido, La mesa y El destino
-     llevan rótulo. Sticky no es animación: con movimiento reducido se queda
-     (visible y quieto), y el fundido de entrada lo hereda de .reveal, que ya
-     tiene sus tres salidas (reduce / print / fx-fin). */
 .rotulo{position:sticky;top:14px;z-index:6;width:fit-content;
   font-family:var(--mono);font-weight:500;font-size:.68rem;text-transform:uppercase;
   letter-spacing:.22em;color:var(--soft);display:flex;align-items:center;gap:.6em;
@@ -1296,21 +560,6 @@ html.fx-fin .cielo__velo{animation:none !important;opacity:0 !important}
   .rotulo{position:static}
 }
 
-/* — Montaje por piezas (obra 21-08, paso 3 · patrón del anexo a.2).
-     DIANA DECLARADA: el patrón pedía el muñeco anatómico del acto 1, pero esa
-     demo es una CAPTURA raster (exercise-anatomy.webp): trocearla exigiría
-     imágenes nuevas (peso) o cirugía mayor del marcado. El anexo prevé la
-     alternativa y se aplica: los 4 nodos del acto del proceso CONVERGEN sobre
-     su sitio al entrar en pantalla, alternando lado, con transform + view().
-     Cero imágenes, cero peso, cero JS.
-     Dueño único: dentro de este @supports el transform/opacity del NODO pasa
-     a ser de ESTA animación (la transición de «ANIMACIONES AMBIENTALES» queda
-     derogada aquí con transition:none; sin soporte, esa transición sigue
-     siendo la dueña, como hasta hoy). El transform del CONTENEDOR .stage
-     sigue siendo del JS de la basculación: elementos distintos, dueños
-     distintos. P7: se parte de scale(.96) + opacity 0, jamás scale(0); techo
-     de escala 5% respetado (4%). El efecto COMPLETA en el fotograma 50%
-     (trampa E.7 nº3: el 100% de view() cae con el elemento ya saliendo). */
 @keyframes stageMonta{
   from{opacity:0;transform:translate3d(var(--monta-x,0),14px,0) scale(.96)}
   50%,to{opacity:1;transform:none}
@@ -1319,54 +568,26 @@ html.fx-fin .cielo__velo{animation:none !important;opacity:0 !important}
   @media (prefers-reduced-motion: no-preference){
     html.js .stage__node{
       transition:none;
-      animation:stageMonta linear both;   /* 1º el atajo */
-      animation-duration:1ms;             /* 2º la duración distinta de cero */
-      animation-timeline:view();          /* 3º el reloj, SIEMPRE el último */
+      animation:stageMonta linear both;
+      animation-duration:1ms;
+      animation-timeline:view();
     }
     html.js .stage__node:nth-child(odd){--monta-x:-34px}
     html.js .stage__node:nth-child(even){--monta-x:34px}
   }
 }
-/* Degradación del montaje: con movimiento reducido no hay animación (el
-   *{animation:none} global) y el nodo queda visible en su sitio; en print y
-   en fx-fin se fija el estado final DE VERDAD (sin animación, no un frame 0%).
-   La regla fx-fin de opacity/transform del nodo ya existe arriba (línea del
-   bloque failsafe); aquí solo se le quita el reloj. */
 @media print{
   html.js .stage__node{animation:none !important;opacity:1 !important;transform:none !important;transition:none !important}
 }
 html.fx-fin .stage__node{animation:none !important}
 
-/* — Marca de agua tipográfica (obra 21-08, paso 4 · anexo a.4): el texto
-     gigante en serifa de las demos de Emergent, aplicado a vestir las
-     estaciones. Un nodo por tramo, serifa del SISTEMA (--serif: cero bytes
-     de fuente nueva), recortada a su sección (el recorte vive en .deriva,
-     NUNCA en la sección: un overflow en la sección mataría el sticky de los
-     rótulos).
-     ⚠️ REVERSIÓN MEDIDA (21-08, banco del viaje): la DERIVA por scroll que
-     pedía el anexo se construyó (animation-timeline: scroll(root), solo
-     transform, compositor) y SE RETIRÓ: la capa compositada del span costaba
-     1 cuadro doblado (33,4-50 ms) por recorrido, medido con mediana de 3 en
-     dos tamaños (11rem y 8rem); sin la animación, 0. El gate de cero cuadros
-     perdidos no se negocia (E.9 paso 7). La marca queda ESTÁTICA: sin
-     animación no hay capa propia, se pinta con su sección y su coste quedó
-     medido en el suelo. Quien quiera resucitar la deriva: que vuelva a medir
-     con mide.mjs y solo si da 0 perdidos en mediana de 3. */
 .deriva{position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:0}
 .deriva span{position:absolute;left:0;right:0;top:clamp(30px,8vw,90px);text-align:center;
   white-space:nowrap;font-family:var(--serif);font-weight:700;line-height:1;
-  /* tope 8rem: con 11rem la palabra larga desbordaba el recorte por los dos
-     lados en portátil; a 8rem viste sin comerse el tramo. (El tamaño ya NO es
-     asunto de rendimiento: estática no tiene capa propia — ver reversión.) */
   font-size:clamp(4rem,12vw,8rem);letter-spacing:-.01em;
   color:rgba(238,242,236,.055);user-select:none}
-/* Las cuatro secciones con estación anclan su deriva; su .wrap sube a z1
-   para que el contenido siempre lea por encima de la marca de agua. */
-.features,.stats,.plate,.roadmap{position:relative}
-.features>.wrap,.stats>.wrap,.plate>.wrap,.roadmap>.wrap{position:relative;z-index:1}
-/* Degradación de la marca de agua: estática por construcción (sin animación
-   no hay nada que degradar en reduce ni en fx-fin); en impresión no existe
-   (papel limpio). */
+.features,.stats,.plate{position:relative}
+.features>.wrap,.stats>.wrap,.plate>.wrap{position:relative;z-index:1}
 @media print{
   .deriva{display:none !important}
 }
@@ -1374,9 +595,6 @@ html.fx-fin .stage__node{animation:none !important}
 </head>
 <body>
 
-<!-- VIAJE · el cielo: un solo elemento fijo detrás de todo. Base = la noche
-     del hero; los velos cambian el color del mundo por tramo, pilotados por
-     el scroll en el compositor (CSS puro, cero JS). Decorado puro. -->
 <div class="cielo" aria-hidden="true">
   <div class="cielo__velo cielo__velo--azul"></div>
   <div class="cielo__velo cielo__velo--jade"></div>
@@ -1384,10 +602,8 @@ html.fx-fin .stage__node{animation:none !important}
   <div class="cielo__velo cielo__velo--alba"></div>
 </div>
 
-<!-- ULTRA · barra de progreso de lectura -->
 <div class="uprog" aria-hidden="true"></div>
 
-<!-- ULTRA · intro cinematográfico: presenta la marca y se retira; interrumpible (un gesto lo salta); oculto con reduced-motion -->
 <div class="intro" aria-hidden="true">
   <div class="intro__brand">
     <span class="c" style="--i:0">J</span><span class="c" style="--i:1">V</span><span class="c sp" style="--i:2">&nbsp;</span><span class="c j" style="--i:3">F</span><span class="c j" style="--i:4">i</span><span class="c j" style="--i:5">t</span><span class="c j" style="--i:6">n</span><span class="c j" style="--i:7">e</span><span class="c j" style="--i:8">s</span><span class="c j" style="--i:9">s</span>
@@ -1396,9 +612,7 @@ html.fx-fin .stage__node{animation:none !important}
   <span class="intro__tag">Nutrición y entrenamiento con base científica</span>
 </div>
 
-<!-- ================= HERO ================= -->
 <header class="hero">
-  <!-- FLOW · campo de energía vivo detrás del hero (canvas vanilla, sin libs, self-contained) -->
   <canvas class="hero__field" aria-hidden="true"></canvas>
   <div class="wrap hero__inner">
     <div>
@@ -1412,7 +626,7 @@ html.fx-fin .stage__node{animation:none !important}
       <p class="tagline">Nutrición y entrenamiento con base científica, en el móvil.</p>
 
       <div class="cta-row">
-        <a class="btn btn--primary" href="index.html">Probar la app en vivo</a><!-- enlace mágico: quien venga del showcase (reclutadores) entra SIN la puerta de contraseña; el resto del mundo la sigue viendo -->
+        <a class="btn btn--primary" href="index.html">Probar la app en vivo</a>
       </div>
 
       <div class="byline">
@@ -1429,7 +643,6 @@ html.fx-fin .stage__node{animation:none !important}
   </div>
 </header>
 
-<!-- ================= FEATURES ================= -->
 <main>
 <section class="features">
   <div class="deriva" aria-hidden="true"><span>Instrumentos</span></div>
@@ -1442,20 +655,17 @@ html.fx-fin .stage__node{animation:none !important}
       <p>Todo esto está construido y en uso.</p>
     </div>
 
-    <!-- Feature 1 · escáner de etiqueta -->
     <div class="frow reveal">
       <div class="frow__text">
         <span class="feat-eyebrow">Cámara</span>
-        <!-- N1 · el titular se descifra al entrar en pantalla: es lo que hace el OCR -->
         <h3 data-fx="desc">Lee la etiqueta con la cámara</h3>
         <p class="lead">Apunta a la tabla nutricional y la app la lee: energía, macros, sal y azúcares. También escanea <strong>códigos de barras</strong>.</p>
       </div>
       <div class="frow__media">
-        <figure class="shot"><img src="assets/shots/label-scanner.webp" alt="Modo «Escanear etiqueta» de JV Fitness: una tabla de información nutricional encuadrada dentro del recuadro guía de la cámara, con las fuentes de datos Open Food Facts y BEDCA/AESAN al pie." width="720" height="1145" loading="lazy"></figure>
+        <figure class="shot"><img src="assets/shots/label-scanner.webp" alt="Modo «Escanear etiqueta» de JV Fitness: una tabla de información nutricional encuadrada dentro del recuadro guía de la cámara, con las fuentes de datos Open Food Facts y BEDCA/AESAN al pie." width="720" height="1288" loading="lazy"></figure>
       </div>
     </div>
 
-    <!-- Feature 2 · biblioteca de ejercicios -->
     <div class="frow frow--flip reveal">
       <div class="frow__text">
         <span class="feat-eyebrow">Más de 1.500 ejercicios</span>
@@ -1463,17 +673,14 @@ html.fx-fin .stage__node{animation:none !important}
         <p class="lead">Todos llevan mapa muscular: pinta en <strong style="color:var(--ember)">rojo el músculo principal</strong> y en naranja los secundarios. Más de 1.250 traen además las instrucciones paso a paso. De un vistazo sabes qué estás trabajando.</p>
       </div>
       <div class="frow__media">
-        <figure class="shot shot--tall"><img src="assets/shots/exercise-anatomy.webp" alt="Ficha del ejercicio «Press banca» en JV Fitness: dos siluetas (frente y espalda) con el pecho resaltado en rojo y los hombros en naranja, los músculos que trabaja y las instrucciones «Cómo se hace» paso a paso." width="720" height="1649" loading="lazy"></figure>
+        <figure class="shot shot--tall"><img src="assets/shots/exercise-anatomy.webp" alt="Ficha del ejercicio «Press de pecho en máquina» en JV Fitness: dos siluetas (frente y espalda) con el pecho resaltado en rojo y los hombros y tríceps en naranja, los músculos que trabaja y las instrucciones «Cómo se hace» paso a paso." width="720" height="1348" loading="lazy"></figure>
       </div>
     </div>
-    <!-- Feature 3 (motor Jarvis, tarjeta estatica) RETIRADA el 30-08: la Escena 1 viva
-         de aqui abajo cuenta lo mismo demostrandolo. Orden de Pablo: «quita la parte que repites». -->
-    <!-- tres funciones más (spec cards) -->
     <div class="spec-grid">
       <div class="spec-card reveal">
-        <span class="feat-eyebrow">Más de 236.000 alimentos</span>
+        <span class="feat-eyebrow">Más de 236.000 productos</span>
         <h3>Diario de comida sin conexión</h3>
-        <p>Una base de más de 236.000 alimentos viaja en el móvil y se consulta sin conexión: en el metro, en el gimnasio, donde sea. Y más de <strong>30 cadenas de restauración</strong> con sus platos y su información nutricional, para que no tengas que preocuparte si comes fuera.</p>
+        <p>Una base de más de 236.000 productos viaja en el móvil y se consulta sin conexión: en el metro, en el gimnasio, donde sea. Y más de <strong>30 cadenas de restauración</strong> con sus platos y su información nutricional, para que no tengas que preocuparte si comes fuera.</p>
       </div>
       <div class="spec-card reveal d1">
         <span class="feat-eyebrow">Agua y cafeína</span>
@@ -1489,28 +696,7 @@ html.fx-fin .stage__node{animation:none !important}
   </div>
 </section>
 
-<!-- ============ ESCENA 1 DEL VIAJE ASTRAL . EL CEREBRO CONVERSANDO ============
-     Integrada el 30-08-2026 con el OK de Pablo tras verla suelta («me gusta para
-     meterlo en la showcase»). Es la pieza portable de _piezas/escena-cerebro/, pegada
-     CON su reserva del orbe (esta pagina no lleva la pieza del orbe aparte) y sin la
-     linea de metas que solo vale en el fichero suelto. Los textos son LITERALES del
-     motor de la app. Cualquier cambio: editarlo en la pieza y volver a pegar.
-     [30-08 bis] RE-SINCRONIZADA con la ESCENA 1-bis encadenada: tras la 3a pregunta
-     entra el AVISO DE LA CREATINA. Trae dentro el espejo de _piezas/aviso-jarvis/. -->
-<!-- Solo cuentan sueltas (showcase trae las suyas): sin charset, tildes
- rotas (medido); sin viewport, el movil pinta a 980px. -->
-<!-- ESCENA 1 . EL CEREBRO CONVERSANDO . PIEZA PORTABLE
-     Suelta (doble clic) o pegada en showcase.html: hereda los tokens
-     var(--jade,...) o usa la reserva. ORBE: se usa #jv-orbe-molde si existe;
-     si no, la RESERVA de abajo (file:// impide enlazar). RESPUESTAS: texto
-     LITERAL del motor (empezar/hub, proteina/cuanta-al-dia,
-     sueno/cuantas-horas; comprobadas 28-08-2026).
-     [30-08] ENCADENADA la ESCENA 1-bis: tras la 3a pregunta no se corta, entra el
-     AVISO DE LA CREATINA en la misma conversacion y despues vuelve el ciclo. La
-     tarjeta es la pieza _piezas/aviso-jarvis/ (espejo mas abajo) y su texto sale
-     literal de flexCreatinaHoy() de la app. -->
 <style>
-/* mute2 de reserva: AA 4,5:1. */
 .jvce{--ce-jade:var(--jade,#3DDC97);--ce-bone:var(--bone,#EEF2EC);--ce-soft:var(--soft,#CBD8D1);--ce-mute2:var(--mute-2,#7E968B);--ce-line:var(--line,#1E3A31);--ce-lines:var(--line-soft,#16281F);--ce-panel:var(--panel,#101E19);--ce-panel2:var(--panel-2,#0D1B16);--ce-r:var(--r,16px);--ce-display:var(--display,'Space Grotesk',system-ui,sans-serif);--ce-mono:var(--mono,ui-monospace,Consolas,monospace);--ce-body:var(--body,system-ui,-apple-system,'Segoe UI',Roboto,sans-serif);--ce-casa:var(--ease-casa,cubic-bezier(.32,.72,0,1));--ce-entra:var(--ease-entra,cubic-bezier(.2,.8,.2,1))}
 html.jvce-suelta body{margin:0;background:#0A100E;color:#EEF2EC;font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
 .jvce{position:relative;padding:clamp(26px,6vw,72px) 0;color:var(--ce-bone);font-family:var(--ce-body);line-height:1.62}
@@ -1525,7 +711,6 @@ html.jvce-suelta body{margin:0;background:#0A100E;color:#EEF2EC;font-family:syst
 .jvce-barra{display:flex;align-items:center;gap:.6em;padding:11px 14px;font-size:.7rem;border-bottom:1px solid var(--ce-lines);font-family:var(--ce-mono);letter-spacing:.04em;color:var(--ce-soft)}
 .jvce-vivo{width:7px;height:7px;border-radius:50%;background:var(--ce-jade);flex:none;box-shadow:0 0 8px var(--ce-jade)}
 .jvce-barra i{margin-left:auto;color:var(--ce-mute2);font-size:.64rem;font-style:normal}
-/* hidden, NO auto: el dedo del movil quedaba atrapado; el guion usa scrollTop. */
 .jvce-hilo{height:clamp(320px,42vh,430px);overflow:hidden;padding:16px 14px 18px;display:flex;flex-direction:column;gap:12px;transition:opacity 380ms var(--ce-casa),transform 380ms var(--ce-casa)}
 .jvce-hilo.se-va{opacity:0;transform:translateY(-10px)}
 .jvce-b{max-width:88%;border-radius:14px;padding:11px 14px;font-size:.94rem;line-height:1.5;opacity:0;transform:translateY(16px);transition:opacity 420ms var(--ce-entra),transform 420ms var(--ce-entra)}
@@ -1544,20 +729,11 @@ html.jvce-suelta body{margin:0;background:#0A100E;color:#EEF2EC;font-family:syst
 .jvce-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
 .jvce-chip{font-size:.74rem;line-height:1.35;padding:6px 11px;border-radius:100px;font-weight:500;border:1px solid var(--ce-line);color:var(--ce-jade);transform:translateY(6px) scale(.96)}
 .jvce-sello{margin-top:12px;padding-top:8px;border-top:1px dashed var(--ce-lines);font-family:var(--ce-mono);font-size:.62rem;letter-spacing:.06em;color:var(--ce-mute2)}
-/* [30-08] EL CORTE que encadena con la Escena 1-bis: separador de chat, no texto que
-   leer. Color FIJO y no --ce-mute2: ese token vale #5E756B en showcase y da 3,5:1,
-   por debajo del AA de 4,5:1 (medido). #7E968B da 5,4:1 sobre el panel. */
 .jvce-corte{align-self:center;display:flex;align-items:center;gap:.7em;padding:2px 0;font-family:var(--ce-mono);font-size:.6rem;letter-spacing:.16em;text-transform:uppercase;color:#7E968B}
 .jvce-corte::before,.jvce-corte::after{content:"";width:22px;height:1px;background:var(--ce-lines)}
-/* [30-08] LA TARJETA DEL AVISO SE APLASTABA, y esto es un bug medido, no una precaucion:
-   dentro del hilo es un item de una columna flex de altura fija, y como la pieza lleva
-   overflow:hidden su min-height:auto pasa a valer 0, asi que el navegador la encoge.
-   Medido en Chrome: 24,6px de los ~140 que ocupa. flex:none se lo impide. La pieza NO
-   lleva esta regla a proposito: el aprieto lo pone este contenedor, no ella. */
 .jvce-hilo .jvav{flex:none}
 .jvce-entrada{display:flex;align-items:center;gap:10px;padding:12px 14px;border-top:1px solid var(--ce-lines);background:rgba(12,21,18,.5)}
 .jvce-campo{flex:1;min-width:0;font-size:.92rem;color:var(--ce-bone);white-space:pre-wrap;overflow-wrap:anywhere}
-/* :empty no casa (cursor hijo fijo): hueco por clase. */
 .jvce-campo.esta-vacio::before{content:attr(data-hueco);color:var(--ce-mute2)}
 .jvce-cursor{display:inline-block;width:2px;height:1.02em;background:var(--ce-jade);vertical-align:-.14em;margin-left:2px;opacity:0}
 .jvce-enviar{flex:none;width:32px;height:32px;border-radius:50%;display:grid;place-items:center;border:1px solid var(--ce-lines);color:var(--ce-mute2);transition:color .2s var(--ce-casa),border-color .2s var(--ce-casa),background .2s var(--ce-casa)}
@@ -1566,42 +742,30 @@ html.jvce-suelta body{margin:0;background:#0A100E;color:#EEF2EC;font-family:syst
 .jvce-punto{width:26px;height:26px;padding:0;border:0;background:none;cursor:pointer;display:grid;place-items:center}
 .jvce-punto::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--ce-mute2);transition:background .22s var(--ce-casa),transform .22s var(--ce-casa)}
 .jvce-punto[aria-current="true"]::before{background:var(--ce-jade);transform:scale(1.3)}
-/* [17-09] Salto del punto siguiente (ver avanzar() en el script): solo transform, dentro del +-5%. */
 .jvce-punto--salta::before{animation:jvce-salto 420ms var(--ce-entra)}
 @keyframes jvce-salto{0%{transform:scale(1)}50%{transform:scale(1.04)}100%{transform:scale(1)}}
-/* Pausa (WCAG 2.2.2). */
 .jvce-pausa{height:26px;padding:0 8px;border:1px solid var(--ce-lines);border-radius:100px;background:none;color:var(--ce-mute2);cursor:pointer;font-size:.72rem;line-height:1}
 .jvce-pausa[aria-pressed="true"]{color:var(--ce-jade);border-color:var(--ce-jade)}
 .jvce :focus-visible{outline:2px solid var(--ce-jade);outline-offset:3px;border-radius:4px}
 .jvce.esta-en-pantalla .jvce-cursor{animation:jvce-parp 1.06s steps(1) infinite}
 .jvce.esta-en-pantalla .jvce-vivo{animation:jvce-late 2.6s ease-in-out infinite}
-/* Apagado por CLASE: la animacion pisa la opacity en linea. (0,3,0) y despues. */
 .jvce .jvce-cursor.jvce-cursor--off{animation:none;opacity:0}
 @keyframes jvce-parp{0%,49%{opacity:1}50%,100%{opacity:0}}
 @keyframes jvce-late{0%,100%{opacity:1}50%{opacity:.35}}
-/* EL ORBE SE PARA fuera de pantalla: play-state no reinicia; (0,3,0) gana a .cb-orb. */
 .jvce:not(.esta-en-pantalla) .cb-orb,
 .jvce:not(.esta-en-pantalla) .cb-orb::before,
 .jvce:not(.esta-en-pantalla) .cb-orb::after{animation-play-state:paused}
 @media (min-width:640px){.jvce-wrap{max-width:600px;padding:0 22px}.jvce-hilo{height:430px}}
-/* Movil: orbe a 96px (medido a 375px). */
 @media (max-width:639px){.jvce-orbe{height:96px}.jvce-orbe .jv-orbe{transform:scale(.727)}}
-/* REDUCIDO: cero animaciones (el guion ni arranca). SELECTOR DOBLADO: la media
-   NO suma especificidad y anima '.jvce.esta-en-pantalla .jvce-cursor' (0,3,0);
-   con (0,2,0) el cinturon PERDIA. 3a vez de esta trampa (anillos y luz del
-   orbe): apagar con el mismo peso o mas, y DESPUES. */
 @media (prefers-reduced-motion:reduce){
  .jvce.jvce .jvce-cursor{animation:none;opacity:0}
  .jvce.jvce .jvce-vivo{animation:none;opacity:1}
  .jvce .jvce-b,.jvce .jvce-bl,.jvce .jvce-li,.jvce .jvce-chip{transition:none;opacity:1;transform:none}
  .jvce .jvce-hilo,.jvce .jvce-enviar,.jvce .jvce-punto::before{transition:none}
  .jvce .jvce-punto--salta::before{animation:none}
- /* Ruta quieta: sin esto la respuesta quedaba CORTADA. */
  .jvce .jvce-hilo{height:auto}
 }</style>
 
-<!-- ==== CORTE . RESERVA DEL ORBE: BORRARLA ENTERA al pegar en el escaparate
-     (ya trae #jv-orbe-molde). Espejo de orbe-pieza.html 28-08-2026. -->
 <template id="jvce-orbe-repuesto">
 <style>
 .cb-orb{position:relative;flex:none;border-radius:50%;background:radial-gradient(circle at 35% 28%, #d6ffee 0%, #6fe9b8 22%, #3DDC97 42%, #1c8f66 64%, #0c4331 84%, #072a20 100%);box-shadow:0 0 44px 6px rgba(61,220,151,.30),0 0 92px 24px rgba(255,106,61,.22),inset -6px -9px 26px rgba(0,0,0,.55),inset 7px 9px 22px rgba(255,255,255,.28);animation:cbbreath 6s ease-in-out infinite}
@@ -1662,16 +826,8 @@ html.jvce-suelta body{margin:0;background:#0A100E;color:#EEF2EC;font-family:syst
  </span>
 </template>
 </template>
-<!-- ==== FIN DE LA COPIA DE RESERVA ==== -->
 
-<!-- ==== ESPEJO de _piezas/aviso-jarvis/aviso-jarvis.html (30-08-2026), VERBATIM.
-     No se enlaza porque file:// lo impide, igual que la reserva del orbe. Si algun dia
-     la pagina ya trae la pieza, esto queda redundante pero inocuo: son las mismas reglas
-     y la misma funcion, y la segunda declaracion pisa a la primera con lo mismo.
-     Si tocas la pieza, VUELVE A PEGARLA aqui. ==== -->
 <style>
-/* --mute-2 NO se hereda: en showcase da 3,5:1, bajo AA. Fijo #7E968B = 5,1:1 sobre
-   el fondo, que tambien es fijo y propio: legible caiga donde caiga. */
 .jvav{--av-jade:var(--jade,#3DDC97);--av-bone:var(--bone,#EEF2EC);--av-soft:var(--soft,#CBD8D1);--av-mute:#7E968B;--av-line:var(--line,#1E3A31);--av-lines:var(--line-soft,#16281F);--av-mono:var(--mono,ui-monospace,Consolas,monospace);--av-entra:var(--ease-entra,cubic-bezier(.2,.8,.2,1));
  position:relative;overflow:hidden;padding:12px 14px 11px 16px;border:1px solid var(--av-line);border-radius:14px;color:var(--av-soft);
  background:linear-gradient(180deg,#16231D,#111F1A);box-shadow:0 10px 28px rgba(0,0,0,.34),inset 0 1px 0 rgba(255,255,255,.03);
@@ -1694,14 +850,11 @@ html.jvce-suelta body{margin:0;background:#0A100E;color:#EEF2EC;font-family:syst
 .jvav-sw[aria-checked="true"] .jvav-sw-via{background:rgba(61,220,151,.22)}
 .jvav-sw[aria-checked="true"] .jvav-sw-bola{background:var(--av-jade);transform:translateX(13px)}
 .jvav :focus-visible{outline:2px solid var(--av-jade);outline-offset:3px;border-radius:6px}
-/* REDUCIDO: pose final visible, transiciones fuera. SELECTOR DOBLADO a proposito: la
-   media NO suma especificidad y (0,1,0) perdia contra .se-va (0,2,0). 3a vez. */
 @media (prefers-reduced-motion:reduce){
  .jvav.jvav{transition:none;opacity:1;transform:none}
  .jvav.jvav .jvav-x,.jvav.jvav .jvav-sw-via,.jvav.jvav .jvav-sw-bola{transition:none}
 }</style>
 
-<!-- En template: si no, sale una tarjeta fantasma al pegar. -->
 <template id="jv-aviso-molde">
  <div class="jvav" role="status">
   <div class="jvav-cab">
@@ -1720,8 +873,6 @@ html.jvce-suelta body{margin:0;background:#0A100E;color:#EEF2EC;font-family:syst
 </template>
 
 <script>
-/* jvAvisoMostrar(contenedor,texto,opciones) -> {el,cerrar(),destruir()}. API en LEEME.md.
-   texto entra con textContent (LITERAL). destruir() la quita YA. */
 function jvAvisoMostrar(contenedor, texto, opciones){
   var o = opciones || {};
   var molde = document.getElementById("jv-aviso-molde");
@@ -1734,9 +885,7 @@ function jvAvisoMostrar(contenedor, texto, opciones){
   q(".jvav-sw-txt").textContent = o.etiqueta || "Avisarme de esto";
   var activo = (o.activo !== false);
   sw.setAttribute("aria-checked", activo ? "true" : "false");
-  /* Reducido = sin transicion: un transitionend que no llega la dejaria colgada. */
   var quieto = !!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
-  /* transitionend BURBUJEA: sin filtrar por target, la bola borraria la tarjeta. */
   function alAcabar(e){ if(e.target === el) mando.destruir(); }
   var mando = {
     el: el,
@@ -1761,15 +910,12 @@ function jvAvisoMostrar(contenedor, texto, opciones){
     mando.cerrar();
   });
   contenedor.appendChild(el);
-  /* Sin offsetWidth, inicio y fin caen en la misma tarea y NO transiciona. */
   void el.offsetWidth;
   el.classList.add("esta-dentro");
   return mando;
 }
 </script>
-<!-- ==== FIN DEL ESPEJO DEL AVISO ==== -->
 
-<!-- Epigrafe y h2 borrables si el escaparate ya pone titular. -->
 <section class="jvce" data-jv-escena-cerebro aria-labelledby="jvce_t">
  <div class="jvce-wrap">
   <p class="jvce-eyebrow">El cerebro contestando</p>
@@ -1793,29 +939,15 @@ function jvAvisoMostrar(contenedor, texto, opciones){
 (function(){
 'use strict';
 var T={TECLA:38,AZAR:46,COMA:250,ENVIAR:320,
-PENSAR:850, /* LA PAUSA: sin minimo no llega a verse; ni se quita ni se acorta */
-/* [17-09] Tiempos SUBIDOS otra vez, orden de Pablo: la respuesta se revelaba casi entera en
-   ~2-3 s y luego quedaba QUIETA el resto de la lectura (hasta 10 s) — «no muestra bien la
-   animacion». Ahora el salto de un bloque a otro se reparte a lo largo de mas tiempo, se ve
-   avanzar «poquito a poco» en vez de un estallido inicial seguido de aire muerto. */
+PENSAR:850,
 BLOQUE:700,ITEM:260,FUENTE:500,CHIPS:420,CHIP:140,SELLO:380,
-/* [30-08] Antes: BLOQUE 230, ITEM 95, LEE 2600 + 12/car con tope 6500 (subido esa vez a 340/130). */
 LEE:4200,LEE_CHAR:18,LEE_TOPE:10000,CORTE:500,
-/* [30-08] Escena 1-bis: el respiro entre el corte de montaje y la tarjeta del aviso.
-   Es la pausa que hace que el aviso se lea como algo que pasa DESPUES, no como otro
-   bloque mas de la respuesta. */
 AVISO:820};
-/* [30-08] ESCENA 1-bis . EL AVISO DE LA CREATINA.
-   texto: LITERAL de flexCreatinaHoy() (app/jv-fitness-mvp.html, variante "carinoso",
-   comprobado 30-08-2026). Ni una coma distinta: la frase cientifica es real.
-   corte: el edit que encadena. No es informacion que haya que leer, es el "mas tarde"
-   de un montaje; por eso va en minusculas, pequeno y centrado. */
 var AVISO={
 corte:"más tarde, en tu diario",
 mando:"Avisarme de esto",
 texto:"¿Creatina de hoy? 💊 Aún no la veo apuntada. Funciona por saturación: cada día suma, también los de descanso."
 };
-/* Texto del motor real (cabecera); el innerHTML solo recibe estas constantes. */
 var GUION=[
 {q:"Estoy abrumado, no sé cómo empezar",
 sello:"ficha empezar/hub · score 10",
@@ -1865,7 +997,6 @@ if(!raiz) return;
 function id(x){ return document.getElementById(x); }
 var hilo=id('jvce_hilo'),campo=id('jvce_campo'),cursor=id('jvce_cur'),
    boton=id('jvce_env'),puntos=id('jvce_puntos');
-/* Suelto: vestirse y declarar lang. */
 var de=document.documentElement;
 if(!getComputedStyle(de).getPropertyValue('--bg').trim()){
 de.classList.add('jvce-suelta');
@@ -1885,7 +1016,6 @@ if(typeof jvOrbeEstado==='function') return jvOrbeEstado(orbe,e);
 orbe.classList.toggle('jv-orbe--pensando',e==='pensando');
 }
 var quieto=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-/* Al parar, gen++: las citas en vuelo no hacen nada. */
 var gen=0,relojes=[],activa=false,idx=0,finPensar=null,pausado=false,completar=null,avisoVivo=null;
 function cita(ms,fn){
 var g=gen;
@@ -1899,7 +1029,6 @@ if(finPensar){ finPensar(); finPensar=null; }
 orbeEstado('reposo');
 raiz.classList.remove('esta-en-pantalla');
 }
-/* .in en la misma tarea no transiciona: offsetWidth fuerza el estado de partida. */
 function pintar(el){ void el.offsetWidth; el.classList.add('in'); }
 function nodo(t,c,h){
 var e=document.createElement(t);
@@ -1910,12 +1039,6 @@ return e;
 function seguir(el){
 var d=el.getBoundingClientRect().bottom-hilo.getBoundingClientRect().top
      +hilo.scrollTop-hilo.clientHeight+16;
-/* [30-08] El scroll SUAVE se queda. Hubo un intento de cambiarlo por un salto seco
-   alegando que Chrome ignora scrollTo({behavior:'smooth'}) con overflow:hidden: ese
-   banco NO se reproduce (5 de 5 suaves llegaron al destino, y con la rafaga real
-   llego a 330,4 de 330). La tarjeta que no se veia era otra cosa: el aplastamiento
-   flex, arreglado arriba con .jvce-hilo .jvav{flex:none}. Se revierte al original,
-   que es lo que Pablo aprobo viendolo. */
 if(d>hilo.scrollTop){
  if(hilo.scrollTo) hilo.scrollTo({top:d,behavior:quieto?'auto':'smooth'});
  else hilo.scrollTop=d;
@@ -1948,9 +1071,6 @@ return Math.min(T.LEE_TOPE,T.LEE+n*T.LEE_CHAR);
 }
 function limpiar(){
 marcar();
-/* [30-08] La tarjeta del aviso se DESTRUYE aqui, no se deja al innerHTML: es una pieza
-   con su propio ciclo (puede tener una transicion de salida a medias) y quien la monta
-   es quien la tiene que quitar. Si la escena se corta a mitad, no queda colgada. */
 if(avisoVivo){ avisoVivo.destruir(); avisoVivo=null; }
 hilo.classList.remove('se-va');
 hilo.innerHTML='';
@@ -1975,16 +1095,7 @@ cursor.classList.remove('jvce-cursor--off');
  cita(espera,paso);
 })();
 }
-/* [30-08] EL ENCADENADO DE LA ESCENA 1-bis.
-   Antes, las dos salidas de un tramo (la normal y la del toque para completar) repetian
-   las mismas cuatro lineas. Ahora las dos llaman a cerrarTramo(), que es el UNICO sitio
-   que decide que pasa al acabar una respuesta: si es la ultima pregunta, en vez de
-   cortar entra el aviso; si no, se pasa a la siguiente como siempre.
-   Todo por cita(): si la escena sale de pantalla, parar() mata estos relojes tambien. */
 function avanzar(){
-/* [17-09] El punto de la SIGUIENTE pregunta da un salto ya al empezar a irse el hilo: se ve
-   A DONDE vamos antes de que la tarjeta termine de desaparecer, para que el paso a la
-   siguiente lea como un paso y no como un parpadeo. Solo transform (Never Ship). */
 var sig=puntos.children[(idx+1)%GUION.length];
 if(sig){ sig.classList.remove('jvce-punto--salta'); void sig.offsetWidth; sig.classList.add('jvce-punto--salta'); }
 hilo.classList.add('se-va');
@@ -1995,7 +1106,6 @@ function tramoAviso(){
 var sep=nodo('div','jvce-bl jvce-corte',AVISO.corte);
 hilo.appendChild(sep); pintar(sep); seguir(sep);
 cita(T.AVISO,function(){
- /* Si por lo que sea no hay pieza de aviso, la escena NO se queda parada: sigue. */
  if(typeof jvAvisoMostrar!=='function'){ avanzar(); return; }
  avisoVivo=jvAvisoMostrar(hilo,AVISO.texto,{etiqueta:AVISO.mando});
  if(avisoVivo) seguir(avisoVivo.el); else { avanzar(); return; }
@@ -2019,17 +1129,12 @@ teclear(f.q,function(){
  finPensar=(typeof jvOrbePensar==='function'&&orbe)?jvOrbePensar(orbe,T.PENSAR)
           :(orbeEstado('pensando'),function(){ orbeEstado('respondido'); });
  cita(T.PENSAR,function(){
-  /* [30-08] Orden de Pablo: el orbe sigue PENSANDO mientras responde, y solo se apaga al
-     terminar de responder (antes se apagaba aqui, justo al empezar a contestar). Si la
-     escena se corta a mitad, la red de seguridad de parar() lo apaga igual. */
   var m=montar(f);
   hilo.appendChild(m.caja); pintar(m.caja);
   for(var i=0;i<m.pasos.length;i++)
    (function(p){ cita(p[0],function(){ pintar(p[1]); seguir(p[1]); }); })(m.pasos[i]);
   cita(m.fin,function(){ if(finPensar){ finPensar(); finPensar=null; } });
   cita(m.fin+lectura(f),cerrarTramo);
-  /* [30-08] Toque para completar: igual que hara la app (P2a del pliego del motor). Un toque en
-     el hilo pinta de golpe lo que quede, apaga el orbe y deja el tiempo de lectura entero. */
   completar=function(){
    completar=null;
    gen++;
@@ -2043,7 +1148,6 @@ teclear(f.q,function(){
  });
 });
 }
-/* Quieta. Sin 'esta-en-pantalla' el cursor ya es invisible. */
 function estatica(){
 var f=GUION[idx];
 limpiar();
@@ -2052,9 +1156,6 @@ var m=montar(f);
 m.caja.classList.add('in');
 for(var i=0;i<m.pasos.length;i++) m.pasos[i][1].classList.add('in');
 hilo.appendChild(m.caja);
-/* [30-08] El aviso TAMBIEN sale en la ruta quieta. Sin esto, quien pide movimiento
-   reducido no veria nunca la Escena 1-bis: no se apaga la informacion, se apaga el
-   movimiento. La tarjeta ya trae su propio apagado por prefers-reduced-motion. */
 if(idx===GUION.length-1){
 hilo.appendChild(nodo('div','jvce-bl jvce-corte in',AVISO.corte));
 if(typeof jvAvisoMostrar==='function') avisoVivo=jvAvisoMostrar(hilo,AVISO.texto,{etiqueta:AVISO.mando});
@@ -2103,39 +1204,13 @@ for(var i=0;i<es.length;i++){
 document.addEventListener('visibilitychange',function(){
 if(document.hidden) parar(); else if(dentro) encender();
 });
-/* [30-08] Toque para completar la respuesta (orden de Pablo: igual que la app). Solo actua
-   mientras hay respuesta revelandose; en pausa o en reposo no hace nada. */
 hilo.addEventListener('pointerdown',function(){ if(completar&&activa&&!pausado) completar(); });
 }
 if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',arranque);
 else arranque();
 })();</script>
-<!-- ============ FIN ESCENA 1 ============ -->
-<!-- ============ ESCENA 5 DEL VIAJE ASTRAL . LAS RUTINAS ============ -->
-<!-- ESCENA 5 . LAS RUTINAS . PIEZA PORTABLE
-     Suelta o pegada en showcase.html: hereda var(--jade,...) o usa la reserva.
-     QUE DEMUESTRA (guion 21-08): que el catalogo se organiza por nivel, que cada rutina explica su
-     porque citando el master, que cada ejercicio lleva su guia y su nota, y que cualquiera se abre.
-     REHECHA el 16-09 tras la verificacion adversarial: la 1a version enseñaba el explorador y le
-     colgaba dentro cosas de OTRAS pantallas (el porque con el nombre de la rutina y la nota de
-     novato son del registro; y en el explorador los ejercicios no se tocan). Ahora RECORRE las
-     pantallas reales -se reconocen por su boton de volver, tambien literal- y cada una enseña SOLO
-     lo suyo: 1 explorador (expNivRender) · 2 y 3 la vista previa, arriba y abajo (expNivPreview) ·
-     4 el registro al empezarla (cargarRutina) · 5 la ficha del ejercicio (bibVer).
-     TODO LITERAL, medido contra master (origin/master d2f3d38) el 16-09-2026: RUTINAS (18 = 7+6+5;
-     las 6 de intermedio no se enseñan), expNivChips('fullbody'), la guia de expNivPreview (s×reps ·
-     RIR · descanso s) y el "🎯 objetivo:" de _entMeta (reps · RIR · s) -distintos a proposito: la
-     app los escribe distinto en cada pantalla-, y los 7 pasos de ejercicios-instr.json (d:"0025").
-     1.502 = EJERCICIOS.length y 1.287 = los que traen pasos (1.289 tienen d; dos no estan en el
-     JSON). Si cambia el catalogo, se re-mide.
-     ATREZO, y lo dice la nota al pie: el dedo, los chips de nivel y el emoji de la miniatura (ahi
-     la app pone la FOTO del ejercicio, que no viaja al showcase).
-     COMO SE MUEVE: arranca al verse (un cuarto, una vez) y si sale a medias se COMPLETA. Las cinco
-     pantallas se turnan en el MISMO hueco: cabe en el movil y no crece mientras corre; un toque las
-     desapila. Una tarjeta cada vez: lo anterior baja a .45. -->
 <style>
 .jvru{--ru-jade:var(--jade,#3DDC97);--ru-bone:var(--bone,#EEF2EC);--ru-soft:var(--soft,#CBD8D1);--ru-mute:var(--mute,#8CA69B);--ru-line:var(--line,#1E3A31);--ru-lines:var(--line-soft,#16281F);--ru-panel:var(--panel,#101E19);--ru-panel2:var(--panel-2,#0D1B16);--ru-display:var(--display,'Space Grotesk',system-ui,sans-serif);--ru-mono:var(--mono,ui-monospace,Consolas,monospace);--ru-body:var(--body,system-ui,-apple-system,'Segoe UI',Roboto,sans-serif);--ru-entra:var(--ease-entra,cubic-bezier(.2,.8,.2,1))}
-/* el gris es --mute: --mute-2, pegada, se queda en 3,5:1 e ilegible */
 .jvru-suelta body{margin:0;background:#0A100E;color:#EEF2EC}
 .jvru{padding:clamp(26px,6vw,72px) 0;color:var(--ru-bone);font-family:var(--ru-body);line-height:1.62}
 .jvru *{box-sizing:border-box}
@@ -2143,8 +1218,6 @@ else arranque();
 .jvru-eyebrow{font:500 .68rem var(--ru-mono);margin:0;text-transform:uppercase;letter-spacing:.2em;color:var(--ru-jade)}
 .jvru-h{font:700 clamp(1.45rem,5.4vw,2.05rem)/1.1 var(--ru-display);letter-spacing:-.02em;margin:.6rem 0 1.1rem}
 .jvru-h b,.jvru-sum,.jvru-cur,.jvru-enlace,.jvru-obj,.jvru-btn,.jvru-volver b{color:var(--ru-jade)}
-/* entra en 300 ms y sin pasar del 2 % (techo de mareo: 5 %); lo APAGADO cuelga de .jvru-js, que
-   pone el script: sin JS se lee todo (convencion del showcase, html.js .reveal) */
 .jvru-e,.jvru-pasos li{transition:opacity 300ms var(--ru-entra),transform 300ms var(--ru-entra),background 260ms,border-color 260ms,color 260ms}
 .jvru-js .jvru-e,.jvru-js .jvru-pasos li{opacity:0;transform:translateY(10px) scale(.98)}
 .jvru-js .jvru-pant{transform:translateX(10px)}
@@ -2154,11 +1227,6 @@ else arranque();
 .jvru-marco{border:1px solid var(--ru-line);border-radius:var(--r,16px);overflow:hidden;background:var(--ru-panel);box-shadow:0 24px 60px rgba(0,0,0,.5)}
 .jvru-barra{display:flex;align-items:center;gap:.6em;padding:11px 14px;font:.7rem var(--ru-mono);border-bottom:1px solid var(--ru-lines);letter-spacing:.04em;color:var(--ru-soft)}
 .jvru-vivo{width:7px;height:7px;border-radius:50%;background:var(--ru-jade);flex:none;box-shadow:0 0 8px var(--ru-jade)}
-/* hueco FIJO de 620 px: lo que pide la pantalla mas alta (los 8 ejercicios) a 360 px de ancho.
-   Las cinco se turnan dentro y ninguna hace crecer el marco */
-/* [16-09] La reserva de altura evita que la pagina salte al cambiar de pantalla, pero en pixeles
-   fijos dejaba medio marco negro en escritorio (el contenido encoge al ensancharse). Se reserva
-   lo que de verdad hace falta y solo donde hace falta: en movil, que es donde el salto se nota. */
 .jvru-cuerpo{padding:12px 14px 16px;min-height:340px}
 @media (max-width:520px){.jvru-cuerpo{min-height:620px}}
 .jvru-volver{display:flex;border:1px solid var(--ru-lines);border-radius:8px;padding:4px 9px;margin:0 0 9px}
@@ -2194,11 +1262,10 @@ else arranque();
 .jvru-pasos li::before{counter-increment:jvru;content:counter(jvru);position:absolute;left:0;top:2px;font:.66rem/1.7 var(--ru-mono);color:var(--ru-jade)}
 .jvru-pasos li.foco{color:var(--ru-bone)}
 .jvru-biblio{font-size:.84rem;color:var(--ru-soft);margin:14px 0 0}
-/* 5ch reservados: con el separador de miles el parrafo no gana linea ni empuja el pie */
 .jvru-biblio b{display:inline-block;min-width:5ch;text-align:right;color:var(--ru-jade);font:700 1.2rem var(--ru-display);letter-spacing:-.02em;font-variant-numeric:tabular-nums}
 .jvru-cita{margin:8px 0 0;font-size:.72rem}
-.jvru .jvru-tap{transform:scale(1.03)}   /* el golpe del dedo: un 3 % */
-.jvru .jvru-dim{opacity:.45}             /* lo que ya paso */
+.jvru .jvru-tap{transform:scale(1.03)}
+.jvru .jvru-dim{opacity:.45}
 @media (prefers-reduced-motion:reduce){.jvru *{transition:none!important;opacity:1!important;transform:none!important}}
 </style>
 
@@ -2278,20 +1345,17 @@ else arranque();
 const raiz=document.getElementById('jvru');
 if(!raiz||raiz.dataset.listo) return;
 raiz.dataset.listo='1';
-raiz.classList.add('jvru-js');   // sin ella no se apaga nada: sin JS se lee entera
+raiz.classList.add('jvru-js');
 if(!document.querySelector('.jvce')) document.documentElement.classList.add('jvru-suelta');
 const quieto=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const $=id=>document.getElementById(id);
 const cada=(l,c,on)=>Array.from(l).forEach(e=>e.classList[on?'add':'remove'](c));
 const pie=raiz.lastElementChild.children,chips=$('jvru-chips'),pasos=$('jvru-pasos').children,tarjs=$('jvru-tarjs').children;
 const ul={principiante:$('jvru-ul-p'),avanzado:$('jvru-ul-a')};
-const ROTULO={principiante:'🌱 Principiante (7)',avanzado:'🏆 Avanzado (5)'};  // expNivRender: icono+titulo+(cuantas)
-const TOTAL=1502,RUTINA=0,FICHA=1;   // EJERCICIOS.length · lo que toca el dedo
-// RUTINAS en su orden. De expNivCard queda el nombre y su «Ver ›»; sus 4 chips y la 1a frase del
-// porQue se ven en la pantalla siguiente.
+const ROTULO={principiante:'🌱 Principiante (7)',avanzado:'🏆 Avanzado (5)'};
+const TOTAL=1502,RUTINA=0,FICHA=1;
 const RUT={principiante:['Full-body 3 días (gimnasio)','Full-body 2 días (gimnasio)','Full-body en casa (mancuernas)','Full-body peso corporal','Push · empuje (principiante)','Pull · tirón (principiante)','Legs · pierna (principiante)'],
            avanzado:['Torso (torso-pierna 4 días · avanzado)','Pierna (torso-pierna 4 días · avanzado)','Push · empuje (avanzado)','Pull · tirón (avanzado)','Legs · pierna (avanzado)']};
-// RUTINAS.fullbody.ej: nombre · guia COMO la escribe expNivPreview · nota del catalogo
 const EJ=[['Sentadilla con barra','3×6-10 · técnica primero · descanso 150 s','Prioridad de pierna al inicio (T24).'],
           ['Press banca','3×6-10 · técnica primero · descanso 150 s','Empuje horizontal principal (T8).'],
           ['Remo con barra','3×6-10 · técnica primero · descanso 120 s','Tirón que equilibra el empuje.'],
@@ -2303,7 +1367,6 @@ const EJ=[['Sentadilla con barra','3×6-10 · técnica primero · descanso 150 s
 Object.keys(RUT).forEach(n=>ul[n].innerHTML=RUT[n].map(r=>'<li class="jvru-fila jvru-e">'+r+'<i>Ver ›</i></li>').join(''));
 $('jvru-ejs').innerHTML=EJ.map(e=>'<li class="jvru-e"><b>'+e[0]+'</b> — '+e[1]+'<br><i class="jvru-enota">'+e[2]+'</i></li>').join('');
 const filaP=ul.principiante.children;
-// El guion, en ms desde que la escena se ve: los cortes del pliego C.3, repartidos por pantallas
 const T={ROTULO:0,MARCO:200,TIT:300,BLOQUE:1300,CHIP:600,PICK:1150,FILA:80,
          NIVEL2:3300,SALE:40,VUELVE:5000,VER:6100,
          P2:6400,B2:600,FRASE:280,
@@ -2314,32 +1377,25 @@ let tempos=[],viva=$('jvru-p1'),enfocado=null,arrancado=false;
 const cita=(ms,fn)=>tempos.push(setTimeout(fn,quieto?Math.min(ms,60):ms));
 const parar=()=>{tempos.forEach(t=>{clearTimeout(t);clearInterval(t);});tempos=[];cada(raiz.querySelectorAll('.jvru-tap'),'jvru-tap',false);};
 const entra=el=>{el.classList.remove('jvru-off');void el.offsetWidth;el.classList.add('in');};
-const enfoca=el=>{if(enfocado) enfocado.classList.add('jvru-dim');enfocado=el;entra(el);};  // una tarjeta cada vez
+const enfoca=el=>{if(enfocado) enfocado.classList.add('jvru-dim');enfocado=el;entra(el);};
 const cascada=(l,t0,paso,karaoke)=>Array.from(l).forEach((el,i)=>cita(t0+i*paso,()=>{if(karaoke&&i) l[i-1].classList.remove('foco');el.classList.add('in');if(karaoke) el.classList.add('foco');}));
 const nivel=n=>Array.from(chips.children).forEach(c=>c.classList.toggle('pick',c.textContent===n));
-const toca=(el,cls)=>{el.classList.add('jvru-tap');if(cls) el.classList.add(cls);cita(160,()=>el.classList.remove('jvru-tap'));};  // el dedo: golpe del 3 %
+const toca=(el,cls)=>{el.classList.add('jvru-tap');if(cls) el.classList.add(cls);cita(160,()=>el.classList.remove('jvru-tap'));};
 const fmt=v=>String(v).replace(/\B(?=(\d{3})+$)/g,'.');
 const bloques=(pant,t0,paso)=>Array.from(pant.querySelectorAll(':scope>.jvru-e')).forEach((b,i)=>cita(t0+i*paso,()=>enfoca(b)));
-// Cambio de PANTALLA: la vieja se va a la izquierda (180 ms) y la nueva entra por la derecha con
-// sus bloques en cascada. Nunca conviven, y el hueco es fijo: ni crece ni empuja lo de abajo.
 const pantalla=(t0,id,paso)=>{
   cita(t0,()=>viva.classList.add('se-va'));
   cita(t0+180,()=>{viva.classList.add('jvru-off');viva.classList.remove('se-va','in');
     cada(raiz.querySelectorAll('.jvru-dim'),'jvru-dim',false);enfocado=null;viva=$(id);entra(viva);bloques(viva,0,paso);});
 };
-// El morph: salen las filas, se cambia de lista y entran las nuevas.
 const muta=(t0,de,a,paso)=>{
   const salen=ul[de].children,t1=t0+salen.length*T.SALE+180;
   Array.from(salen).forEach((f,i)=>cita(t0+i*T.SALE,()=>f.classList.add('se-va')));
   cita(t1,()=>{ul[de].classList.add('jvru-oculta');cada(salen,'in',false);cada(salen,'se-va',false);ul[a].classList.remove('jvru-oculta');$('jvru-niv').textContent=ROTULO[a];});
   cascada(ul[a].children,t1+40,paso);
 };
-// El contador 0 → 1.502; su hueco de 5 cifras esta reservado en CSS: no salta nada.
 const cuenta=()=>{const n=$('jvru-n'),inc=Math.ceil(TOTAL/38);let v=0;
   const t=setInterval(()=>{v=Math.min(TOTAL,v+inc);n.textContent=fmt(v);if(v>=TOTAL) clearInterval(t);},16);tempos.push(t);};
-// Estado final. El TOQUE (y "menos movimiento") DESAPILA las cinco pantallas: quien toca quiere
-// leerlo, no verlo pasar. Salir a medias NO: la deja en la ficha, donde habria acabado sola, para
-// no meter metro y medio de golpe en una pagina que se esta leyendo por abajo.
 const final=todo=>{
   parar();
   ['jvru-dim','se-va','foco'].forEach(c=>cada(raiz.querySelectorAll('.'+c),c,false));
@@ -2352,11 +1408,10 @@ const final=todo=>{
 };
 const arranque=()=>{
   if(arrancado) return; arrancado=true;
-  if(quieto) return final(1);   // menos movimiento: todo de golpe, cero relojes
+  if(quieto) return final(1);
   $('jvru-n').textContent='0';
   cita(T.ROTULO,()=>entra($('jvru-rotulo')));
   cita(T.MARCO,()=>{entra($('jvru-marco'));entra(pie[2]);entra(viva);});
-  // PANTALLA 1 · explorador: los 3 niveles, el dedo elige principiante y entran sus 7 rutinas
   bloques(viva,T.TIT,T.BLOQUE);
   cascada(chips.children,T.CHIP,90);
   cita(T.PICK,()=>{toca(chips.children[0],'pick');nivel('principiante');});
@@ -2365,76 +1420,48 @@ const arranque=()=>{
   muta(T.NIVEL2,'principiante','avanzado',T.FILA);
   cita(T.VUELVE,()=>{toca(chips.children[0],'pick');nivel('principiante');});
   muta(T.VUELVE,'avanzado','principiante',55);
-  // el dedo pulsa el «Ver ›» de Full-body 3 dias: esa fila en foco, el resto a .45
   cita(T.VER,()=>{toca(filaP[RUTINA],'foco');cada(filaP,'jvru-dim',true);filaP[RUTINA].classList.remove('jvru-dim');chips.classList.add('jvru-dim');});
-  // PANTALLA 2 · vista previa arriba: nombre, chips y el porque frase a frase
   pantalla(T.P2,'jvru-p2',T.B2);
   cascada(raiz.querySelectorAll('.jvru-porque .jvru-e'),T.P2+180+2*T.B2+120,T.FRASE);
-  // PANTALLA 3 · la misma, abajo: los 8 ejercicios con su guia y su nota
   pantalla(T.P3,'jvru-p3',T.B3);
   cascada($('jvru-ejs').children,T.EJS,T.EJ);
   cita(T.EMPEZAR,()=>toca($('jvru-empezar')));
-  // PANTALLA 4 · el registro: porque colapsado, nota de novato y las miniaturas
   pantalla(T.P4,'jvru-p4',T.B4);
   cita(T.TARJ,()=>{if(enfocado) enfocado.classList.add('jvru-dim');enfocado=null;});
   cascada(tarjs,T.TARJ,140);
   cita(T.TOCA,()=>{toca(tarjs[FICHA],'pick');tarjs[0].classList.add('jvru-dim');});
-  // PANTALLA 5 · la ficha: musculos y los 7 pasos, como karaoke
   pantalla(T.P5,'jvru-p5',T.B5);
   cascada(pasos,T.P5+180+T.B5+270,T.PASO,true);
-  // el pie, fuera del marco; y todo vuelve a leerse a plena luz
   cita(T.BIBLIO,()=>{entra(pie[0]);cuenta();});
   cita(T.CITA,()=>{entra(pie[1]);cada(raiz.querySelectorAll('.jvru-dim'),'jvru-dim',false);cada(pasos,'foco',false);});
 };
-// Arranca al VERSE (un cuarto, una vez). Un parar() a secas la dejaba truncada para siempre.
 let tocado=false;
 raiz.addEventListener('click',()=>{tocado=true;arrancado=true;final(1);});
-// [16-09] quieto o sin observador: se pinta YA. Antes el estado final vivia dentro de arranque(),
-// que solo llamaba el observador: con "menos movimiento" la escena estaba vacia hasta cruzar el
-// 25 % y entonces metia de golpe el mayor salto de maqueta de la pagina.
 if(quieto||!('IntersectionObserver' in window)) return arranque();
 const io=new IntersectionObserver(es=>es.forEach(e=>{
   if(e.isIntersecting&&e.intersectionRatio>=.25) arranque();
-  // [16-09] al salir NO se deshace lo que el visitante ya vio: si tocó, la escena se queda como está.
   else if(!e.isIntersecting&&arrancado){if(!tocado)final();io.disconnect();}
 }),{threshold:[0,.25]});
 io.observe(raiz);
 })();
 </script>
-<!-- ============ FIN ESCENA 5 ============ -->
-<!-- ============ ESCENA 3 DEL VIAJE ASTRAL . LOS ENTRENOS ============ -->
-<!-- ESCENA 3 . LOS ENTRENOS . PIEZA PORTABLE. Suelta (doble clic) o pegada: hereda var(--jade,...) o reserva.
-     QUE DEMUESTRA: cargar una rutina MONTA SOLA la sesion (8 ejercicios, reps . RIR . descanso); apuntar
-     la serie no es rellenar casillas (RIR se ELIGE en una hoja explicada ahi mismo, descanso con reloj
-     y mandos); y antes de guardar, la nota de la sesion (boton real "Como llegaste hoy" + su campo).
-     LITERAL contra master (d2f3d38, 16-09-2026): barra "<- Entrenos"/"Guardar", titulo, desplegable de
-     rutinaPorQue, los 2 toast (cargarRutina/guardarEntreno), RUTINAS.fullbody + _entMeta, la fila de
-     serie, la hoja del RIR (rirSheet), la barra de descanso (restBarEl) y el boton+campo de la nota
-     (entNotaSesionToggle). PUESTA EN ESCENA: miniaturas = emoji de iconoDe(m) (plan B sin fotos, CSP);
-     descanso y avisos van donde esta la vista, no flotando al pie.
-     ATREZO: kilos/repes tecleados, el dedo que elige RIR, el texto de la nota ("estoy más cansado").
-     FUERA A PROPOSITO: "Consejo de hoy" (solo modo ciclo) y el glosario EXPLICACIONES.rir. Si cambia
-     master, se re-mide. -->
 <style>
 .jven{--en-jade:var(--jade,#3DDC97);--en-bone:var(--bone,#EEF2EC);--en-soft:var(--soft,#CBD8D1);--en-mute:var(--mute,#8CA69B);--en-line:var(--line,#1E3A31);--en-lines:var(--line-soft,#16281F);--en-panel:var(--panel,#101E19);--en-panel2:var(--panel-2,#0D1B16);--en-r:var(--r,16px);--en-display:var(--display,'Space Grotesk',system-ui,sans-serif);--en-mono:var(--mono,ui-monospace,Consolas,monospace);--en-body:var(--body,system-ui,-apple-system,'Segoe UI',Roboto,sans-serif);--en-entra:var(--ease-entra,cubic-bezier(.2,.8,.2,1))}
 html.jven-suelta body{margin:0;background:#0A100E;color:#EEF2EC;font-family:system-ui,sans-serif}
 .jven{position:relative;padding:clamp(26px,6vw,72px) 0;color:var(--en-bone);font-family:var(--en-body);line-height:1.62}
 .jven *{box-sizing:border-box}
 .jven-wrap{width:100%;max-width:560px;margin:0 auto;padding:0 18px}
-/* entradas: 340 ms con --ease-entra; solo transform y opacity */
 .jven-cab,.jven-marco,.jven-series,.jven-rest,.jven-cita,.jven-notabox{opacity:0;transform:translateY(10px);transition:opacity 340ms var(--en-entra),transform 340ms var(--en-entra)}
 .jven-cab.in,.jven-marco.in,.jven-series.in,.jven-rest.in,.jven-cita.in,.jven-notabox.in{opacity:1;transform:none}
 .jven-eyebrow{font-family:var(--en-mono);font-weight:500;font-size:.68rem;margin:0;text-transform:uppercase;letter-spacing:.2em;color:var(--en-jade);display:flex;align-items:center;gap:.6em;width:fit-content}
 .jven-eyebrow::before{content:"";width:16px;height:1px;background:var(--en-jade);opacity:.7}
 .jven-h{font-family:var(--en-display);font-weight:700;letter-spacing:-.02em;line-height:1.1;font-size:clamp(1.45rem,5.4vw,2.05rem);margin:.6rem 0 1.1rem}
 .jven-h b{color:var(--en-jade)}
-/* el marco de la app, el mismo de la fisio */
 .jven-marco{border:1px solid var(--en-line);border-radius:var(--en-r);overflow:hidden;background:linear-gradient(180deg,var(--en-panel),var(--en-panel2));box-shadow:0 24px 60px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.03);transform:translateY(10px) scale(.98)}
 .jven-barra{display:flex;align-items:center;gap:.6em;padding:11px 14px;font-size:.7rem;border-bottom:1px solid var(--en-lines);font-family:var(--en-mono);letter-spacing:.04em;color:var(--en-soft)}
 .jven-vivo{width:7px;height:7px;border-radius:50%;background:var(--en-jade);flex:none;box-shadow:0 0 8px var(--en-jade)}
 .jven-barra i{margin-left:auto;color:var(--en-mute);font-size:.64rem;font-style:normal}
 .jven-cuerpo{padding:14px 14px 18px}
-/* barra de Jorge (02-sep): volver a la izq., guardar en jade a la dcha. */
 .jven-top{display:flex;align-items:center;justify-content:space-between;margin:0 0 10px}
 .jven-back,.jven-save,.jven-rb,.jven-rf span,.jven-nbtn{font-size:.75rem;padding:6px 10px;border-radius:9px;border:1px solid var(--en-line);background:rgba(12,21,18,.6);color:var(--en-soft);line-height:1.25}
 .jven-save{border-color:rgba(61,220,151,.45);color:var(--en-jade);font-weight:600;transition:background 200ms,color 200ms,border-color 200ms}
@@ -2442,10 +1469,8 @@ html.jven-suelta body{margin:0;background:#0A100E;color:#EEF2EC;font-family:syst
 .jven-save.pick{background:var(--en-jade);border-color:var(--en-jade);color:#0A100E;animation:jven-pulso 240ms var(--en-entra)}
 .jven-nbtn.pick,.jven-num.pick{border-color:var(--en-jade);color:var(--en-jade);animation:jven-pulso 240ms var(--en-entra)}
 @keyframes jven-pulso{0%{transform:scale(1)}50%{transform:scale(1.04)}100%{transform:scale(1)}}
-/* cabecera real: titulo fijo + la linea del desplegable de la rutina */
 .jven-tit{font-family:var(--en-display);font-weight:700;font-size:1.02rem;line-height:1.32;margin:0}
 .jven-porque{color:var(--en-jade);font-weight:600;font-size:.84rem;line-height:1.4;margin:4px 0 12px}
-/* la lista: una tarjeta por ejercicio; en foco, las demas a .45 */
 .jven-lista{position:relative}
 .jven-ej{display:grid;grid-template-columns:34px 1fr;gap:1px 8px;align-items:start;padding:8px 10px;margin:0 0 6px;border:1px solid var(--en-lines);border-radius:12px;background:rgba(12,21,18,.6);opacity:0;transform:translateY(10px) scale(.97);transition:opacity 300ms var(--en-entra),transform 300ms var(--en-entra),border-color 260ms}
 .jven-ej.in{opacity:1;transform:none}
@@ -2454,13 +1479,11 @@ html.jven-suelta body{margin:0;background:#0A100E;color:#EEF2EC;font-family:syst
 .jven-ico{grid-row:1/3;font-size:22px;line-height:34px;text-align:center}
 .jven-nom{font-weight:600;font-size:.9rem;line-height:1.35;padding-top:5px}
 .jven-obj{font-size:.78rem;color:var(--en-jade);line-height:1.4}
-/* avisos (toast): pastilla jade; en la app flotan al pie de la pantalla */
 .jven-toast{position:absolute;left:0;right:0;width:fit-content;margin:0 auto;z-index:9;padding:9px 16px;border-radius:100px;background:var(--en-jade);color:#0A100E;font-family:var(--en-display);font-weight:700;font-size:.8rem;box-shadow:0 8px 24px rgba(0,0,0,.45);opacity:0;transform:translateY(8px);transition:opacity 300ms var(--en-entra),transform 300ms var(--en-entra)}
 .jven-toast.in{opacity:1;transform:none}
 .jven-toast.se-va{opacity:0;transform:translateY(-6px)}
 .jven-t1{top:10px}
 .jven-t2{position:static;margin:14px auto 0}
-/* las series: el grid de la app (26px 1fr 1fr minmax(56px,.9fr) 28px) */
 .jven-series{grid-column:1/-1;margin-top:8px;position:relative}
 .jven-sg{display:grid;grid-template-columns:26px 1fr 1fr minmax(56px,.9fr) 28px;gap:4px;align-items:center;margin-top:6px}
 .jven-shd span,.jven-num,.jven-x{font-size:.62rem;font-family:var(--en-mono);letter-spacing:.04em;text-align:center;color:var(--en-mute)}
@@ -2475,11 +1498,9 @@ html.jven-suelta body{margin:0;background:#0A100E;color:#EEF2EC;font-family:syst
 .jven-notabox{margin-top:10px}
 .jven-notabox .jven-celda{white-space:normal;min-height:44px}
 .jven-nlbl{font-size:.68rem;color:var(--en-mute);margin:0 0 4px}
-/* el chip del RIR: "RIR" vacio y "RIR 2" fijado; se toca, no se teclea */
 .jven-rir{padding:6px 4px;font-size:.72rem;text-align:center;color:var(--en-soft);line-height:1.5;transition:border-color 260ms,color 260ms}
 .jven-rir.foco,.jven-rir.pick,.jven-rc.pick{border-color:var(--en-jade)}
 .jven-rir.pick,.jven-rc.pick{color:var(--en-jade)}
-/* la hoja del RIR: en la app es un modal; aqui tapa la tabla, no la empuja */
 .jven-hoja{position:absolute;left:-6px;right:-6px;top:-6px;z-index:8;padding:12px;border-radius:14px;border:1px solid var(--en-line);background:var(--en-panel);box-shadow:0 18px 44px rgba(0,0,0,.6);opacity:0;transform:translateY(8px);transition:opacity 260ms var(--en-entra),transform 260ms var(--en-entra)}
 .jven-hoja.in{opacity:1;transform:none}
 .jven-hoja.se-va{opacity:0;transform:translateY(-6px);transition:opacity 180ms var(--en-entra),transform 180ms var(--en-entra)}
@@ -2491,13 +1512,11 @@ html.jven-suelta body{margin:0;background:#0A100E;color:#EEF2EC;font-family:syst
 .jven-rc.pick{background:rgba(61,220,151,.15)}
 .jven-rf{display:flex;gap:8px;margin-top:10px}
 .jven-rf span{flex:1;text-align:center}
-/* la barra de descanso y sus mandos; tabular para que el reloj no baile */
 .jven-rest{display:flex;align-items:center;justify-content:center;gap:10px;width:fit-content;margin:10px auto 0;padding:10px 12px;border-radius:14px;border:1px solid var(--en-line);background:var(--en-panel);box-shadow:0 8px 30px rgba(0,0,0,.45)}
 .jven-rt{text-align:center;min-width:88px}
 .jven-rt b{display:block;font-family:var(--en-mono);font-weight:700;font-size:1.3rem;color:var(--en-jade);line-height:1;font-variant-numeric:tabular-nums}
 .jven-rt span{display:block;font-size:.6rem;color:var(--en-mute);text-transform:uppercase;letter-spacing:.06em}
 .jven-cita{grid-column:1/-1;font-family:var(--en-mono);font-size:.72rem;color:var(--en-mute);margin:12px 0 0}
-/* toque: todo instantaneo. reduced-motion: todo pintado y sin relojes */
 .jven.jven-ya *{transition:none!important;animation:none!important}
 @media (prefers-reduced-motion:reduce){
   .jven *,.jven-celda.jven-activa::after{transition:none!important;animation:none!important;opacity:1!important;transform:none!important}
@@ -2529,12 +1548,10 @@ html.jven-suelta body{margin:0;background:#0A100E;color:#EEF2EC;font-family:syst
   var raiz = document.getElementById('jven');
   if (!raiz || raiz.dataset.listo) return;
   raiz.dataset.listo = '1';
-  // suelta o pegada: se pregunta por los TOKENS de la casa, no por otra pieza
   if (!getComputedStyle(document.documentElement).getPropertyValue('--jade').trim()) document.documentElement.classList.add('jven-suelta');
 
   var quieto = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  // — LA RUTINA, literal de RUTINAS.fullbody; obj = '🎯 objetivo: ' + _entMeta[n].txt —
   var EJ = [
     { n:'Sentadilla con barra', m:'Cuádriceps', obj:'🎯 objetivo: 6-10 reps · técnica primero · 150 s' },
     { n:'Press banca', m:'Pecho', obj:'🎯 objetivo: 6-10 reps · técnica primero · 150 s' },
@@ -2545,7 +1562,6 @@ html.jven-suelta body{margin:0;background:#0A100E;color:#EEF2EC;font-family:syst
     { n:'Extensión en polea (cuerda)', m:'Tríceps', obj:'🎯 objetivo: 6-10 reps · al fallo · 75 s' },
     { n:'Elevación de gemelo de pie', m:'Gemelo', obj:'🎯 objetivo: 6-10 reps · al fallo · 60 s' }
   ];
-  // iconoDe(m): copiada tal cual (el emoji que pinta si el ejercicio no tiene foto)
   function iconoDe(m){
     switch(m){
       case "Pecho": return "🏋️";
@@ -2557,10 +1573,9 @@ html.jven-suelta body{margin:0;background:#0A100E;color:#EEF2EC;font-family:syst
     }
   }
 
-  // — LO QUE DICE LA APP AL APUNTAR (literal) —
-  var CAB = ['', 'kg', 'reps', 'RIR', ''];   // la app deja vacias la micro-etiqueta del nº y la del ✕
-  var NUM = ['1ª', '2ª', '3ª'];              // en la app es el boton que cicla W / F / D
-  var RIR0 = 'RIR', RIR2 = 'RIR 2';          // el chip vacio y el chip ya fijado (_rirLbl)
+  var CAB = ['', 'kg', 'reps', 'RIR', ''];
+  var NUM = ['1ª', '2ª', '3ª'];
+  var RIR0 = 'RIR', RIR2 = 'RIR 2';
   var HOJA_T = 'RIR — ¿cuántas repes te quedaban?';
   var HOJA_D = 'Las repeticiones que <b>todavía habrías podido hacer</b> al acabar la serie.';
   var HOJA_B = ['Borrar', '¿Qué es RIR? ⓘ'];
@@ -2568,18 +1583,13 @@ html.jven-suelta body{margin:0;background:#0A100E;color:#EEF2EC;font-family:syst
   var CARGADA = '✓ Rutina cargada — ajusta pesos y va';
   var GUARDADO = '✓ Entreno guardado';
   var CITA = '— Tema 4, Helms 2016 / Tema 27';
-  var SERIES = [['60','8'], ['60','8'], ['62,5','7']];   // ATREZO: los kg y las repes tecleados
-  // El boton y el campo son reales (onclick="entNotaSesionToggle()", label y placeholder literales
-  // del master); NOTA_TXT es ATREZO, un ejemplo de lo que alguien teclearia.
+  var SERIES = [['60','8'], ['60','8'], ['62,5','7']];
   var NOTA_BTN = '🗒️ Cómo llegaste hoy', NOTA_LBL = 'Cómo llegaste hoy (opcional)', NOTA_TXT = 'estoy más cansado';
 
-  // Los cortes, en ms. El reloj del descanso llena el hueco largo con un tic/segundo.
   var T = { ROTULO:0, MARCO:600, LISTA:1600, FILA:100, AVISO:2400, AVISOX:3800, FOCO:4000,
             TECLEO:4400, CHAR:90, CELDA:140, SERIE:300, HOJA:7000, ELIGE:9200, FIJA:9500,
             DESCANSO:11000, TICK:1000, TICKS:3, NOTA:11800, GUARDAR:14400, CITA:16000 };
 
-  // Arranca al VERSE: hasta entonces cita() solo encola. Cada reloj guarda su fn y su plazo
-  // para COMPLETAR en orden (toque, o se va por arriba) o PAUSAR (se va por abajo).
   var tempos = [], cola = [], arrancado = false, io = null;
   function cita(ms, fn){
     if (!arrancado) { cola.push([ms, fn]); return; }
@@ -2590,21 +1600,18 @@ html.jven-suelta body{margin:0;background:#0A100E;color:#EEF2EC;font-family:syst
   function arrancar(){ if (arrancado) return; arrancado = true; var c = cola; cola = []; c.forEach(function(p){ cita(p[0], p[1]); }); }
   function parar(){ tempos.forEach(function(t){ var id = (t && t.id != null) ? t.id : t; clearTimeout(id); clearInterval(id); }); tempos = []; }
   function pend(){ return tempos.filter(function(t){ return t && t.fn && !t.hecho; }); }
-  // Tiron hacia arriba nada mas arrancar: NO se quema. Se congela con el plazo que le
-  // quedaba a cada corte y sigue donde iba al volver a verse.
   function pausar(){
     var ahora = Date.now();
     var resto = pend().map(function(t){ return [Math.max(0, t.ms - (ahora - t.t0)), t.fn]; });
     parar(); cola = resto.concat(cola); arrancado = false;
   }
-  function mmss(s){ return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); }   // el restFmt de la app
+  function mmss(s){ return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); }
 
   var cab = raiz.querySelector('.jven-cab'), marco = raiz.querySelector('.jven-marco');
   var cLista = document.getElementById('jven-lista'), save = document.getElementById('jven-save');
   var filas = [], celdas = [], chips = [], bloque = null, hoja = null, restT = null;
   var tCargada = null, notaTxt = null;
 
-  // crea el bloque, lo cuelga y lo hace entrar (el gesto de todos los cortes)
   function entra(padre, clase, html){
     var d = document.createElement('div');
     d.className = clase; d.innerHTML = html;
@@ -2612,11 +1619,9 @@ html.jven-suelta body{margin:0;background:#0A100E;color:#EEF2EC;font-family:syst
     return d;
   }
 
-  // Cortes 0 y 1: el rotulo y, medio segundo despues, el marco con la rutina cargada
   cita(T.ROTULO, function(){ cab.classList.add('in'); });
   cita(T.MARCO, function(){ marco.classList.add('in'); });
 
-  // Corte 2: los 8 ejercicios en cascada (100 ms) y el aviso de la app, que se va solo
   EJ.forEach(function(e, i){
     var d = entra(cLista, 'jven-ej', '<span class="jven-ico" aria-hidden="true">' + iconoDe(e.m) + '</span>'
               + '<div class="jven-nom">' + e.n + '</div><div class="jven-obj">' + e.obj + '</div>');
@@ -2626,7 +1631,6 @@ html.jven-suelta body{margin:0;background:#0A100E;color:#EEF2EC;font-family:syst
   cita(T.AVISO, function(){ tCargada = entra(cLista, 'jven-toast jven-t1', CARGADA); });
   cita(T.AVISOX, function(){ if (tCargada) tCargada.classList.add('se-va'); });
 
-  // Corte 3: foco en la sentadilla; micro-etiquetas y sus 3 filas, con el chip "RIR"
   cita(T.FOCO, function(){
     cLista.classList.add('jven-dim');
     filas[0].classList.add('foco');
@@ -2640,8 +1644,6 @@ html.jven-suelta body{margin:0;background:#0A100E;color:#EEF2EC;font-family:syst
     celdas = SERIES.map(function(v, r){ var g = bloque.children[r + 1]; chips.push(g.children[3]); return [g.children[1], g.children[2]]; });
   });
 
-  // Corte 4: se teclean kg y reps, 90 ms/caracter (el RIR no se toca); al completar la fila,
-  // su numero (1a/2a/3a) da un golpe de confirmacion (mismo jven-pulso que el boton Guardar)
   var t = T.TECLEO;
   SERIES.forEach(function(vals, r){
     vals.forEach(function(txt, c){
@@ -2658,7 +1660,6 @@ html.jven-suelta body{margin:0;background:#0A100E;color:#EEF2EC;font-family:syst
     t += T.SERIE - T.CELDA;
   });
 
-  // Corte 5: el dedo toca el chip RIR y sube la hoja de la app, con su explicacion
   cita(T.HOJA, function(){
     chips[0].classList.add('foco');
     var g = function(n){ return '<span class="jven-rc">' + n + '</span>'; };
@@ -2667,21 +1668,19 @@ html.jven-suelta body{margin:0;background:#0A100E;color:#EEF2EC;font-family:syst
         + '<div class="jven-rf"><span>' + HOJA_B[0] + '</span><span>' + HOJA_B[1] + '</span></div>');
   });
 
-  // Corte 6: elige el 2; la hoja se va y el chip queda en "RIR 2", en jade
   cita(T.ELIGE, function(){ if (hoja) hoja.querySelectorAll('.jven-rc')[2].classList.add('pick'); });
   cita(T.FIJA, function(){
     if (hoja) hoja.classList.add('se-va');
     chips[0].classList.remove('foco'); chips[0].classList.add('pick'); chips[0].textContent = RIR2;
   });
 
-  // Corte 7: la barra de descanso contando 3 s hacia abajo (2:30 -> 2:27)
   cita(T.DESCANSO, function(){
     var d = entra(bloque, 'jven-rest', '<span class="jven-rb">' + REST.menos + '</span>'
         + '<div class="jven-rt"><b>' + REST.ini + '</b><span>' + REST.lbl + '</span></div>'
         + '<span class="jven-rb">' + REST.mas + '</span><span class="jven-rb">' + REST.x + '</span>');
     restT = d.querySelector('b');
     if (quieto) { restT.textContent = REST.fin; return; }
-    var seg = 150, n = 0;   // 150 s = el 2:30 de arriba, en segundos
+    var seg = 150, n = 0;
     var id = setInterval(function(){
       n++; seg--; restT.textContent = mmss(seg);
       if (n >= T.TICKS) clearInterval(id);
@@ -2689,8 +1688,6 @@ html.jven-suelta body{margin:0;background:#0A100E;color:#EEF2EC;font-family:syst
     tempos.push(id);
   });
 
-  // Corte 7-bis: antes de guardar, la nota de la sesion (boton y campo reales; el texto que
-  // teclea es atrezo). Un caracter cada T.CHAR, mismo ritmo que los pesos de arriba.
   cita(T.NOTA, function(){ entra(bloque, 'jven-nbtn', NOTA_BTN); });
   cita(T.NOTA + 260, function(){ bloque.lastElementChild.classList.add('pick'); });
   cita(T.NOTA + 520, function(){
@@ -2702,27 +1699,23 @@ html.jven-suelta body{margin:0;background:#0A100E;color:#EEF2EC;font-family:syst
   })(nk);
   cita(T.NOTA + 520 + NOTA_TXT.length*T.CHAR + 200, function(){ if (notaTxt) notaTxt.classList.remove('jven-activa'); });
 
-  // Corte 8: Guardar pulsa, la sesion vuelve a plena luz y sale el aviso real
   cita(T.GUARDAR, function(){
     save.classList.add('pick');
     cLista.classList.remove('jven-dim');
     entra(bloque, 'jven-toast jven-t2', GUARDADO);
   });
 
-  // Corte 9: la cita, al pie del bloque que mirabas; el observador se retira
   cita(T.CITA, function(){ entra(filas[0], 'jven-cita', CITA); if (io) io.disconnect(); });
 
-  // Toque o pasar de largo: lo pendiente se ejecuta EN ORDEN (se crean los bloques que
-  // faltaban), se apagan los relojes y queda el estado final. Nada a medias.
   function completar(){
     raiz.classList.add('jven-ya');
     arrancado = true;
     var c = cola; cola = []; c.forEach(function(p){ p[1](); });
     var p = pend(); parar();
-    p.forEach(function(x){ x.hecho = true; x.fn(); });   // cada corte deja su estado final
+    p.forEach(function(x){ x.hecho = true; x.fn(); });
     parar();
     celdas.forEach(function(f, r){ f.forEach(function(cel, c){ cel.textContent = SERIES[r][c]; cel.classList.remove('jven-activa'); }); });
-    if (restT) restT.textContent = REST.fin;   // el unico reloj que se queda a medias al matarlo
+    if (restT) restT.textContent = REST.fin;
     if (io) io.disconnect();
   }
   raiz.addEventListener('click', completar);
@@ -2732,8 +1725,6 @@ html.jven-suelta body{margin:0;background:#0A100E;color:#EEF2EC;font-family:syst
       es.forEach(function(e){
         if (e.isIntersecting && e.intersectionRatio >= .25) { arrancar(); }
         else if (!e.isIntersecting && arrancado) {
-          // por ARRIBA (paso de largo) se completa, para que no quede truncada; por ABAJO
-          // (ha vuelto atras y aun no la ha visto) se pausa, o se la pierde entera.
           var rb = e.rootBounds;
           if (!rb || e.boundingClientRect.bottom <= rb.top) completar(); else pausar();
         }
@@ -2743,22 +1734,6 @@ html.jven-suelta body{margin:0;background:#0A100E;color:#EEF2EC;font-family:syst
   }
 })();
 </script>
-<!-- ============ FIN ESCENA 3 ============ -->
-<!-- ============ ESCENA 4 DEL VIAJE ASTRAL . EL FISIO QUE ADAPTA ============ -->
-<!-- ESCENA 4 . EL FISIO QUE ADAPTA . PIEZA PORTABLE
-     Suelta (doble clic) o pegada en showcase.html: hereda los tokens var(--jade,...) o usa la reserva.
-
-     QUE DEMUESTRA, Y POR QUE ESTA ESCENA CAMBIO
-     El guion del 21-08 pedia "una lesion -> que hace la app". Cuando se escribio eso, la app
-     pintaba un cartel de texto y no tocaba ni un ejercicio. El 30-08 se construyo la ORDEN 9 y
-     ahora la adaptacion es REAL, asi que la escena ensena lo que de verdad pasa.
-
-     TODO EL CONTENIDO ES LITERAL, medido contra master el 03-09-2026:
-       . las 13 zonas y sus emojis salen de LESIONES_KB
-       . el texto del hombro sale del bloque 'Hombro . manguito rotador'
-       . los 36 ejercicios marcados y sus motivos/alternativas salen de lesionMarca()
-         corriendo sobre el catalogo real de 1.502 ejercicios
-     Si manana cambia el motor, esta escena queda desfasada: se re-mide, no se retoca a ojo. -->
 <style>
 .jvfi{--fi-jade:var(--jade,#3DDC97);--fi-bone:var(--bone,#EEF2EC);--fi-soft:var(--soft,#CBD8D1);--fi-mute2:var(--mute-2,#7E968B);--fi-line:var(--line,#1E3A31);--fi-lines:var(--line-soft,#16281F);--fi-panel:var(--panel,#101E19);--fi-panel2:var(--panel-2,#0D1B16);--fi-r:var(--r,16px);--fi-display:var(--display,'Space Grotesk',system-ui,sans-serif);--fi-mono:var(--mono,ui-monospace,Consolas,monospace);--fi-body:var(--body,system-ui,-apple-system,'Segoe UI',Roboto,sans-serif);--fi-casa:var(--ease-casa,cubic-bezier(.32,.72,0,1));--fi-entra:var(--ease-entra,cubic-bezier(.2,.8,.2,1));--fi-amb:#F4C04E;--fi-rojo:#E8705A}
 html.jvfi-suelta body{margin:0;background:#0A100E;color:#EEF2EC;font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
@@ -2775,21 +1750,17 @@ html.jvfi-suelta body{margin:0;background:#0A100E;color:#EEF2EC;font-family:syst
 .jvfi-barra i{margin-left:auto;color:var(--fi-mute2);font-size:.64rem;font-style:normal}
 .jvfi-cuerpo{padding:16px 14px 18px;min-height:clamp(340px,46vh,460px)}
 .jvfi-lead{font-size:.9rem;color:var(--fi-soft);margin:0 0 12px}
-/* rejilla de zonas */
 .jvfi-zonas{display:flex;flex-wrap:wrap;gap:7px;margin:0 0 8px}
 .jvfi-z{font-size:.8rem;padding:6px 10px;border-radius:999px;border:1px solid var(--fi-lines);background:rgba(12,21,18,.6);color:var(--fi-soft);opacity:0;transform:translateY(7px);transition:opacity 300ms var(--fi-entra),transform 300ms var(--fi-entra),background 260ms,border-color 260ms,color 260ms}
 .jvfi-z.in{opacity:1;transform:none}
 .jvfi-z.pick{background:rgba(61,220,151,.15);border-color:rgba(61,220,151,.5);color:var(--fi-bone)}
-/* tarjeta de la zona */
 .jvfi-bloque{opacity:0;transform:translateY(12px);transition:opacity 420ms var(--fi-entra),transform 420ms var(--fi-entra)}
 .jvfi-bloque.in{opacity:1;transform:none}
 .jvfi-tit{font-family:var(--fi-display);font-weight:700;color:var(--fi-bone);font-size:1.02rem;line-height:1.32;margin:14px 0 6px}
 .jvfi-tesis{font-size:.93rem;color:var(--fi-soft);margin:0 0 4px}
 .jvfi-tesis b{color:var(--fi-bone)}
-/* el contador que sube */
 .jvfi-cuenta{font-family:var(--fi-mono);font-size:.78rem;color:var(--fi-mute2);margin:14px 0 8px;letter-spacing:.02em}
 .jvfi-cuenta b{color:var(--fi-jade);font-size:1.5rem;font-weight:700;font-family:var(--fi-display);letter-spacing:-.02em}
-/* los ejercicios marcados */
 .jvfi-ej{border-left:2px solid var(--fi-amb);padding:7px 0 7px 11px;margin:0 0 9px;opacity:0;transform:translateX(-8px);transition:opacity 360ms var(--fi-entra),transform 360ms var(--fi-entra)}
 .jvfi-ej.in{opacity:1;transform:none}
 .jvfi-no{color:var(--fi-amb);font-size:.9rem;font-weight:600}
@@ -2797,11 +1768,9 @@ html.jvfi-suelta body{margin:0;background:#0A100E;color:#EEF2EC;font-family:syst
 .jvfi-si{color:var(--fi-jade);font-size:.87rem;margin-top:2px}
 .jvfi-si b{color:var(--fi-bone);font-weight:600}
 .jvfi-mas{font-family:var(--fi-mono);font-size:.75rem;color:var(--fi-mute2);margin:2px 0 0}
-/* prehab */
 .jvfi-prehab{border-left:2px solid var(--fi-jade);padding:8px 0 8px 11px;margin:12px 0 0;font-size:.87rem;color:var(--fi-soft);opacity:0;transform:translateY(8px);transition:opacity 380ms var(--fi-entra),transform 380ms var(--fi-entra)}
 .jvfi-prehab.in{opacity:1;transform:none}
 .jvfi-prehab b{color:var(--fi-jade)}
-/* bandera */
 .jvfi-band{margin:13px 0 0;padding:9px 11px;border-radius:10px;background:rgba(232,112,90,.09);border:1px solid rgba(232,112,90,.28);font-size:.83rem;color:var(--fi-soft);opacity:0;transition:opacity 380ms var(--fi-entra)}
 .jvfi-band.in{opacity:1}
 .jvfi-cita{font-family:var(--fi-mono);font-size:.72rem;color:var(--fi-mute2);margin:11px 0 0;opacity:0;transition:opacity 340ms var(--fi-entra)}
@@ -2836,12 +1805,10 @@ html.jvfi-suelta body{margin:0;background:#0A100E;color:#EEF2EC;font-family:syst
 
   var quieto = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  // — LAS 13 ZONAS, literales de LESIONES_KB —
   var ZONAS = ['🦵 Rodilla','💪 Hombro','✋ Dedo / muñeca','💪 Codo','🔩 Zona lumbar','🦶 Tobillo',
                '🍑 Cadera / glúteo','🧣 Cuello','🦵 Isquios','🦵 Gemelo','🦶 Aquiles','🦶 Pie','🎽 Cintilla'];
-  var ELEGIDA = 1;   // el hombro: la lesion mas comun de gimnasio
+  var ELEGIDA = 1;
 
-  // — LO QUE CONTESTA, literal del motor (medido 03-09-2026 contra master) —
   var HOMBRO = {
     tit: '💪 Hombro · manguito rotador',
     tesis: 'Primera línea = <b>ejercicio progresivo</b>. NO parar ni operar: la cirugía descompresiva <b>no supera al placebo</b>. Mejora esperable en 6-12 semanas.',
@@ -2857,9 +1824,6 @@ html.jvfi-suelta body{margin:0;background:#0A100E;color:#EEF2EC;font-family:syst
   };
 
   var T = { ZONA:52, PICK:520, BLOQUE:420, CUENTA:900, EJ:560, PREHAB:520, BAND:460, CITA:380 };
-  // [15-09] Arranque al VERSE, no al cargar: hasta que la escena entra en pantalla, cita() solo encola.
-  // Antes arrancaba con la pagina y quien bajaba despacio se la encontraba ya terminada.
-  // Cada reloj guarda su fn para poder COMPLETAR la escena en orden si se toca o sale de pantalla.
   var tempos = [], cola = [], arrancado = false;
   function cita(ms, fn){
     if (!arrancado) { cola.push([ms, fn]); return; }
@@ -2882,7 +1846,6 @@ html.jvfi-suelta body{margin:0;background:#0A100E;color:#EEF2EC;font-family:syst
 
   var tras = 120 + ZONAS.length*T.ZONA + 380;
 
-  // el dedo elige el hombro
   cita(tras, function(){ cZonas.children[ELEGIDA].classList.add('pick'); });
 
   cita(tras + T.PICK, function(){
@@ -2896,7 +1859,6 @@ html.jvfi-suelta body{margin:0;background:#0A100E;color:#EEF2EC;font-family:syst
     void d.offsetWidth;
     d.classList.add('in');
 
-    // el contador sube hasta 36: lo que hace la app de verdad
     var n = document.getElementById('jvfi-n');
     if (quieto) { n.textContent = HOMBRO.n; }
     else {
@@ -2960,9 +1922,6 @@ html.jvfi-suelta body{margin:0;background:#0A100E;color:#EEF2EC;font-family:syst
     d.classList.add('in');
   });
 
-  // Un toque completa la escena: nadie espera a una animacion si ya sabe lo que busca.
-  // [15-09] Tambien se completa si sale de pantalla a medias: se ejecuta lo pendiente EN ORDEN
-  // (asi los bloques que aun no existian se crean) y luego se apagan los relojes. Nada queda a medias.
   function completar(){
     arrancado = true;
     var c = cola; cola = []; c.forEach(function(p){ p[1](); });
@@ -2980,8 +1939,6 @@ html.jvfi-suelta body{margin:0;background:#0A100E;color:#EEF2EC;font-family:syst
   else {
     new IntersectionObserver(function(es, io){
       es.forEach(function(e){
-        // [16-09] con un cuarto en pantalla, no con asomar el borde: si no, la escena arranca
-        // cuando aun no se ve y el visitante llega tarde a su propia demostracion.
         if (e.isIntersecting && e.intersectionRatio >= .25) { arrancar(); }
         else if (arrancado && tempos.length) { completar(); io.unobserve(raiz); }
       });
@@ -2989,10 +1946,8 @@ html.jvfi-suelta body{margin:0;background:#0A100E;color:#EEF2EC;font-family:syst
   }
 })();
 </script>
-<!-- ============ FIN ESCENA 4 ============ -->
 
 
-<!-- ================= ACTO 2 · SABE CUÁNDO NO SABE (era sub-sección de features) ================= -->
 <section class="rigor">
   <div class="wrap">
       <div class="sec-head reveal">
@@ -3021,7 +1976,6 @@ html.jvfi-suelta body{margin:0;background:#0A100E;color:#EEF2EC;font-family:syst
   </div>
 </section>
 
-<!-- ================= STATS ================= -->
 <section class="stats">
   <div class="deriva" aria-hidden="true"><span>Lo medido</span></div>
   <div class="wrap">
@@ -3031,12 +1985,10 @@ html.jvfi-suelta body{margin:0;background:#0A100E;color:#EEF2EC;font-family:syst
       <h2>Nada de esto es una maqueta</h2>
       <svg class="ul" viewBox="0 0 200 9" preserveAspectRatio="none" aria-hidden="true" focusable="false"><path pathLength="1" d="M2 6 C46 2, 104 8.4, 198 3.4"/></svg>
     </div>
-    <!-- N3 · odómetro. La cifra FINAL viaja en el HTML (quien no ejecute JS lee el
-         dato bueno, no un «0»); el contador la pone a cero justo al arrancar. -->
     <div class="stat-grid">
       <div class="stat reveal">
         <div class="num" data-count="236000" data-format="mil" data-suffix="+">236.000+</div>
-        <div class="lbl">alimentos de España, consultables sin conexión</div>
+        <div class="lbl">productos de España, consultables sin conexión</div>
       </div>
       <div class="stat reveal d1">
         <div class="num" data-count="1500" data-format="mil" data-suffix="+">1.500+</div>
@@ -3050,7 +2002,6 @@ html.jvfi-suelta body{margin:0;background:#0A100E;color:#EEF2EC;font-family:syst
   </div>
 </section>
 
-<!-- ================= UN PLATO, SUS MACROS (ULTRA · animación de comida) ================= -->
 <section class="plate">
   <div class="deriva" aria-hidden="true"><span>La mesa</span></div>
   <div class="wrap">
@@ -3064,27 +2015,21 @@ html.jvfi-suelta body{margin:0;background:#0A100E;color:#EEF2EC;font-family:syst
     <div class="plate__grid">
       <div class="plate__art">
         <svg viewBox="0 0 360 300" role="img" aria-label="Ilustración de un plato de comida con un anillo de macronutrientes">
-          <!-- plato -->
           <ellipse cx="120" cy="152" rx="112" ry="112" fill="#101E19" stroke="#1E3A31" stroke-width="2"/>
           <ellipse cx="120" cy="152" rx="92" ry="92" fill="none" stroke="#16281F" stroke-width="1.5"/>
-          <!-- proteína (filete) -->
           <g class="food f1"><ellipse cx="95" cy="118" rx="45" ry="30" fill="#FF6A3D"/><ellipse cx="95" cy="118" rx="45" ry="30" fill="none" stroke="#c0492a" stroke-width="1.5" opacity=".55"/></g>
-          <!-- carbohidrato (arroz) -->
           <g class="food f2"><ellipse cx="153" cy="128" rx="40" ry="27" fill="#EEF2EC"/><ellipse cx="153" cy="128" rx="40" ry="27" fill="none" stroke="#c7cdc6" stroke-width="1" opacity=".5"/></g>
-          <!-- grasa (aguacate en gajos) -->
           <g class="food f3">
             <ellipse cx="96" cy="188" rx="15" ry="27" fill="#2ea877" transform="rotate(-24 96 188)"/>
             <ellipse cx="118" cy="193" rx="15" ry="27" fill="#35c489" transform="rotate(-3 118 193)"/>
             <ellipse cx="140" cy="188" rx="15" ry="27" fill="#2ea877" transform="rotate(18 140 188)"/>
           </g>
-          <!-- verdura (brócoli) -->
           <g class="food f4">
             <circle cx="166" cy="176" r="13" fill="#3DDC97"/>
             <circle cx="184" cy="185" r="12" fill="#35c489"/>
             <circle cx="171" cy="196" r="11" fill="#3DDC97"/>
             <circle cx="151" cy="189" r="10" fill="#35c489"/>
           </g>
-          <!-- anillo de macros (3 aros concéntricos, se dibujan al entrar) -->
           <g transform="translate(280,150)">
             <circle r="54" fill="none" stroke="#16281F" stroke-width="12"/>
             <circle r="41" fill="none" stroke="#16281F" stroke-width="12"/>
@@ -3101,52 +2046,7 @@ html.jvfi-suelta body{margin:0;background:#0A100E;color:#EEF2EC;font-family:syst
           <div class="macro c"><b><span data-g="60">60</span> g</b><span>Carbohidrato</span></div>
           <div class="macro g"><b><span data-g="18">18</span> g</b><span>Grasa</span></div>
         </div>
-        <p class="plate__note">Plato de ejemplo · la app calcula estos números a partir de una base de más de 236.000 alimentos, también sin conexión.</p>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ================= HACIA DÓNDE VA (visión / roadmap) ================= -->
-<section class="roadmap">
-  <div class="deriva" aria-hidden="true"><span>El destino</span></div>
-  <div class="wrap">
-    <p class="rotulo reveal">El destino</p>
-    <div class="sec-head reveal">
-      <p class="eyebrow">Próximamente · hoja de ruta</p>
-      <h2>Hacia dónde va</h2>
-      <svg class="ul" viewBox="0 0 200 9" preserveAspectRatio="none" aria-hidden="true" focusable="false"><path pathLength="1" d="M2 6 C46 2, 104 8.4, 198 3.4"/></svg>
-      <p>Lo que ya funciona es la base y no se mueve: cada respuesta seguirá diciendo en qué se basa. Todo esto se construye <strong>encima</strong>, no en su lugar.</p>
-    </div>
-    <!-- ACTO 5 · la hoja de ruta, partida en DOS estados. Lo construido manda sobre lo
-         prometido, y por eso va a ancho completo: sin grid-template-columns:1fr, a partir
-         de 760 px la única tarjeta construida ocuparía un tercio y quedaría huérfana.
-         .eyebrow y .dim ya existen: cero CSS nuevo. -->
-    <p class="eyebrow" style="margin-top:clamp(24px,4vw,36px)">Construido, esperando prueba en móvil real</p>
-    <div class="spec-grid" style="grid-template-columns:1fr">
-      <div class="spec-card reveal">
-        <span class="feat-eyebrow">Health Connect</span>
-        <h3>Pasos y actividad, solos</h3>
-        <p>Ya está cableado con Health Connect: el móvil cuenta los pasos y entran en el plan sin que apuntes nada. Queda probarlo en un teléfono de verdad. Menos fricción, más constancia, que es lo que de verdad mueve la aguja.</p>
-      </div>
-    </div>
-
-    <p class="eyebrow dim" style="margin-top:clamp(24px,4vw,36px)">Sin empezar</p>
-    <div class="spec-grid">
-      <div class="spec-card reveal">
-        <span class="feat-eyebrow">Voz · IA local</span>
-        <h3>Habla con el coach en el momento</h3>
-        <p>Preguntar en voz alta y que responda al instante, con un modelo de IA <strong>abierto, gratuito y corriendo en tu propio móvil</strong>: privado por diseño, sin suscripción, y con el motor de confianza citando la fuente debajo de cada respuesta.</p>
-      </div>
-      <div class="spec-card reveal d1">
-        <span class="feat-eyebrow">IA viva</span>
-        <h3>Un plan que se adapta solo</h3>
-        <p>La IA cruza lo que <strong>comes</strong> y lo que <strong>entrenas</strong>, aprende de cómo responde tu cuerpo de verdad y ajusta el plan. La parte creativa la pone la IA; el cómputo y la cita del artículo siguen siendo deterministas.</p>
-      </div>
-      <div class="spec-card reveal d2">
-        <span class="feat-eyebrow">El destino</span>
-        <h3>Un sistema que lo entrelaza todo</h3>
-        <p>Un CRM que conecta todos tus ámbitos (comida, entreno, descanso, hábitos), encuentra las relaciones entre ellos y las usa para hacerte mejorar en <strong>todos a la vez</strong>. Ahí es donde va JV Fitness: IA y datos propios, trabajando juntos.</p>
+        <p class="plate__note">Plato de ejemplo · la app calcula estos números a partir de una base de más de 236.000 productos, también sin conexión.</p>
       </div>
     </div>
   </div>
@@ -3154,7 +2054,6 @@ html.jvfi-suelta body{margin:0;background:#0A100E;color:#EEF2EC;font-family:syst
 
 </main>
 
-<!-- ================= FOOTER ================= -->
 <footer class="foot">
   <div class="wrap">
     <div class="sec-head reveal" style="margin-bottom:1.6rem">
@@ -3167,7 +2066,7 @@ html.jvfi-suelta body{margin:0;background:#0A100E;color:#EEF2EC;font-family:syst
     </div>
 
     <div class="foot__meta reveal">
-      <div class="honest">Proyecto en desarrollo · uso personal y pruebas con testers externos.</div>
+      <div class="honest">Proyecto en desarrollo.</div>
       <div>Contacto: <a class="mail jv-email" href="#">correo</a> · <a href="privacidad.html">Privacidad</a></div>
       <div class="foot__sig">JV Fitness · Pablo Andrés Martínez · 2026</div>
     </div>
@@ -3181,8 +2080,6 @@ html.jvfi-suelta body{margin:0;background:#0A100E;color:#EEF2EC;font-family:syst
   root.classList.add('js');
   var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  /* Correo de contacto ensamblado por JS (anti-scraping): nunca aparece en crudo en el HTML,
-     ni siquiera partido en atributos. Mismo patrón que jvlegal_suite.html (JV_DEST). */
   var JV_DEST = { usuario: 'jvlegalpam', dominio: 'gmail.com' };
   document.querySelectorAll('.jv-email').forEach(function(el){
     var addr = JV_DEST.usuario + '@' + JV_DEST.dominio;
@@ -3190,15 +2087,10 @@ html.jvfi-suelta body{margin:0;background:#0A100E;color:#EEF2EC;font-family:syst
     el.textContent = addr;
   });
 
-  /* ---------- Contadores ---------- */
   function fmt(n, format){
-    /* separador de millar manual (1500 → «1.500»): toLocaleString('es-ES') depende del ICU del motor
-       y en algunos headless/bots devuelve «1500» — verificado en la revisión; esto es determinista */
     if(format==='mil') return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
     return String(n);
   }
-  /* Al imprimir no hay tiempo de animar: se congelan las cifras en su valor final.
-     Lo consultan tanto el arranque como los cuadros ya en vuelo. */
   var congelado = false;
   function valorFinal(el){
     return fmt(parseInt(el.getAttribute('data-count'),10) || 0, el.getAttribute('data-format') || '')
@@ -3210,25 +2102,19 @@ html.jvfi-suelta body{margin:0;background:#0A100E;color:#EEF2EC;font-family:syst
       el.setAttribute('data-done','1');
       el.textContent = valorFinal(el);
     });
-    /* Los gramos del plato son del módulo ULTRA, pero congelarlos es asunto de quien
-       congela, y tiene que ser SÍNCRONO: reproducido en captura de bot real que el bot
-       deja de servir cuadros de rAF y el plato salía con 40/53/16 g en vez de 45/60/18.
-       El bucle del módulo ULTRA mira html.fx-fin y escribe este mismo valor final:
-       dos escritores coordinados en el mismo número, nunca en desacuerdo. */
     document.querySelectorAll('.plate [data-g]').forEach(function(el){
       el.textContent = el.getAttribute('data-g');
     });
   }
   function runCounter(el){
-    if(el.getAttribute('data-done')) return;   // guardia: el failsafe y el observer no re-animan
+    if(el.getAttribute('data-done')) return;
     el.setAttribute('data-done','1');
     var target = parseInt(el.getAttribute('data-count'),10) || 0;
     var suffix = el.getAttribute('data-suffix') || '';
     var format = el.getAttribute('data-format') || '';
     if(reduce || congelado){ el.textContent = fmt(target,format) + suffix; return; }
-    el.textContent = '0';       /* la cifra final vive en el HTML: se pone a cero AQUÍ,
-                                   ya revelada, para que nadie llegue a ver un «0» suelto */
-    var dur = 950, t0 = null;   /* odómetro: arranca fuerte y frena al final, y se quita de en medio */
+    el.textContent = '0';
+    var dur = 950, t0 = null;
     function step(ts){
       if(congelado){ el.textContent = fmt(target,format) + suffix; return; }
       if(t0===null) t0 = ts;
@@ -3240,13 +2126,6 @@ html.jvfi-suelta body{margin:0;background:#0A100E;color:#EEF2EC;font-family:syst
     requestAnimationFrame(step);
   }
 
-  /* =========================================================================
-     MOTION NARRATIVO · un solo requestAnimationFrame para TODOS los efectos.
-     Cada bucle devuelve true cuando ya no necesita más cuadros; cuando todos
-     están quietos el rAF se apaga solo. Ningún bucle perpetuo, ningún efecto
-     disparado por temporizador a ciegas: o lo pide el puntero, o lo pide el
-     observador de visibilidad.
-     ========================================================================= */
   var bucles = [], raf = 0;
   function tic(t){
     raf = 0;
@@ -3255,13 +2134,9 @@ html.jvfi-suelta body{margin:0;background:#0A100E;color:#EEF2EC;font-family:syst
     if(vivo) raf = requestAnimationFrame(tic);
   }
   function despierta(){ if(!raf) raf = requestAnimationFrame(tic); }
-  /* Los efectos de cursor NI SE INSTALAN sin ratón fino (en el móvil no existen). */
   var fino = !reduce && !!(window.matchMedia && window.matchMedia('(pointer:fine)').matches);
-  var finales = [];   /* cierres idempotentes: los llama el failsafe y beforeprint */
+  var finales = [];
 
-  /* Capa fantasma para N1 y N2: el texto real se queda en el DOM (transparente,
-     reservando exactamente su hueco) y encima pinta un <span aria-hidden>. Al
-     cerrar se restituye el nodo de texto original tal cual estaba. */
   function fantasma(host){
     var t = host.textContent, cerrado = false;
     var real = document.createElement('span'); real.className = 'fx-real'; real.textContent = t;
@@ -3280,13 +2155,9 @@ html.jvfi-suelta body{margin:0;background:#0A100E;color:#EEF2EC;font-family:syst
     };
   }
 
-  /* N1 · DESCIFRADO en la tarjeta del escáner: el titular pasa de ruido a texto
-     legible. Es literalmente lo que hace el OCR con la foto de una etiqueta. */
   var RUIDO = 'ABCDEFGHIJKLMNÑOPQRSTUVWXYZ0123456789/#%·';
   function descifrar(host){
     var f = fantasma(host), n = f.t.length, ini = -1, ult = -1;
-    /* PASO 12 + ASENT 120 → ~470 ms para un titular de 29 letras: el gesto se ve,
-       pero el lector nunca espera >0,5 s para poder leer la línea. */
     var PASO = 12, ASENT = 120, TOTAL = n*PASO + ASENT, ruido = new Array(n);
     function sortear(){
       for(var i=0;i<n;i++) ruido[i] = RUIDO.charAt(Math.floor(Math.random()*RUIDO.length));
@@ -3300,7 +2171,6 @@ html.jvfi-suelta body{margin:0;background:#0A100E;color:#EEF2EC;font-family:syst
       if(ult < 0 || t - ult > 48){ ult = t; sortear(); }
       for(var i=0;i<n;i++){
         var c = f.t.charAt(i);
-        /* los espacios (normales y duros) no se cifran: la frase mantiene su silueta */
         s += (c === ' ' || c === '\u00A0' || p > i*PASO + ASENT) ? c : ruido[i];
       }
       f.gh.textContent = s;
@@ -3310,9 +2180,6 @@ html.jvfi-suelta body{margin:0;background:#0A100E;color:#EEF2EC;font-family:syst
     despierta();
   }
 
-  /* N2 · MÁQUINA DE ESCRIBIR en la tarjeta del asistente: la frase se compone
-     letra a letra con cursor de bloque y, al terminar, el cursor desaparece.
-     Una sola vez, y sin mover un píxel: el hueco ya lo reserva el texto real. */
   function escribir(host){
     var f = fantasma(host), n = f.t.length, ini = -1;
     var PASO = 42, nodo = document.createTextNode('');
@@ -3330,8 +2197,6 @@ html.jvfi-suelta body{margin:0;background:#0A100E;color:#EEF2EC;font-family:syst
     despierta();
   }
 
-  /* N6 · GLITCH, y SOLO en «Lo que aún no está»: interferencia = todavía no
-     existe. Tres sacudidas en 300 ms y se apaga; las capas se destruyen. */
   function glitch(host){
     var t = host.textContent, capas = [], muerto = false;
     ['fx-gl__a','fx-gl__b'].forEach(function(cl){
@@ -3348,16 +2213,11 @@ html.jvfi-suelta body{margin:0;background:#0A100E;color:#EEF2EC;font-family:syst
       host.classList.remove('fx-gl');
     }
     capas[1].addEventListener('animationend', fin);
-    setTimeout(fin, 900);          /* red por si el sistema desactiva animaciones a mitad */
+    setTimeout(fin, 900);
     finales.push(fin);
   }
 
-  /* (N7 letras magnéticas y N9 inclinación 3D: RETIRADOS en la pasada de
-     arreglos — apilaban un segundo efecto de cursor sobre elementos que ya
-     llevaban el suyo, y no contaban nada del producto.) */
 
-  /* N8 · FOCO JADE sobre la rejilla blueprint del hero: el plano reacciona al
-     cursor. Va por debajo del texto (z-index 0 frente al 1 de .hero__inner). */
   function foco(){
     var hero = document.querySelector('.hero');
     if(!hero) return;
@@ -3381,7 +2241,6 @@ html.jvfi-suelta body{margin:0;background:#0A100E;color:#EEF2EC;font-family:syst
       if(!listo) return true;
       x += (tx - x)*.18; y += (ty - y)*.18;
       halo.style.transform = 'translate3d(' + x.toFixed(1) + 'px,' + y.toFixed(1) + 'px,0)';
-      /* fuera del hero y ya alcanzado el destino: se apaga y suelta el will-change */
       if(!dentro && Math.abs(tx - x) < .5 && Math.abs(ty - y) < .5){
         listo = false; halo.style.willChange = 'auto'; return true;
       }
@@ -3389,10 +2248,6 @@ html.jvfi-suelta body{margin:0;background:#0A100E;color:#EEF2EC;font-family:syst
     });
   }
 
-  /* N10 · OLA en el enlace del pie: gesto de despedida, una sola pasada.
-     Se trocea al entrar el puntero y se restituye al acabar la animación.
-     SOLO ratón: filtra pointerType (en táctil, un scroll que arranca sobre el
-     enlace dispararía un pointerenter con el dedo). */
   function ola(el){
     if(!el) return;
     var orig = el.innerHTML, activo = false;
@@ -3402,7 +2257,6 @@ html.jvfi-suelta body{margin:0;background:#0A100E;color:#EEF2EC;font-family:syst
       var s = el.textContent, frag = document.createDocumentFragment(), n = 0, ultima = null;
       for(var i=0;i<s.length;i++){
         var c = s.charAt(i);
-        /* los espacios se quedan como texto suelto: así la línea puede partir */
         if(c === ' '){ frag.appendChild(document.createTextNode(' ')); continue; }
         var sp = document.createElement('span');
         sp.className = 'fx-w'; sp.style.setProperty('--i', n++);
@@ -3416,7 +2270,7 @@ html.jvfi-suelta body{margin:0;background:#0A100E;color:#EEF2EC;font-family:syst
         el.classList.remove('fx-ola'); el.innerHTML = orig; activo = false;
       }
       if(ultima) ultima.addEventListener('animationend', fin);
-      setTimeout(fin, 1600);       /* red: si no llega el animationend, se restituye igual */
+      setTimeout(fin, 1600);
     });
   }
 
@@ -3425,17 +2279,13 @@ html.jvfi-suelta body{margin:0;background:#0A100E;color:#EEF2EC;font-family:syst
     ola(document.querySelector('.foot__try'));
   }
 
-  /* ---------- Reveal + disparo de contadores ---------- */
   var reveals = Array.prototype.slice.call(document.querySelectorAll('.reveal'));
   var stages  = Array.prototype.slice.call(document.querySelectorAll('.stage'));
   var fxio = null;
 
-  /* Asienta lo narrativo YA EN MARCHA: restituye el texto real y destruye las capas
-     fantasma. No toca fxio: lo aún no visto conserva su efecto. */
   function fxAsienta(){
     while(finales.length){ try{ finales.pop()(); }catch(err){} }
   }
-  /* Cierra de golpe todo lo narrativo dejándolo en su estado final y quieto. */
   function fxCerrar(){
     if(fxio){ fxio.disconnect(); fxio = null; }
     fxAsienta();
@@ -3447,21 +2297,7 @@ html.jvfi-suelta body{margin:0;background:#0A100E;color:#EEF2EC;font-family:syst
     document.querySelectorAll('.shot').forEach(function(el){ el.classList.add('shot--vis'); });
     document.querySelectorAll('.num[data-count]').forEach(runCounter);
   } else {
-    /* Revelado (fundido de opacidad): puede adelantarse un 18% bajo el pliegue
-       — un fundido que llega hecho no pierde nada. Solo eso: los contadores y
-       los recortes NO cuelgan de aquí (animarían sin ser vistos). */
 
-    /* will-change es un préstamo, no un regalo: se pide para el movimiento y se
-       devuelve al acabarlo. Sin esto, los 25 .reveal se quedan con capa propia
-       de compositor para siempre, que es de lo que avisa la documentación.
-       Los dos guardas no son adorno: transitionend BURBUJEA desde los hijos, y
-       dentro de un .reveal hay hijos que transicionan (el trazo del subrayado,
-       el recorte de la captura, el rotulador). Sin filtrar, el primer hijo que
-       acabase soltaría la capa del padre a media entrada.
-       LIMITACIÓN DECLARADA: si la transición nunca corre (html.fx-fin y @media
-       print anulan las transiciones), transitionend no llega y el oyente se
-       queda puesto. En esas dos rutas la página se captura y se descarta, así
-       que se acepta a propósito antes que poner 25 temporizadores de red. */
     function soltarCapa(el){
       function suelta(ev){
         if(ev.target !== el || ev.propertyName !== 'opacity') return;
@@ -3481,10 +2317,6 @@ html.jvfi-suelta body{margin:0;background:#0A100E;color:#EEF2EC;font-family:syst
     reveals.forEach(function(el){ io.observe(el); });
     stages.forEach(function(el){ io.observe(el); });
 
-    /* Puerta de visibilidad de los dos latidos ambientales (ring en la píldora
-       EN VIVO, beat en la tarjeta de versión). Este observador NO hace unobserve:
-       tiene que seguir vigilando la ida Y la vuelta. Un observador quieto no
-       pide cuadros ni gasta. */
     var latidos = document.querySelectorAll('.livebar, .stat.live');
     if(latidos.length){
       var lio = new IntersectionObserver(function(entries){
@@ -3493,9 +2325,6 @@ html.jvfi-suelta body{margin:0;background:#0A100E;color:#EEF2EC;font-family:syst
       latidos.forEach(function(el){ lio.observe(el); });
     }
 
-    /* N3 (odómetro) + N5 (recorte): observador PROPIO, umbral .35 y SIN
-       rootMargin — estos dos narran, y solo arrancan con el elemento DE VERDAD
-       dentro de la pantalla, nunca por delante del lector. */
     var vis = new IntersectionObserver(function(entries){
       entries.forEach(function(e){
         if(!e.isIntersecting) return;
@@ -3507,10 +2336,6 @@ html.jvfi-suelta body{margin:0;background:#0A100E;color:#EEF2EC;font-family:syst
     document.querySelectorAll('.shot').forEach(function(el){ vis.observe(el); });
     document.querySelectorAll('.num[data-count]').forEach(function(el){ vis.observe(el); });
 
-    /* Efectos narrativos de una sola vez (N1 descifrado, N2 escritura, N6 glitch).
-       Observador propio con umbral .5 porque el del revelado se adelanta 18% por
-       debajo del pliegue a propósito: estos deben arrancar cuando su elemento
-       está DE VERDAD medio en pantalla, nunca por temporizador. */
     fxio = new IntersectionObserver(function(entries){
       entries.forEach(function(e){
         if(!e.isIntersecting || !fxio) return;
@@ -3523,18 +2348,6 @@ html.jvfi-suelta body{margin:0;background:#0A100E;color:#EEF2EC;font-family:syst
     }, { threshold:.5 });
     document.querySelectorAll('[data-fx]').forEach(function(el){ fxio.observe(el); });
 
-    /* Failsafe de revelado, SOLO para quien no interactúa (bots de vista previa
-       — Google, LinkedIn — y prerender: ejecutan JS pero no scrollean ni tocan
-       nada → sin esto capturarían la página en negro). A los 6 s todo queda
-       visible EN SU ESTADO FINAL y quieto (html.fx-fin anula las transiciones:
-       nada se anima a ciegas). El primer gesto humano (rueda, tecla, toque,
-       ratón, scroll) CANCELA el temporizador: para una persona, lo que aparece
-       lo decide su scroll, nunca un reloj.
-       OJO: NO llama a fxCerrar (fxio sigue vivo, así que si un humano llega
-       tarde, N1/N2/N6 aún cuentan su historia al entrar en pantalla), pero SÍ
-       asienta lo YA en marcha con fxAsienta: reproducido en captura de bot real
-       que sin esto la máquina de escribir salía congelada a mitad de frase
-       («Pregunta, y n» + cursor), porque el bot deja de servir cuadros de rAF. */
     function revealAllEstatico(){
       root.classList.add('fx-fin');
       congelarContadores();
@@ -3551,32 +2364,21 @@ html.jvfi-suelta body{margin:0;background:#0A100E;color:#EEF2EC;font-family:syst
     }
     gestos.forEach(function(g){ window.addEventListener(g, humano, { passive:true }); });
 
-    /* Imprimir es el caso más exigente: hay que dejarlo todo en su sitio YA,
-       sin transiciones, sin contadores a medio rodar y SIN capas fantasma
-       (aquí sí se cierra lo narrativo del todo). */
     window.addEventListener('beforeprint', function(){ revealAllEstatico(); fxCerrar(); });
   }
 })();
 
-/* ═══════════ FLOW · campo de energía vivo del hero (canvas vanilla, sin libs) ═══════════
-   Partículas jade que derivan y se enlazan; el cursor las engancha con hilos ámbar.
-   Escoped al <header class="hero"> (no a toda la ventana). Respeta reduced-motion, se
-   detiene con la pestaña oculta (batería / panel congelado). Cero red, cero CDN. */
 (function(){
   var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var host = document.querySelector('.hero'), c = document.querySelector('.hero__field');
   if(!host || !c) return;
   var x = c.getContext('2d'), W, H, dpr, parts = [], mouse = {x:-999,y:-999}, raf, vivo = true;
 
-  /* Un solo dueño de «hay que dibujar»: manda la pestaña Y manda la pantalla.
-     Antes solo mandaba la pestaña, así que el lienzo seguía pintando con el hero
-     6.372 px fuera de la vista. Un observador quieto no cuesta nada; un lienzo
-     que repinta 60 veces por segundo cuesta 42,6 % de un núcleo. */
   var enPantalla = true, pestanaViva = true, last = 0;
   function debeCorrer(){ return enPantalla && pestanaViva; }
   function arranca(){
     if(vivo || !debeCorrer()) return;
-    vivo = true; last = 0;                 /* last a cero: al despertar no hay salto */
+    vivo = true; last = 0;
     raf = requestAnimationFrame(frame);
   }
   function para(){
@@ -3585,13 +2387,8 @@ html.jvfi-suelta body{margin:0;background:#0A100E;color:#EEF2EC;font-family:syst
   }
 
   function size(){
-    /* Tope 1,5 y no 2: higiene de área, no palanca (el verificador del banco
-       tumbó que esto mueva la CPU en este portátil). A densidad 3 de móvil sí
-       importa, y no cuesta nada. */
     dpr = Math.min(window.devicePixelRatio || 1, 1.5);
     var r = host.getBoundingClientRect();
-    // Robustez: si el layout aún no da ancho (panel colapsado / carga temprana),
-    // reintenta al siguiente frame en vez de quedarse con un canvas de 1px.
     if(r.width < 2){ requestAnimationFrame(size); return; }
     W = c.width = Math.max(1, r.width  * dpr);
     H = c.height = Math.max(1, r.height * dpr);
@@ -3606,10 +2403,6 @@ html.jvfi-suelta body{margin:0;background:#0A100E;color:#EEF2EC;font-family:syst
   }
   function frame(t){
     raf = 0;
-    /* Reloj por TIEMPO, no por fotogramas. k = cuántos cuadros de 60 Hz han
-       pasado de verdad, así que a 30 Hz las partículas van a la misma velocidad
-       de siempre en vez de a la mitad. Tope de 50 ms (3 cuadros): al despertar
-       tras un rato parado, sin tope las partículas darían un salto. */
     var k = 1;
     if(last && t){ var dt = t - last; if(dt > 50) dt = 50; k = dt / 16.667; }
     if(t) last = t;
@@ -3645,10 +2438,6 @@ html.jvfi-suelta body{margin:0;background:#0A100E;color:#EEF2EC;font-family:syst
     if(pestanaViva) arranca(); else para();
   });
 
-  /* Puerta de visibilidad. Se observa el HOST (.hero), no el lienzo: el lienzo
-     lleva una máscara, y el propio fichero ya avisa en N5 de que observar un
-     elemento recortado es «un cerrojo sin llave». El umbral 0 hace que despierte
-     en cuanto entra 1 px, o sea en el cuadro siguiente. */
   if('IntersectionObserver' in window){
     new IntersectionObserver(function(es){
       enPantalla = es[es.length-1].isIntersecting;
@@ -3657,28 +2446,17 @@ html.jvfi-suelta body{margin:0;background:#0A100E;color:#EEF2EC;font-family:syst
   }
 })();
 
-/* ═══════════════ CAPA ULTRA · scroll-3D · parallax · progreso · plato ═══════════════
-   Un único manejador de scroll con rAF-throttle (patrón performante estándar): sin
-   rAF perpetuo, solo recalcula al hacer scroll/resize. Respeta reduced-motion (no
-   instala nada con movimiento) y NO toca el motion narrativo del flow de arriba. */
 (function(){
   "use strict";
   var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var root = document.documentElement;
 
-  /* ---------- Intro cinematográfico: interrumpible + red de seguridad ----------
-     La retirada base la hace el CSS (animation forwards). Esto solo la acelera con
-     el primer gesto (interrumpibilidad, apple-design §3), limpia el nodo del DOM y
-     DISPARA el ensamblaje del título del hero (.lettersgo) justo al retirarse. */
   var intro = document.querySelector('.intro');
   if(intro){
     var quitar = function(){
       if(!intro) return;
       var n = intro; intro = null;
-      root.classList.add('lettersgo');   /* el hero se ensambla cuando el intro se va */
-      /* curva del sistema (--ease-sale: es la retirada del telón), no la 'ease' genérica.
-         El .5s se queda: vive en el contrato de la cadencia compuesta y la red de 600 ms
-         de abajo lo cubre. var() en style en línea resuelve contra :root sin problema. */
+      root.classList.add('lettersgo');
       n.style.transition = 'opacity .5s var(--ease-sale), transform .5s var(--ease-sale)';
       n.style.opacity = '0';
       n.style.transform = 'translateY(-4%) scale(1.04)';
@@ -3686,57 +2464,42 @@ html.jvfi-suelta body{margin:0;background:#0A100E;color:#EEF2EC;font-family:syst
       setTimeout(function(){ if(n && n.parentNode) n.parentNode.removeChild(n); }, 600);
     };
     intro.addEventListener('animationend', function(e){ if(e && e.animationName === 'introOut') quitar(); });
-    setTimeout(quitar, 3200);   /* red dura: pase lo que pase, el intro se va */
+    setTimeout(quitar, 3200);
     if(!reduce){
       var saltado = false;
       var saltar = function(){ saltado = true; quitar(); off(); };
       var off = function(){ ['pointerdown','keydown','wheel','touchstart'].forEach(function(g){ window.removeEventListener(g, saltar); }); };
-      /* El teclado se arma desde el instante 0: el telón (z-index 200) es opaco pero no
-         atrapa el foco, y un Tab+Enter muy temprano alcanzaría un enlace de detrás sin
-         verlo. El primer keydown retira el telón y el lector ve dónde está su foco.
-         El margen de 750 ms queda SOLO para rueda y puntero (estético: ver arrancar
-         el ensamblaje antes de permitir el salto). */
       window.addEventListener('keydown', saltar, { passive:true });
       setTimeout(function(){ if(saltado) return; ['pointerdown','wheel','touchstart'].forEach(function(g){ window.addEventListener(g, saltar, { passive:true }); }); }, 750);
     } else {
-      quitar();   /* con reduced-motion el CSS ya lo oculta; se retira por limpieza */
+      quitar();
     }
   } else {
-    root.classList.add('lettersgo');   /* sin intro: el hero se ensambla de inmediato */
+    root.classList.add('lettersgo');
   }
 
-  if(reduce) return;   /* nada de scroll-3D / parallax con movimiento reducido */
+  if(reduce) return;
 
   var prog = document.querySelector('.uprog');
-  /* Ley del dueño único. Si el navegador sabe mover la barra él solo (CSS, en el
-     compositor), el JS se aparta: si no, el bucle seguiría midiendo y escribiendo
-     un transform que la animación CSS DEROGA EN SILENCIO. Y de paso desaparece
-     del bucle de scroll la lectura de scrollHeight de docH(), que es la única
-     lectura de geometría del bucle que se puede quitar sin tocar la basculación. */
   if(window.CSS && CSS.supports && CSS.supports('animation-timeline','scroll()')) prog = null;
   var vh = window.innerHeight || document.documentElement.clientHeight;
-  /* Alto del hero, leído UNA vez (y en cada resize, donde leer geometría ya es
-     legal). No se lee dentro del bucle de scroll: la prohibición E.6 nº6 es
-     precisamente esa, y está medida (1,167 ms por llamada leyendo-escribiendo
-     contra 0,124 solo leyendo). */
   var heroEl = document.querySelector('.hero');
   var heroH = heroEl ? heroEl.offsetHeight : 0;
   var parPintado = true;
-  var MAX = 11;                 /* grados máximos de basculación */
-  var actives = [];             /* elementos 3D actualmente en el viewport */
+  var MAX = 11;
+  var actives = [];
 
   function place(el){
     var r = el.getBoundingClientRect();
     if(r.height === 0) return;
-    var t = (r.top + r.height/2) / vh;      /* 0 arriba .. 1 abajo */
+    var t = (r.top + r.height/2) / vh;
     if(t < 0) t = 0; else if(t > 1) t = 1;
-    var deg = (t - 0.5) * 2 * MAX;          /* abajo +MAX, centro 0, arriba -MAX */
-    var d = Math.abs(t - 0.5) * 2;          /* 0 centro .. 1 extremos */
+    var deg = (t - 0.5) * 2 * MAX;
+    var d = Math.abs(t - 0.5) * 2;
     var sc = (1 - d * 0.05).toFixed(3);
     el.style.transform = 'perspective(1200px) rotateX(' + deg.toFixed(2) + 'deg) scale(' + sc + ')';
   }
 
-  /* marcar los elementos que bascular (ya son .reveal → el fundido lo da el flow) */
   var r3dEls = Array.prototype.slice.call(document.querySelectorAll('.frow, .spec-card, .stat, .stage'));
   r3dEls.forEach(function(el){ el.classList.add('r3d'); });
 
@@ -3752,16 +2515,14 @@ html.jvfi-suelta body{margin:0;background:#0A100E;color:#EEF2EC;font-family:syst
     });
   }, { rootMargin: '8% 0px 8% 0px', threshold: 0 }) : null;
   if(io){ r3dEls.forEach(function(el){ io.observe(el); }); }
-  else { r3dEls.forEach(place); }   /* sin IO: los dejamos colocados una vez */
+  else { r3dEls.forEach(place); }
 
-  /* parallax sutil del campo de partículas y del contenido del hero (solo transform) */
   var pars = [];
   (function(){
     var f = document.querySelector('.hero__field'); if(f){ f.setAttribute('data-par', '0.16'); pars.push(f); }
     var hi = document.querySelector('.hero__inner'); if(hi){ hi.setAttribute('data-par', '0.05'); pars.push(hi); }
   })();
 
-  /* chispa jade en cada tarjeta de cifras (se anima sola al entrar vía .reveal.in) */
   document.querySelectorAll('.stats .stat').forEach(function(s){
     var sp = document.createElement('span'); sp.className = 'spark'; sp.setAttribute('aria-hidden', 'true');
     s.appendChild(sp);
@@ -3772,10 +2533,6 @@ html.jvfi-suelta body{margin:0;background:#0A100E;color:#EEF2EC;font-family:syst
     var y = window.pageYOffset || document.documentElement.scrollTop || 0;
     if(prog){ var m = docH() - vh; prog.style.transform = 'scaleX(' + (m > 0 ? Math.min(y/m, 1) : 0).toFixed(4) + ')'; }
     for(var i=0;i<actives.length;i++) place(actives[i]);
-    /* El hero tiene overflow:hidden y mide heroH px. Pasado ese punto el
-       parallax escribía transformaciones que nadie puede ver, en cada cuadro,
-       durante el 92 % del recorrido. Se escribe un último cuadro al salir (para
-       dejarlo en su sitio) y se corta hasta que el hero vuelve. */
     var verPar = y < heroH;
     if(verPar || parPintado){
       parPintado = verPar;
@@ -3790,7 +2547,6 @@ html.jvfi-suelta body{margin:0;background:#0A100E;color:#EEF2EC;font-family:syst
   window.addEventListener('scroll', onScroll, { passive:true });
   window.addEventListener('resize', function(){ vh = window.innerHeight || document.documentElement.clientHeight; heroH = heroEl ? heroEl.offsetHeight : 0; update(); }, { passive:true });
 
-  /* ---------- Plato: se monta al entrar; los gramos hacen count-up ---------- */
   var plate = document.querySelector('.plate');
   if(plate){
     var contado = false;
@@ -3799,9 +2555,6 @@ html.jvfi-suelta body{margin:0;background:#0A100E;color:#EEF2EC;font-family:syst
       document.querySelectorAll('.plate [data-g]').forEach(function(el){
         var to = parseInt(el.getAttribute('data-g'), 10) || 0, t0 = null, dur = 1100;
         function step(ts){
-          /* html.fx-fin es la señal entre módulos (la pone revealAllEstatico, que ya
-             escribió el valor final): aquí el gramo se clava en ese MISMO valor y el
-             bucle muere, para que nunca haya dos escritores en desacuerdo. */
           if(root.classList.contains('fx-fin')){ el.textContent = to; return; }
           if(t0 === null) t0 = ts;
           var p = Math.min((ts - t0)/dur, 1), e = 1 - Math.pow(1-p, 3);
@@ -3819,7 +2572,7 @@ html.jvfi-suelta body{margin:0;background:#0A100E;color:#EEF2EC;font-family:syst
     } else { plate.classList.add('in'); contar(); }
   }
 
-  update();   /* primera pasada: coloca lo visible al cargar */
+  update();
 })();
 </script>
 </body>
